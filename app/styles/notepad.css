@@ -1,0 +1,114 @@
+/* Shell: 260 | 340 | fluid */
+.ui-premium {
+  display: grid;
+  grid-template-columns: 260px 340px 1fr;
+  gap: 20px;
+  padding: 16px;
+  background: transparent;
+}
+
+/* Shared pane */
+.pane {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #EAECF0;
+  box-shadow: 0 1px 2px rgba(16,24,40,.06);
+  min-height: 640px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* LEFT: Folders */
+.folders { padding: 16px; }
+.brand { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+.search { margin-bottom: 12px; }
+.folderList { flex: 1; overflow: auto; padding-right: 4px; }
+.addFolder { margin-top: 8px; }
+
+.folderRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 10px;
+}
+.folderRow:hover { background: #F8FAFC; }
+.folderRow.active { background: #F6FEF9; border-left: 3px solid #15B79E; }
+
+.folderBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  padding: 6px 4px;
+  cursor: pointer;
+  text-align: left;
+}
+.folderIcon { opacity: .9; }
+.folderName { font-weight: 600; }
+
+/* MIDDLE: Notes list */
+.notes { padding: 16px; }
+.notesHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.notesList { flex: 1; overflow: auto; padding-right: 6px; }
+
+.noteCard {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #EEF2F7;
+  border-radius: 12px;
+  background: #fff;
+}
+.noteCard:hover { border-color: #D0D7E2; }
+.noteCard.selected { border-left: 3px solid #15B79E; }
+
+.datePill {
+  width: 56px; height: 56px;
+  border: 1px solid #E5E7EB; border-radius: 10px;
+  display: grid; place-items: center; align-content: center;
+  color: #111827; background: #F9FAFB;
+}
+.datePill .day { font-weight: 700; line-height: 1; }
+.datePill .mon { font-size: 11px; letter-spacing: .8px; }
+
+.noteMeta { display: grid; gap: 4px; }
+.noteTitle { font-weight: 700; }
+.noteSnippet { color: #667085; font-size: 13px; }
+
+/* RIGHT: Editor */
+.editor { padding: 18px; }
+.crumbRow { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.crumb { color: #667085; font-size: 13px; }
+.crumbActions { display: flex; gap: 8px; }
+
+.lastMeta {
+  display: flex; gap: 10px; align-items: center;
+  padding-bottom: 10px; margin-bottom: 12px;
+  border-bottom: 1px solid #EEF2F7;
+  color: #667085; font-size: 13px;
+}
+.lastMeta .time { color: #111827; }
+
+.titleRow {
+  display: grid; grid-template-columns: 1fr 280px; gap: 12px; align-items: end;
+  margin-bottom: 10px;
+}
+.titleRow .Polaris-TextField__Input {
+  font-size: 28px; font-weight: 700;
+}
+
+.contentRow .Polaris-TextField__Input {
+  min-height: 520px;
+}
+
+.footerRow {
+  display: flex; justify-content: space-between; align-items: center; margin-top: 12px;
+}
+
+/* Small UX touches */
+.Polaris-ResourceItem { cursor: pointer; }
