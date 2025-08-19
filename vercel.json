@@ -1,0 +1,4 @@
+{
+  "framework": "remix",
+  "buildCommand": "npm run build"
+}
