@@ -6,7 +6,6 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL") // Neon *pooled* URL
-  directUrl = env("DIRECT_URL")   // Neon *non-pooled* URL (for migrations)
 }
 
 model Shop {
@@ -39,4 +38,20 @@ model Note {
   shop      Shop     @relation(fields: [shopId], references: [id])
   folder    Folder   @relation(fields: [folderId], references: [id])
   @@index([shopId, folderId, updatedAt])
+}
+
+model Session {
+  id               String   @id                      // Shopify session id
+  shop             String                              // shop domain
+  state            String                              // OAuth state
+  isOnline         Boolean                             // online/offline
+  scope            String?                             // granted scopes
+  expires          DateTime?                           // expiry for online sessions
+  accessToken      String?                             // offline token (if offline)
+  onlineAccessInfo Json?                               // raw online token payloads
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([shop])
 }
