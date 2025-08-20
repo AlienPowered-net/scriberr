@@ -13,6 +13,8 @@ datasource db {
 model Shop {
   id        String   @id @default(cuid())
   domain    String   @unique           // e.g. dev-alienpowered.myshopify.com
+  installedAt DateTime @default(now())
+
   folders   Folder[]
   notes     Note[]
   createdAt DateTime @default(now())
@@ -25,8 +27,10 @@ model Folder {
   notes     Note[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  shop      Shop     @relation(fields: [shopId], references: [id])
-  @@index([shopId, name])
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId])
+  @@unique([shopId, name]) // names unique per shop (optional)
 }
 
 model Note {
@@ -36,9 +40,9 @@ model Note {
   title     String
   content   String   @db.Text
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  shop      Shop     @relation(fields: [shopId], references: [id])
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
   folder    Folder   @relation(fields: [folderId], references: [id])
+  updatedAt DateTime @updatedAt
   @@index([shopId, folderId, updatedAt])
 }
 

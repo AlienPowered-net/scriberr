@@ -2,4 +2,4 @@
   "version": 2,
   "framework": "remix",
   "buildCommand": "npm run vercel-build"
-}
+}   
