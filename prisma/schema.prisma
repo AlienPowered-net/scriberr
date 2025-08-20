@@ -43,17 +43,29 @@ model Note {
 }
 
 model Session {
-  id               String   @id                      // Shopify session id
-  shop             String                              // shop domain
-  state            String                              // OAuth state
-  isOnline         Boolean                             // online/offline
-  scope            String?                             // granted scopes
-  expires          DateTime?                           // expiry for online sessions
-  accessToken      String?                             // offline token (if offline)
-  onlineAccessInfo Json?                               // raw online token payloads
+  id              String   @id                              // "offline_<shop>" or online session id
+  shop            String
+  state           String
+  isOnline        Boolean
+  scope           String?
+  expires         DateTime?
+  accessToken     String?
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  // Fields used for online sessions (nullable for offline)
+  userId          BigInt?  @db.BigInt
+  firstName       String?
+  lastName        String?
+  email           String?
+  accountOwner    Boolean? @default(false)
+  locale          String?
+  collaborator    Boolean? @default(false)
+  emailVerified   Boolean? @default(false)
+
+  // Raw payload info for online tokens
+  onlineAccessInfo Json?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([shop])
 }
