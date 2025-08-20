@@ -14,7 +14,9 @@ database.sqlite
 .env
 .env.*
 
-
+/node_modules
+/.env
+/prisma/dev.db
 
 
 
