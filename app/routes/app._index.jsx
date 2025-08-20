@@ -13,10 +13,8 @@ import {
   ResourceList,
   ResourceItem,
   Text,
+  Stack,
   Select,
-  InlineGrid,
-  InlineStack,
-  Box,
 } from "@shopify/polaris";
 import { useState } from "react";
 
@@ -87,96 +85,103 @@ export default function Index() {
 
   return (
     <Page title="scriberr">
-      {/* Two columns on md+, one column on small screens */}
-      <InlineGrid columns={{ xs: 1, md: 2 }} gap="400">
+      <Stack gap="400" wrap={false}>
         {/* FOLDERS */}
+        <Stack.Item fill>
         <Card>
-          <Card.Header title="Folders" />
+         <Card.Section>
+          <Text as="h2" variant="headingLg">Folders</Text>
+        </Card.Section>
           <Card.Section>
-            <ResourceList
-              emptyState={<Text as="p">No folders yet</Text>}
-              resourceName={{ singular: "folder", plural: "folders" }}
-              items={folders}
-              renderItem={(folder) => (
-                <ResourceItem id={folder.id}>
-                  <Text as="span" variant="headingSm">
-                    {folder.name}
-                  </Text>
-                </ResourceItem>
-              )}
-            />
-          </Card.Section>
-          <Card.Section>
-            <Form method="post">
-              <input type="hidden" name="_intent" value="create-folder" />
-              <InlineStack align="end" gap="300" wrap={false}>
-                <Box minWidth="280px" grow={1}>
-                  <TextField
-                    label="New folder name"
-                    value={folderName}
-                    onChange={setFolderName}
-                    autoComplete="off"
-                    name="name"
-                  />
-                </Box>
-                <Button submit>Create folder</Button>
-              </InlineStack>
-            </Form>
-          </Card.Section>
-        </Card>
+              <ResourceList
+                emptyState={<Text as="p">No folders yet</Text>}
+                resourceName={{ singular: "folder", plural: "folders" }}
+                items={folders}
+                renderItem={(folder) => (
+                  <ResourceItem id={folder.id}>
+                    <Text as="span" variant="headingSm">
+                      {folder.name}
+                    </Text>
+                  </ResourceItem>
+                )}
+              />
+            </Card.Section>
+            <Card.Section>
+              <Form method="post">
+                <input type="hidden" name="_intent" value="create-folder" />
+                <Stack gap="300" align="end">
+                  <Stack.Item fill>
+                    <TextField
+                      label="New folder name"
+                      value={folderName}
+                      onChange={setFolderName}
+                      autoComplete="off"
+                      name="name"
+                    />
+                  </Stack.Item>
+                  <Button submit>Create folder</Button>
+                </Stack>
+              </Form>
+            </Card.Section>
+          </Card>
+        </Stack.Item>
 
         {/* NOTES */}
-        <Card>
-          <Card.Header title="Notes" />
-          <Card.Section>
-            <ResourceList
-              emptyState={<Text as="p">No notes yet</Text>}
-              resourceName={{ singular: "note", plural: "notes" }}
-              items={notes}
-              renderItem={(note) => (
-                <ResourceItem id={note.id}>
-                  <Text as="span" variant="headingSm">
-                    {note.title || "(untitled)"}
-                  </Text>
-                  <Text as="p" tone="subdued">
-                    {note.folder ? `Folder: ${note.folder.name}` : "No folder"}
-                  </Text>
-                </ResourceItem>
-              )}
-            />
-          </Card.Section>
-          <Card.Section>
-            <Form method="post">
-              <input type="hidden" name="_intent" value="create-note" />
-              <InlineStack gap="300">
-                <TextField
-                  label="Title"
-                  value={title}
-                  onChange={setTitle}
-                  autoComplete="off"
-                  name="title"
-                />
-                <TextField
-                  label="Body"
-                  value={body}
-                  onChange={setBody}
-                  autoComplete="off"
-                  multiline={4}
-                  name="body"
-                />
-                <Select
-                  label="Folder"
-                  options={folderOptions}
-                  value={folderId}
-                  onChange={setFolderId}
-                  name="folderId"
-                />
-                <Button submit>Add note</Button>
-              </InlineStack>
-            </Form>
-          </Card.Section>
-        </Card>
-      </InlineGrid>
+        <Stack.Item fill>
+          <Card>
+            <Card.Section>
+               <Text as="h2" variant="headingLg">Notes</Text>
+            </Card.Section>
+           <Card.Section>
+              <ResourceList
+                emptyState={<Text as="p">No notes yet</Text>}
+                resourceName={{ singular: "note", plural: "notes" }}
+                items={notes}
+                renderItem={(note) => (
+                  <ResourceItem id={note.id}>
+                    <Text as="span" variant="headingSm">
+                      {note.title || "(untitled)"}
+                    </Text>
+                    <Text as="p" tone="subdued">
+                      {note.folder ? `Folder: ${note.folder.name}` : "No folder"}
+                    </Text>
+                  </ResourceItem>
+                )}
+              />
+            </Card.Section>
+            <Card.Section>
+              <Form method="post">
+                <input type="hidden" name="_intent" value="create-note" />
+                <Stack gap="300">
+                  <TextField
+                    label="Title"
+                    value={title}
+                    onChange={setTitle}
+                    autoComplete="off"
+                    name="title"
+                  />
+                  <TextField
+                    label="Body"
+                    value={body}
+                    onChange={setBody}
+                    autoComplete="off"
+                    multiline={4}
+                    name="body"
+                  />
+                  <Select
+                    label="Folder"
+                    options={folderOptions}
+                    value={folderId}
+                    onChange={setFolderId}
+                    name="folderId"
+                  />
+                  <Button submit>Add note</Button>
+                </Stack>
+              </Form>
+            </Card.Section>
+          </Card>
+        </Stack.Item>
+      </Stack>
     </Page>
   );
 }
