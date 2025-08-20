@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 {
-  "framework": "remix",
-  "buildCommand": "npm run build"
-=======
-{
+  "version": 2,
   "framework": "remix",
   "buildCommand": "npm run vercel-build"
->>>>>>> bf3dd9b (Update build & vercel config)
 }
