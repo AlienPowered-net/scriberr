@@ -1,23 +1,15 @@
 import { authenticate } from "../shopify.server";
-import { prisma } from "../db.server";
 
+// IMPORTANT: no meta/links/default/component exports here
 
 export const action = async ({ request }) => {
-  const { payload, session, topic, shop } = await authenticate.webhook(request);
+  const { prisma } = await import("../db.server");
 
-  console.log(`Received ${topic} webhook for ${shop}`);
-  const current = payload.current;
+  const { shop, topic, payload } = await authenticate.webhook(request);
 
-  if (session) {
-    await db.session.update({
-      where: {
-        id: session.id,
-      },
-      data: {
-        scope: current.toString(),
-      },
-    });
-  }
+  // Update anything you need for this shop based on new scopes
 
-  return new Response();
+  return new Response("OK");
 };
+
+export const loader = () => new Response(null, { status: 405 });
