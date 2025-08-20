@@ -4,8 +4,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // Neon *pooled* URL
+  directUrl = env("DIRECT_URL")   // Neon *non-pooled* URL (for migrations)
 }
 
 model Shop {
