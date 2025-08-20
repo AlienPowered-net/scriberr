@@ -1,71 +1,43 @@
-import { json, redirect } from "@remix-run/node";
-import { useLoaderData, Form } from "@remix-run/react";
+// app/routes/app._index.jsx
+import { json } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
 import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
 
-export async function loader({ request }) {
-  const { session } = await shopify.authenticate.admin(request);
-  const shopId = await getOrCreateShopId(session.shop);
+import { Page, Card, Text } from "@shopify/polaris";
 
-  const folders = await prisma.folder.findMany({
-    where: { shopId },
-    orderBy: { name: "asc" },
-  });
+export const loader = async ({ request }) => {
+  // Authenticate the admin request (embedded app)
+  const { admin } = await shopify.authenticate.admin(request);
 
-  const notes = await prisma.note.findMany({
-    where: { shopId },
-    orderBy: { updatedAt: "desc" },
-  });
+  // Get a per‑store tenant id
+  const shopId = await getOrCreateShopId(admin.session.shop);
+
+  // Fetch tenant‑scoped data
+  const [folders, notes] = await Promise.all([
+    prisma.folder.findMany({ where: { shopId }, orderBy: { name: "asc" } }),
+    prisma.note.findMany({
+      where: { shopId },
+      orderBy: { updatedAt: "desc" },
+    }),
+  ]);
 
   return json({ folders, notes });
-}
-
-export async function action({ request }) {
-  const { session } = await shopify.authenticate.admin(request);
-  const shopId = await getOrCreateShopId(session.shop);
-
-  const form = await request.formData();
-  const intent = form.get("_intent");
-
-  if (intent === "create-note") {
-    await prisma.note.create({
-      data: {
-        title: String(form.get("title") || ""),
-        content: String(form.get("content") || ""),
-        folderId: form.get("folderId") ? String(form.get("folderId")) : null,
-        shopId,
-      },
-    });
-    return redirect("/app");
-  }
-
-  if (intent === "update-note") {
-    await prisma.note.updateMany({
-      where: { id: String(form.get("id")), shopId },
-      data: {
-        title: String(form.get("title") || ""),
-        content: String(form.get("content") || ""),
-        folderId: form.get("folderId") ? String(form.get("folderId")) : null,
-      },
-    });
-    return redirect("/app");
-  }
-
-  if (intent === "delete-note") {
-    await prisma.note.deleteMany({
-      where: { id: String(form.get("id")), shopId },
-    });
-    return redirect("/app");
-  }
-
-  return redirect("/app");
-}
+};
 
 export default function AppIndex() {
   const { folders, notes } = useLoaderData();
-  // ...your existing UI...
+
+  // Minimal visible output (so you can confirm it renders)
   return (
-    <div>{/* render folders/notes */}</div>
+    <Page title="scriberr">
+      <Card>
+        <Text as="p">Folders: {folders.length}</Text>
+        <Text as="p">Notes: {notes.length}</Text>
+      </Card>
+
+      {/* TODO: render your real UI here */}
+    </Page>
   );
 }
