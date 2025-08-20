@@ -1,43 +1,30 @@
 // app/routes/app._index.jsx
-import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { json, redirect } from "@remix-run/node";
 import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
 
-import { Page, Card, Text } from "@shopify/polaris";
-
 export const loader = async ({ request }) => {
-  // Authenticate the admin request (embedded app)
-  const { admin } = await shopify.authenticate.admin(request);
+  // Try to authenticate the admin request
+  const auth = await shopify.authenticate.admin(request).catch(() => null);
 
-  // Get a per‑store tenant id
-  const shopId = await getOrCreateShopId(admin.session.shop);
+  // Support both shapes returned by different @shopify/shopify-app-remix versions
+  const session =
+    auth?.session ?? auth?.admin?.session ?? null;
+  const shop = session?.shop;
 
-  // Fetch tenant‑scoped data
+  // If there is no session/shop, send the user through OAuth again
+  if (!shop) {
+    // If you have the shop param in the URL, keep it; otherwise Shopify adds it
+    return redirect("/auth/login");
+  }
+
+  const shopId = await getOrCreateShopId(shop);
+
   const [folders, notes] = await Promise.all([
     prisma.folder.findMany({ where: { shopId }, orderBy: { name: "asc" } }),
-    prisma.note.findMany({
-      where: { shopId },
-      orderBy: { updatedAt: "desc" },
-    }),
+    prisma.note.findMany({ where: { shopId }, orderBy: { updatedAt: "desc" } }),
   ]);
 
   return json({ folders, notes });
 };
-
-export default function AppIndex() {
-  const { folders, notes } = useLoaderData();
-
-  // Minimal visible output (so you can confirm it renders)
-  return (
-    <Page title="scriberr">
-      <Card>
-        <Text as="p">Folders: {folders.length}</Text>
-        <Text as="p">Notes: {notes.length}</Text>
-      </Card>
-
-      {/* TODO: render your real UI here */}
-    </Page>
-  );
-}
