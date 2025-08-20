@@ -1,11 +1,13 @@
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["debian-openssl-3.0.x"] // needed for Vercel
+  // Vercel sometimes runs on rhel-based images.
+  binaryTargets = ["debian-openssl-3.0.x", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL") // Neon *pooled* URL
+  url       = env("DATABASE_URL") // pooled URL
+  directUrl = env("DIRECT_URL")   // non-pooled URL (for migrations)
 }
 
 model Shop {
