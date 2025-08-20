@@ -28,7 +28,6 @@ export async function loader({ request }) {
   return json({ folders, notes });
 }
 
-// ⬇️ This default export must exist to render HTML instead of raw JSON
 export default function AppIndex() {
   const { folders, notes } = useLoaderData();
 
