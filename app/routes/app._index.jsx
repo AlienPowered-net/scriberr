@@ -13,7 +13,8 @@ import {
   ResourceList,
   ResourceItem,
   Text,
-  Stack,
+  BlockStack,
+  InlineStack,
   Select,
 } from "@shopify/polaris";
 import { useState } from "react";
@@ -85,9 +86,9 @@ export default function Index() {
 
   return (
     <Page title="scriberr">
-      <Stack gap="400" wrap={false}>
+      <InlineStack gap="400" wrap={false}>
         {/* FOLDERS */}
-        <Stack.Item fill>
+        <div style={{ flex: 1 }}>
         <Card>
          <Card.Section>
           <Text as="h2" variant="headingLg">Folders</Text>
@@ -109,8 +110,8 @@ export default function Index() {
             <Card.Section>
               <Form method="post">
                 <input type="hidden" name="_intent" value="create-folder" />
-                <Stack gap="300" align="end">
-                  <Stack.Item fill>
+                <InlineStack gap="300" align="end">
+                  <div style={{ flex: 1 }}>
                     <TextField
                       label="New folder name"
                       value={folderName}
@@ -118,16 +119,16 @@ export default function Index() {
                       autoComplete="off"
                       name="name"
                     />
-                  </Stack.Item>
+                  </div>
                   <Button submit>Create folder</Button>
-                </Stack>
+                </InlineStack>
               </Form>
             </Card.Section>
           </Card>
-        </Stack.Item>
+        </div>
 
         {/* NOTES */}
-        <Stack.Item fill>
+        <div style={{ flex: 1 }}>
           <Card>
             <Card.Section>
                <Text as="h2" variant="headingLg">Notes</Text>
@@ -152,7 +153,7 @@ export default function Index() {
             <Card.Section>
               <Form method="post">
                 <input type="hidden" name="_intent" value="create-note" />
-                <Stack gap="300">
+                <BlockStack gap="300">
                   <TextField
                     label="Title"
                     value={title}
@@ -176,12 +177,12 @@ export default function Index() {
                     name="folderId"
                   />
                   <Button submit>Add note</Button>
-                </Stack>
+                </BlockStack>
               </Form>
             </Card.Section>
           </Card>
-        </Stack.Item>
-      </Stack>
+        </div>
+      </InlineStack>
     </Page>
   );
 }
