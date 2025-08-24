@@ -13,8 +13,6 @@ import {
   ResourceList,
   ResourceItem,
   Text,
-  BlockStack,
-  InlineStack,
   Select,
 } from "@shopify/polaris";
 import { useState } from "react";
@@ -58,7 +56,26 @@ export async function action({ request }) {
     const title = (form.get("title") || "").toString().trim();
     const body = (form.get("body") || "").toString().trim();
     const folderIdRaw = form.get("folderId");
-    const folderId = folderIdRaw ? Number(folderIdRaw) : null;
+    
+    // Get or create a default folder
+    let folderId = folderIdRaw ? folderIdRaw.toString() : null;
+    
+    if (!folderId) {
+      const defaultFolder = await prisma.folder.findFirst({
+        where: { shopId },
+        orderBy: { name: "asc" },
+      });
+      
+      if (!defaultFolder) {
+        // Create a default folder if none exists
+        const newFolder = await prisma.folder.create({
+          data: { name: "General", shopId },
+        });
+        folderId = newFolder.id;
+      } else {
+        folderId = defaultFolder.id;
+      }
+    }
 
     if (title || body) {
       await prisma.note.create({
@@ -80,20 +97,19 @@ export default function Index() {
   const [folderName, setFolderName] = useState("");
 
   const folderOptions = [
-    { label: "No folder", value: "" },
     ...folders.map((f) => ({ label: f.name, value: String(f.id) })),
   ];
 
   return (
     <Page title="scriberr">
-      <InlineStack gap="400" wrap={false}>
+      <div style={{ display: 'flex', gap: '1rem' }}>
         {/* FOLDERS */}
         <div style={{ flex: 1 }}>
-        <Card>
-         <Card.Section>
-          <Text as="h2" variant="headingLg">Folders</Text>
-        </Card.Section>
-          <Card.Section>
+          <Card>
+            <Card.Section>
+              <Text as="h2" variant="headingLg">Folders</Text>
+            </Card.Section>
+            <Card.Section>
               <ResourceList
                 emptyState={<Text as="p">No folders yet</Text>}
                 resourceName={{ singular: "folder", plural: "folders" }}
@@ -110,7 +126,7 @@ export default function Index() {
             <Card.Section>
               <Form method="post">
                 <input type="hidden" name="_intent" value="create-folder" />
-                <InlineStack gap="300" align="end">
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'end' }}>
                   <div style={{ flex: 1 }}>
                     <TextField
                       label="New folder name"
@@ -121,7 +137,7 @@ export default function Index() {
                     />
                   </div>
                   <Button submit>Create folder</Button>
-                </InlineStack>
+                </div>
               </Form>
             </Card.Section>
           </Card>
@@ -131,9 +147,9 @@ export default function Index() {
         <div style={{ flex: 1 }}>
           <Card>
             <Card.Section>
-               <Text as="h2" variant="headingLg">Notes</Text>
+              <Text as="h2" variant="headingLg">Notes</Text>
             </Card.Section>
-           <Card.Section>
+            <Card.Section>
               <ResourceList
                 emptyState={<Text as="p">No notes yet</Text>}
                 resourceName={{ singular: "note", plural: "notes" }}
@@ -153,7 +169,7 @@ export default function Index() {
             <Card.Section>
               <Form method="post">
                 <input type="hidden" name="_intent" value="create-note" />
-                <BlockStack gap="300">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   <TextField
                     label="Title"
                     value={title}
@@ -177,12 +193,12 @@ export default function Index() {
                     name="folderId"
                   />
                   <Button submit>Add note</Button>
-                </BlockStack>
+                </div>
               </Form>
             </Card.Section>
           </Card>
         </div>
-      </InlineStack>
+      </div>
     </Page>
   );
 }
