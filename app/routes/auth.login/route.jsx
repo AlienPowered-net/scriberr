@@ -4,10 +4,10 @@ import {
   AppProvider as PolarisAppProvider,
   Button,
   Card,
-  FormLayout,
   Page,
   Text,
   TextField,
+  BlockStack,
 } from "@shopify/polaris";
 import polarisTranslations from "@shopify/polaris/locales/en.json";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
@@ -41,7 +41,7 @@ export default function Auth() {
       <Page>
         <Card>
           <Form method="post">
-            <FormLayout>
+            <BlockStack gap="400">
               <Text variant="headingMd" as="h2">
                 Log in
               </Text>
@@ -56,7 +56,7 @@ export default function Auth() {
                 error={errors.shop}
               />
               <Button submit>Log in</Button>
-            </FormLayout>
+            </BlockStack>
           </Form>
         </Card>
       </Page>
