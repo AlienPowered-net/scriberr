@@ -1,5 +1,4 @@
 import {
-  Box,
   Card,
   Layout,
   Link,
@@ -12,18 +11,20 @@ import { TitleBar } from "@shopify/app-bridge-react";
 
 function Code({ children }) {
   return (
-    <Box
-      as="span"
-      padding="025"
-      paddingInlineStart="100"
-      paddingInlineEnd="100"
-      background="bg-surface-active"
-      borderWidth="025"
-      borderColor="border"
-      borderRadius="100"
+    <span
+      style={{
+        padding: "var(--p-space-025)",
+        paddingInlineStart: "var(--p-space-100)",
+        paddingInlineEnd: "var(--p-space-100)",
+        background: "var(--p-color-bg-surface-active)",
+        borderWidth: "var(--p-border-width-025)",
+        borderColor: "var(--p-color-border)",
+        borderRadius: "var(--p-border-radius-100)",
+        borderStyle: "solid",
+      }}
     >
       <code>{children}</code>
-    </Box>
+    </span>
   );
 }
 

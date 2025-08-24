@@ -33,6 +33,14 @@ export async function loader({ request }) {
     where: { shopId },
     orderBy: { updatedAt: "desc" },
     include: { folder: true },
+    select: {
+      id: true,
+      title: true,
+      content: true,
+      folderId: true,
+      folder: true,
+      updatedAt: true,
+    },
   });
 
   return json({ folders, notes });
@@ -62,7 +70,7 @@ export async function action({ request }) {
 
     if (title || body) {
       await prisma.note.create({
-        data: { title, body, shopId, folderId },
+        data: { title, content: body, shopId, folderId },
       });
     }
     return redirect("/app");
@@ -146,6 +154,11 @@ export default function Index() {
                     <Text as="p" tone="subdued">
                       {note.folder ? `Folder: ${note.folder.name}` : "No folder"}
                     </Text>
+                    {note.content && (
+                      <Text as="p" tone="subdued">
+                        {note.content.substring(0, 100)}...
+                      </Text>
+                    )}
                   </ResourceItem>
                 )}
               />
