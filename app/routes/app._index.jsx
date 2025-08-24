@@ -58,7 +58,7 @@ export async function action({ request }) {
     const title = (form.get("title") || "").toString().trim();
     const body = (form.get("body") || "").toString().trim();
     const folderIdRaw = form.get("folderId");
-    const folderId = folderIdRaw ? Number(folderIdRaw) : null;
+    const folderId = folderIdRaw && folderIdRaw !== "" ? folderIdRaw : null;
 
     if (title || body) {
       await prisma.note.create({

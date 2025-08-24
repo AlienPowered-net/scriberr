@@ -4,7 +4,7 @@ import { authenticate } from "../shopify.server";
 
 export const action = async ({ request }) => {
   // Load server‑only code inside the server handler
-  const { prisma } = await import("../db.server");
+  const { prisma } = await import("../utils/db.server");
 
   // This authenticates the webhook and gives you topic/shop/payload
   const { shop, topic, payload } = await authenticate.webhook(request);
