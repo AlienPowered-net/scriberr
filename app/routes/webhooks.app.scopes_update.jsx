@@ -3,7 +3,7 @@ import { authenticate } from "../shopify.server";
 // IMPORTANT: no meta/links/default/component exports here
 
 export const action = async ({ request }) => {
-  const { prisma } = await import("../db.server");
+  const { prisma } = await import("../utils/db.server");
 
   const { shop, topic, payload } = await authenticate.webhook(request);
 
