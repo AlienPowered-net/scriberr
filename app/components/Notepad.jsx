@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  TextField, Button, Select, ResourceList, InlineStack, Text, Badge,
+  TextField, Button, ResourceList, InlineStack, Text, Badge,
   Popover, ActionList
 } from "@shopify/polaris";
 import { STORAGE_KEYS, loadJSON, saveJSON, generateId } from "../utils/storage";
@@ -282,12 +282,29 @@ export default function Notepad() {
             autoComplete="off"
             placeholder="Note title"
           />
-          <Select
-            label="Folder"
-            options={folders.map(f => ({ label: f, value: f }))}
-            value={folderForEditing}
-            onChange={setFolderForEditing}
-          />
+          <div>
+            <label htmlFor="folderSelect" style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+              Folder
+            </label>
+            <select
+              id="folderSelect"
+              value={folderForEditing}
+              onChange={(e) => setFolderForEditing(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px 12px",
+                border: "1px solid #c9cccf",
+                borderRadius: "4px",
+                fontSize: "14px",
+              }}
+            >
+              {folders.map(f => (
+                <option key={f} value={f}>
+                  {f}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="contentRow">
