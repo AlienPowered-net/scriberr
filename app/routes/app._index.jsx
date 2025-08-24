@@ -32,13 +32,17 @@ export async function loader({ request }) {
   const notes = await prisma.note.findMany({
     where: { shopId },
     orderBy: { updatedAt: "desc" },
-    include: { folder: true },
     select: {
       id: true,
       title: true,
       content: true,
       folderId: true,
-      folder: true,
+      folder: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
       updatedAt: true,
     },
   });
