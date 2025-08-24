@@ -15,7 +15,6 @@ import {
   Text,
   BlockStack,
   InlineStack,
-  Select,
 } from "@shopify/polaris";
 import { useState } from "react";
 
@@ -186,13 +185,30 @@ export default function Index() {
                     multiline={4}
                     name="body"
                   />
-                  <Select
-                    label="Folder"
-                    options={folderOptions}
-                    value={folderId}
-                    onChange={setFolderId}
-                    name="folderId"
-                  />
+                  <div>
+                    <label htmlFor="folderId" style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+                      Folder
+                    </label>
+                    <select
+                      id="folderId"
+                      name="folderId"
+                      value={folderId}
+                      onChange={(e) => setFolderId(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "8px 12px",
+                        border: "1px solid #c9cccf",
+                        borderRadius: "4px",
+                        fontSize: "14px",
+                      }}
+                    >
+                      {folderOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   <Button submit>Add note</Button>
                 </BlockStack>
               </Form>
