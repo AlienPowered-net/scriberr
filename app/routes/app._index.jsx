@@ -580,6 +580,24 @@ export default function Index() {
                 }
               }
               
+              /* Tablet responsive layout */
+              @media (min-width: 769px) and (max-width: 1200px) {
+                .app-layout {
+                  flex-wrap: wrap;
+                  height: auto;
+                }
+                .col-folders,
+                .col-notes {
+                  width: 50% !important;
+                }
+                .col-editor {
+                  width: 100% !important;
+                }
+                .Polaris-Card {
+                  margin-bottom: 12px;
+                }
+              }
+              
               body, html {
                 width: 100% !important;
                 max-width: none !important;
