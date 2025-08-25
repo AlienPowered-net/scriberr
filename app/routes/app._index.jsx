@@ -528,28 +528,7 @@ export default function Index() {
 
       return (
       <Page title="scriberr">
-        <style>{`
-          .new-note-btn {
-            background-color: #f57c00 !important;
-            border-color: #f57c00 !important;
-            color: white !important;
-          }
-          .save-note-btn {
-            background-color: #2e7d32 !important;
-            border-color: #2e7d32 !important;
-            color: white !important;
-          }
-          .delete-note-btn {
-            background-color: #d82c0d !important;
-            border-color: #d82c0d !important;
-            color: white !important;
-          }
-          .cancel-btn {
-            background-color: #6d7175 !important;
-            border-color: #6d7175 !important;
-            color: white !important;
-          }
-        `}</style>
+
         {/* Custom Alert */}
         {alertMessage && (
           <>
@@ -845,12 +824,21 @@ export default function Index() {
                <Text as="h2" variant="headingLg">
                  Notes {selectedFolder && `- ${folders.find(f => f.id === selectedFolder)?.name}`}
                </Text>
-               <Button 
+               <button 
                  onClick={handleNewNote}
-                 className="new-note-btn"
+                 style={{
+                   backgroundColor: "#f57c00",
+                   border: "1px solid #f57c00",
+                   color: "white",
+                   padding: "8px 16px",
+                   borderRadius: "6px",
+                   cursor: "pointer",
+                   fontSize: "14px",
+                   fontWeight: "500"
+                 }}
                >
                  New Note
-               </Button>
+               </button>
             </div>
            <div style={{ padding: "16px" }}>
               {filteredNotes.length === 0 ? (
@@ -1035,33 +1023,68 @@ export default function Index() {
                                   <InlineStack gap="300">
                     {editingNoteId ? (
                       <>
-                        <Button 
+                        <button 
                           onClick={handleSaveNote}
-                          className="save-note-btn"
+                          style={{
+                            backgroundColor: "#2e7d32",
+                            border: "1px solid #2e7d32",
+                            color: "white",
+                            padding: "8px 16px",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            fontWeight: "500"
+                          }}
                         >
                           Save Note
-                        </Button>
-                        <Button 
-                          variant="secondary" 
+                        </button>
+                        <button 
                           onClick={handleCancelEdit}
-                          className="cancel-btn"
+                          style={{
+                            backgroundColor: "#6d7175",
+                            border: "1px solid #6d7175",
+                            color: "white",
+                            padding: "8px 16px",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            fontWeight: "500"
+                          }}
                         >
                           Cancel
-                        </Button>
-                        <Button 
+                        </button>
+                        <button 
                           onClick={() => setShowDeleteNoteConfirm(editingNoteId)}
-                          className="delete-note-btn"
+                          style={{
+                            backgroundColor: "#d82c0d",
+                            border: "1px solid #d82c0d",
+                            color: "white",
+                            padding: "8px 16px",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            fontWeight: "500"
+                          }}
                         >
                           Delete Note
-                        </Button>
+                        </button>
                       </>
                     ) : (
-                      <Button 
+                      <button 
                         onClick={handleCreateNote}
-                        className="save-note-btn"
+                        style={{
+                          backgroundColor: "#2e7d32",
+                          border: "1px solid #2e7d32",
+                          color: "white",
+                          padding: "8px 16px",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                          fontSize: "14px",
+                          fontWeight: "500"
+                        }}
                       >
                         Save Note
-                      </Button>
+                      </button>
                     )}
                   </InlineStack>
               </BlockStack>
