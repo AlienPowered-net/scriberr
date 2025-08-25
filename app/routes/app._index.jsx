@@ -835,13 +835,28 @@ export default function Index() {
                   onClick={handleCreateFolder}
                   style={{
                     backgroundColor: "#000000",
-                    border: "1px solid #000000",
+                    border: "0",
                     color: "white",
-                    padding: "8px 16px",
-                    borderRadius: "6px",
+                    padding: "7px 20px",
+                    borderRadius: "8px",
                     cursor: "pointer",
                     fontSize: "14px",
-                    fontWeight: "500"
+                    fontWeight: "500",
+                    textAlign: "center",
+                    textDecoration: "none",
+                    transition: "all 250ms",
+                    userSelect: "none",
+                    WebkitUserSelect: "none",
+                    touchAction: "manipulation",
+                    boxShadow: "rgba(0, 0, 0, .2) 0 -25px 18px -14px inset, rgba(0, 0, 0, .15) 0 1px 2px, rgba(0, 0, 0, .15) 0 2px 4px, rgba(0, 0, 0, .15) 0 4px 8px, rgba(0, 0, 0, .15) 0 8px 16px, rgba(0, 0, 0, .15) 0 16px 32px"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.boxShadow = "rgba(0, 0, 0, .35) 0 -25px 18px -14px inset, rgba(0, 0, 0, .25) 0 1px 2px, rgba(0, 0, 0, .25) 0 2px 4px, rgba(0, 0, 0, .25) 0 4px 8px, rgba(0, 0, 0, .25) 0 8px 16px, rgba(0, 0, 0, .25) 0 16px 32px";
+                    e.target.style.transform = "scale(1.05) rotate(-1deg)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.boxShadow = "rgba(0, 0, 0, .2) 0 -25px 18px -14px inset, rgba(0, 0, 0, .15) 0 1px 2px, rgba(0, 0, 0, .15) 0 2px 4px, rgba(0, 0, 0, .15) 0 4px 8px, rgba(0, 0, 0, .15) 0 8px 16px, rgba(0, 0, 0, .15) 0 16px 32px";
+                    e.target.style.transform = "scale(1) rotate(0deg)";
                   }}
                 >
                   Create folder
@@ -862,13 +877,28 @@ export default function Index() {
                  onClick={handleNewNote}
                  style={{
                    backgroundColor: "#f57c00",
-                   border: "1px solid #f57c00",
+                   border: "0",
                    color: "white",
-                   padding: "8px 16px",
-                   borderRadius: "6px",
+                   padding: "7px 20px",
+                   borderRadius: "8px",
                    cursor: "pointer",
                    fontSize: "14px",
-                   fontWeight: "500"
+                   fontWeight: "500",
+                   textAlign: "center",
+                   textDecoration: "none",
+                   transition: "all 250ms",
+                   userSelect: "none",
+                   WebkitUserSelect: "none",
+                   touchAction: "manipulation",
+                   boxShadow: "rgba(245, 124, 0, .2) 0 -25px 18px -14px inset, rgba(245, 124, 0, .15) 0 1px 2px, rgba(245, 124, 0, .15) 0 2px 4px, rgba(245, 124, 0, .15) 0 4px 8px, rgba(245, 124, 0, .15) 0 8px 16px, rgba(245, 124, 0, .15) 0 16px 32px"
+                 }}
+                 onMouseEnter={(e) => {
+                   e.target.style.boxShadow = "rgba(245, 124, 0, .35) 0 -25px 18px -14px inset, rgba(245, 124, 0, .25) 0 1px 2px, rgba(245, 124, 0, .25) 0 2px 4px, rgba(245, 124, 0, .25) 0 4px 8px, rgba(245, 124, 0, .25) 0 8px 16px, rgba(245, 124, 0, .25) 0 16px 32px";
+                   e.target.style.transform = "scale(1.05) rotate(-1deg)";
+                 }}
+                 onMouseLeave={(e) => {
+                   e.target.style.boxShadow = "rgba(245, 124, 0, .2) 0 -25px 18px -14px inset, rgba(245, 124, 0, .15) 0 1px 2px, rgba(245, 124, 0, .15) 0 2px 4px, rgba(245, 124, 0, .15) 0 4px 8px, rgba(245, 124, 0, .15) 0 8px 16px, rgba(245, 124, 0, .15) 0 16px 32px";
+                   e.target.style.transform = "scale(1) rotate(0deg)";
                  }}
                >
                  New Note
@@ -1061,13 +1091,28 @@ export default function Index() {
                           onClick={handleSaveNote}
                           style={{
                             backgroundColor: "#2e7d32",
-                            border: "1px solid #2e7d32",
+                            border: "0",
                             color: "white",
-                            padding: "8px 16px",
-                            borderRadius: "6px",
+                            padding: "7px 20px",
+                            borderRadius: "8px",
                             cursor: "pointer",
                             fontSize: "14px",
-                            fontWeight: "500"
+                            fontWeight: "500",
+                            textAlign: "center",
+                            textDecoration: "none",
+                            transition: "all 250ms",
+                            userSelect: "none",
+                            WebkitUserSelect: "none",
+                            touchAction: "manipulation",
+                            boxShadow: "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.boxShadow = "rgba(46, 125, 50, .35) 0 -25px 18px -14px inset, rgba(46, 125, 50, .25) 0 1px 2px, rgba(46, 125, 50, .25) 0 2px 4px, rgba(46, 125, 50, .25) 0 4px 8px, rgba(46, 125, 50, .25) 0 8px 16px, rgba(46, 125, 50, .25) 0 16px 32px";
+                            e.target.style.transform = "scale(1.05) rotate(-1deg)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.boxShadow = "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px";
+                            e.target.style.transform = "scale(1) rotate(0deg)";
                           }}
                         >
                           Save Note
@@ -1076,13 +1121,28 @@ export default function Index() {
                           onClick={handleCancelEdit}
                           style={{
                             backgroundColor: "#6d7175",
-                            border: "1px solid #6d7175",
+                            border: "0",
                             color: "white",
-                            padding: "8px 16px",
-                            borderRadius: "6px",
+                            padding: "7px 20px",
+                            borderRadius: "8px",
                             cursor: "pointer",
                             fontSize: "14px",
-                            fontWeight: "500"
+                            fontWeight: "500",
+                            textAlign: "center",
+                            textDecoration: "none",
+                            transition: "all 250ms",
+                            userSelect: "none",
+                            WebkitUserSelect: "none",
+                            touchAction: "manipulation",
+                            boxShadow: "rgba(109, 113, 117, .2) 0 -25px 18px -14px inset, rgba(109, 113, 117, .15) 0 1px 2px, rgba(109, 113, 117, .15) 0 2px 4px, rgba(109, 113, 117, .15) 0 4px 8px, rgba(109, 113, 117, .15) 0 8px 16px, rgba(109, 113, 117, .15) 0 16px 32px"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.boxShadow = "rgba(109, 113, 117, .35) 0 -25px 18px -14px inset, rgba(109, 113, 117, .25) 0 1px 2px, rgba(109, 113, 117, .25) 0 2px 4px, rgba(109, 113, 117, .25) 0 4px 8px, rgba(109, 113, 117, .25) 0 8px 16px, rgba(109, 113, 117, .25) 0 16px 32px";
+                            e.target.style.transform = "scale(1.05) rotate(-1deg)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.boxShadow = "rgba(109, 113, 117, .2) 0 -25px 18px -14px inset, rgba(109, 113, 117, .15) 0 1px 2px, rgba(109, 113, 117, .15) 0 2px 4px, rgba(109, 113, 117, .15) 0 4px 8px, rgba(109, 113, 117, .15) 0 8px 16px, rgba(109, 113, 117, .15) 0 16px 32px";
+                            e.target.style.transform = "scale(1) rotate(0deg)";
                           }}
                         >
                           Cancel
@@ -1091,13 +1151,28 @@ export default function Index() {
                           onClick={() => setShowDeleteNoteConfirm(editingNoteId)}
                           style={{
                             backgroundColor: "#d82c0d",
-                            border: "1px solid #d82c0d",
+                            border: "0",
                             color: "white",
-                            padding: "8px 16px",
-                            borderRadius: "6px",
+                            padding: "7px 20px",
+                            borderRadius: "8px",
                             cursor: "pointer",
                             fontSize: "14px",
-                            fontWeight: "500"
+                            fontWeight: "500",
+                            textAlign: "center",
+                            textDecoration: "none",
+                            transition: "all 250ms",
+                            userSelect: "none",
+                            WebkitUserSelect: "none",
+                            touchAction: "manipulation",
+                            boxShadow: "rgba(216, 44, 13, .2) 0 -25px 18px -14px inset, rgba(216, 44, 13, .15) 0 1px 2px, rgba(216, 44, 13, .15) 0 2px 4px, rgba(216, 44, 13, .15) 0 4px 8px, rgba(216, 44, 13, .15) 0 8px 16px, rgba(216, 44, 13, .15) 0 16px 32px"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.boxShadow = "rgba(216, 44, 13, .35) 0 -25px 18px -14px inset, rgba(216, 44, 13, .25) 0 1px 2px, rgba(216, 44, 13, .25) 0 2px 4px, rgba(216, 44, 13, .25) 0 4px 8px, rgba(216, 44, 13, .25) 0 8px 16px, rgba(216, 44, 13, .25) 0 16px 32px";
+                            e.target.style.transform = "scale(1.05) rotate(-1deg)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.boxShadow = "rgba(216, 44, 13, .2) 0 -25px 18px -14px inset, rgba(216, 44, 13, .15) 0 1px 2px, rgba(216, 44, 13, .15) 0 2px 4px, rgba(216, 44, 13, .15) 0 4px 8px, rgba(216, 44, 13, .15) 0 8px 16px, rgba(216, 44, 13, .15) 0 16px 32px";
+                            e.target.style.transform = "scale(1) rotate(0deg)";
                           }}
                         >
                           Delete Note
@@ -1108,13 +1183,28 @@ export default function Index() {
                         onClick={handleCreateNote}
                         style={{
                           backgroundColor: "#2e7d32",
-                          border: "1px solid #2e7d32",
+                          border: "0",
                           color: "white",
-                          padding: "8px 16px",
-                          borderRadius: "6px",
+                          padding: "7px 20px",
+                          borderRadius: "8px",
                           cursor: "pointer",
                           fontSize: "14px",
-                          fontWeight: "500"
+                          fontWeight: "500",
+                          textAlign: "center",
+                          textDecoration: "none",
+                          transition: "all 250ms",
+                          userSelect: "none",
+                          WebkitUserSelect: "none",
+                          touchAction: "manipulation",
+                          boxShadow: "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.boxShadow = "rgba(46, 125, 50, .35) 0 -25px 18px -14px inset, rgba(46, 125, 50, .25) 0 1px 2px, rgba(46, 125, 50, .25) 0 2px 4px, rgba(46, 125, 50, .25) 0 4px 8px, rgba(46, 125, 50, .25) 0 8px 16px, rgba(46, 125, 50, .25) 0 16px 32px";
+                          e.target.style.transform = "scale(1.05) rotate(-1deg)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.boxShadow = "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px";
+                          e.target.style.transform = "scale(1) rotate(0deg)";
                         }}
                       >
                         Save Note
