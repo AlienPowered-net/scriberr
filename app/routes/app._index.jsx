@@ -623,7 +623,7 @@ export default function Index() {
                           }}
                           style={{
                             padding: "4px 8px",
-                            background: "#008060",
+                            background: "#2e7d32",
                             color: "white",
                             border: "none",
                             borderRadius: "4px",
@@ -653,7 +653,7 @@ export default function Index() {
                         </button>
                       </div>
                     ) : (
-                      <Text as="span" variant="headingSm" style={{ paddingLeft: "8px" }}>
+                      <Text as="span" variant="headingSm" style={{ paddingLeft: "16px" }}>
                         {folder.name}
                       </Text>
                     )}
@@ -826,8 +826,8 @@ export default function Index() {
                <Button 
                  onClick={handleNewNote}
                  style={{
-                   backgroundColor: "#ff9500",
-                   borderColor: "#ff9500",
+                   backgroundColor: "#f57c00",
+                   borderColor: "#f57c00",
                    color: "white"
                  }}
                >
@@ -1020,8 +1020,8 @@ export default function Index() {
                         <Button 
                           onClick={handleSaveNote}
                           style={{
-                            backgroundColor: "#008060",
-                            borderColor: "#008060",
+                            backgroundColor: "#2e7d32",
+                            borderColor: "#2e7d32",
                             color: "white"
                           }}
                         >
@@ -1030,6 +1030,11 @@ export default function Index() {
                         <Button 
                           variant="secondary" 
                           onClick={handleCancelEdit}
+                          style={{
+                            backgroundColor: "#6d7175",
+                            borderColor: "#6d7175",
+                            color: "white"
+                          }}
                         >
                           Cancel
                         </Button>
@@ -1048,8 +1053,8 @@ export default function Index() {
                       <Button 
                         onClick={handleCreateNote}
                         style={{
-                          backgroundColor: "#008060",
-                          borderColor: "#008060",
+                          backgroundColor: "#2e7d32",
+                          borderColor: "#2e7d32",
                           color: "white"
                         }}
                       >
@@ -1094,11 +1099,21 @@ export default function Index() {
                 <Button
                   variant="secondary"
                   onClick={() => setShowDeleteConfirm(null)}
+                  style={{
+                    backgroundColor: "#6d7175",
+                    borderColor: "#6d7175",
+                    color: "white"
+                  }}
                 >
                   Cancel
                 </Button>
                 <Button
                   tone="critical"
+                  style={{
+                    backgroundColor: "#d32f2f",
+                    borderColor: "#d32f2f",
+                    color: "white"
+                  }}
                   onClick={async () => {
                     const formData = new FormData();
                     formData.append('folderId', showDeleteConfirm);
@@ -1170,6 +1185,11 @@ export default function Index() {
                 <Button
                   variant="secondary"
                   onClick={() => setShowDeleteNoteConfirm(null)}
+                  style={{
+                    backgroundColor: "#6d7175",
+                    borderColor: "#6d7175",
+                    color: "white"
+                  }}
                 >
                   Cancel
                 </Button>
@@ -1177,6 +1197,11 @@ export default function Index() {
                   variant="primary"
                   tone="critical"
                   onClick={() => handleDeleteNote(showDeleteNoteConfirm)}
+                  style={{
+                    backgroundColor: "#d32f2f",
+                    borderColor: "#d32f2f",
+                    color: "white"
+                  }}
                 >
                   Delete Note
                 </Button>
@@ -1236,6 +1261,11 @@ export default function Index() {
                 <Button
                   variant="secondary"
                   onClick={() => setShowChangeFolderModal(null)}
+                  style={{
+                    backgroundColor: "#6d7175",
+                    borderColor: "#6d7175",
+                    color: "white"
+                  }}
                 >
                   Cancel
                 </Button>
@@ -1244,6 +1274,11 @@ export default function Index() {
                   onClick={() => {
                     handleSaveNote();
                     setShowChangeFolderModal(null);
+                  }}
+                  style={{
+                    backgroundColor: "#1976d2",
+                    borderColor: "#1976d2",
+                    color: "white"
                   }}
                 >
                   Move Note
