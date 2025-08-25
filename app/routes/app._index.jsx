@@ -831,7 +831,21 @@ export default function Index() {
                     }}
                   />
                 </div>
-                <Button onClick={handleCreateFolder}>Create folder</Button>
+                <button 
+                  onClick={handleCreateFolder}
+                  style={{
+                    backgroundColor: "#000000",
+                    border: "1px solid #000000",
+                    color: "white",
+                    padding: "0px 16px",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    fontWeight: "500"
+                  }}
+                >
+                  Create folder
+                </button>
               </InlineStack>
             </div>
           </Card>
