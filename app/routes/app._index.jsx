@@ -528,6 +528,28 @@ export default function Index() {
 
       return (
       <Page title="scriberr">
+        <style>{`
+          .new-note-btn {
+            background-color: #f57c00 !important;
+            border-color: #f57c00 !important;
+            color: white !important;
+          }
+          .save-note-btn {
+            background-color: #2e7d32 !important;
+            border-color: #2e7d32 !important;
+            color: white !important;
+          }
+          .delete-note-btn {
+            background-color: #d82c0d !important;
+            border-color: #d82c0d !important;
+            color: white !important;
+          }
+          .cancel-btn {
+            background-color: #6d7175 !important;
+            border-color: #6d7175 !important;
+            color: white !important;
+          }
+        `}</style>
         {/* Custom Alert */}
         {alertMessage && (
           <>
@@ -577,7 +599,7 @@ export default function Index() {
               <div>
                 {folders.map((folder) => (
                   <div key={folder.id} style={{ 
-                    padding: "8px 0", 
+                    padding: "8px 16px", 
                     borderBottom: "1px solid #e1e3e5",
                     display: "flex",
                     justifyContent: "space-between",
@@ -653,7 +675,7 @@ export default function Index() {
                         </button>
                       </div>
                     ) : (
-                      <Text as="span" variant="headingSm" style={{ paddingLeft: "16px" }}>
+                      <Text as="span" variant="headingSm">
                         {folder.name}
                       </Text>
                     )}
@@ -825,7 +847,7 @@ export default function Index() {
                </Text>
                <Button 
                  onClick={handleNewNote}
-                 tone="success"
+                 className="new-note-btn"
                >
                  New Note
                </Button>
@@ -1015,24 +1037,20 @@ export default function Index() {
                       <>
                         <Button 
                           onClick={handleSaveNote}
-                          tone="success"
+                          className="save-note-btn"
                         >
                           Save Note
                         </Button>
                         <Button 
                           variant="secondary" 
                           onClick={handleCancelEdit}
-                          style={{
-                            backgroundColor: "#6d7175",
-                            borderColor: "#6d7175",
-                            color: "white"
-                          }}
+                          className="cancel-btn"
                         >
                           Cancel
                         </Button>
                         <Button 
                           onClick={() => setShowDeleteNoteConfirm(editingNoteId)}
-                          tone="critical"
+                          className="delete-note-btn"
                         >
                           Delete Note
                         </Button>
@@ -1040,7 +1058,7 @@ export default function Index() {
                     ) : (
                       <Button 
                         onClick={handleCreateNote}
-                        tone="success"
+                        className="save-note-btn"
                       >
                         Save Note
                       </Button>
