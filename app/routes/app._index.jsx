@@ -817,7 +817,7 @@ export default function Index() {
             )}
           </div>
             <div style={{ padding: "16px" }}>
-              <InlineStack gap="300" align="end">
+              <InlineStack gap="300" align="center">
                 <div style={{ flex: 1 }}>
                   <TextField
                     label="New folder name"
