@@ -14,7 +14,7 @@ import {
   BlockStack,
   InlineStack,
 } from "@shopify/polaris";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 /* ------------------ Loader ------------------ */
 export async function loader({ request }) {
