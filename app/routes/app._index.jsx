@@ -27,7 +27,6 @@ export async function loader({ request }) {
     select: {
       id: true,
       name: true,
-      order: true,
       createdAt: true,
     },
   });
