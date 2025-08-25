@@ -45,6 +45,7 @@ export async function loader({ request }) {
           name: true,
         },
       },
+      createdAt: true,
       updatedAt: true,
     },
   });
@@ -260,6 +261,48 @@ export default function Index() {
       return;
     }
 
+    // If there's an open note being edited, save it first
+    if (editingNoteId && (title.trim() || body.trim())) {
+      const trimmedTitle = title.trim();
+      const trimmedBody = body.trim();
+      const trimmedFolderId = folderId.trim();
+
+      if (!trimmedBody) {
+        setAlertMessage('Please provide content for the note');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('noteId', editingNoteId);
+      formData.append('title', trimmedTitle);
+      formData.append('body', trimmedBody);
+      formData.append('folderId', trimmedFolderId);
+      
+      try {
+        const response = await fetch('/api/update-note', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          const result = await response.json();
+          setAlertMessage(result.error || 'Failed to save current note');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
+          return;
+        }
+      } catch (error) {
+        console.error('Error saving current note:', error);
+        setAlertMessage('Failed to save current note');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+        return;
+      }
+    }
+
+    // Now create the new note
     const formData = new FormData();
     formData.append('title', '');
     formData.append('body', 'Type your note here...');
@@ -610,11 +653,11 @@ export default function Index() {
                         </button>
                       </div>
                     ) : (
-                      <Text as="span" variant="headingSm">
+                      <Text as="span" variant="headingSm" style={{ paddingLeft: "8px" }}>
                         {folder.name}
                       </Text>
                     )}
-                    <div style={{ position: "relative" }}>
+                    <div style={{ position: "relative", paddingRight: "8px" }}>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -816,6 +859,10 @@ export default function Index() {
                           </Text>
                           <Text as="p" tone="subdued" style={{ fontSize: "12px", marginTop: "4px" }}>
                             {note.folder ? `Folder: ${note.folder.name}` : "No folder"}
+                          </Text>
+                          <Text as="p" tone="subdued" style={{ fontSize: "11px", marginTop: "2px", color: "#8c9196" }}>
+                            Created: {new Date(note.createdAt).toLocaleString()} | 
+                            Last edited: {new Date(note.updatedAt).toLocaleString()}
                           </Text>
                           {note.content && (
                             <Text as="p" tone="subdued" style={{ fontSize: "14px", marginTop: "8px" }}>
