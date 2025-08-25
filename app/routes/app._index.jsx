@@ -250,11 +250,47 @@ export default function Index() {
   };
 
   // Handle creating a new note
-  const handleNewNote = () => {
-    setEditingNoteId(null);
-    setTitle('');
-    setBody('');
-    setFolderId('');
+  const handleNewNote = async () => {
+    const currentFolderId = selectedFolder || "";
+    
+    if (!currentFolderId) {
+      setAlertMessage('Please select a folder first');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('title', '');
+    formData.append('body', 'Type your note here...');
+    formData.append('folderId', currentFolderId);
+    
+    try {
+      const response = await fetch('/api/create-note', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          window.location.reload();
+        } else {
+          setAlertMessage(result.error || 'Failed to create new note');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
+        }
+      } else {
+        setAlertMessage('Failed to create new note');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error creating new note:', error);
+      setAlertMessage('Failed to create new note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+    }
   };
 
   // Handle canceling note edit

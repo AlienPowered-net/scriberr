@@ -16,9 +16,9 @@ export async function action({ request }) {
   const trimmedBody = body ? body.toString().trim() : "";
   const trimmedFolderId = folderId ? folderId.toString().trim() : "";
 
-  // Check if at least title or body is provided
-  if (!trimmedTitle && !trimmedBody) {
-    return json({ error: "Please provide a title or content for the note" });
+  // Check if at least title or body is provided (allow empty title for placeholder notes)
+  if (!trimmedBody) {
+    return json({ error: "Please provide content for the note" });
   }
 
   // Check if a folder is selected
