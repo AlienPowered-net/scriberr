@@ -23,11 +23,12 @@ export async function loader({ request }) {
 
   const folders = await prisma.folder.findMany({
     where: { shopId },
-    orderBy: { createdAt: "desc" },
+    orderBy: { updatedAt: "desc" },
     select: {
       id: true,
       name: true,
       createdAt: true,
+      updatedAt: true,
     },
   });
 
@@ -99,18 +100,18 @@ export async function action({ request }) {
     if (folderId) {
       const allFolders = await prisma.folder.findMany({
         where: { shopId },
-        orderBy: { createdAt: "desc" },
+        orderBy: { updatedAt: "desc" },
       });
       const currentIndex = allFolders.findIndex(f => f.id === folderId);
       if (currentIndex > 0) {
         const currentFolder = allFolders[currentIndex];
         const prevFolder = allFolders[currentIndex - 1];
         
-        // Set the current folder's createdAt to be slightly newer than the previous folder
-        const newTimestamp = new Date(prevFolder.createdAt.getTime() + 1000);
+        // Update the current folder's updatedAt to be newer than the previous folder
+        const newTimestamp = new Date(prevFolder.updatedAt.getTime() + 1000);
         await prisma.folder.update({
           where: { id: folderId },
-          data: { createdAt: newTimestamp },
+          data: { updatedAt: newTimestamp },
         });
       }
     }
@@ -122,18 +123,18 @@ export async function action({ request }) {
     if (folderId) {
       const allFolders = await prisma.folder.findMany({
         where: { shopId },
-        orderBy: { createdAt: "desc" },
+        orderBy: { updatedAt: "desc" },
       });
       const currentIndex = allFolders.findIndex(f => f.id === folderId);
       if (currentIndex < allFolders.length - 1) {
         const currentFolder = allFolders[currentIndex];
         const nextFolder = allFolders[currentIndex + 1];
         
-        // Set the current folder's createdAt to be slightly older than the next folder
-        const newTimestamp = new Date(nextFolder.createdAt.getTime() - 1000);
+        // Update the current folder's updatedAt to be older than the next folder
+        const newTimestamp = new Date(nextFolder.updatedAt.getTime() - 1000);
         await prisma.folder.update({
           where: { id: folderId },
-          data: { createdAt: newTimestamp },
+          data: { updatedAt: newTimestamp },
         });
       }
     }
