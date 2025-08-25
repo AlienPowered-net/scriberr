@@ -270,44 +270,70 @@ export default function Index() {
                               Rename Folder
                             </button>
                           </Form>
-                          <Form method="post">
-                            <input type="hidden" name="_intent" value="move-folder-up" />
-                            <input type="hidden" name="folderId" value={folder.id} />
-                            <button
-                              type="submit"
-                              style={{
-                                display: "block",
-                                width: "100%",
-                                padding: "8px 12px",
-                                border: "none",
-                                background: "none",
-                                textAlign: "left",
-                                cursor: "pointer"
-                              }}
-                              onClick={() => setOpenFolderMenu(null)}
-                            >
-                              Move Folder Up
-                            </button>
-                          </Form>
-                          <Form method="post">
-                            <input type="hidden" name="_intent" value="move-folder-down" />
-                            <input type="hidden" name="folderId" value={folder.id} />
-                            <button
-                              type="submit"
-                              style={{
-                                display: "block",
-                                width: "100%",
-                                padding: "8px 12px",
-                                border: "none",
-                                background: "none",
-                                textAlign: "left",
-                                cursor: "pointer"
-                              }}
-                              onClick={() => setOpenFolderMenu(null)}
-                            >
-                              Move Folder Down
-                            </button>
-                          </Form>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const formData = new FormData();
+                              formData.append('folderId', folder.id);
+                              formData.append('direction', 'up');
+                              
+                              try {
+                                const response = await fetch('/api/reorder-folders', {
+                                  method: 'POST',
+                                  body: formData
+                                });
+                                if (response.ok) {
+                                  window.location.reload();
+                                }
+                              } catch (error) {
+                                console.error('Error moving folder:', error);
+                              }
+                              setOpenFolderMenu(null);
+                            }}
+                            style={{
+                              display: "block",
+                              width: "100%",
+                              padding: "8px 12px",
+                              border: "none",
+                              background: "none",
+                              textAlign: "left",
+                              cursor: "pointer"
+                            }}
+                          >
+                            Move Folder Up
+                          </button>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const formData = new FormData();
+                              formData.append('folderId', folder.id);
+                              formData.append('direction', 'down');
+                              
+                              try {
+                                const response = await fetch('/api/reorder-folders', {
+                                  method: 'POST',
+                                  body: formData
+                                });
+                                if (response.ok) {
+                                  window.location.reload();
+                                }
+                              } catch (error) {
+                                console.error('Error moving folder:', error);
+                              }
+                              setOpenFolderMenu(null);
+                            }}
+                            style={{
+                              display: "block",
+                              width: "100%",
+                              padding: "8px 12px",
+                              border: "none",
+                              background: "none",
+                              textAlign: "left",
+                              cursor: "pointer"
+                            }}
+                          >
+                            Move Folder Down
+                          </button>
                           <button
                             type="button"
                             onClick={() => {
