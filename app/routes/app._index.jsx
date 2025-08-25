@@ -564,6 +564,22 @@ export default function Index() {
                 }
               }
               
+              /* Mobile responsive layout */
+              @media (max-width: 768px) {
+                .app-layout {
+                  flex-direction: column;
+                  height: auto;
+                }
+                .col-folders,
+                .col-notes,
+                .col-editor {
+                  width: 100% !important;
+                }
+                .Polaris-Card {
+                  margin-bottom: 12px;
+                }
+              }
+              
               body, html {
                 width: 100% !important;
                 max-width: none !important;
@@ -619,9 +635,9 @@ export default function Index() {
           </>
         )}
         
-        <div style={{ display: "flex", gap: "16px", height: "calc(100vh - 200px)" }}>
+        <div className="app-layout" style={{ display: "flex", gap: "16px", height: "calc(100vh - 200px)" }}>
         {/* FOLDERS */}
-        <div style={{ width: "25%" }}>
+        <div className="col-folders" style={{ width: "25%" }}>
         <Card>
           <div style={{ padding: "16px" }}>
             <Text as="h2" variant="headingLg">Folders</Text>
@@ -903,7 +919,7 @@ export default function Index() {
         </div>
 
         {/* NOTES */}
-        <div style={{ width: "25%" }}>
+        <div className="col-notes" style={{ width: "25%" }}>
           <Card>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                <Text as="h2" variant="headingLg">
@@ -1076,7 +1092,7 @@ export default function Index() {
         </div>
 
         {/* NOTE EDITOR */}
-        <div style={{ width: "50%" }}>
+        <div className="col-editor" style={{ width: "50%" }}>
           <Card>
             <div style={{ padding: "16px" }}>
               <Text as="h2" variant="headingLg">Note Editor</Text>
