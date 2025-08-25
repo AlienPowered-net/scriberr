@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  TextField, Button, ResourceList, InlineStack, Text, Badge,
-  Popover, ActionList
+  TextField, Button, ResourceList, InlineStack, Text
 } from "@shopify/polaris";
 import { STORAGE_KEYS, loadJSON, saveJSON, generateId } from "../utils/storage";
 
@@ -181,32 +180,57 @@ export default function Notepad() {
                       <span className="folderName">{name}</span>
                     </button>
 
-                    <Popover
-                      active={openFolderMenuId === id}
-                      preferredAlignment="right"
-                      onClose={() => setOpenFolderMenuId(null)}
-                      activator={
-                        <Button onClick={() => setOpenFolderMenuId(p => p === id ? null : id)} accessibilityLabel="Folder menu">⋯</Button>
-                      }
-                    >
-                      <ActionList
-                        items={[
-                          {
-                            content: "Edit name",
-                            onAction: () => {
-                              const next = prompt("Rename folder:", name);
-                              if (next != null) renameFolder(name, next);
-                              setOpenFolderMenuId(null);
-                            }
-                          },
-                          {
-                            content: "Delete folder",
-                            tone: "critical",
-                            onAction: () => { deleteFolder(name); setOpenFolderMenuId(null); }
-                          }
-                        ]}
-                      />
-                    </Popover>
+                    {openFolderMenuId === id && (
+                      <div style={{
+                        position: "absolute",
+                        right: "0",
+                        top: "100%",
+                        backgroundColor: "white",
+                        border: "1px solid #c9cccf",
+                        borderRadius: "4px",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                        zIndex: 1000,
+                        minWidth: "120px"
+                      }}>
+                        <button
+                          onClick={() => {
+                            const next = prompt("Rename folder:", name);
+                            if (next != null) renameFolder(name, next);
+                            setOpenFolderMenuId(null);
+                          }}
+                          style={{
+                            display: "block",
+                            width: "100%",
+                            padding: "8px 12px",
+                            border: "none",
+                            background: "none",
+                            textAlign: "left",
+                            cursor: "pointer"
+                          }}
+                        >
+                          Edit name
+                        </button>
+                        <button
+                          onClick={() => { 
+                            deleteFolder(name); 
+                            setOpenFolderMenuId(null); 
+                          }}
+                          style={{
+                            display: "block",
+                            width: "100%",
+                            padding: "8px 12px",
+                            border: "none",
+                            background: "none",
+                            textAlign: "left",
+                            cursor: "pointer",
+                            color: "#d82c0d"
+                          }}
+                        >
+                          Delete folder
+                        </button>
+                      </div>
+                    )}
+                    <Button onClick={() => setOpenFolderMenuId(p => p === id ? null : id)} accessibilityLabel="Folder menu">⋯</Button>
                   </div>
                 </ResourceList.Item>
               );

@@ -7,7 +7,7 @@ import {
   Text,
   BlockStack,
 } from "@shopify/polaris";
-import { TitleBar } from "@shopify/app-bridge-react";
+// import { TitleBar } from "@shopify/app-bridge-react";
 
 function Code({ children }) {
   return (
@@ -31,7 +31,7 @@ function Code({ children }) {
 export default function AdditionalPage() {
   return (
     <Page>
-      <TitleBar title="Additional page" />
+      {/* <TitleBar title="Additional page" /> */}
       <Layout>
         <Layout.Section>
           <Card>
