@@ -106,14 +106,11 @@ export async function action({ request }) {
         const currentFolder = allFolders[currentIndex];
         const prevFolder = allFolders[currentIndex - 1];
         
-        // Swap the createdAt timestamps
+        // Set the current folder's createdAt to be slightly newer than the previous folder
+        const newTimestamp = new Date(prevFolder.createdAt.getTime() + 1000);
         await prisma.folder.update({
           where: { id: folderId },
-          data: { createdAt: prevFolder.createdAt },
-        });
-        await prisma.folder.update({
-          where: { id: prevFolder.id },
-          data: { createdAt: currentFolder.createdAt },
+          data: { createdAt: newTimestamp },
         });
       }
     }
@@ -132,14 +129,11 @@ export async function action({ request }) {
         const currentFolder = allFolders[currentIndex];
         const nextFolder = allFolders[currentIndex + 1];
         
-        // Swap the createdAt timestamps
+        // Set the current folder's createdAt to be slightly older than the next folder
+        const newTimestamp = new Date(nextFolder.createdAt.getTime() - 1000);
         await prisma.folder.update({
           where: { id: folderId },
-          data: { createdAt: nextFolder.createdAt },
-        });
-        await prisma.folder.update({
-          where: { id: nextFolder.id },
-          data: { createdAt: currentFolder.createdAt },
+          data: { createdAt: newTimestamp },
         });
       }
     }
