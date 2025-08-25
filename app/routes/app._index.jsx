@@ -740,10 +740,20 @@ export default function Index() {
         {/* NOTES */}
         <div style={{ flex: 1 }}>
           <Card>
-            <div style={{ padding: "16px" }}>
+            <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                <Text as="h2" variant="headingLg">
                  Notes {selectedFolder && `- ${folders.find(f => f.id === selectedFolder)?.name}`}
                </Text>
+               <Button 
+                 onClick={handleNewNote}
+                 style={{
+                   backgroundColor: "#ff9500",
+                   borderColor: "#ff9500",
+                   color: "white"
+                 }}
+               >
+                 New Note
+               </Button>
             </div>
            <div style={{ padding: "16px" }}>
               {filteredNotes.length === 0 ? (
@@ -920,16 +930,6 @@ export default function Index() {
                   </select>
                 </div>
                                   <InlineStack gap="300">
-                    <Button 
-                      onClick={handleNewNote}
-                      style={{
-                        backgroundColor: "#ff9500",
-                        borderColor: "#ff9500",
-                        color: "white"
-                      }}
-                    >
-                      New Note
-                    </Button>
                     {editingNoteId ? (
                       <>
                         <Button 
