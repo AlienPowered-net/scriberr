@@ -10,8 +10,6 @@ import {
   Card,
   TextField,
   Button,
-  ResourceList,
-  ResourceItem,
   Text,
   BlockStack,
   InlineStack,
@@ -101,24 +99,25 @@ export default function Index() {
         {/* FOLDERS */}
         <div style={{ flex: 1 }}>
         <Card>
-         <Card.Section>
-          <Text as="h2" variant="headingLg">Folders</Text>
-        </Card.Section>
-          <Card.Section>
-              <ResourceList
-                emptyState={<Text as="p">No folders yet</Text>}
-                resourceName={{ singular: "folder", plural: "folders" }}
-                items={folders}
-                renderItem={(folder) => (
-                  <ResourceItem id={folder.id}>
+          <div style={{ padding: "16px" }}>
+            <Text as="h2" variant="headingLg">Folders</Text>
+          </div>
+          <div style={{ padding: "16px" }}>
+            {folders.length === 0 ? (
+              <Text as="p">No folders yet</Text>
+            ) : (
+              <div>
+                {folders.map((folder) => (
+                  <div key={folder.id} style={{ padding: "8px 0", borderBottom: "1px solid #e1e3e5" }}>
                     <Text as="span" variant="headingSm">
                       {folder.name}
                     </Text>
-                  </ResourceItem>
-                )}
-              />
-            </Card.Section>
-            <Card.Section>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+            <div style={{ padding: "16px" }}>
               <Form method="post">
                 <input type="hidden" name="_intent" value="create-folder" />
                 <InlineStack gap="300" align="end">
@@ -134,39 +133,40 @@ export default function Index() {
                   <Button submit>Create folder</Button>
                 </InlineStack>
               </Form>
-            </Card.Section>
+            </div>
           </Card>
         </div>
 
         {/* NOTES */}
         <div style={{ flex: 1 }}>
           <Card>
-            <Card.Section>
+            <div style={{ padding: "16px" }}>
                <Text as="h2" variant="headingLg">Notes</Text>
-            </Card.Section>
-           <Card.Section>
-              <ResourceList
-                emptyState={<Text as="p">No notes yet</Text>}
-                resourceName={{ singular: "note", plural: "notes" }}
-                items={notes}
-                renderItem={(note) => (
-                  <ResourceItem id={note.id}>
-                    <Text as="span" variant="headingSm">
-                      {note.title || "(untitled)"}
-                    </Text>
-                    <Text as="p" tone="subdued">
-                      {note.folder ? `Folder: ${note.folder.name}` : "No folder"}
-                    </Text>
-                    {note.content && (
-                      <Text as="p" tone="subdued">
-                        {note.content.substring(0, 100)}...
+            </div>
+           <div style={{ padding: "16px" }}>
+              {notes.length === 0 ? (
+                <Text as="p">No notes yet</Text>
+              ) : (
+                <div>
+                  {notes.map((note) => (
+                    <div key={note.id} style={{ padding: "8px 0", borderBottom: "1px solid #e1e3e5" }}>
+                      <Text as="span" variant="headingSm">
+                        {note.title || "(untitled)"}
                       </Text>
-                    )}
-                  </ResourceItem>
-                )}
-              />
-            </Card.Section>
-            <Card.Section>
+                      <Text as="p" tone="subdued">
+                        {note.folder ? `Folder: ${note.folder.name}` : "No folder"}
+                      </Text>
+                      {note.content && (
+                        <Text as="p" tone="subdued">
+                          {note.content.substring(0, 100)}...
+                        </Text>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div style={{ padding: "16px" }}>
               <Form method="post">
                 <input type="hidden" name="_intent" value="create-note" />
                 <BlockStack gap="300">
@@ -212,7 +212,7 @@ export default function Index() {
                   <Button submit>Add note</Button>
                 </BlockStack>
               </Form>
-            </Card.Section>
+            </div>
           </Card>
         </div>
       </InlineStack>
