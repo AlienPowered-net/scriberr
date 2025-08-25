@@ -837,7 +837,7 @@ export default function Index() {
                     backgroundColor: "#000000",
                     border: "1px solid #000000",
                     color: "white",
-                    padding: "0px 16px",
+                    padding: "8px 16px",
                     borderRadius: "6px",
                     cursor: "pointer",
                     fontSize: "14px",
