@@ -564,9 +564,39 @@ export default function Index() {
                 }
               }
               
+              body, html {
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+              }
+              
               .Polaris-Page {
                 max-width: none !important;
                 margin: 0 !important;
+                width: 100% !important;
+              }
+              
+              .Polaris-Page__Content {
+                max-width: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+              }
+              
+              .Polaris-Layout {
+                max-width: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+              }
+              
+              .Polaris-Layout__Section {
+                max-width: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+              }
+              
+              .Polaris-Card {
+                width: 100% !important;
               }
             `}</style>
             <div style={{
