@@ -237,39 +237,50 @@ export default function Index() {
                           zIndex: 1000,
                           minWidth: "150px"
                         }}>
-                          <Form method="post">
-                            <input type="hidden" name="_intent" value="rename-folder" />
-                            <input type="hidden" name="folderId" value={folder.id} />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newName = prompt("Rename folder:", folder.name);
-                                if (newName && newName.trim()) {
-                                  const form = document.createElement('form');
-                                  form.method = 'post';
-                                  form.innerHTML = `
-                                    <input type="hidden" name="_intent" value="rename-folder" />
-                                    <input type="hidden" name="folderId" value="${folder.id}" />
-                                    <input type="hidden" name="newName" value="${newName.trim()}" />
-                                  `;
-                                  document.body.appendChild(form);
-                                  form.submit();
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const newName = prompt("Rename folder:", folder.name);
+                              if (newName && newName.trim()) {
+                                const formData = new FormData();
+                                formData.append('folderId', folder.id);
+                                formData.append('newName', newName.trim());
+                                
+                                try {
+                                  const response = await fetch('/api/rename-folder', {
+                                    method: 'POST',
+                                    body: formData
+                                  });
+                                  
+                                  if (response.ok) {
+                                    const result = await response.json();
+                                    if (result.success) {
+                                      window.location.reload();
+                                    } else {
+                                      alert(result.error || 'Failed to rename folder');
+                                    }
+                                  } else {
+                                    alert('Failed to rename folder');
+                                  }
+                                } catch (error) {
+                                  console.error('Error renaming folder:', error);
+                                  alert('Failed to rename folder');
                                 }
-                                setOpenFolderMenu(null);
-                              }}
-                              style={{
-                                display: "block",
-                                width: "100%",
-                                padding: "8px 12px",
-                                border: "none",
-                                background: "none",
-                                textAlign: "left",
-                                cursor: "pointer"
-                              }}
-                            >
-                              Rename Folder
-                            </button>
-                          </Form>
+                              }
+                              setOpenFolderMenu(null);
+                            }}
+                            style={{
+                              display: "block",
+                              width: "100%",
+                              padding: "8px 12px",
+                              border: "none",
+                              background: "none",
+                              textAlign: "left",
+                              cursor: "pointer"
+                            }}
+                          >
+                            Rename Folder
+                          </button>
                           <button
                             type="button"
                             onClick={async () => {
