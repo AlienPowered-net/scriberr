@@ -172,6 +172,26 @@ export default function Index() {
   const [showDeleteNoteConfirm, setShowDeleteNoteConfirm] = useState(null);
   const [showChangeFolderModal, setShowChangeFolderModal] = useState(null);
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Close folder menu if clicking outside
+      if (openFolderMenu && !event.target.closest('.folder-menu-container')) {
+        setOpenFolderMenu(null);
+      }
+      
+      // Close note menu if clicking outside
+      if (openNoteMenu && !event.target.closest('.note-menu-container')) {
+        setOpenNoteMenu(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openFolderMenu, openNoteMenu]);
+
   const folderOptions = [
     { label: "No folder", value: "" },
     ...folders.map((f) => ({ label: f.name, value: String(f.id) })),
@@ -658,7 +678,7 @@ export default function Index() {
                         {folder.name}
                       </Text>
                     )}
-                    <div style={{ position: "relative", paddingRight: "8px" }}>
+                    <div className="folder-menu-container" style={{ position: "relative", paddingRight: "8px" }}>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -878,7 +898,7 @@ export default function Index() {
                             </Text>
                           )}
                         </div>
-                        <div style={{ position: "relative" }}>
+                        <div className="note-menu-container" style={{ position: "relative" }}>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
