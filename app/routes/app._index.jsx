@@ -547,7 +547,7 @@ export default function Index() {
   };
 
       return (
-      <Page title="scriberr">
+      <Page title="scriberr" style={{ width: "100%", maxWidth: "none" }}>
 
         {/* Custom Alert */}
         {alertMessage && (
@@ -584,7 +584,7 @@ export default function Index() {
           </>
         )}
         
-        <div style={{ display: "flex", gap: "16px", height: "calc(100vh - 200px)" }}>
+        <div style={{ display: "flex", gap: "16px", height: "calc(100vh - 200px)", width: "100%", maxWidth: "none", margin: "0", padding: "0" }}>
         {/* FOLDERS */}
         <div style={{ width: "25%" }}>
         <Card>
