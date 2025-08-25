@@ -169,6 +169,8 @@ export default function Index() {
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [openFolderMenu, setOpenFolderMenu] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [editingFolderId, setEditingFolderId] = useState(null);
+  const [editingFolderName, setEditingFolderName] = useState("");
 
   const folderOptions = [
     { label: "No folder", value: "" },
@@ -179,6 +181,40 @@ export default function Index() {
   const filteredNotes = selectedFolder 
     ? notes.filter(note => note.folderId === selectedFolder)
     : notes;
+
+  // Handle saving folder name
+  const handleSaveFolderName = async (folderId) => {
+    const trimmedName = editingFolderName.trim();
+    if (!trimmedName) {
+      alert('Folder name cannot be empty');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('folderId', folderId);
+    formData.append('newName', trimmedName);
+    
+    try {
+      const response = await fetch('/api/rename-folder', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          window.location.reload();
+        } else {
+          alert(result.error || 'Failed to rename folder');
+        }
+      } else {
+        alert('Failed to rename folder');
+      }
+    } catch (error) {
+      console.error('Error renaming folder:', error);
+      alert('Failed to rename folder');
+    }
+  };
 
   return (
     <Page title="scriberr">
@@ -206,9 +242,76 @@ export default function Index() {
                   }}
                   onClick={() => setSelectedFolder(selectedFolder === folder.id ? null : folder.id)}
                   >
-                    <Text as="span" variant="headingSm">
-                      {folder.name}
-                    </Text>
+                    {editingFolderId === folder.id ? (
+                      <div style={{ 
+                        display: "flex", 
+                        alignItems: "center", 
+                        gap: "8px",
+                        flex: 1,
+                        marginRight: "8px"
+                      }}>
+                        <input
+                          type="text"
+                          value={editingFolderName}
+                          onChange={(e) => setEditingFolderName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleSaveFolderName(folder.id);
+                            } else if (e.key === 'Escape') {
+                              setEditingFolderId(null);
+                              setEditingFolderName("");
+                            }
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: "4px 8px",
+                            border: "1px solid #c9cccf",
+                            borderRadius: "4px",
+                            fontSize: "14px"
+                          }}
+                          autoFocus
+                        />
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSaveFolderName(folder.id);
+                          }}
+                          style={{
+                            padding: "4px 8px",
+                            background: "#008060",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "12px"
+                          }}
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingFolderId(null);
+                            setEditingFolderName("");
+                          }}
+                          style={{
+                            padding: "4px 8px",
+                            background: "#6d7175",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "12px"
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <Text as="span" variant="headingSm">
+                        {folder.name}
+                      </Text>
+                    )}
                     <div style={{ position: "relative" }}>
                       <button
                         onClick={(e) => {
@@ -239,34 +342,9 @@ export default function Index() {
                         }}>
                           <button
                             type="button"
-                            onClick={async () => {
-                              const newName = prompt("Rename folder:", folder.name);
-                              if (newName && newName.trim()) {
-                                const formData = new FormData();
-                                formData.append('folderId', folder.id);
-                                formData.append('newName', newName.trim());
-                                
-                                try {
-                                  const response = await fetch('/api/rename-folder', {
-                                    method: 'POST',
-                                    body: formData
-                                  });
-                                  
-                                  if (response.ok) {
-                                    const result = await response.json();
-                                    if (result.success) {
-                                      window.location.reload();
-                                    } else {
-                                      alert(result.error || 'Failed to rename folder');
-                                    }
-                                  } else {
-                                    alert('Failed to rename folder');
-                                  }
-                                } catch (error) {
-                                  console.error('Error renaming folder:', error);
-                                  alert('Failed to rename folder');
-                                }
-                              }
+                            onClick={() => {
+                              setEditingFolderId(folder.id);
+                              setEditingFolderName(folder.name);
                               setOpenFolderMenu(null);
                             }}
                             style={{
