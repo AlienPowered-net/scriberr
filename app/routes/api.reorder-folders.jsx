@@ -31,8 +31,17 @@ export async function action({ request }) {
     const currentFolder = allFolders[currentIndex];
     const prevFolder = allFolders[currentIndex - 1];
     
-    // Set current folder to be newer than the previous folder
-    const newTimestamp = new Date(prevFolder.createdAt.getTime() + 1000);
+    // Find the folder before the previous folder to create proper spacing
+    const prevPrevFolder = allFolders[currentIndex - 2];
+    let newTimestamp;
+    
+    if (prevPrevFolder) {
+      // Create a timestamp halfway between the previous folder and the one before it
+      newTimestamp = new Date((prevFolder.createdAt.getTime() + prevPrevFolder.createdAt.getTime()) / 2);
+    } else {
+      // If this is the first folder, make current folder newer by 1 second
+      newTimestamp = new Date(prevFolder.createdAt.getTime() + 1000);
+    }
     
     await prisma.folder.update({
       where: { id: folderId },
@@ -46,8 +55,17 @@ export async function action({ request }) {
     const currentFolder = allFolders[currentIndex];
     const nextFolder = allFolders[currentIndex + 1];
     
-    // Set current folder to be older than the next folder
-    const newTimestamp = new Date(nextFolder.createdAt.getTime() - 1000);
+    // Find the folder after the next folder to create proper spacing
+    const nextNextFolder = allFolders[currentIndex + 2];
+    let newTimestamp;
+    
+    if (nextNextFolder) {
+      // Create a timestamp halfway between the next folder and the one after it
+      newTimestamp = new Date((nextFolder.createdAt.getTime() + nextNextFolder.createdAt.getTime()) / 2);
+    } else {
+      // If this is the last folder, make current folder older by 1 second
+      newTimestamp = new Date(nextFolder.createdAt.getTime() - 1000);
+    }
     
     await prisma.folder.update({
       where: { id: folderId },
