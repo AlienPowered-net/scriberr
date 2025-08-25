@@ -184,6 +184,48 @@ export default function Index() {
     ? notes.filter(note => note.folderId === selectedFolder)
     : notes;
 
+  // Handle creating a new folder
+  const handleCreateFolder = async () => {
+    const trimmedName = folderName.trim();
+    if (!trimmedName) {
+      setAlertMessage('Folder name cannot be empty');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('name', trimmedName);
+    
+    try {
+      const response = await fetch('/api/create-folder', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setFolderName(''); // Clear the input
+          window.location.reload();
+        } else {
+          setAlertMessage(result.error || 'Failed to create folder');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
+        }
+      } else {
+        setAlertMessage('Failed to create folder');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error creating folder:', error);
+      setAlertMessage('Failed to create folder');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+    }
+  };
+
   // Handle saving folder name
   const handleSaveFolderName = async (folderId) => {
     const trimmedName = editingFolderName.trim();
@@ -496,21 +538,22 @@ export default function Index() {
             )}
           </div>
             <div style={{ padding: "16px" }}>
-              <Form method="post">
-                <input type="hidden" name="_intent" value="create-folder" />
-                <InlineStack gap="300" align="end">
-                  <div style={{ flex: 1 }}>
-                    <TextField
-                      label="New folder name"
-                      value={folderName}
-                      onChange={setFolderName}
-                      autoComplete="off"
-                      name="name"
-                    />
-                  </div>
-                  <Button submit>Create folder</Button>
-                </InlineStack>
-              </Form>
+              <InlineStack gap="300" align="end">
+                <div style={{ flex: 1 }}>
+                  <TextField
+                    label="New folder name"
+                    value={folderName}
+                    onChange={setFolderName}
+                    autoComplete="off"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleCreateFolder();
+                      }
+                    }}
+                  />
+                </div>
+                <Button onClick={handleCreateFolder}>Create folder</Button>
+              </InlineStack>
             </div>
           </Card>
         </div>
