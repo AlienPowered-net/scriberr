@@ -564,7 +564,10 @@ export default function Index() {
                 }
               }
               
-
+              .Polaris-Page {
+                max-width: none !important;
+                margin: 0 !important;
+              }
             `}</style>
             <div style={{
               position: "fixed",
