@@ -633,17 +633,43 @@ export default function Index() {
                 >
                   Cancel
                 </Button>
-                <Form method="post">
-                  <input type="hidden" name="_intent" value="delete-folder" />
-                  <input type="hidden" name="folderId" value={showDeleteConfirm} />
-                  <Button
-                    tone="critical"
-                    submit
-                    onClick={() => setShowDeleteConfirm(null)}
-                  >
-                    Delete Folder
-                  </Button>
-                </Form>
+                <Button
+                  tone="critical"
+                  onClick={async () => {
+                    const formData = new FormData();
+                    formData.append('folderId', showDeleteConfirm);
+                    
+                    try {
+                      const response = await fetch('/api/delete-folder', {
+                        method: 'POST',
+                        body: formData
+                      });
+                      
+                      if (response.ok) {
+                        const result = await response.json();
+                        if (result.success) {
+                          window.location.reload();
+                        } else {
+                          setAlertMessage(result.error || 'Failed to delete folder');
+                          setAlertType('error');
+                          setTimeout(() => setAlertMessage(''), 3000);
+                        }
+                      } else {
+                        setAlertMessage('Failed to delete folder');
+                        setAlertType('error');
+                        setTimeout(() => setAlertMessage(''), 3000);
+                      }
+                    } catch (error) {
+                      console.error('Error deleting folder:', error);
+                      setAlertMessage('Failed to delete folder');
+                      setAlertType('error');
+                      setTimeout(() => setAlertMessage(''), 3000);
+                    }
+                    setShowDeleteConfirm(null);
+                  }}
+                >
+                  Delete Folder
+                </Button>
               </div>
             </div>
           </div>
