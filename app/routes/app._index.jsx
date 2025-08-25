@@ -23,10 +23,11 @@ export async function loader({ request }) {
 
   const folders = await prisma.folder.findMany({
     where: { shopId },
-    orderBy: { createdAt: "desc" },
+    orderBy: { order: "desc" },
     select: {
       id: true,
       name: true,
+      order: true,
       createdAt: true,
     },
   });
@@ -63,7 +64,14 @@ export async function action({ request }) {
   if (intent === "create-folder") {
     const name = (form.get("name") || "").toString().trim();
     if (name) {
-      await prisma.folder.create({ data: { name, shopId } });
+      // Get the highest order number and add 1 for the new folder
+      const highestOrder = await prisma.folder.findFirst({
+        where: { shopId },
+        orderBy: { order: "desc" },
+        select: { order: true },
+      });
+      const newOrder = (highestOrder?.order || 0) + 1;
+      await prisma.folder.create({ data: { name, shopId, order: newOrder } });
     }
     return redirect("/app");
   }
@@ -103,19 +111,19 @@ export async function action({ request }) {
       if (currentFolder) {
         const allFolders = await prisma.folder.findMany({
           where: { shopId },
-          orderBy: { createdAt: "desc" },
+          orderBy: { order: "desc" },
         });
         const currentIndex = allFolders.findIndex(f => f.id === folderId);
         if (currentIndex > 0) {
           const prevFolder = allFolders[currentIndex - 1];
-          // Swap creation dates to reorder
+          // Swap order values
           await prisma.folder.update({
             where: { id: folderId },
-            data: { createdAt: prevFolder.createdAt },
+            data: { order: prevFolder.order },
           });
           await prisma.folder.update({
             where: { id: prevFolder.id },
-            data: { createdAt: currentFolder.createdAt },
+            data: { order: currentFolder.order },
           });
         }
       }
@@ -132,19 +140,19 @@ export async function action({ request }) {
       if (currentFolder) {
         const allFolders = await prisma.folder.findMany({
           where: { shopId },
-          orderBy: { createdAt: "desc" },
+          orderBy: { order: "desc" },
         });
         const currentIndex = allFolders.findIndex(f => f.id === folderId);
         if (currentIndex < allFolders.length - 1) {
           const nextFolder = allFolders[currentIndex + 1];
-          // Swap creation dates to reorder
+          // Swap order values
           await prisma.folder.update({
             where: { id: folderId },
-            data: { createdAt: nextFolder.createdAt },
+            data: { order: nextFolder.order },
           });
           await prisma.folder.update({
             where: { id: nextFolder.id },
-            data: { createdAt: currentFolder.createdAt },
+            data: { order: currentFolder.order },
           });
         }
       }
