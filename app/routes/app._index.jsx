@@ -60,13 +60,7 @@ export async function action({ request }) {
   const form = await request.formData();
   const intent = form.get("_intent");
 
-  if (intent === "create-folder") {
-    const name = (form.get("name") || "").toString().trim();
-    if (name) {
-      await prisma.folder.create({ data: { name, shopId } });
-    }
-    return redirect("/app");
-  }
+
 
 
 
