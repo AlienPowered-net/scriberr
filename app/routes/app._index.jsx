@@ -23,7 +23,13 @@ export async function loader({ request }) {
 
   const folders = await prisma.folder.findMany({
     where: { shopId },
-    orderBy: { name: "asc" },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      order: true,
+      createdAt: true,
+    },
   });
 
   const notes = await prisma.note.findMany({
@@ -77,6 +83,90 @@ export async function action({ request }) {
     return redirect("/app");
   }
 
+  if (intent === "rename-folder") {
+    const folderId = form.get("folderId");
+    const newName = (form.get("newName") || "").toString().trim();
+    if (folderId && newName) {
+      await prisma.folder.update({
+        where: { id: folderId },
+        data: { name: newName },
+      });
+    }
+    return redirect("/app");
+  }
+
+  if (intent === "move-folder-up") {
+    const folderId = form.get("folderId");
+    if (folderId) {
+      const currentFolder = await prisma.folder.findUnique({
+        where: { id: folderId },
+      });
+      if (currentFolder) {
+        const allFolders = await prisma.folder.findMany({
+          where: { shopId },
+          orderBy: { createdAt: "desc" },
+        });
+        const currentIndex = allFolders.findIndex(f => f.id === folderId);
+        if (currentIndex > 0) {
+          const prevFolder = allFolders[currentIndex - 1];
+          // Swap creation dates to reorder
+          await prisma.folder.update({
+            where: { id: folderId },
+            data: { createdAt: prevFolder.createdAt },
+          });
+          await prisma.folder.update({
+            where: { id: prevFolder.id },
+            data: { createdAt: currentFolder.createdAt },
+          });
+        }
+      }
+    }
+    return redirect("/app");
+  }
+
+  if (intent === "move-folder-down") {
+    const folderId = form.get("folderId");
+    if (folderId) {
+      const currentFolder = await prisma.folder.findUnique({
+        where: { id: folderId },
+      });
+      if (currentFolder) {
+        const allFolders = await prisma.folder.findMany({
+          where: { shopId },
+          orderBy: { createdAt: "desc" },
+        });
+        const currentIndex = allFolders.findIndex(f => f.id === folderId);
+        if (currentIndex < allFolders.length - 1) {
+          const nextFolder = allFolders[currentIndex + 1];
+          // Swap creation dates to reorder
+          await prisma.folder.update({
+            where: { id: folderId },
+            data: { createdAt: nextFolder.createdAt },
+          });
+          await prisma.folder.update({
+            where: { id: nextFolder.id },
+            data: { createdAt: currentFolder.createdAt },
+          });
+        }
+      }
+    }
+    return redirect("/app");
+  }
+
+  if (intent === "delete-folder") {
+    const folderId = form.get("folderId");
+    if (folderId) {
+      // Delete all notes in the folder first, then delete the folder
+      await prisma.note.deleteMany({
+        where: { folderId },
+      });
+      await prisma.folder.delete({
+        where: { id: folderId },
+      });
+    }
+    return redirect("/app");
+  }
+
   return redirect("/app");
 }
 
@@ -87,11 +177,19 @@ export default function Index() {
   const [body, setBody] = useState("");
   const [folderId, setFolderId] = useState("");
   const [folderName, setFolderName] = useState("");
+  const [selectedFolder, setSelectedFolder] = useState(null);
+  const [openFolderMenu, setOpenFolderMenu] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
   const folderOptions = [
     { label: "No folder", value: "" },
     ...folders.map((f) => ({ label: f.name, value: String(f.id) })),
   ];
+
+  // Filter notes based on selected folder
+  const filteredNotes = selectedFolder 
+    ? notes.filter(note => note.folderId === selectedFolder)
+    : notes;
 
   return (
     <Page title="scriberr">
@@ -108,10 +206,141 @@ export default function Index() {
             ) : (
               <div>
                 {folders.map((folder) => (
-                  <div key={folder.id} style={{ padding: "8px 0", borderBottom: "1px solid #e1e3e5" }}>
+                  <div key={folder.id} style={{ 
+                    padding: "8px 0", 
+                    borderBottom: "1px solid #e1e3e5",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    cursor: "pointer",
+                    backgroundColor: selectedFolder === folder.id ? "#f6f6f7" : "transparent"
+                  }}
+                  onClick={() => setSelectedFolder(selectedFolder === folder.id ? null : folder.id)}
+                  >
                     <Text as="span" variant="headingSm">
                       {folder.name}
                     </Text>
+                    <div style={{ position: "relative" }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenFolderMenu(openFolderMenu === folder.id ? null : folder.id);
+                        }}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          padding: "4px",
+                          fontSize: "16px"
+                        }}
+                      >
+                        ⋯
+                      </button>
+                      {openFolderMenu === folder.id && (
+                        <div style={{
+                          position: "absolute",
+                          right: "0",
+                          top: "100%",
+                          backgroundColor: "white",
+                          border: "1px solid #c9cccf",
+                          borderRadius: "4px",
+                          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                          zIndex: 1000,
+                          minWidth: "150px"
+                        }}>
+                          <Form method="post">
+                            <input type="hidden" name="_intent" value="rename-folder" />
+                            <input type="hidden" name="folderId" value={folder.id} />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newName = prompt("Rename folder:", folder.name);
+                                if (newName && newName.trim()) {
+                                  const form = document.createElement('form');
+                                  form.method = 'post';
+                                  form.innerHTML = `
+                                    <input type="hidden" name="_intent" value="rename-folder" />
+                                    <input type="hidden" name="folderId" value="${folder.id}" />
+                                    <input type="hidden" name="newName" value="${newName.trim()}" />
+                                  `;
+                                  document.body.appendChild(form);
+                                  form.submit();
+                                }
+                                setOpenFolderMenu(null);
+                              }}
+                              style={{
+                                display: "block",
+                                width: "100%",
+                                padding: "8px 12px",
+                                border: "none",
+                                background: "none",
+                                textAlign: "left",
+                                cursor: "pointer"
+                              }}
+                            >
+                              Rename Folder
+                            </button>
+                          </Form>
+                          <Form method="post">
+                            <input type="hidden" name="_intent" value="move-folder-up" />
+                            <input type="hidden" name="folderId" value={folder.id} />
+                            <button
+                              type="submit"
+                              style={{
+                                display: "block",
+                                width: "100%",
+                                padding: "8px 12px",
+                                border: "none",
+                                background: "none",
+                                textAlign: "left",
+                                cursor: "pointer"
+                              }}
+                              onClick={() => setOpenFolderMenu(null)}
+                            >
+                              Move Folder Up
+                            </button>
+                          </Form>
+                          <Form method="post">
+                            <input type="hidden" name="_intent" value="move-folder-down" />
+                            <input type="hidden" name="folderId" value={folder.id} />
+                            <button
+                              type="submit"
+                              style={{
+                                display: "block",
+                                width: "100%",
+                                padding: "8px 12px",
+                                border: "none",
+                                background: "none",
+                                textAlign: "left",
+                                cursor: "pointer"
+                              }}
+                              onClick={() => setOpenFolderMenu(null)}
+                            >
+                              Move Folder Down
+                            </button>
+                          </Form>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowDeleteConfirm(folder.id);
+                              setOpenFolderMenu(null);
+                            }}
+                            style={{
+                              display: "block",
+                              width: "100%",
+                              padding: "8px 12px",
+                              border: "none",
+                              background: "none",
+                              textAlign: "left",
+                              cursor: "pointer",
+                              color: "#d82c0d"
+                            }}
+                          >
+                            Delete Folder
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -141,14 +370,18 @@ export default function Index() {
         <div style={{ flex: 1 }}>
           <Card>
             <div style={{ padding: "16px" }}>
-               <Text as="h2" variant="headingLg">Notes</Text>
+               <Text as="h2" variant="headingLg">
+                 Notes {selectedFolder && `- ${folders.find(f => f.id === selectedFolder)?.name}`}
+               </Text>
             </div>
            <div style={{ padding: "16px" }}>
-              {notes.length === 0 ? (
-                <Text as="p">No notes yet</Text>
+              {filteredNotes.length === 0 ? (
+                <Text as="p">
+                  {selectedFolder ? "No notes in this folder" : "No notes yet"}
+                </Text>
               ) : (
                 <div>
-                  {notes.map((note) => (
+                  {filteredNotes.map((note) => (
                     <div key={note.id} style={{ padding: "8px 0", borderBottom: "1px solid #e1e3e5" }}>
                       <Text as="span" variant="headingSm">
                         {note.title || "(untitled)"}
@@ -215,7 +448,57 @@ export default function Index() {
             </div>
           </Card>
         </div>
-      </InlineStack>
-    </Page>
-  );
-}
+              </InlineStack>
+        
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000
+          }}>
+            <div style={{
+              backgroundColor: "white",
+              padding: "24px",
+              borderRadius: "8px",
+              maxWidth: "400px",
+              width: "90%"
+            }}>
+              <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                Delete Folder
+              </Text>
+              <Text as="p" style={{ marginBottom: "24px" }}>
+                Are you sure you want to delete this folder? This action will permanently delete the folder and all notes inside it. This action cannot be undone.
+              </Text>
+              <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowDeleteConfirm(null)}
+                >
+                  Cancel
+                </Button>
+                <Form method="post">
+                  <input type="hidden" name="_intent" value="delete-folder" />
+                  <input type="hidden" name="folderId" value={showDeleteConfirm} />
+                  <Button
+                    tone="critical"
+                    submit
+                    onClick={() => setShowDeleteConfirm(null)}
+                  >
+                    Delete Folder
+                  </Button>
+                </Form>
+              </div>
+            </div>
+          </div>
+        )}
+      </Page>
+    );
+  }
