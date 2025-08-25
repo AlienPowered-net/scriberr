@@ -164,6 +164,12 @@ export default function Index() {
   const [editingFolderName, setEditingFolderName] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState(""); // "error" or "success"
+  
+  // Note editing states
+  const [editingNoteId, setEditingNoteId] = useState(null);
+  const [openNoteMenu, setOpenNoteMenu] = useState(null);
+  const [showDeleteNoteConfirm, setShowDeleteNoteConfirm] = useState(null);
+  const [showChangeFolderModal, setShowChangeFolderModal] = useState(null);
 
   const folderOptions = [
     { label: "No folder", value: "" },
@@ -175,7 +181,117 @@ export default function Index() {
     ? notes.filter(note => note.folderId === selectedFolder)
     : notes;
 
-  // Handle creating a new note
+  // Handle clicking on a note to edit it
+  const handleEditNote = (note) => {
+    setEditingNoteId(note.id);
+    setTitle(note.title || "");
+    setBody(note.content || "");
+    setFolderId(note.folderId || "");
+  };
+
+  // Handle saving note changes
+  const handleSaveNote = async () => {
+    const trimmedTitle = title.trim();
+    const trimmedBody = body.trim();
+    const trimmedFolderId = folderId.trim();
+
+    // Check if at least title or body is provided
+    if (!trimmedTitle && !trimmedBody) {
+      setAlertMessage('Please provide a title or content for the note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
+    // Check if a folder is selected
+    if (!trimmedFolderId) {
+      setAlertMessage('Please select a folder for the note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('noteId', editingNoteId);
+    formData.append('title', trimmedTitle);
+    formData.append('body', trimmedBody);
+    formData.append('folderId', trimmedFolderId);
+    
+    try {
+      const response = await fetch('/api/update-note', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setEditingNoteId(null);
+          setTitle('');
+          setBody('');
+          setFolderId('');
+          window.location.reload();
+        } else {
+          setAlertMessage(result.error || 'Failed to update note');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
+        }
+      } else {
+        setAlertMessage('Failed to update note');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error updating note:', error);
+      setAlertMessage('Failed to update note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+    }
+  };
+
+  // Handle canceling note edit
+  const handleCancelEdit = () => {
+    setEditingNoteId(null);
+    setTitle('');
+    setBody('');
+    setFolderId('');
+  };
+
+  // Handle deleting a note
+  const handleDeleteNote = async (noteId) => {
+    const formData = new FormData();
+    formData.append('noteId', noteId);
+    
+    try {
+      const response = await fetch('/api/delete-note', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setShowDeleteNoteConfirm(null);
+          window.location.reload();
+        } else {
+          setAlertMessage(result.error || 'Failed to delete note');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
+        }
+      } else {
+        setAlertMessage('Failed to delete note');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      setAlertMessage('Failed to delete note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+    }
+  };
+
+  // Handle creating a new note or updating existing note
   const handleCreateNote = async () => {
     const trimmedTitle = title.trim();
     const trimmedBody = body.trim();
@@ -203,7 +319,12 @@ export default function Index() {
     formData.append('folderId', trimmedFolderId);
     
     try {
-      const response = await fetch('/api/create-note', {
+      const endpoint = editingNoteId ? '/api/update-note' : '/api/create-note';
+      if (editingNoteId) {
+        formData.append('noteId', editingNoteId);
+      }
+      
+      const response = await fetch(endpoint, {
         method: 'POST',
         body: formData
       });
@@ -211,22 +332,24 @@ export default function Index() {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
+          setEditingNoteId(null);
           setTitle(''); // Clear the inputs
           setBody('');
+          setFolderId('');
           window.location.reload();
         } else {
-          setAlertMessage(result.error || 'Failed to create note');
+          setAlertMessage(result.error || 'Failed to save note');
           setAlertType('error');
           setTimeout(() => setAlertMessage(''), 3000);
         }
       } else {
-        setAlertMessage('Failed to create note');
+        setAlertMessage('Failed to save note');
         setAlertType('error');
         setTimeout(() => setAlertMessage(''), 3000);
       }
     } catch (error) {
-      console.error('Error creating note:', error);
-      setAlertMessage('Failed to create note');
+      console.error('Error saving note:', error);
+      setAlertMessage('Failed to save note');
       setAlertType('error');
       setTimeout(() => setAlertMessage(''), 3000);
     }
@@ -622,18 +745,119 @@ export default function Index() {
               ) : (
                 <div>
                   {filteredNotes.map((note) => (
-                    <div key={note.id} style={{ padding: "8px 0", borderBottom: "1px solid #e1e3e5" }}>
-                      <Text as="span" variant="headingSm">
-                        {note.title || "(untitled)"}
-                      </Text>
-                      <Text as="p" tone="subdued">
-                        {note.folder ? `Folder: ${note.folder.name}` : "No folder"}
-                      </Text>
-                      {note.content && (
-                        <Text as="p" tone="subdued">
-                          {note.content.substring(0, 100)}...
-                        </Text>
-                      )}
+                    <div key={note.id} style={{ 
+                      padding: "12px", 
+                      borderBottom: "1px solid #e1e3e5",
+                      cursor: "pointer",
+                      backgroundColor: editingNoteId === note.id ? "#f6f6f7" : "transparent",
+                      borderRadius: "4px",
+                      marginBottom: "4px"
+                    }}
+                    onClick={() => handleEditNote(note)}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <div style={{ flex: 1 }}>
+                          <Text as="span" variant="headingSm" style={{ fontWeight: "600" }}>
+                            {note.title || "(untitled)"}
+                          </Text>
+                          <Text as="p" tone="subdued" style={{ fontSize: "12px", marginTop: "4px" }}>
+                            {note.folder ? `Folder: ${note.folder.name}` : "No folder"}
+                          </Text>
+                          {note.content && (
+                            <Text as="p" tone="subdued" style={{ fontSize: "14px", marginTop: "8px" }}>
+                              {note.content.substring(0, 150)}...
+                            </Text>
+                          )}
+                        </div>
+                        <div style={{ position: "relative" }}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
+                            }}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              fontSize: "18px",
+                              cursor: "pointer",
+                              padding: "4px",
+                              borderRadius: "4px",
+                              color: "#6d7175"
+                            }}
+                          >
+                            ⋯
+                          </button>
+                          {openNoteMenu === note.id && (
+                            <div style={{
+                              position: "absolute",
+                              right: "0",
+                              top: "100%",
+                              backgroundColor: "white",
+                              border: "1px solid #c9cccf",
+                              borderRadius: "6px",
+                              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                              zIndex: 1000,
+                              minWidth: "150px"
+                            }}>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditNote(note);
+                                  setOpenNoteMenu(null);
+                                }}
+                                style={{
+                                  width: "100%",
+                                  padding: "8px 12px",
+                                  border: "none",
+                                  background: "none",
+                                  textAlign: "left",
+                                  cursor: "pointer",
+                                  fontSize: "14px"
+                                }}
+                              >
+                                Edit Note
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowChangeFolderModal(note.id);
+                                  setOpenNoteMenu(null);
+                                }}
+                                style={{
+                                  width: "100%",
+                                  padding: "8px 12px",
+                                  border: "none",
+                                  background: "none",
+                                  textAlign: "left",
+                                  cursor: "pointer",
+                                  fontSize: "14px"
+                                }}
+                              >
+                                Change Folder
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowDeleteNoteConfirm(note.id);
+                                  setOpenNoteMenu(null);
+                                }}
+                                style={{
+                                  width: "100%",
+                                  padding: "8px 12px",
+                                  border: "none",
+                                  background: "none",
+                                  textAlign: "left",
+                                  cursor: "pointer",
+                                  fontSize: "14px",
+                                  color: "#d82c0d"
+                                }}
+                              >
+                                Delete Note
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -687,7 +911,16 @@ export default function Index() {
                     ))}
                   </select>
                 </div>
-                <Button onClick={handleCreateNote}>Add note</Button>
+                                  <InlineStack gap="300">
+                    {editingNoteId ? (
+                      <>
+                        <Button onClick={handleSaveNote}>Save Changes</Button>
+                        <Button variant="secondary" onClick={handleCancelEdit}>Cancel</Button>
+                      </>
+                    ) : (
+                      <Button onClick={handleCreateNote}>Add note</Button>
+                    )}
+                  </InlineStack>
               </BlockStack>
             </div>
           </Card>
@@ -764,6 +997,120 @@ export default function Index() {
                   }}
                 >
                   Delete Folder
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Note Confirmation Modal */}
+        {showDeleteNoteConfirm && (
+          <div style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000
+          }}>
+            <div style={{
+              backgroundColor: "white",
+              padding: "24px",
+              borderRadius: "8px",
+              maxWidth: "400px",
+              width: "90%"
+            }}>
+              <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                Delete Note
+              </Text>
+              <Text as="p" style={{ marginBottom: "24px" }}>
+                Are you sure you want to delete this note? Deleting a note is permanent and cannot be undone.
+              </Text>
+              <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowDeleteNoteConfirm(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  tone="critical"
+                  onClick={() => handleDeleteNote(showDeleteNoteConfirm)}
+                >
+                  Delete Note
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Change Folder Modal */}
+        {showChangeFolderModal && (
+          <div style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000
+          }}>
+            <div style={{
+              backgroundColor: "white",
+              padding: "24px",
+              borderRadius: "8px",
+              maxWidth: "400px",
+              width: "90%"
+            }}>
+              <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                Change Folder
+              </Text>
+              <div style={{ marginBottom: "24px" }}>
+                <label htmlFor="changeFolderSelect" style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                  Select a new folder:
+                </label>
+                <select
+                  id="changeFolderSelect"
+                  value={folderId}
+                  onChange={(e) => setFolderId(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    border: "1px solid #c9cccf",
+                    borderRadius: "4px",
+                    fontSize: "14px",
+                  }}
+                >
+                  {folderOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowChangeFolderModal(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    handleSaveNote();
+                    setShowChangeFolderModal(null);
+                  }}
+                >
+                  Move Note
                 </Button>
               </div>
             </div>
