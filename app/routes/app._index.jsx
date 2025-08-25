@@ -858,11 +858,13 @@ export default function Index() {
                             {note.title || "(untitled)"}
                           </Text>
                           <Text as="p" tone="subdued" style={{ fontSize: "12px", marginTop: "4px" }}>
-                            {note.folder ? `Folder: ${note.folder.name}` : "No folder"}
+                            <span style={{ fontWeight: "bold" }}>Folder:</span> {note.folder ? note.folder.name : "No folder"}
                           </Text>
                           <Text as="p" tone="subdued" style={{ fontSize: "11px", marginTop: "2px", color: "#8c9196" }}>
-                            Created: {new Date(note.createdAt).toLocaleString()} | 
-                            Last edited: {new Date(note.updatedAt).toLocaleString()}
+                            <span style={{ fontWeight: "bold" }}>Created:</span> {new Date(note.createdAt).toLocaleString()}
+                          </Text>
+                          <Text as="p" tone="subdued" style={{ fontSize: "11px", marginTop: "1px", color: "#8c9196" }}>
+                            <span style={{ fontWeight: "bold" }}>Edited:</span> {new Date(note.updatedAt).toLocaleString()}
                           </Text>
                           {note.content && (
                             <Text as="p" tone="subdued" style={{ fontSize: "14px", marginTop: "8px" }}>
