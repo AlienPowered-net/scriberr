@@ -23,11 +23,10 @@ export async function loader({ request }) {
 
   const folders = await prisma.folder.findMany({
     where: { shopId },
-    orderBy: { order: "desc" },
+    orderBy: { createdAt: "desc" },
     select: {
       id: true,
       name: true,
-      order: true,
       createdAt: true,
     },
   });
@@ -64,14 +63,7 @@ export async function action({ request }) {
   if (intent === "create-folder") {
     const name = (form.get("name") || "").toString().trim();
     if (name) {
-      // Get the highest order number and add 1 for the new folder
-      const highestOrder = await prisma.folder.findFirst({
-        where: { shopId },
-        orderBy: { order: "desc" },
-        select: { order: true },
-      });
-      const newOrder = (highestOrder?.order || 0) + 1;
-      await prisma.folder.create({ data: { name, shopId, order: newOrder } });
+      await prisma.folder.create({ data: { name, shopId } });
     }
     return redirect("/app");
   }
@@ -105,27 +97,25 @@ export async function action({ request }) {
   if (intent === "move-folder-up") {
     const folderId = form.get("folderId");
     if (folderId) {
-      const currentFolder = await prisma.folder.findUnique({
-        where: { id: folderId },
+      const allFolders = await prisma.folder.findMany({
+        where: { shopId },
+        orderBy: { createdAt: "desc" },
       });
-      if (currentFolder) {
-        const allFolders = await prisma.folder.findMany({
-          where: { shopId },
-          orderBy: { order: "desc" },
+      const currentIndex = allFolders.findIndex(f => f.id === folderId);
+      if (currentIndex > 0) {
+        const currentFolder = allFolders[currentIndex];
+        const prevFolder = allFolders[currentIndex - 1];
+        
+        // Create a timestamp between the previous folder and the one before it
+        const prevPrevFolder = allFolders[currentIndex - 2];
+        const newTimestamp = prevPrevFolder 
+          ? new Date((prevFolder.createdAt.getTime() + prevPrevFolder.createdAt.getTime()) / 2)
+          : new Date(prevFolder.createdAt.getTime() + 1000); // Add 1 second if it's the first folder
+        
+        await prisma.folder.update({
+          where: { id: folderId },
+          data: { createdAt: newTimestamp },
         });
-        const currentIndex = allFolders.findIndex(f => f.id === folderId);
-        if (currentIndex > 0) {
-          const prevFolder = allFolders[currentIndex - 1];
-          // Swap order values
-          await prisma.folder.update({
-            where: { id: folderId },
-            data: { order: prevFolder.order },
-          });
-          await prisma.folder.update({
-            where: { id: prevFolder.id },
-            data: { order: currentFolder.order },
-          });
-        }
       }
     }
     return redirect("/app");
@@ -134,27 +124,25 @@ export async function action({ request }) {
   if (intent === "move-folder-down") {
     const folderId = form.get("folderId");
     if (folderId) {
-      const currentFolder = await prisma.folder.findUnique({
-        where: { id: folderId },
+      const allFolders = await prisma.folder.findMany({
+        where: { shopId },
+        orderBy: { createdAt: "desc" },
       });
-      if (currentFolder) {
-        const allFolders = await prisma.folder.findMany({
-          where: { shopId },
-          orderBy: { order: "desc" },
+      const currentIndex = allFolders.findIndex(f => f.id === folderId);
+      if (currentIndex < allFolders.length - 1) {
+        const currentFolder = allFolders[currentIndex];
+        const nextFolder = allFolders[currentIndex + 1];
+        
+        // Create a timestamp between the next folder and the one after it
+        const nextNextFolder = allFolders[currentIndex + 2];
+        const newTimestamp = nextNextFolder 
+          ? new Date((nextFolder.createdAt.getTime() + nextNextFolder.createdAt.getTime()) / 2)
+          : new Date(nextFolder.createdAt.getTime() - 1000); // Subtract 1 second if it's the last folder
+        
+        await prisma.folder.update({
+          where: { id: folderId },
+          data: { createdAt: newTimestamp },
         });
-        const currentIndex = allFolders.findIndex(f => f.id === folderId);
-        if (currentIndex < allFolders.length - 1) {
-          const nextFolder = allFolders[currentIndex + 1];
-          // Swap order values
-          await prisma.folder.update({
-            where: { id: folderId },
-            data: { order: nextFolder.order },
-          });
-          await prisma.folder.update({
-            where: { id: nextFolder.id },
-            data: { order: currentFolder.order },
-          });
-        }
       }
     }
     return redirect("/app");
