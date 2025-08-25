@@ -597,6 +597,16 @@ export default function Index() {
                   margin-bottom: 12px;
                 }
               }
+
+              /* Desktop wide layout */
+              @media (min-width: 1201px) {
+                .app-layout {
+                  width: 100%;
+                }
+                .col-folders { width: 30% !important; }
+                .col-notes   { width: 30% !important; }
+                .col-editor  { width: 40% !important; }
+              }
               
               body, html {
                 width: 100% !important;
