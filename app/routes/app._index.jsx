@@ -547,7 +547,7 @@ export default function Index() {
   };
 
       return (
-      <Page title="scriberr" style={{ width: "100%", maxWidth: "none" }}>
+      <Page title="scriberr">
 
         {/* Custom Alert */}
         {alertMessage && (
@@ -564,10 +564,7 @@ export default function Index() {
                 }
               }
               
-              .Polaris-Page {
-                margin: 0 !important;
-                max-width: none !important;
-              }
+
             `}</style>
             <div style={{
               position: "fixed",
@@ -589,7 +586,7 @@ export default function Index() {
           </>
         )}
         
-        <div style={{ display: "flex", gap: "16px", height: "calc(100vh - 200px)", width: "100%", maxWidth: "none", margin: "0", padding: "0" }}>
+        <div style={{ display: "flex", gap: "16px", height: "calc(100vh - 200px)" }}>
         {/* FOLDERS */}
         <div style={{ width: "25%" }}>
         <Card>
