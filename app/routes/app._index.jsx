@@ -171,6 +171,8 @@ export default function Index() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [editingFolderId, setEditingFolderId] = useState(null);
   const [editingFolderName, setEditingFolderName] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState(""); // "error" or "success"
 
   const folderOptions = [
     { label: "No folder", value: "" },
@@ -186,7 +188,9 @@ export default function Index() {
   const handleSaveFolderName = async (folderId) => {
     const trimmedName = editingFolderName.trim();
     if (!trimmedName) {
-      alert('Folder name cannot be empty');
+      setAlertMessage('Folder name cannot be empty');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
       return;
     }
 
@@ -205,20 +209,61 @@ export default function Index() {
         if (result.success) {
           window.location.reload();
         } else {
-          alert(result.error || 'Failed to rename folder');
+          setAlertMessage(result.error || 'Failed to rename folder');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
         }
       } else {
-        alert('Failed to rename folder');
+        setAlertMessage('Failed to rename folder');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
       }
     } catch (error) {
       console.error('Error renaming folder:', error);
-      alert('Failed to rename folder');
+      setAlertMessage('Failed to rename folder');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
     }
   };
 
-  return (
-    <Page title="scriberr">
-      <InlineStack gap="400" wrap={false}>
+      return (
+      <Page title="scriberr">
+        {/* Custom Alert */}
+        {alertMessage && (
+          <>
+            <style>{`
+              @keyframes slideIn {
+                from {
+                  transform: translateX(100%);
+                  opacity: 0;
+                }
+                to {
+                  transform: translateX(0);
+                  opacity: 1;
+                }
+              }
+            `}</style>
+            <div style={{
+              position: "fixed",
+              top: "20px",
+              right: "20px",
+              padding: "12px 16px",
+              borderRadius: "6px",
+              color: "white",
+              fontSize: "14px",
+              fontWeight: "500",
+              zIndex: 3000,
+              maxWidth: "300px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              animation: "slideIn 0.3s ease-out",
+              backgroundColor: alertType === 'error' ? "#d82c0d" : "#008060"
+            }}>
+              {alertMessage}
+            </div>
+          </>
+        )}
+        
+        <InlineStack gap="400" wrap={false}>
         {/* FOLDERS */}
         <div style={{ flex: 1 }}>
         <Card>
