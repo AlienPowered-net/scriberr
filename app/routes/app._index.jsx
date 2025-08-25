@@ -147,6 +147,8 @@ export default function Index() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [folderId, setFolderId] = useState("");
+  const [folderName, setFolderName] = useState("");
+  const [selectedFolder, setSelectedFolder] = useState(null);
   
   // Update folderId when selectedFolder changes
   useEffect(() => {
@@ -156,8 +158,6 @@ export default function Index() {
       setFolderId("");
     }
   }, [selectedFolder]);
-  const [folderName, setFolderName] = useState("");
-  const [selectedFolder, setSelectedFolder] = useState(null);
   const [openFolderMenu, setOpenFolderMenu] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [editingFolderId, setEditingFolderId] = useState(null);
