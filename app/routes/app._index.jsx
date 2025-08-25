@@ -106,15 +106,14 @@ export async function action({ request }) {
         const currentFolder = allFolders[currentIndex];
         const prevFolder = allFolders[currentIndex - 1];
         
-        // Create a timestamp between the previous folder and the one before it
-        const prevPrevFolder = allFolders[currentIndex - 2];
-        const newTimestamp = prevPrevFolder 
-          ? new Date((prevFolder.createdAt.getTime() + prevPrevFolder.createdAt.getTime()) / 2)
-          : new Date(prevFolder.createdAt.getTime() + 1000); // Add 1 second if it's the first folder
-        
+        // Swap the createdAt timestamps
         await prisma.folder.update({
           where: { id: folderId },
-          data: { createdAt: newTimestamp },
+          data: { createdAt: prevFolder.createdAt },
+        });
+        await prisma.folder.update({
+          where: { id: prevFolder.id },
+          data: { createdAt: currentFolder.createdAt },
         });
       }
     }
@@ -133,15 +132,14 @@ export async function action({ request }) {
         const currentFolder = allFolders[currentIndex];
         const nextFolder = allFolders[currentIndex + 1];
         
-        // Create a timestamp between the next folder and the one after it
-        const nextNextFolder = allFolders[currentIndex + 2];
-        const newTimestamp = nextNextFolder 
-          ? new Date((nextFolder.createdAt.getTime() + nextNextFolder.createdAt.getTime()) / 2)
-          : new Date(nextFolder.createdAt.getTime() - 1000); // Subtract 1 second if it's the last folder
-        
+        // Swap the createdAt timestamps
         await prisma.folder.update({
           where: { id: folderId },
-          data: { createdAt: newTimestamp },
+          data: { createdAt: nextFolder.createdAt },
+        });
+        await prisma.folder.update({
+          where: { id: nextFolder.id },
+          data: { createdAt: currentFolder.createdAt },
         });
       }
     }
