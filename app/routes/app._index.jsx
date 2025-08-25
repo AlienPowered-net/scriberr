@@ -859,7 +859,7 @@ export default function Index() {
                     e.target.style.transform = "scale(1) rotate(0deg)";
                   }}
                 >
-                  Create folder
+                  New Folder
                 </button>
               </InlineStack>
             </div>
