@@ -68,19 +68,7 @@ export async function action({ request }) {
     return redirect("/app");
   }
 
-  if (intent === "create-note") {
-    const title = (form.get("title") || "").toString().trim();
-    const body = (form.get("body") || "").toString().trim();
-    const folderIdRaw = form.get("folderId");
-    const folderId = folderIdRaw && folderIdRaw !== "" ? folderIdRaw : null;
 
-    if (title || body) {
-      await prisma.note.create({
-        data: { title, content: body, shopId, folderId },
-      });
-    }
-    return redirect("/app");
-  }
 
   if (intent === "rename-folder") {
     const folderId = form.get("folderId");
@@ -165,6 +153,15 @@ export default function Index() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [folderId, setFolderId] = useState("");
+  
+  // Update folderId when selectedFolder changes
+  useEffect(() => {
+    if (selectedFolder) {
+      setFolderId(selectedFolder);
+    } else {
+      setFolderId("");
+    }
+  }, [selectedFolder]);
   const [folderName, setFolderName] = useState("");
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [openFolderMenu, setOpenFolderMenu] = useState(null);
@@ -183,6 +180,63 @@ export default function Index() {
   const filteredNotes = selectedFolder 
     ? notes.filter(note => note.folderId === selectedFolder)
     : notes;
+
+  // Handle creating a new note
+  const handleCreateNote = async () => {
+    const trimmedTitle = title.trim();
+    const trimmedBody = body.trim();
+    const trimmedFolderId = folderId.trim();
+
+    // Check if at least title or body is provided
+    if (!trimmedTitle && !trimmedBody) {
+      setAlertMessage('Please provide a title or content for the note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
+    // Check if a folder is selected
+    if (!trimmedFolderId) {
+      setAlertMessage('Please select a folder for the note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('title', trimmedTitle);
+    formData.append('body', trimmedBody);
+    formData.append('folderId', trimmedFolderId);
+    
+    try {
+      const response = await fetch('/api/create-note', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setTitle(''); // Clear the inputs
+          setBody('');
+          window.location.reload();
+        } else {
+          setAlertMessage(result.error || 'Failed to create note');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
+        }
+      } else {
+        setAlertMessage('Failed to create note');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error creating note:', error);
+      setAlertMessage('Failed to create note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+    }
+  };
 
   // Handle creating a new folder
   const handleCreateFolder = async () => {
@@ -592,51 +646,55 @@ export default function Index() {
               )}
             </div>
             <div style={{ padding: "16px" }}>
-              <Form method="post">
-                <input type="hidden" name="_intent" value="create-note" />
-                <BlockStack gap="300">
-                  <TextField
-                    label="Title"
-                    value={title}
-                    onChange={setTitle}
-                    autoComplete="off"
-                    name="title"
-                  />
-                  <TextField
-                    label="Body"
-                    value={body}
-                    onChange={setBody}
-                    autoComplete="off"
-                    multiline={4}
-                    name="body"
-                  />
-                  <div>
-                    <label htmlFor="folderId" style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
-                      Folder
-                    </label>
-                    <select
-                      id="folderId"
-                      name="folderId"
-                      value={folderId}
-                      onChange={(e) => setFolderId(e.target.value)}
-                      style={{
-                        width: "100%",
-                        padding: "8px 12px",
-                        border: "1px solid #c9cccf",
-                        borderRadius: "4px",
-                        fontSize: "14px",
-                      }}
-                    >
-                      {folderOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <Button submit>Add note</Button>
-                </BlockStack>
-              </Form>
+              <BlockStack gap="300">
+                <TextField
+                  label="Title"
+                  value={title}
+                  onChange={setTitle}
+                  autoComplete="off"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                      handleCreateNote();
+                    }
+                  }}
+                />
+                <TextField
+                  label="Body"
+                  value={body}
+                  onChange={setBody}
+                  autoComplete="off"
+                  multiline={4}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                      handleCreateNote();
+                    }
+                  }}
+                />
+                <div>
+                  <label htmlFor="folderId" style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+                    Folder
+                  </label>
+                  <select
+                    id="folderId"
+                    value={folderId}
+                    onChange={(e) => setFolderId(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "8px 12px",
+                      border: "1px solid #c9cccf",
+                      borderRadius: "4px",
+                      fontSize: "14px",
+                    }}
+                  >
+                    {folderOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Button onClick={handleCreateNote}>Add note</Button>
+              </BlockStack>
             </div>
           </Card>
         </div>
