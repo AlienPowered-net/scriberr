@@ -249,6 +249,14 @@ export default function Index() {
     }
   };
 
+  // Handle creating a new note
+  const handleNewNote = () => {
+    setEditingNoteId(null);
+    setTitle('');
+    setBody('');
+    setFolderId('');
+  };
+
   // Handle canceling note edit
   const handleCancelEdit = () => {
     setEditingNoteId(null);
@@ -912,13 +920,56 @@ export default function Index() {
                   </select>
                 </div>
                                   <InlineStack gap="300">
+                    <Button 
+                      onClick={handleNewNote}
+                      style={{
+                        backgroundColor: "#ff9500",
+                        borderColor: "#ff9500",
+                        color: "white"
+                      }}
+                    >
+                      New Note
+                    </Button>
                     {editingNoteId ? (
                       <>
-                        <Button onClick={handleSaveNote}>Save Changes</Button>
-                        <Button variant="secondary" onClick={handleCancelEdit}>Cancel</Button>
+                        <Button 
+                          onClick={handleSaveNote}
+                          style={{
+                            backgroundColor: "#008060",
+                            borderColor: "#008060",
+                            color: "white"
+                          }}
+                        >
+                          Save Note
+                        </Button>
+                        <Button 
+                          variant="secondary" 
+                          onClick={handleCancelEdit}
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={() => setShowDeleteNoteConfirm(editingNoteId)}
+                          style={{
+                            backgroundColor: "#d82c0d",
+                            borderColor: "#d82c0d",
+                            color: "white"
+                          }}
+                        >
+                          Delete Note
+                        </Button>
                       </>
                     ) : (
-                      <Button onClick={handleCreateNote}>Add note</Button>
+                      <Button 
+                        onClick={handleCreateNote}
+                        style={{
+                          backgroundColor: "#008060",
+                          borderColor: "#008060",
+                          color: "white"
+                        }}
+                      >
+                        Save Note
+                      </Button>
                     )}
                   </InlineStack>
               </BlockStack>
