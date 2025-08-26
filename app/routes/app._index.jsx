@@ -1331,27 +1331,44 @@ export default function Index() {
             <div style={{ padding: "16px" }}>
               <BlockStack gap="300">
                 <div>
-                  <label htmlFor="folderId" style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+                  <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
                     Folder
                   </label>
-                  <select
-                    id="folderId"
-                    value={folderId}
-                    onChange={(e) => setFolderId(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "8px 12px",
-                      border: "1px solid #c9cccf",
-                      borderRadius: "4px",
-                      fontSize: "14px",
-                    }}
-                  >
-                    {folderOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                    {folders.map((folder) => (
+                      <button
+                        key={folder.id}
+                        onClick={() => setFolderId(folder.id)}
+                        style={{
+                          padding: "6px 12px",
+                          borderRadius: "16px",
+                          border: "1px solid",
+                          borderColor: folderId === folder.id ? "#008060" : "#c9cccf",
+                          backgroundColor: folderId === folder.id ? "#008060" : "transparent",
+                          color: folderId === folder.id ? "white" : "#202223",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                          fontWeight: "500",
+                          transition: "all 0.2s ease",
+                          outline: "none"
+                        }}
+                        onMouseEnter={(e) => {
+                          if (folderId !== folder.id) {
+                            e.target.style.borderColor = "#008060";
+                            e.target.style.backgroundColor = "#f6f6f7";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (folderId !== folder.id) {
+                            e.target.style.borderColor = "#c9cccf";
+                            e.target.style.backgroundColor = "transparent";
+                          }
+                        }}
+                      >
+                        {folder.name}
+                      </button>
                     ))}
-                  </select>
+                  </div>
                 </div>
                 <div>
                   <div
@@ -1362,23 +1379,29 @@ export default function Index() {
                       fontWeight: "600",
                       color: title ? "#202223" : "#8c9196",
                       padding: "8px 0",
-                      borderBottom: "2px solid transparent",
+                      borderBottom: "1px solid #e1e3e5",
                       cursor: "text",
                       width: "100%",
                       backgroundColor: "transparent",
-                      fontFamily: "inherit"
+                      fontFamily: "inherit",
+                      transition: "border-color 0.2s ease"
                     }}
                     contentEditable
                     suppressContentEditableWarning
-                    onInput={(e) => setTitle(e.currentTarget.textContent || "")}
+                    onInput={(e) => {
+                      const newTitle = e.currentTarget.textContent || "";
+                      setTitle(newTitle);
+                    }}
                     onFocus={(e) => {
-                      if (!title) {
+                      e.currentTarget.style.borderBottomColor = "#008060";
+                      if (e.currentTarget.textContent === "Add a title to your note here...") {
                         e.currentTarget.textContent = "";
                       }
                     }}
                     onBlur={(e) => {
+                      e.currentTarget.style.borderBottomColor = "#e1e3e5";
                       if (!e.currentTarget.textContent.trim()) {
-                        e.currentTarget.textContent = title || "Add a title to your note here...";
+                        e.currentTarget.textContent = "Add a title to your note here...";
                       }
                     }}
                   >
@@ -1395,6 +1418,133 @@ export default function Index() {
                     placeholder="Type your note here..."
                   />
                 </div>
+                <InlineStack gap="300">
+                  {editingNoteId ? (
+                    <>
+                      <button 
+                        onClick={handleSaveNote}
+                        style={{
+                          backgroundColor: "#2e7d32",
+                          border: "0",
+                          color: "white",
+                          padding: "7px 20px",
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          textAlign: "center",
+                          textDecoration: "none",
+                          transition: "all 250ms",
+                          userSelect: "none",
+                          WebkitUserSelect: "none",
+                          touchAction: "manipulation",
+                          boxShadow: "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.boxShadow = "rgba(46, 125, 50, .35) 0 -25px 18px -14px inset, rgba(46, 125, 50, .25) 0 1px 2px, rgba(46, 125, 50, .25) 0 2px 4px, rgba(46, 125, 50, .25) 0 4px 8px, rgba(46, 125, 50, .25) 0 8px 16px, rgba(46, 125, 50, .25) 0 16px 32px";
+                          e.target.style.transform = "scale(1.05) rotate(-1deg)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.boxShadow = "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px";
+                          e.target.style.transform = "scale(1) rotate(0deg)";
+                        }}
+                      >
+                        Save Note
+                      </button>
+                      <button 
+                        onClick={handleCancelEdit}
+                        style={{
+                          backgroundColor: "#6d7175",
+                          border: "0",
+                          color: "white",
+                          padding: "7px 20px",
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          textAlign: "center",
+                          textDecoration: "none",
+                          transition: "all 250ms",
+                          userSelect: "none",
+                          WebkitUserSelect: "none",
+                          touchAction: "manipulation",
+                          boxShadow: "rgba(109, 113, 117, .2) 0 -25px 18px -14px inset, rgba(109, 113, 117, .15) 0 1px 2px, rgba(109, 113, 117, .15) 0 2px 4px, rgba(109, 113, 117, .15) 0 4px 8px, rgba(109, 113, 117, .15) 0 8px 16px, rgba(109, 113, 117, .15) 0 16px 32px"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.boxShadow = "rgba(109, 113, 117, .35) 0 -25px 18px -14px inset, rgba(109, 113, 117, .25) 0 1px 2px, rgba(109, 113, 117, .25) 0 2px 4px, rgba(109, 113, 117, .25) 0 4px 8px, rgba(109, 113, 117, .25) 0 8px 16px, rgba(109, 113, 117, .25) 0 16px 32px";
+                          e.target.style.transform = "scale(1.05) rotate(-1deg)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.boxShadow = "rgba(109, 113, 117, .2) 0 -25px 18px -14px inset, rgba(109, 113, 117, .15) 0 1px 2px, rgba(109, 113, 117, .15) 0 2px 4px, rgba(109, 113, 117, .15) 0 4px 8px, rgba(109, 113, 117, .15) 0 8px 16px, rgba(109, 113, 117, .15) 0 16px 32px";
+                          e.target.style.transform = "scale(1) rotate(0deg)";
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        onClick={() => setShowDeleteNoteConfirm(editingNoteId)}
+                        style={{
+                          backgroundColor: "#d82c0d",
+                          border: "0",
+                          color: "white",
+                          padding: "7px 20px",
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                          textAlign: "center",
+                          textDecoration: "none",
+                          transition: "all 250ms",
+                          userSelect: "none",
+                          WebkitUserSelect: "none",
+                          touchAction: "manipulation",
+                          boxShadow: "rgba(216, 44, 13, .2) 0 -25px 18px -14px inset, rgba(216, 44, 13, .15) 0 1px 2px, rgba(216, 44, 13, .15) 0 2px 4px, rgba(216, 44, 13, .15) 0 4px 8px, rgba(216, 44, 13, .15) 0 8px 16px, rgba(216, 44, 13, .15) 0 16px 32px"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.boxShadow = "rgba(216, 44, 13, .35) 0 -25px 18px -14px inset, rgba(216, 44, 13, .25) 0 1px 2px, rgba(216, 44, 13, .25) 0 2px 4px, rgba(216, 44, 13, .25) 0 4px 8px, rgba(216, 44, 13, .25) 0 8px 16px, rgba(216, 44, 13, .25) 0 16px 32px";
+                          e.target.style.transform = "scale(1.05) rotate(-1deg)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.boxShadow = "rgba(216, 44, 13, .2) 0 -25px 18px -14px inset, rgba(216, 44, 13, .15) 0 1px 2px, rgba(216, 44, 13, .15) 0 2px 4px, rgba(216, 44, 13, .15) 0 4px 8px, rgba(216, 44, 13, .15) 0 8px 16px, rgba(216, 44, 13, .15) 0 16px 32px";
+                          e.target.style.transform = "scale(1) rotate(0deg)";
+                        }}
+                      >
+                        Delete Note
+                      </button>
+                    </>
+                  ) : (
+                    <button 
+                      onClick={handleCreateNote}
+                      style={{
+                        backgroundColor: "#2e7d32",
+                        border: "0",
+                        color: "white",
+                        padding: "7px 20px",
+                        borderRadius: "8px",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        textAlign: "center",
+                        textDecoration: "none",
+                        transition: "all 250ms",
+                        userSelect: "none",
+                        WebkitUserSelect: "none",
+                        touchAction: "manipulation",
+                        boxShadow: "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px"
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.boxShadow = "rgba(46, 125, 50, .35) 0 -25px 18px -14px inset, rgba(46, 125, 50, .25) 0 1px 2px, rgba(46, 125, 50, .25) 0 2px 4px, rgba(46, 125, 50, .25) 0 4px 8px, rgba(46, 125, 50, .25) 0 8px 16px, rgba(46, 125, 50, .25) 0 16px 32px";
+                        e.target.style.transform = "scale(1.05) rotate(-1deg)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.boxShadow = "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px";
+                        e.target.style.transform = "scale(1) rotate(0deg)";
+                      }}
+                    >
+                      Save Note
+                    </button>
+                  )}
+                </InlineStack>
               </BlockStack>
             </div>
           </Card>
