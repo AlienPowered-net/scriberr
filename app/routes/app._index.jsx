@@ -243,6 +243,27 @@ export default function Index() {
     };
   }, [openFolderMenu, openNoteMenu]);
 
+  // Restore selected note and folder from localStorage on page load
+  useEffect(() => {
+    const savedNoteId = localStorage.getItem('selectedNoteId');
+    const savedFolderId = localStorage.getItem('selectedFolderId');
+    
+    if (savedNoteId && savedFolderId) {
+      // Find the note in the current notes list
+      const noteToSelect = notes.find(note => note.id === savedNoteId);
+      if (noteToSelect) {
+        setEditingNoteId(savedNoteId);
+        setTitle(noteToSelect.title || "");
+        setBody(noteToSelect.content || "");
+        setFolderId(savedFolderId);
+        setSelectedFolder(savedFolderId);
+      }
+      // Clear localStorage after restoring state
+      localStorage.removeItem('selectedNoteId');
+      localStorage.removeItem('selectedFolderId');
+    }
+  }, [notes]);
+
   const folderOptions = [
     { label: "No folder", value: "" },
     ...folders.map((f) => ({ label: f.name, value: String(f.id) })),
@@ -395,13 +416,9 @@ export default function Index() {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          // Set up the new note for editing
-          setEditingNoteId(result.noteId);
-          setTitle('');
-          setBody('Type your note here...');
-          setFolderId(currentFolderId);
-          // Ensure the folder is selected
-          setSelectedFolder(currentFolderId);
+          // Store the new note and folder IDs in localStorage before reload
+          localStorage.setItem('selectedNoteId', result.noteId);
+          localStorage.setItem('selectedFolderId', currentFolderId);
           // Reload to get the updated note list
           window.location.reload();
         } else {
