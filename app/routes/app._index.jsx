@@ -655,7 +655,7 @@ export default function Index() {
       return (
       <Page title="scriberr">
         {/* Material Symbols Rounded CDN */}
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
         {/* Global Styles - Always Applied */}
                   <style>{`
@@ -676,12 +676,7 @@ export default function Index() {
             -webkit-font-smoothing: antialiased;
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             vertical-align: middle;
-            font-display: swap;
-          }
-          
-          /* Ensure icons are visible */
-          .material-symbols-rounded::before {
-            content: attr(data-icon);
+            padding-right: 5px;
           }
           
           @keyframes slideIn {
@@ -831,7 +826,7 @@ export default function Index() {
         >
                       <div style={{ padding: "16px" }}>
               <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                <span>📦</span>
+                <span className="material-symbols-rounded">home_storage</span>
                 Folders
               </Text>
             </div>
@@ -871,6 +866,7 @@ export default function Index() {
                   {globalSearchQuery || "Search all notes..."}
                 </div>
                 <span 
+                  className="material-symbols-rounded"
                   style={{
                     position: "absolute",
                     right: "0",
@@ -881,7 +877,7 @@ export default function Index() {
                     pointerEvents: "none"
                   }}
                 >
-                  🔍
+                  search
                 </span>
               </div>
               {folders.length === 0 ? (
@@ -915,7 +911,7 @@ export default function Index() {
                   }}
                 >
                   <Text as="span" variant="headingSm" style={{ fontWeight: "600", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ fontSize: "18px" }}>📚</span>
+                    <span className="material-symbols-rounded" style={{ fontSize: "18px" }}>note_stack</span>
                     All Notes
                   </Text>
                 </div>
@@ -1012,7 +1008,7 @@ export default function Index() {
                       </div>
                     ) : (
                       <Text as="span" variant="headingSm" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span style={{ fontSize: "18px" }}>📁</span>
+                        <span className="material-symbols-rounded" style={{ fontSize: "18px" }}>folder</span>
                         {folder.name}
                       </Text>
                     )}
@@ -1212,7 +1208,7 @@ export default function Index() {
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                <div>
                  <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                   <span>📚</span>
+                   <span className="material-symbols-rounded">note_stack</span>
                    Notes
                  </Text>
                  {selectedFolder && (
@@ -1288,6 +1284,7 @@ export default function Index() {
                   {folderSearchQuery || "Search notes in folder..."}
                 </div>
                 <span 
+                  className="material-symbols-rounded"
                   style={{
                     position: "absolute",
                     right: "0",
@@ -1298,7 +1295,7 @@ export default function Index() {
                     pointerEvents: "none"
                   }}
                 >
-                  🔍
+                  search
                 </span>
               </div>
               {filteredNotes.length === 0 ? (
@@ -1453,7 +1450,7 @@ export default function Index() {
           <Card>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                <span>✏️</span>
+                <span className="material-symbols-rounded">edit_note</span>
                 Note Editor
               </Text>
               <InlineStack gap="200">
