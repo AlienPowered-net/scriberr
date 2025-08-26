@@ -20,6 +20,10 @@ export async function action({ request }) {
     return json({ error: "Folder name cannot be empty" });
   }
 
+  if (trimmedName.length > 35) {
+    return json({ error: "Folder name cannot exceed 35 characters" });
+  }
+
   try {
     // Check if a folder with this name already exists
     const existingFolder = await prisma.folder.findFirst({

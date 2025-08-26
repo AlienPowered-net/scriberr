@@ -657,6 +657,7 @@ export default function Index() {
 
         {/* Material Symbols Rounded CDN */}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
 
         {/* Global Styles - Always Applied */}
                   <style>{`
@@ -831,7 +832,7 @@ export default function Index() {
               </Text>
             </div>
                       <div style={{ padding: "16px" }}>
-              <div style={{ marginBottom: "16px" }}>
+              <div style={{ marginBottom: "16px", position: "relative" }}>
                 <div
                   style={{
                     border: "none",
@@ -839,6 +840,7 @@ export default function Index() {
                     fontSize: "14px",
                     color: "#202223",
                     padding: "8px 0",
+                    paddingRight: "30px",
                     borderBottom: "1px solid #e1e3e5",
                     cursor: "text",
                     width: "100%",
@@ -864,6 +866,20 @@ export default function Index() {
                 >
                   {globalSearchQuery || "Search all notes..."}
                 </div>
+                <span 
+                  className="material-symbols-rounded" 
+                  style={{
+                    position: "absolute",
+                    right: "0",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    fontSize: "18px",
+                    color: "#6d7175",
+                    pointerEvents: "none"
+                  }}
+                >
+                  search
+                </span>
               </div>
               {folders.length === 0 ? (
                 <Text as="p">No folders yet</Text>
@@ -937,6 +953,7 @@ export default function Index() {
                           type="text"
                           value={editingFolderName}
                           onChange={(e) => setEditingFolderName(e.target.value)}
+                          maxLength={35}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                               handleSaveFolderName(folder.id);
@@ -1142,6 +1159,7 @@ export default function Index() {
                     value={folderName}
                     onChange={setFolderName}
                     autoComplete="off"
+                    maxLength={35}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         handleCreateFolder();
@@ -1232,7 +1250,7 @@ export default function Index() {
                </button>
             </div>
            <div style={{ padding: "16px" }}>
-              <div style={{ marginBottom: "16px" }}>
+              <div style={{ marginBottom: "16px", position: "relative" }}>
                 <div
                   style={{
                     border: "none",
@@ -1240,6 +1258,7 @@ export default function Index() {
                     fontSize: "14px",
                     color: "#202223",
                     padding: "8px 0",
+                    paddingRight: "30px",
                     borderBottom: "1px solid #e1e3e5",
                     cursor: "text",
                     width: "100%",
@@ -1265,6 +1284,20 @@ export default function Index() {
                 >
                   {folderSearchQuery || "Search notes in folder..."}
                 </div>
+                <span 
+                  className="material-symbols-rounded" 
+                  style={{
+                    position: "absolute",
+                    right: "0",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    fontSize: "18px",
+                    color: "#6d7175",
+                    pointerEvents: "none"
+                  }}
+                >
+                  search
+                </span>
               </div>
               {filteredNotes.length === 0 ? (
                 <Text as="p">
@@ -1667,6 +1700,7 @@ export default function Index() {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Add a title to your note here..."
+                    maxLength={35}
                     style={{
                       border: "none",
                       outline: "none",

@@ -17,6 +17,11 @@ export async function action({ request }) {
   const trimmedBody = body ? body.toString().trim() : "";
   const trimmedFolderId = folderId ? folderId.toString().trim() : "";
 
+  // Check if title is within character limit
+  if (trimmedTitle.length > 35) {
+    return json({ error: "Note title cannot exceed 35 characters" });
+  }
+
   // Check if at least title or body is provided (allow empty title for placeholder notes)
   if (!trimmedBody) {
     return json({ error: "Please provide content for the note" });

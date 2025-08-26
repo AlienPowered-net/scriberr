@@ -22,6 +22,11 @@ export async function action({ request }) {
     return json({ error: "Missing note ID" });
   }
 
+  // Check if title is within character limit
+  if (trimmedTitle.length > 35) {
+    return json({ error: "Note title cannot exceed 35 characters" });
+  }
+
   // Check if at least title or body is provided
   if (!trimmedTitle && !trimmedBody) {
     return json({ error: "Please provide a title or content for the note" });
