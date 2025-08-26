@@ -221,6 +221,7 @@ export default function Index() {
   const [openNoteMenu, setOpenNoteMenu] = useState(null);
   const [showDeleteNoteConfirm, setShowDeleteNoteConfirm] = useState(null);
   const [showChangeFolderModal, setShowChangeFolderModal] = useState(null);
+  const [highlightFolders, setHighlightFolders] = useState(false);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -327,6 +328,9 @@ export default function Index() {
     if (!currentFolderId) {
       setAlertMessage('Please select a folder first');
       setAlertType('error');
+      // Highlight the folders column to draw attention
+      setHighlightFolders(true);
+      setTimeout(() => setHighlightFolders(false), 3000);
       setTimeout(() => setAlertMessage(''), 3000);
       return;
     }
@@ -734,7 +738,19 @@ export default function Index() {
         
         <div className="app-layout" style={{ display: "flex", gap: "16px", height: "calc(100vh - 200px)" }}>
         {/* FOLDERS */}
-        <div className="col-folders" style={{ width: "25%" }}>
+        <div 
+          className="col-folders" 
+          style={{ 
+            width: "25%",
+            transition: "all 0.3s ease",
+            ...(highlightFolders && {
+              backgroundColor: "#fff3cd",
+              border: "2px solid #ffc107",
+              borderRadius: "8px",
+              boxShadow: "0 0 20px rgba(255, 193, 7, 0.3)"
+            })
+          }}
+        >
         <Card>
           <div style={{ padding: "16px" }}>
             <Text as="h2" variant="headingLg">Folders</Text>
@@ -1094,7 +1110,7 @@ export default function Index() {
                           </Text>
                           {note.content && (
                             <Text as="p" tone="subdued" style={{ fontSize: "14px", marginTop: "8px" }}>
-                              {note.content.substring(0, 150)}...
+                              {note.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
                             </Text>
                           )}
                         </div>
@@ -1408,7 +1424,8 @@ export default function Index() {
                     placeholder="Type your note here..."
                   />
                 </div>
-                <InlineStack gap="300">
+                <div style={{ marginTop: "20px" }}>
+                  <InlineStack gap="300">
                   {editingNoteId ? (
                     <>
                       <button 
@@ -1532,10 +1549,11 @@ export default function Index() {
                       }}
                     >
                       Save Note
-                    </button>
-                  )}
-                </InlineStack>
-              </BlockStack>
+                                         </button>
+                   )}
+                 </InlineStack>
+               </div>
+             </BlockStack>
             </div>
           </Card>
         </div>
