@@ -633,7 +633,10 @@ export default function Index() {
       <Page title="scriberr">
 
         {/* Material Symbols Rounded CDN */}
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=folder,note,edit_note" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=home_storage" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=folder" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=note_stack" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=edit_note" />
 
         {/* Global Styles - Always Applied */}
         <style>{`
@@ -784,7 +787,7 @@ export default function Index() {
         >
                       <div style={{ padding: "16px" }}>
               <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <span className="material-symbols-rounded" style={{ fontSize: "24px" }}>folder</span>
+                <span className="material-symbols-rounded" style={{ fontSize: "24px" }}>home_storage</span>
                 Folders
               </Text>
             </div>
@@ -820,7 +823,7 @@ export default function Index() {
                   }}
                 >
                   <Text as="span" variant="headingSm" style={{ fontWeight: "600", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span className="material-symbols-rounded" style={{ fontSize: "18px" }}>note</span>
+                    <span className="material-symbols-rounded" style={{ fontSize: "18px" }}>note_stack</span>
                     All Notes
                   </Text>
                 </div>
@@ -1115,7 +1118,7 @@ export default function Index() {
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                <div>
                  <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                   <span className="material-symbols-rounded" style={{ fontSize: "24px" }}>note</span>
+                   <span className="material-symbols-rounded" style={{ fontSize: "24px" }}>note_stack</span>
                    Notes
                  </Text>
                  {selectedFolder && (
