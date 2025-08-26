@@ -222,6 +222,10 @@ export default function Index() {
   const [showDeleteNoteConfirm, setShowDeleteNoteConfirm] = useState(null);
   const [showChangeFolderModal, setShowChangeFolderModal] = useState(null);
   const [highlightFolders, setHighlightFolders] = useState(false);
+  const [globalSearchQuery, setGlobalSearchQuery] = useState("");
+  const [folderSearchQuery, setFolderSearchQuery] = useState("");
+  const [noteTags, setNoteTags] = useState([]);
+  const [newTagInput, setNewTagInput] = useState("");
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -269,10 +273,24 @@ export default function Index() {
     ...folders.map((f) => ({ label: f.name, value: String(f.id) })),
   ];
 
-  // Filter notes based on selected folder
-  const filteredNotes = selectedFolder 
-    ? notes.filter(note => note.folderId === selectedFolder)
-    : notes;
+  // Filter notes based on selected folder and search queries
+  const filteredNotes = notes.filter(note => {
+    // First filter by selected folder
+    const folderMatch = selectedFolder ? note.folderId === selectedFolder : true;
+    
+    // Then filter by search queries
+    const globalSearchMatch = !globalSearchQuery || 
+      note.title?.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
+      note.content?.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
+      noteTags.some(tag => tag.toLowerCase().includes(globalSearchQuery.toLowerCase()));
+    
+    const folderSearchMatch = !folderSearchQuery || 
+      note.title?.toLowerCase().includes(folderSearchQuery.toLowerCase()) ||
+      note.content?.toLowerCase().includes(folderSearchQuery.toLowerCase()) ||
+      noteTags.some(tag => tag.toLowerCase().includes(folderSearchQuery.toLowerCase()));
+    
+    return folderMatch && globalSearchMatch && folderSearchMatch;
+  });
 
   // Handle clicking on a note to edit it
   const handleEditNote = (note) => {
@@ -653,6 +671,7 @@ export default function Index() {
             -webkit-font-feature-settings: 'liga';
             -webkit-font-smoothing: antialiased;
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
           }
           
           @keyframes slideIn {
@@ -801,10 +820,32 @@ export default function Index() {
           }}
         >
                       <div style={{ padding: "16px" }}>
-              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
                 <span className="material-symbols-rounded">home_storage</span>
                 Folders
               </Text>
+              <div style={{ marginBottom: "12px" }}>
+                <input
+                  type="text"
+                  placeholder="Search all notes..."
+                  value={globalSearchQuery}
+                  onChange={(e) => setGlobalSearchQuery(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    border: "1px solid #c9cccf",
+                    borderRadius: "4px",
+                    fontSize: "14px",
+                    outline: "none"
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = "#008060";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = "#c9cccf";
+                  }}
+                />
+              </div>
             </div>
           <div style={{ padding: "16px" }}>
             {folders.length === 0 ? (
@@ -1132,15 +1173,37 @@ export default function Index() {
           <Card>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                <div>
-                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
                    <span className="material-symbols-rounded">note_stack</span>
                    Notes
                  </Text>
                  {selectedFolder && (
-                   <Text as="h2" style={{ fontSize: "18px", fontWeight: "bold", color: "#202223", marginTop: "4px" }}>
+                   <Text as="h2" style={{ fontSize: "18px", fontWeight: "bold", color: "#202223", marginTop: "4px", marginBottom: "12px" }}>
                      {folders.find(f => f.id === selectedFolder)?.name}
                    </Text>
                  )}
+                 <div style={{ marginBottom: "12px" }}>
+                   <input
+                     type="text"
+                     placeholder="Search notes in folder..."
+                     value={folderSearchQuery}
+                     onChange={(e) => setFolderSearchQuery(e.target.value)}
+                     style={{
+                       width: "100%",
+                       padding: "8px 12px",
+                       border: "1px solid #c9cccf",
+                       borderRadius: "4px",
+                       fontSize: "14px",
+                       outline: "none"
+                     }}
+                     onFocus={(e) => {
+                       e.target.style.borderColor = "#008060";
+                     }}
+                     onBlur={(e) => {
+                       e.target.style.borderColor = "#c9cccf";
+                     }}
+                   />
+                 </div>
                </div>
                <button 
                  onClick={handleNewNote}
@@ -1325,7 +1388,7 @@ export default function Index() {
         <div className="col-editor" style={{ width: "50%" }}>
           <Card>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                 <span className="material-symbols-rounded">edit_note</span>
                 Note Editor
               </Text>
@@ -1484,6 +1547,77 @@ export default function Index() {
                       </span>
                     )}
                   </div>
+                </div>
+                <div>
+                  <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                    Tags
+                  </label>
+                  <div style={{ marginBottom: "8px" }}>
+                    <input
+                      type="text"
+                      placeholder="Add a tag and press Enter..."
+                      value={newTagInput}
+                      onChange={(e) => setNewTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && newTagInput.trim()) {
+                          if (!noteTags.includes(newTagInput.trim())) {
+                            setNoteTags([...noteTags, newTagInput.trim()]);
+                          }
+                          setNewTagInput("");
+                        }
+                      }}
+                      style={{
+                        width: "100%",
+                        padding: "8px 12px",
+                        border: "1px solid #c9cccf",
+                        borderRadius: "4px",
+                        fontSize: "14px",
+                        outline: "none"
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = "#008060";
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = "#c9cccf";
+                      }}
+                    />
+                  </div>
+                  {noteTags.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                      {noteTags.map((tag, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            padding: "4px 8px",
+                            backgroundColor: "#e1e3e5",
+                            borderRadius: "12px",
+                            fontSize: "12px",
+                            color: "#202223"
+                          }}
+                        >
+                          <span>{tag}</span>
+                          <button
+                            onClick={() => setNoteTags(noteTags.filter((_, i) => i !== index))}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              fontSize: "14px",
+                              color: "#6d7175",
+                              padding: "0",
+                              display: "flex",
+                              alignItems: "center"
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <input
