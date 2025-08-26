@@ -1153,18 +1153,54 @@ export default function Index() {
             <div style={{ padding: "16px" }}>
               <InlineStack gap="300" align="center">
                 <div style={{ flex: 1 }}>
-                  <TextField
-                    label="New folder name"
-                    value={folderName}
-                    onChange={setFolderName}
-                    autoComplete="off"
-                    maxLength={35}
+                  <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                    New folder name
+                  </label>
+                  <div
+                    style={{
+                      border: "none",
+                      outline: "none",
+                      fontSize: "14px",
+                      color: "#202223",
+                      padding: "8px 0",
+                      borderBottom: "1px solid #e1e3e5",
+                      cursor: "text",
+                      width: "100%",
+                      backgroundColor: "transparent",
+                      fontFamily: "inherit",
+                      transition: "border-color 0.2s ease"
+                    }}
+                    contentEditable
+                    suppressContentEditableWarning
+                    onInput={(e) => {
+                      const text = e.currentTarget.textContent || "";
+                      if (text.length <= 35) {
+                        setFolderName(text);
+                      } else {
+                        e.currentTarget.textContent = text.substring(0, 35);
+                        setFolderName(text.substring(0, 35));
+                      }
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         handleCreateFolder();
                       }
                     }}
-                  />
+                    onFocus={(e) => {
+                      e.currentTarget.style.borderBottomColor = "#008060";
+                      if (e.currentTarget.textContent === "Enter folder name...") {
+                        e.currentTarget.textContent = "";
+                      }
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.borderBottomColor = "#e1e3e5";
+                      if (!e.currentTarget.textContent.trim()) {
+                        e.currentTarget.textContent = "Enter folder name...";
+                      }
+                    }}
+                  >
+                    {folderName || "Enter folder name..."}
+                  </div>
                 </div>
                 <button 
                   onClick={handleCreateFolder}
