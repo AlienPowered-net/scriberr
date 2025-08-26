@@ -632,6 +632,9 @@ export default function Index() {
       return (
       <Page title="scriberr">
 
+        {/* Material Icons CDN */}
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
         {/* Global Styles - Always Applied */}
         <style>{`
           @keyframes slideIn {
@@ -779,9 +782,12 @@ export default function Index() {
             })
           }}
         >
-          <div style={{ padding: "16px" }}>
-            <Text as="h2" variant="headingLg">Folders</Text>
-          </div>
+                      <div style={{ padding: "16px" }}>
+              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span className="material-icons" style={{ fontSize: "24px" }}>folder</span>
+                Folders
+              </Text>
+            </div>
           <div style={{ padding: "16px" }}>
             {folders.length === 0 ? (
               <Text as="p">No folders yet</Text>
@@ -813,8 +819,9 @@ export default function Index() {
                     }
                   }}
                 >
-                  <Text as="span" variant="headingSm" style={{ fontWeight: "600" }}>
-                    📁 All Notes
+                  <Text as="span" variant="headingSm" style={{ fontWeight: "600", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span className="material-icons" style={{ fontSize: "18px" }}>note</span>
+                    All Notes
                   </Text>
                 </div>
                 {folders.map((folder) => (
@@ -908,7 +915,8 @@ export default function Index() {
                         </button>
                       </div>
                     ) : (
-                      <Text as="span" variant="headingSm">
+                      <Text as="span" variant="headingSm" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span className="material-icons" style={{ fontSize: "18px" }}>folder</span>
                         {folder.name}
                       </Text>
                     )}
@@ -1106,7 +1114,8 @@ export default function Index() {
           <Card>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                <div>
-                 <Text as="h2" variant="headingLg">
+                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                   <span className="material-icons" style={{ fontSize: "24px" }}>note</span>
                    Notes
                  </Text>
                  {selectedFolder && (
@@ -1298,7 +1307,10 @@ export default function Index() {
         <div className="col-editor" style={{ width: "50%" }}>
           <Card>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Text as="h2" variant="headingLg">Note Editor</Text>
+              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span className="material-icons" style={{ fontSize: "24px" }}>edit</span>
+                Note Editor
+              </Text>
               <InlineStack gap="200">
                 {editingNoteId ? (
                   <>
