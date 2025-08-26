@@ -738,10 +738,9 @@ export default function Index() {
         
         <div className="app-layout" style={{ display: "flex", gap: "16px", height: "calc(100vh - 200px)" }}>
         {/* FOLDERS */}
-        <div 
-          className="col-folders" 
-          style={{ 
-            width: "25%",
+        <div className="col-folders" style={{ width: "25%" }}>
+        <Card
+          style={{
             transition: "all 0.3s ease",
             ...(highlightFolders && {
               backgroundColor: "#fff3cd",
@@ -751,7 +750,6 @@ export default function Index() {
             })
           }}
         >
-        <Card>
           <div style={{ padding: "16px" }}>
             <Text as="h2" variant="headingLg">Folders</Text>
           </div>
@@ -768,7 +766,9 @@ export default function Index() {
                     justifyContent: "space-between",
                     alignItems: "center",
                     cursor: "pointer",
-                    backgroundColor: selectedFolder === folder.id ? "#f6f6f7" : "transparent"
+                    backgroundColor: selectedFolder === folder.id ? "#f6f6f7" : "transparent",
+                    borderRight: selectedFolder === folder.id ? "3px solid #2e7d32" : "none",
+                    position: "relative"
                   }}
                   onClick={() => setSelectedFolder(selectedFolder === folder.id ? null : folder.id)}
                   >
@@ -1040,7 +1040,7 @@ export default function Index() {
                    Notes
                  </Text>
                  {selectedFolder && (
-                   <Text as="p" style={{ fontSize: "14px", color: "#6d7175", marginTop: "4px" }}>
+                   <Text as="h3" style={{ fontSize: "16px", fontWeight: "bold", color: "#202223", marginTop: "4px" }}>
                      {folders.find(f => f.id === selectedFolder)?.name}
                    </Text>
                  )}
@@ -1090,7 +1090,9 @@ export default function Index() {
                       cursor: "pointer",
                       backgroundColor: editingNoteId === note.id ? "#f6f6f7" : "transparent",
                       borderRadius: "4px",
-                      marginBottom: "4px"
+                      marginBottom: "4px",
+                      borderRight: editingNoteId === note.id ? "3px solid #2e7d32" : "none",
+                      position: "relative"
                     }}
                     onClick={() => handleEditNote(note)}
                     >
@@ -1347,43 +1349,29 @@ export default function Index() {
             <div style={{ padding: "16px" }}>
               <BlockStack gap="300">
                 <div>
-                  <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
-                    Folder
-                  </label>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                    {folders.map((folder) => (
-                      <button
-                        key={folder.id}
-                        onClick={() => setFolderId(folder.id)}
-                        style={{
-                          padding: "6px 12px",
-                          borderRadius: "16px",
-                          border: "1px solid",
-                          borderColor: folderId === folder.id ? "#008060" : "#c9cccf",
-                          backgroundColor: folderId === folder.id ? "#008060" : "transparent",
-                          color: folderId === folder.id ? "white" : "#202223",
-                          cursor: "pointer",
-                          fontSize: "12px",
-                          fontWeight: "500",
-                          transition: "all 0.2s ease",
-                          outline: "none"
-                        }}
-                        onMouseEnter={(e) => {
-                          if (folderId !== folder.id) {
-                            e.target.style.borderColor = "#008060";
-                            e.target.style.backgroundColor = "#f6f6f7";
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (folderId !== folder.id) {
-                            e.target.style.borderColor = "#c9cccf";
-                            e.target.style.backgroundColor = "transparent";
-                          }
-                        }}
-                      >
-                        {folder.name}
-                      </button>
-                    ))}
+                  <div style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "8px", 
+                    fontSize: "14px", 
+                    color: "#6d7175",
+                    marginBottom: "16px"
+                  }}>
+                    {folderId ? (
+                      <>
+                        <span style={{ fontWeight: "500" }}>
+                          {folders.find(f => f.id === folderId)?.name}
+                        </span>
+                        <span>/</span>
+                        <span style={{ fontWeight: "600", color: "#202223" }}>
+                          {title || "(untitled)"}
+                        </span>
+                      </>
+                    ) : (
+                      <span style={{ fontStyle: "italic", color: "#8c9196" }}>
+                        Select a folder to start
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div>
