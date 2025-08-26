@@ -832,7 +832,8 @@ export default function Index() {
             </div>
                       <div style={{ padding: "16px" }}>
               <div style={{ marginBottom: "16px", position: "relative" }}>
-                <div
+                <input
+                  type="text"
                   style={{
                     border: "none",
                     outline: "none",
@@ -1148,7 +1149,8 @@ export default function Index() {
                   <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
                     New folder name
                   </label>
-                  <div
+                  <input
+                    type="text"
                     style={{
                       border: "none",
                       outline: "none",
@@ -1162,8 +1164,6 @@ export default function Index() {
                       fontFamily: "inherit",
                       transition: "border-color 0.2s ease"
                     }}
-                    contentEditable
-                    suppressContentEditableWarning
                     value={folderName}
                     onChange={(e) => setFolderName(e.target.value)}
                     placeholder="Enter folder name..."
@@ -1266,7 +1266,8 @@ export default function Index() {
             </div>
            <div style={{ padding: "16px" }}>
               <div style={{ marginBottom: "16px", position: "relative" }}>
-                <div
+                <input
+                  type="text"
                   style={{
                     border: "none",
                     outline: "none",
