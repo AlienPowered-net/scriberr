@@ -1623,7 +1623,8 @@ export default function Index() {
                     Tags
                   </label>
                   <div style={{ marginBottom: "8px" }}>
-                    <div
+                    <input
+                      type="text"
                       style={{
                         border: "none",
                         outline: "none",
