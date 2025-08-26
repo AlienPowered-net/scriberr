@@ -344,11 +344,23 @@ export default function Index() {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
+          // Store current context before clearing
+          const currentFolderId = selectedFolder;
+          const currentNoteId = editingNoteId;
+          
+          // Clear the form
           setEditingNoteId(null);
           setTitle('');
           setBody('');
           setFolderId('');
+          setNoteTags([]);
+          
+          // Reload the page but maintain context
           window.location.reload();
+          
+          // After reload, restore context (this will be handled by the useEffect that checks localStorage)
+          localStorage.setItem('selectedNoteId', currentNoteId);
+          localStorage.setItem('selectedFolderId', currentFolderId);
         } else {
           setAlertMessage(result.error || 'Failed to update note');
           setAlertType('error');
@@ -545,11 +557,23 @@ export default function Index() {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
+          // Store current context before clearing
+          const currentFolderId = selectedFolder;
+          const newNoteId = result.noteId; // For new notes, we get the ID back
+          
+          // Clear the form
           setEditingNoteId(null);
-          setTitle(''); // Clear the inputs
+          setTitle('');
           setBody('');
           setFolderId('');
+          setNoteTags([]);
+          
+          // Reload the page but maintain context
           window.location.reload();
+          
+          // After reload, restore context (this will be handled by the useEffect that checks localStorage)
+          localStorage.setItem('selectedNoteId', newNoteId || editingNoteId);
+          localStorage.setItem('selectedFolderId', currentFolderId);
         } else {
           setAlertMessage(result.error || 'Failed to save note');
           setAlertType('error');
@@ -810,7 +834,7 @@ export default function Index() {
           </div>
         )}
         
-        <div className="app-layout" style={{ display: "flex", gap: "16px", height: "calc(100vh - 200px)" }}>
+        <div className="app-layout" style={{ display: "flex", gap: "16px", height: "calc(100vh - 200px)", marginBottom: "20px" }}>
         {/* FOLDERS */}
         <div className="col-folders" style={{ width: "25%" }}>
         <Card
@@ -888,6 +912,7 @@ export default function Index() {
                     cursor: "pointer",
                     backgroundColor: selectedFolder === null ? "#f6f6f7" : "transparent",
                     borderRight: selectedFolder === null ? "3px solid #2e7d32" : "none",
+                    borderRadius: "8px",
                     position: "relative",
                     transition: "background-color 0.2s ease"
                   }}
@@ -918,6 +943,7 @@ export default function Index() {
                     cursor: "pointer",
                     backgroundColor: selectedFolder === folder.id ? "#f6f6f7" : "transparent",
                     borderRight: selectedFolder === folder.id ? "3px solid #2e7d32" : "none",
+                    borderRadius: "8px",
                     position: "relative",
                     transition: "background-color 0.2s ease"
                   }}
@@ -1319,7 +1345,7 @@ export default function Index() {
                       borderBottom: "1px solid #e1e3e5",
                       cursor: "pointer",
                       backgroundColor: editingNoteId === note.id ? "#f6f6f7" : "transparent",
-                      borderRadius: "4px",
+                      borderRadius: "8px",
                       marginBottom: "4px",
                       borderRight: editingNoteId === note.id ? "3px solid #2e7d32" : "none",
                       position: "relative",
