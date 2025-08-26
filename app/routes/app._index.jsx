@@ -601,9 +601,9 @@ export default function Index() {
             .app-layout {
               width: 100%;
             }
-            .col-folders { width: 20% !important; }
-            .col-notes   { width: 20% !important; }
-            .col-editor  { width: 60% !important; }
+            .col-folders { width: 23% !important; }
+            .col-notes   { width: 23% !important; }
+            .col-editor  { width: 54% !important; }
           }
           
           body, html {
