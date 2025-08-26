@@ -847,24 +847,16 @@ export default function Index() {
                     fontFamily: "inherit",
                     transition: "border-color 0.2s ease"
                   }}
-                  contentEditable
-                  suppressContentEditableWarning
-                  onInput={(e) => setGlobalSearchQuery(e.currentTarget.textContent || "")}
+                  value={globalSearchQuery}
+                  onChange={(e) => setGlobalSearchQuery(e.target.value)}
+                  placeholder="Search all notes..."
                   onFocus={(e) => {
-                    e.currentTarget.style.borderBottomColor = "#008060";
-                    if (e.currentTarget.textContent === "Search all notes...") {
-                      e.currentTarget.textContent = "";
-                    }
+                    e.target.style.borderBottomColor = "#008060";
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderBottomColor = "#e1e3e5";
-                    if (!e.currentTarget.textContent.trim()) {
-                      e.currentTarget.textContent = "Search all notes...";
-                    }
+                    e.target.style.borderBottomColor = "#e1e3e5";
                   }}
-                >
-                  {globalSearchQuery || "Search all notes..."}
-                </div>
+                />
                 <span 
                   className="material-symbols-rounded"
                   style={{
@@ -1172,35 +1164,22 @@ export default function Index() {
                     }}
                     contentEditable
                     suppressContentEditableWarning
-                    onInput={(e) => {
-                      const text = e.currentTarget.textContent || "";
-                      if (text.length <= 35) {
-                        setFolderName(text);
-                      } else {
-                        e.currentTarget.textContent = text.substring(0, 35);
-                        setFolderName(text.substring(0, 35));
-                      }
-                    }}
+                    value={folderName}
+                    onChange={(e) => setFolderName(e.target.value)}
+                    placeholder="Enter folder name..."
+                    maxLength={35}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         handleCreateFolder();
                       }
                     }}
                     onFocus={(e) => {
-                      e.currentTarget.style.borderBottomColor = "#008060";
-                      if (e.currentTarget.textContent === "Enter folder name...") {
-                        e.currentTarget.textContent = "";
-                      }
+                      e.target.style.borderBottomColor = "#008060";
                     }}
                     onBlur={(e) => {
-                      e.currentTarget.style.borderBottomColor = "#e1e3e5";
-                      if (!e.currentTarget.textContent.trim()) {
-                        e.currentTarget.textContent = "Enter folder name...";
-                      }
+                      e.target.style.borderBottomColor = "#e1e3e5";
                     }}
-                  >
-                    {folderName || "Enter folder name..."}
-                  </div>
+                  />
                 </div>
                 <button 
                   onClick={handleCreateFolder}
@@ -1302,24 +1281,16 @@ export default function Index() {
                     fontFamily: "inherit",
                     transition: "border-color 0.2s ease"
                   }}
-                  contentEditable
-                  suppressContentEditableWarning
-                  onInput={(e) => setFolderSearchQuery(e.currentTarget.textContent || "")}
+                  value={folderSearchQuery}
+                  onChange={(e) => setFolderSearchQuery(e.target.value)}
+                  placeholder="Search notes in folder..."
                   onFocus={(e) => {
-                    e.currentTarget.style.borderBottomColor = "#008060";
-                    if (e.currentTarget.textContent === "Search notes in folder...") {
-                      e.currentTarget.textContent = "";
-                    }
+                    e.target.style.borderBottomColor = "#008060";
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderBottomColor = "#e1e3e5";
-                    if (!e.currentTarget.textContent.trim()) {
-                      e.currentTarget.textContent = "Search notes in folder...";
-                    }
+                    e.target.style.borderBottomColor = "#e1e3e5";
                   }}
-                >
-                  {folderSearchQuery || "Search notes in folder..."}
-                </div>
+                />
                 <span 
                   className="material-symbols-rounded"
                   style={{
@@ -1665,33 +1636,24 @@ export default function Index() {
                         fontFamily: "inherit",
                         transition: "border-color 0.2s ease"
                       }}
-                      contentEditable
-                      suppressContentEditableWarning
-                      onInput={(e) => setNewTagInput(e.currentTarget.textContent || "")}
+                      value={newTagInput}
+                      onChange={(e) => setNewTagInput(e.target.value)}
+                      placeholder="Add a tag and press Enter..."
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && newTagInput.trim()) {
                           if (!noteTags.includes(newTagInput.trim())) {
                             setNoteTags([...noteTags, newTagInput.trim()]);
                           }
                           setNewTagInput("");
-                          e.currentTarget.textContent = "";
                         }
                       }}
                       onFocus={(e) => {
-                        e.currentTarget.style.borderBottomColor = "#008060";
-                        if (e.currentTarget.textContent === "Add a tag and press Enter...") {
-                          e.currentTarget.textContent = "";
-                        }
+                        e.target.style.borderBottomColor = "#008060";
                       }}
                       onBlur={(e) => {
-                        e.currentTarget.style.borderBottomColor = "#e1e3e5";
-                        if (!e.currentTarget.textContent.trim()) {
-                          e.currentTarget.textContent = "Add a tag and press Enter...";
-                        }
+                        e.target.style.borderBottomColor = "#e1e3e5";
                       }}
-                    >
-                      {newTagInput || "Add a tag and press Enter..."}
-                    </div>
+                    />
                   </div>
                   {noteTags.length > 0 && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
