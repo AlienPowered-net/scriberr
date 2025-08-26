@@ -15,8 +15,56 @@ import {
   InlineStack,
 } from "@shopify/polaris";
 import { useState, useEffect } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+
+// Client-only Quill component
+function ClientQuill({ value, onChange, placeholder }) {
+  const [QuillComponent, setQuillComponent] = useState(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    import("react-quill").then((module) => {
+      setQuillComponent(() => module.default);
+      // Import CSS dynamically
+      import("react-quill/dist/quill.snow.css");
+    });
+  }, []);
+
+  if (!isClient || !QuillComponent) {
+    return (
+      <div style={{
+        border: "1px solid #c9cccf",
+        borderRadius: "4px",
+        padding: "12px",
+        minHeight: "300px",
+        backgroundColor: "#f6f6f7",
+        color: "#6d7175"
+      }}>
+        Loading editor...
+      </div>
+    );
+  }
+
+  return (
+    <QuillComponent
+      value={value}
+      onChange={onChange}
+      style={{ height: "300px", marginBottom: "20px" }}
+      modules={{
+        toolbar: [
+          [{ 'header': [1, 2, 3, false] }],
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          [{ 'color': [] }, { 'background': [] }],
+          [{ 'align': [] }],
+          ['link', 'image'],
+          ['clean']
+        ]
+      }}
+      placeholder={placeholder}
+    />
+  );
+}
 
 /* ------------------ Loader ------------------ */
 export async function loader({ request }) {
@@ -1163,21 +1211,9 @@ export default function Index() {
                   <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
                     Body
                   </label>
-                  <ReactQuill
+                  <ClientQuill
                     value={body}
                     onChange={setBody}
-                    style={{ height: "300px", marginBottom: "20px" }}
-                    modules={{
-                      toolbar: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'color': [] }, { 'background': [] }],
-                        [{ 'align': [] }],
-                        ['link', 'image'],
-                        ['clean']
-                      ]
-                    }}
                     placeholder="Type your note here..."
                   />
                 </div>
