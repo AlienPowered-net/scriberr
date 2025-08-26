@@ -1371,13 +1371,17 @@ export default function Index() {
                   </div>
                 </div>
                 <div>
-                  <div
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Add a title to your note here..."
                     style={{
                       border: "none",
                       outline: "none",
                       fontSize: "24px",
                       fontWeight: "600",
-                      color: title ? "#202223" : "#8c9196",
+                      color: "#202223",
                       padding: "8px 0",
                       borderBottom: "1px solid #e1e3e5",
                       cursor: "text",
@@ -1386,27 +1390,13 @@ export default function Index() {
                       fontFamily: "inherit",
                       transition: "border-color 0.2s ease"
                     }}
-                    contentEditable
-                    suppressContentEditableWarning
-                    onInput={(e) => {
-                      const newTitle = e.currentTarget.textContent || "";
-                      setTitle(newTitle);
-                    }}
                     onFocus={(e) => {
-                      e.currentTarget.style.borderBottomColor = "#008060";
-                      if (e.currentTarget.textContent === "Add a title to your note here...") {
-                        e.currentTarget.textContent = "";
-                      }
+                      e.target.style.borderBottomColor = "#008060";
                     }}
                     onBlur={(e) => {
-                      e.currentTarget.style.borderBottomColor = "#e1e3e5";
-                      if (!e.currentTarget.textContent.trim()) {
-                        e.currentTarget.textContent = "Add a title to your note here...";
-                      }
+                      e.target.style.borderBottomColor = "#e1e3e5";
                     }}
-                  >
-                    {title || "Add a title to your note here..."}
-                  </div>
+                  />
                 </div>
                 <div>
                   <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
