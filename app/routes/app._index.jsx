@@ -1219,7 +1219,8 @@ export default function Index() {
                     userSelect: "none",
                     WebkitUserSelect: "none",
                     touchAction: "manipulation",
-                    marginTop: "20px",
+                    height: "5%",
+                    marginTop: "30px",
                     boxShadow: "rgba(0, 0, 0, .2) 0 -25px 18px -14px inset, rgba(0, 0, 0, .15) 0 1px 2px, rgba(0, 0, 0, .15) 0 2px 4px, rgba(0, 0, 0, .15) 0 4px 8px, rgba(0, 0, 0, .15) 0 8px 16px, rgba(0, 0, 0, .15) 0 16px 32px"
                   }}
                   onMouseEnter={(e) => {
