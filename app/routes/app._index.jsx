@@ -15,6 +15,8 @@ import {
   InlineStack,
 } from "@shopify/polaris";
 import { useState, useEffect } from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 /* ------------------ Loader ------------------ */
 export async function loader({ request }) {
@@ -637,9 +639,28 @@ export default function Index() {
             width: 100% !important;
           }
           
-          .Polaris-Card {
-            width: 100% !important;
-          }
+                        .Polaris-Card {
+                width: 100% !important;
+              }
+              
+              /* Quill Editor Styles */
+              .ql-editor {
+                min-height: 250px !important;
+                font-size: 14px !important;
+                line-height: 1.5 !important;
+              }
+              
+              .ql-toolbar {
+                border-top-left-radius: 4px !important;
+                border-top-right-radius: 4px !important;
+                border-bottom: 1px solid #c9cccf !important;
+              }
+              
+              .ql-container {
+                border-bottom-left-radius: 4px !important;
+                border-bottom-right-radius: 4px !important;
+                border: 1px solid #c9cccf !important;
+              }
         `}</style>
 
         {/* Custom Alert */}
@@ -1138,18 +1159,28 @@ export default function Index() {
                     }
                   }}
                 />
-                <TextField
-                  label="Body"
-                  value={body}
-                  onChange={setBody}
-                  autoComplete="off"
-                  multiline={12}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && e.ctrlKey) {
-                      handleCreateNote();
-                    }
-                  }}
-                />
+                <div>
+                  <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+                    Body
+                  </label>
+                  <ReactQuill
+                    value={body}
+                    onChange={setBody}
+                    style={{ height: "300px", marginBottom: "20px" }}
+                    modules={{
+                      toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'align': [] }],
+                        ['link', 'image'],
+                        ['clean']
+                      ]
+                    }}
+                    placeholder="Type your note here..."
+                  />
+                </div>
                 <div>
                   <label htmlFor="folderId" style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
                     Folder
