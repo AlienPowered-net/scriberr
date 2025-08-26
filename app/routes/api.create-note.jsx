@@ -40,7 +40,7 @@ export async function action({ request }) {
     }
 
     // Create the note
-    await prisma.note.create({
+    const newNote = await prisma.note.create({
       data: { 
         title: trimmedTitle, 
         content: trimmedBody, 
@@ -49,7 +49,7 @@ export async function action({ request }) {
       },
     });
     
-    return json({ success: true, message: "Note created successfully" });
+    return json({ success: true, message: "Note created successfully", noteId: newNote.id });
   } catch (error) {
     console.error("Error creating note:", error);
     return json({ error: "Failed to create note" });

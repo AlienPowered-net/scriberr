@@ -395,6 +395,14 @@ export default function Index() {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
+          // Set up the new note for editing
+          setEditingNoteId(result.noteId);
+          setTitle('');
+          setBody('Type your note here...');
+          setFolderId(currentFolderId);
+          // Ensure the folder is selected
+          setSelectedFolder(currentFolderId);
+          // Reload to get the updated note list
           window.location.reload();
         } else {
           setAlertMessage(result.error || 'Failed to create new note');
@@ -762,6 +770,36 @@ export default function Index() {
               <Text as="p">No folders yet</Text>
             ) : (
               <div>
+                {/* All Notes Option */}
+                <div 
+                  style={{ 
+                    padding: "8px 16px", 
+                    borderBottom: "1px solid #e1e3e5",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    cursor: "pointer",
+                    backgroundColor: selectedFolder === null ? "#f6f6f7" : "transparent",
+                    borderRight: selectedFolder === null ? "3px solid #2e7d32" : "none",
+                    position: "relative",
+                    transition: "background-color 0.2s ease"
+                  }}
+                  onClick={() => setSelectedFolder(null)}
+                  onMouseEnter={(e) => {
+                    if (selectedFolder !== null) {
+                      e.target.style.backgroundColor = "#f0f0f0";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedFolder !== null) {
+                      e.target.style.backgroundColor = "transparent";
+                    }
+                  }}
+                >
+                  <Text as="span" variant="headingSm" style={{ fontWeight: "600" }}>
+                    📁 All Notes
+                  </Text>
+                </div>
                 {folders.map((folder) => (
                   <div key={folder.id} style={{ 
                     padding: "8px 16px", 
@@ -772,9 +810,20 @@ export default function Index() {
                     cursor: "pointer",
                     backgroundColor: selectedFolder === folder.id ? "#f6f6f7" : "transparent",
                     borderRight: selectedFolder === folder.id ? "3px solid #2e7d32" : "none",
-                    position: "relative"
+                    position: "relative",
+                    transition: "background-color 0.2s ease"
                   }}
                   onClick={() => setSelectedFolder(selectedFolder === folder.id ? null : folder.id)}
+                  onMouseEnter={(e) => {
+                    if (selectedFolder !== folder.id) {
+                      e.target.style.backgroundColor = "#f0f0f0";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedFolder !== folder.id) {
+                      e.target.style.backgroundColor = "transparent";
+                    }
+                  }}
                   >
                     {editingFolderId === folder.id ? (
                       <div style={{ 
@@ -1096,9 +1145,20 @@ export default function Index() {
                       borderRadius: "4px",
                       marginBottom: "4px",
                       borderRight: editingNoteId === note.id ? "3px solid #2e7d32" : "none",
-                      position: "relative"
+                      position: "relative",
+                      transition: "background-color 0.2s ease"
                     }}
                     onClick={() => handleEditNote(note)}
+                    onMouseEnter={(e) => {
+                      if (editingNoteId !== note.id) {
+                        e.target.style.backgroundColor = "#f0f0f0";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (editingNoteId !== note.id) {
+                        e.target.style.backgroundColor = "transparent";
+                      }
+                    }}
                     >
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                         <div style={{ flex: 1 }}>
