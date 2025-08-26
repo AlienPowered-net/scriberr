@@ -88,6 +88,7 @@ export async function loader({ request }) {
       id: true,
       title: true,
       content: true,
+      tags: true,
       folderId: true,
       folder: {
         select: {
@@ -282,12 +283,12 @@ export default function Index() {
     const globalSearchMatch = !globalSearchQuery || 
       note.title?.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
       note.content?.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
-      noteTags.some(tag => tag.toLowerCase().includes(globalSearchQuery.toLowerCase()));
+      (note.tags && note.tags.some(tag => tag.toLowerCase().includes(globalSearchQuery.toLowerCase())));
     
     const folderSearchMatch = !folderSearchQuery || 
       note.title?.toLowerCase().includes(folderSearchQuery.toLowerCase()) ||
       note.content?.toLowerCase().includes(folderSearchQuery.toLowerCase()) ||
-      noteTags.some(tag => tag.toLowerCase().includes(folderSearchQuery.toLowerCase()));
+      (note.tags && note.tags.some(tag => tag.toLowerCase().includes(folderSearchQuery.toLowerCase())));
     
     return folderMatch && globalSearchMatch && folderSearchMatch;
   });
@@ -298,6 +299,7 @@ export default function Index() {
     setTitle(note.title || "");
     setBody(note.content || "");
     setFolderId(note.folderId || "");
+    setNoteTags(note.tags || []);
     // Automatically select the folder associated with this note
     if (note.folderId) {
       setSelectedFolder(note.folderId);
@@ -331,6 +333,7 @@ export default function Index() {
     formData.append('title', trimmedTitle);
     formData.append('body', trimmedBody);
     formData.append('folderId', trimmedFolderId);
+    formData.append('tags', JSON.stringify(noteTags));
     
     try {
       const response = await fetch('/api/update-note', {
@@ -424,6 +427,7 @@ export default function Index() {
     formData.append('title', '');
     formData.append('body', 'Type your note here...');
     formData.append('folderId', currentFolderId);
+    formData.append('tags', JSON.stringify([]));
     
     try {
       const response = await fetch('/api/create-note', {
@@ -463,6 +467,7 @@ export default function Index() {
     setTitle('');
     setBody('');
     setFolderId('');
+    setNoteTags([]);
   };
 
   // Handle deleting a note
@@ -820,39 +825,51 @@ export default function Index() {
           }}
         >
                       <div style={{ padding: "16px" }}>
-              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
+              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                 <span className="material-symbols-rounded">home_storage</span>
                 Folders
               </Text>
-              <div style={{ marginBottom: "12px" }}>
-                <input
-                  type="text"
-                  placeholder="Search all notes..."
-                  value={globalSearchQuery}
-                  onChange={(e) => setGlobalSearchQuery(e.target.value)}
+            </div>
+                      <div style={{ padding: "16px" }}>
+              <div style={{ marginBottom: "16px" }}>
+                <div
                   style={{
-                    width: "100%",
-                    padding: "8px 12px",
-                    border: "1px solid #c9cccf",
-                    borderRadius: "4px",
+                    border: "none",
+                    outline: "none",
                     fontSize: "14px",
-                    outline: "none"
+                    color: "#202223",
+                    padding: "8px 0",
+                    borderBottom: "1px solid #e1e3e5",
+                    cursor: "text",
+                    width: "100%",
+                    backgroundColor: "transparent",
+                    fontFamily: "inherit",
+                    transition: "border-color 0.2s ease"
                   }}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onInput={(e) => setGlobalSearchQuery(e.currentTarget.textContent || "")}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "#008060";
+                    e.currentTarget.style.borderBottomColor = "#008060";
+                    if (e.currentTarget.textContent === "Search all notes...") {
+                      e.currentTarget.textContent = "";
+                    }
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = "#c9cccf";
+                    e.currentTarget.style.borderBottomColor = "#e1e3e5";
+                    if (!e.currentTarget.textContent.trim()) {
+                      e.currentTarget.textContent = "Search all notes...";
+                    }
                   }}
-                />
+                >
+                  {globalSearchQuery || "Search all notes..."}
+                </div>
               </div>
-            </div>
-          <div style={{ padding: "16px" }}>
-            {folders.length === 0 ? (
-              <Text as="p">No folders yet</Text>
-            ) : (
-              <div>
-                {/* All Notes Option */}
+              {folders.length === 0 ? (
+                <Text as="p">No folders yet</Text>
+              ) : (
+                <div>
+                  {/* All Notes Option */}
                 <div 
                   style={{ 
                     padding: "8px 16px", 
@@ -1173,37 +1190,15 @@ export default function Index() {
           <Card>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                <div>
-                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
+                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                    <span className="material-symbols-rounded">note_stack</span>
                    Notes
                  </Text>
                  {selectedFolder && (
-                   <Text as="h2" style={{ fontSize: "18px", fontWeight: "bold", color: "#202223", marginTop: "4px", marginBottom: "12px" }}>
+                   <Text as="h2" style={{ fontSize: "18px", fontWeight: "bold", color: "#202223", marginTop: "4px" }}>
                      {folders.find(f => f.id === selectedFolder)?.name}
                    </Text>
                  )}
-                 <div style={{ marginBottom: "12px" }}>
-                   <input
-                     type="text"
-                     placeholder="Search notes in folder..."
-                     value={folderSearchQuery}
-                     onChange={(e) => setFolderSearchQuery(e.target.value)}
-                     style={{
-                       width: "100%",
-                       padding: "8px 12px",
-                       border: "1px solid #c9cccf",
-                       borderRadius: "4px",
-                       fontSize: "14px",
-                       outline: "none"
-                     }}
-                     onFocus={(e) => {
-                       e.target.style.borderColor = "#008060";
-                     }}
-                     onBlur={(e) => {
-                       e.target.style.borderColor = "#c9cccf";
-                     }}
-                   />
-                 </div>
                </div>
                <button 
                  onClick={handleNewNote}
@@ -1237,6 +1232,40 @@ export default function Index() {
                </button>
             </div>
            <div style={{ padding: "16px" }}>
+              <div style={{ marginBottom: "16px" }}>
+                <div
+                  style={{
+                    border: "none",
+                    outline: "none",
+                    fontSize: "14px",
+                    color: "#202223",
+                    padding: "8px 0",
+                    borderBottom: "1px solid #e1e3e5",
+                    cursor: "text",
+                    width: "100%",
+                    backgroundColor: "transparent",
+                    fontFamily: "inherit",
+                    transition: "border-color 0.2s ease"
+                  }}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onInput={(e) => setFolderSearchQuery(e.currentTarget.textContent || "")}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderBottomColor = "#008060";
+                    if (e.currentTarget.textContent === "Search notes in folder...") {
+                      e.currentTarget.textContent = "";
+                    }
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderBottomColor = "#e1e3e5";
+                    if (!e.currentTarget.textContent.trim()) {
+                      e.currentTarget.textContent = "Search notes in folder...";
+                    }
+                  }}
+                >
+                  {folderSearchQuery || "Search notes in folder..."}
+                </div>
+              </div>
               {filteredNotes.length === 0 ? (
                 <Text as="p">
                   {selectedFolder ? "No notes in this folder" : "No notes yet"}
@@ -1553,34 +1582,47 @@ export default function Index() {
                     Tags
                   </label>
                   <div style={{ marginBottom: "8px" }}>
-                    <input
-                      type="text"
-                      placeholder="Add a tag and press Enter..."
-                      value={newTagInput}
-                      onChange={(e) => setNewTagInput(e.target.value)}
+                    <div
+                      style={{
+                        border: "none",
+                        outline: "none",
+                        fontSize: "14px",
+                        color: "#202223",
+                        padding: "8px 0",
+                        borderBottom: "1px solid #e1e3e5",
+                        cursor: "text",
+                        width: "100%",
+                        backgroundColor: "transparent",
+                        fontFamily: "inherit",
+                        transition: "border-color 0.2s ease"
+                      }}
+                      contentEditable
+                      suppressContentEditableWarning
+                      onInput={(e) => setNewTagInput(e.currentTarget.textContent || "")}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && newTagInput.trim()) {
                           if (!noteTags.includes(newTagInput.trim())) {
                             setNoteTags([...noteTags, newTagInput.trim()]);
                           }
                           setNewTagInput("");
+                          e.currentTarget.textContent = "";
                         }
                       }}
-                      style={{
-                        width: "100%",
-                        padding: "8px 12px",
-                        border: "1px solid #c9cccf",
-                        borderRadius: "4px",
-                        fontSize: "14px",
-                        outline: "none"
-                      }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = "#008060";
+                        e.currentTarget.style.borderBottomColor = "#008060";
+                        if (e.currentTarget.textContent === "Add a tag and press Enter...") {
+                          e.currentTarget.textContent = "";
+                        }
                       }}
                       onBlur={(e) => {
-                        e.target.style.borderColor = "#c9cccf";
+                        e.currentTarget.style.borderBottomColor = "#e1e3e5";
+                        if (!e.currentTarget.textContent.trim()) {
+                          e.currentTarget.textContent = "Add a tag and press Enter...";
+                        }
                       }}
-                    />
+                    >
+                      {newTagInput || "Add a tag and press Enter..."}
+                    </div>
                   </div>
                   {noteTags.length > 0 && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>

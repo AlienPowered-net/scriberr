@@ -11,6 +11,7 @@ export async function action({ request }) {
   const title = form.get("title");
   const body = form.get("body");
   const folderId = form.get("folderId");
+  const tags = form.get("tags");
 
   const trimmedTitle = title ? title.toString().trim() : "";
   const trimmedBody = body ? body.toString().trim() : "";
@@ -39,11 +40,15 @@ export async function action({ request }) {
       return json({ error: "Selected folder not found" });
     }
 
+    // Parse tags from JSON string
+    const parsedTags = tags ? JSON.parse(tags.toString()) : [];
+
     // Create the note
     const newNote = await prisma.note.create({
       data: { 
         title: trimmedTitle, 
         content: trimmedBody, 
+        tags: parsedTags,
         shopId, 
         folderId: trimmedFolderId 
       },
