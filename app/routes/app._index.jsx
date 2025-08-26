@@ -1018,10 +1018,17 @@ export default function Index() {
         {/* NOTES */}
         <div className="col-notes" style={{ width: "25%" }}>
           <Card>
-            <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-               <Text as="h2" variant="headingLg">
-                 Notes {selectedFolder && `- ${folders.find(f => f.id === selectedFolder)?.name}`}
-               </Text>
+            <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+               <div>
+                 <Text as="h2" variant="headingLg">
+                   Notes
+                 </Text>
+                 {selectedFolder && (
+                   <Text as="p" style={{ fontSize: "14px", color: "#6d7175", marginTop: "4px" }}>
+                     {folders.find(f => f.id === selectedFolder)?.name}
+                   </Text>
+                 )}
+               </div>
                <button 
                  onClick={handleNewNote}
                  style={{
@@ -1191,152 +1198,13 @@ export default function Index() {
         {/* NOTE EDITOR */}
         <div className="col-editor" style={{ width: "50%" }}>
           <Card>
-            <div style={{ padding: "16px" }}>
+            <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <Text as="h2" variant="headingLg">Note Editor</Text>
-            </div>
-            <div style={{ padding: "16px" }}>
-              <BlockStack gap="300">
-                <TextField
-                  label="Title"
-                  value={title}
-                  onChange={setTitle}
-                  autoComplete="off"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && e.ctrlKey) {
-                      handleCreateNote();
-                    }
-                  }}
-                />
-                <div>
-                  <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
-                    Body
-                  </label>
-                  <ClientQuill
-                    value={body}
-                    onChange={setBody}
-                    placeholder="Type your note here..."
-                  />
-                </div>
-                <div>
-                  <label htmlFor="folderId" style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
-                    Folder
-                  </label>
-                  <select
-                    id="folderId"
-                    value={folderId}
-                    onChange={(e) => setFolderId(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "8px 12px",
-                      border: "1px solid #c9cccf",
-                      borderRadius: "4px",
-                      fontSize: "14px",
-                    }}
-                  >
-                    {folderOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <InlineStack gap="300">
-                  {editingNoteId ? (
-                    <>
-                      <button 
-                        onClick={handleSaveNote}
-                        style={{
-                          backgroundColor: "#2e7d32",
-                          border: "0",
-                          color: "white",
-                          padding: "7px 20px",
-                          borderRadius: "8px",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          textAlign: "center",
-                          textDecoration: "none",
-                          transition: "all 250ms",
-                          userSelect: "none",
-                          WebkitUserSelect: "none",
-                          touchAction: "manipulation",
-                          boxShadow: "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px"
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.boxShadow = "rgba(46, 125, 50, .35) 0 -25px 18px -14px inset, rgba(46, 125, 50, .25) 0 1px 2px, rgba(46, 125, 50, .25) 0 2px 4px, rgba(46, 125, 50, .25) 0 4px 8px, rgba(46, 125, 50, .25) 0 8px 16px, rgba(46, 125, 50, .25) 0 16px 32px";
-                          e.target.style.transform = "scale(1.05) rotate(-1deg)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.boxShadow = "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px";
-                          e.target.style.transform = "scale(1) rotate(0deg)";
-                        }}
-                      >
-                        Save Note
-                      </button>
-                      <button 
-                        onClick={handleCancelEdit}
-                        style={{
-                          backgroundColor: "#6d7175",
-                          border: "0",
-                          color: "white",
-                          padding: "7px 20px",
-                          borderRadius: "8px",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          textAlign: "center",
-                          textDecoration: "none",
-                          transition: "all 250ms",
-                          userSelect: "none",
-                          WebkitUserSelect: "none",
-                          touchAction: "manipulation",
-                          boxShadow: "rgba(109, 113, 117, .2) 0 -25px 18px -14px inset, rgba(109, 113, 117, .15) 0 1px 2px, rgba(109, 113, 117, .15) 0 2px 4px, rgba(109, 113, 117, .15) 0 4px 8px, rgba(109, 113, 117, .15) 0 8px 16px, rgba(109, 113, 117, .15) 0 16px 32px"
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.boxShadow = "rgba(109, 113, 117, .35) 0 -25px 18px -14px inset, rgba(109, 113, 117, .25) 0 1px 2px, rgba(109, 113, 117, .25) 0 2px 4px, rgba(109, 113, 117, .25) 0 4px 8px, rgba(109, 113, 117, .25) 0 8px 16px, rgba(109, 113, 117, .25) 0 16px 32px";
-                          e.target.style.transform = "scale(1.05) rotate(-1deg)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.boxShadow = "rgba(109, 113, 117, .2) 0 -25px 18px -14px inset, rgba(109, 113, 117, .15) 0 1px 2px, rgba(109, 113, 117, .15) 0 2px 4px, rgba(109, 113, 117, .15) 0 4px 8px, rgba(109, 113, 117, .15) 0 8px 16px, rgba(109, 113, 117, .15) 0 16px 32px";
-                          e.target.style.transform = "scale(1) rotate(0deg)";
-                        }}
-                      >
-                        Cancel
-                      </button>
-                      <button 
-                        onClick={() => setShowDeleteNoteConfirm(editingNoteId)}
-                        style={{
-                          backgroundColor: "#d82c0d",
-                          border: "0",
-                          color: "white",
-                          padding: "7px 20px",
-                          borderRadius: "8px",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          textAlign: "center",
-                          textDecoration: "none",
-                          transition: "all 250ms",
-                          userSelect: "none",
-                          WebkitUserSelect: "none",
-                          touchAction: "manipulation",
-                          boxShadow: "rgba(216, 44, 13, .2) 0 -25px 18px -14px inset, rgba(216, 44, 13, .15) 0 1px 2px, rgba(216, 44, 13, .15) 0 2px 4px, rgba(216, 44, 13, .15) 0 4px 8px, rgba(216, 44, 13, .15) 0 8px 16px, rgba(216, 44, 13, .15) 0 16px 32px"
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.boxShadow = "rgba(216, 44, 13, .35) 0 -25px 18px -14px inset, rgba(216, 44, 13, .25) 0 1px 2px, rgba(216, 44, 13, .25) 0 2px 4px, rgba(216, 44, 13, .25) 0 4px 8px, rgba(216, 44, 13, .25) 0 8px 16px, rgba(216, 44, 13, .25) 0 16px 32px";
-                          e.target.style.transform = "scale(1.05) rotate(-1deg)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.boxShadow = "rgba(216, 44, 13, .2) 0 -25px 18px -14px inset, rgba(216, 44, 13, .15) 0 1px 2px, rgba(216, 44, 13, .15) 0 2px 4px, rgba(216, 44, 13, .15) 0 4px 8px, rgba(216, 44, 13, .15) 0 8px 16px, rgba(216, 44, 13, .15) 0 16px 32px";
-                          e.target.style.transform = "scale(1) rotate(0deg)";
-                        }}
-                      >
-                        Delete Note
-                      </button>
-                    </>
-                  ) : (
+              <InlineStack gap="200">
+                {editingNoteId ? (
+                  <>
                     <button 
-                      onClick={handleCreateNote}
+                      onClick={handleSaveNote}
                       style={{
                         backgroundColor: "#2e7d32",
                         border: "0",
@@ -1365,8 +1233,168 @@ export default function Index() {
                     >
                       Save Note
                     </button>
-                  )}
-                </InlineStack>
+                    <button 
+                      onClick={handleCancelEdit}
+                      style={{
+                        backgroundColor: "#6d7175",
+                        border: "0",
+                        color: "white",
+                        padding: "7px 20px",
+                        borderRadius: "8px",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        textAlign: "center",
+                        textDecoration: "none",
+                        transition: "all 250ms",
+                        userSelect: "none",
+                        WebkitUserSelect: "none",
+                        touchAction: "manipulation",
+                        boxShadow: "rgba(109, 113, 117, .2) 0 -25px 18px -14px inset, rgba(109, 113, 117, .15) 0 1px 2px, rgba(109, 113, 117, .15) 0 2px 4px, rgba(109, 113, 117, .15) 0 4px 8px, rgba(109, 113, 117, .15) 0 8px 16px, rgba(109, 113, 117, .15) 0 16px 32px"
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.boxShadow = "rgba(109, 113, 117, .35) 0 -25px 18px -14px inset, rgba(109, 113, 117, .25) 0 1px 2px, rgba(109, 113, 117, .25) 0 2px 4px, rgba(109, 113, 117, .25) 0 4px 8px, rgba(109, 113, 117, .25) 0 8px 16px, rgba(109, 113, 117, .25) 0 16px 32px";
+                        e.target.style.transform = "scale(1.05) rotate(-1deg)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.boxShadow = "rgba(109, 113, 117, .2) 0 -25px 18px -14px inset, rgba(109, 113, 117, .15) 0 1px 2px, rgba(109, 113, 117, .15) 0 2px 4px, rgba(109, 113, 117, .15) 0 4px 8px, rgba(109, 113, 117, .15) 0 8px 16px, rgba(109, 113, 117, .15) 0 16px 32px";
+                        e.target.style.transform = "scale(1) rotate(0deg)";
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={() => setShowDeleteNoteConfirm(editingNoteId)}
+                      style={{
+                        backgroundColor: "#d82c0d",
+                        border: "0",
+                        color: "white",
+                        padding: "7px 20px",
+                        borderRadius: "8px",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        textAlign: "center",
+                        textDecoration: "none",
+                        transition: "all 250ms",
+                        userSelect: "none",
+                        WebkitUserSelect: "none",
+                        touchAction: "manipulation",
+                        boxShadow: "rgba(216, 44, 13, .2) 0 -25px 18px -14px inset, rgba(216, 44, 13, .15) 0 1px 2px, rgba(216, 44, 13, .15) 0 2px 4px, rgba(216, 44, 13, .15) 0 4px 8px, rgba(216, 44, 13, .15) 0 8px 16px, rgba(216, 44, 13, .15) 0 16px 32px"
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.boxShadow = "rgba(216, 44, 13, .35) 0 -25px 18px -14px inset, rgba(216, 44, 13, .25) 0 1px 2px, rgba(216, 44, 13, .25) 0 2px 4px, rgba(216, 44, 13, .25) 0 4px 8px, rgba(216, 44, 13, .25) 0 8px 16px, rgba(216, 44, 13, .25) 0 16px 32px";
+                        e.target.style.transform = "scale(1.05) rotate(-1deg)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.boxShadow = "rgba(216, 44, 13, .2) 0 -25px 18px -14px inset, rgba(216, 44, 13, .15) 0 1px 2px, rgba(216, 44, 13, .15) 0 2px 4px, rgba(216, 44, 13, .15) 0 4px 8px, rgba(216, 44, 13, .15) 0 8px 16px, rgba(216, 44, 13, .15) 0 16px 32px";
+                        e.target.style.transform = "scale(1) rotate(0deg)";
+                      }}
+                    >
+                      Delete Note
+                    </button>
+                  </>
+                ) : (
+                  <button 
+                    onClick={handleCreateNote}
+                    style={{
+                      backgroundColor: "#2e7d32",
+                      border: "0",
+                      color: "white",
+                      padding: "7px 20px",
+                      borderRadius: "8px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      textAlign: "center",
+                      textDecoration: "none",
+                      transition: "all 250ms",
+                      userSelect: "none",
+                      WebkitUserSelect: "none",
+                      touchAction: "manipulation",
+                      boxShadow: "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.boxShadow = "rgba(46, 125, 50, .35) 0 -25px 18px -14px inset, rgba(46, 125, 50, .25) 0 1px 2px, rgba(46, 125, 50, .25) 0 2px 4px, rgba(46, 125, 50, .25) 0 4px 8px, rgba(46, 125, 50, .25) 0 8px 16px, rgba(46, 125, 50, .25) 0 16px 32px";
+                      e.target.style.transform = "scale(1.05) rotate(-1deg)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.boxShadow = "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px";
+                      e.target.style.transform = "scale(1) rotate(0deg)";
+                    }}
+                  >
+                    Save Note
+                  </button>
+                )}
+              </InlineStack>
+            </div>
+            <div style={{ padding: "16px" }}>
+              <BlockStack gap="300">
+                <div>
+                  <label htmlFor="folderId" style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+                    Folder
+                  </label>
+                  <select
+                    id="folderId"
+                    value={folderId}
+                    onChange={(e) => setFolderId(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "8px 12px",
+                      border: "1px solid #c9cccf",
+                      borderRadius: "4px",
+                      fontSize: "14px",
+                    }}
+                  >
+                    {folderOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <div
+                    style={{
+                      border: "none",
+                      outline: "none",
+                      fontSize: "24px",
+                      fontWeight: "600",
+                      color: title ? "#202223" : "#8c9196",
+                      padding: "8px 0",
+                      borderBottom: "2px solid transparent",
+                      cursor: "text",
+                      width: "100%",
+                      backgroundColor: "transparent",
+                      fontFamily: "inherit"
+                    }}
+                    contentEditable
+                    suppressContentEditableWarning
+                    onInput={(e) => setTitle(e.currentTarget.textContent || "")}
+                    onFocus={(e) => {
+                      if (!title) {
+                        e.currentTarget.textContent = "";
+                      }
+                    }}
+                    onBlur={(e) => {
+                      if (!e.currentTarget.textContent.trim()) {
+                        e.currentTarget.textContent = title || "Add a title to your note here...";
+                      }
+                    }}
+                  >
+                    {title || "Add a title to your note here..."}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+                    Body
+                  </label>
+                  <ClientQuill
+                    value={body}
+                    onChange={setBody}
+                    placeholder="Type your note here..."
+                  />
+                </div>
               </BlockStack>
             </div>
           </Card>
