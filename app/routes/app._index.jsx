@@ -227,6 +227,14 @@ export default function Index() {
   const [folderSearchQuery, setFolderSearchQuery] = useState("");
   const [noteTags, setNoteTags] = useState([]);
   const [newTagInput, setNewTagInput] = useState("");
+  
+  // Multi-select states
+  const [selectedNotes, setSelectedNotes] = useState([]);
+  const [showDeleteMultipleConfirm, setShowDeleteMultipleConfirm] = useState(false);
+  
+  // Duplicate note states
+  const [showDuplicateModal, setShowDuplicateModal] = useState(null);
+  const [duplicateFolderId, setDuplicateFolderId] = useState("");
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -514,6 +522,81 @@ export default function Index() {
       setAlertType('error');
       setTimeout(() => setAlertMessage(''), 3000);
     }
+  };
+
+  // Handle duplicating a note
+  const handleDuplicateNote = async () => {
+    if (!showDuplicateModal) return;
+    
+    const formData = new FormData();
+    formData.append('noteId', showDuplicateModal);
+    formData.append('targetFolderId', duplicateFolderId);
+    
+    try {
+      const response = await fetch('/api/duplicate-note', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setShowDuplicateModal(null);
+          setDuplicateFolderId("");
+          window.location.reload();
+        } else {
+          setAlertMessage(result.error || 'Failed to duplicate note');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
+        }
+      } else {
+        setAlertMessage('Failed to duplicate note');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error duplicating note:', error);
+      setAlertMessage('Failed to duplicate note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+    }
+  };
+
+  // Handle deleting multiple notes
+  const handleDeleteMultipleNotes = async () => {
+    if (selectedNotes.length === 0) return;
+    
+    try {
+      const deletePromises = selectedNotes.map(noteId => {
+        const formData = new FormData();
+        formData.append('noteId', noteId);
+        return fetch('/api/delete-note', {
+          method: 'POST',
+          body: formData
+        });
+      });
+      
+      await Promise.all(deletePromises);
+      setSelectedNotes([]);
+      setShowDeleteMultipleConfirm(false);
+      window.location.reload();
+    } catch (error) {
+      console.error('Error deleting multiple notes:', error);
+      setAlertMessage('Failed to delete some notes');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+    }
+  };
+
+  // Handle note selection for multi-select
+  const handleNoteSelection = (noteId) => {
+    setSelectedNotes(prev => {
+      if (prev.includes(noteId)) {
+        return prev.filter(id => id !== noteId);
+      } else {
+        return [...prev, noteId];
+      }
+    });
   };
 
   // Handle creating a new note or updating existing note
@@ -1337,147 +1420,229 @@ export default function Index() {
                   search
                 </span>
               </div>
+              
+              {/* Multi-select delete button */}
+              {selectedNotes.length > 0 && (
+                <div style={{ marginBottom: "16px" }}>
+                  <Button
+                    variant="primary"
+                    tone="critical"
+                    onClick={() => setShowDeleteMultipleConfirm(true)}
+                    style={{
+                      backgroundColor: "#d82c0d",
+                      border: "none",
+                      color: "white",
+                      padding: "8px 16px",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "500"
+                    }}
+                  >
+                    Delete {selectedNotes.length} Selected Note{selectedNotes.length > 1 ? 's' : ''}
+                  </Button>
+                </div>
+              )}
+              
               {filteredNotes.length === 0 ? (
                 <Text as="p">
                   {selectedFolder ? "No notes in this folder" : "No notes yet"}
                 </Text>
               ) : (
                 <div>
-                  {filteredNotes.map((note) => (
-                    <div key={note.id} style={{ 
-                      padding: "12px", 
-                      borderBottom: "1px solid #e1e3e5",
-                      cursor: "pointer",
-                      backgroundColor: editingNoteId === note.id ? "#f6f6f7" : "transparent",
-                      borderRadius: "8px",
-                      marginBottom: "4px",
-                      borderRight: editingNoteId === note.id ? "3px solid #2e7d32" : "none",
-                      position: "relative",
-                      transition: "background-color 0.2s ease"
-                    }}
-                    onClick={() => handleEditNote(note)}
-                    onMouseEnter={(e) => {
-                      if (editingNoteId !== note.id) {
-                        e.currentTarget.style.backgroundColor = "#f0f0f0";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (editingNoteId !== note.id) {
-                        e.currentTarget.style.backgroundColor = "transparent";
-                      }
-                    }}
-                    >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                        <div style={{ flex: 1 }}>
-                          <Text as="span" variant="headingSm" style={{ fontWeight: "600" }}>
-                            {note.title || "(untitled)"}
-                          </Text>
-                          <Text as="p" tone="subdued" style={{ fontSize: "12px", marginTop: "4px" }}>
-                            <span style={{ fontWeight: "bold" }}>Folder:</span> {note.folder ? note.folder.name : "No folder"}
-                          </Text>
-                          <Text as="p" tone="subdued" style={{ fontSize: "11px", marginTop: "2px", color: "#8c9196" }}>
-                            <span style={{ fontWeight: "bold" }}>Created:</span> {new Date(note.createdAt).toLocaleString()}
-                          </Text>
-                          <Text as="p" tone="subdued" style={{ fontSize: "11px", marginTop: "1px", color: "#8c9196" }}>
-                            <span style={{ fontWeight: "bold" }}>Edited:</span> {new Date(note.updatedAt).toLocaleString()}
-                          </Text>
-                          {note.content && (
-                            <Text as="p" tone="subdued" style={{ fontSize: "14px", marginTop: "8px" }}>
-                              {note.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
-                            </Text>
-                          )}
-                        </div>
-                        <div className="note-menu-container" style={{ position: "relative" }}>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
-                            }}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              fontSize: "18px",
-                              cursor: "pointer",
-                              padding: "4px",
-                              borderRadius: "4px",
-                              color: "#6d7175"
-                            }}
-                          >
-                            ⋯
-                          </button>
-                          {openNoteMenu === note.id && (
-                            <div style={{
-                              position: "absolute",
-                              right: "0",
-                              top: "100%",
-                              backgroundColor: "white",
-                              border: "1px solid #c9cccf",
-                              borderRadius: "6px",
-                              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                              zIndex: 1000,
-                              minWidth: "150px"
-                            }}>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEditNote(note);
-                                  setOpenNoteMenu(null);
-                                }}
-                                style={{
-                                  width: "100%",
+                  {filteredNotes.map((note) => {
+                    const createdDate = new Date(note.createdAt);
+                    const updatedDate = new Date(note.updatedAt);
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    
+                    return (
+                      <div key={note.id} style={{ 
+                        padding: "12px", 
+                        borderBottom: "1px solid #e1e3e5",
+                        cursor: "pointer",
+                        backgroundColor: editingNoteId === note.id ? "#f6f6f7" : "transparent",
+                        borderRadius: "8px",
+                        marginBottom: "4px",
+                        borderRight: editingNoteId === note.id ? "3px solid #2e7d32" : "none",
+                        position: "relative",
+                        transition: "background-color 0.2s ease"
+                      }}
+                      onClick={() => handleEditNote(note)}
+                      onMouseEnter={(e) => {
+                        if (editingNoteId !== note.id) {
+                          e.currentTarget.style.backgroundColor = "#f0f0f0";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (editingNoteId !== note.id) {
+                          e.currentTarget.style.backgroundColor = "transparent";
+                        }
+                      }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", flex: 1 }}>
+                            {/* Checkbox for multi-select */}
+                            <input
+                              type="checkbox"
+                              checked={selectedNotes.includes(note.id)}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                handleNoteSelection(note.id);
+                              }}
+                              style={{
+                                marginTop: "2px",
+                                cursor: "pointer"
+                              }}
+                            />
+                            
+                            <div style={{ flex: 1 }}>
+                              <Text as="span" variant="headingSm" style={{ fontWeight: "600" }}>
+                                {note.title || "(untitled)"}
+                              </Text>
+                              <Text as="p" tone="subdued" style={{ fontSize: "12px", marginTop: "4px" }}>
+                                <span style={{ fontWeight: "bold" }}>Folder:</span> {note.folder ? note.folder.name : "No folder"}
+                              </Text>
+                              
+                              {/* Updated date/time display */}
+                              <div style={{ display: "flex", gap: "12px", marginTop: "8px" }}>
+                                {/* Created date */}
+                                <div style={{
+                                  backgroundColor: "#f8f9fa",
+                                  border: "1px solid #e1e3e5",
+                                  borderRadius: "20px",
                                   padding: "8px 12px",
-                                  border: "none",
-                                  background: "none",
-                                  textAlign: "left",
-                                  cursor: "pointer",
-                                  fontSize: "14px"
-                                }}
-                              >
-                                Edit Note
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setShowChangeFolderModal(note.id);
-                                  setOpenNoteMenu(null);
-                                }}
-                                style={{
-                                  width: "100%",
+                                  textAlign: "center",
+                                  minWidth: "60px"
+                                }}>
+                                  <div style={{ fontWeight: "bold", fontSize: "14px" }}>
+                                    {createdDate.getDate()}
+                                  </div>
+                                  <div style={{ fontSize: "10px", color: "#6d7175" }}>
+                                    {monthNames[createdDate.getMonth()]}
+                                  </div>
+                                </div>
+                                
+                                {/* Updated date/time */}
+                                <div style={{
+                                  backgroundColor: "#f8f9fa",
+                                  border: "1px solid #e1e3e5",
+                                  borderRadius: "20px",
                                   padding: "8px 12px",
-                                  border: "none",
-                                  background: "none",
-                                  textAlign: "left",
-                                  cursor: "pointer",
-                                  fontSize: "14px"
-                                }}
-                              >
-                                Change Folder
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setShowDeleteNoteConfirm(note.id);
-                                  setOpenNoteMenu(null);
-                                }}
-                                style={{
-                                  width: "100%",
-                                  padding: "8px 12px",
-                                  border: "none",
-                                  background: "none",
-                                  textAlign: "left",
-                                  cursor: "pointer",
-                                  fontSize: "14px",
-                                  color: "#d82c0d"
-                                }}
-                              >
-                                Delete Note
-                              </button>
+                                  textAlign: "center",
+                                  minWidth: "60px"
+                                }}>
+                                  <div style={{ fontWeight: "bold", fontSize: "14px" }}>
+                                    {updatedDate.getDate()}
+                                  </div>
+                                  <div style={{ fontSize: "10px", color: "#6d7175" }}>
+                                    {monthNames[updatedDate.getMonth()]}
+                                  </div>
+                                  <div style={{ fontSize: "9px", color: "#8c9196" }}>
+                                    {updatedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {note.content && (
+                                <Text as="p" tone="subdued" style={{ fontSize: "14px", marginTop: "8px" }}>
+                                  {note.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
+                                </Text>
+                              )}
                             </div>
-                          )}
+                          </div>
+                          
+                          <div className="note-menu-container" style={{ position: "relative" }}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
+                              }}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                fontSize: "18px",
+                                cursor: "pointer",
+                                padding: "4px",
+                                borderRadius: "4px",
+                                color: "#6d7175"
+                              }}
+                            >
+                              ⋯
+                            </button>
+                            {openNoteMenu === note.id && (
+                              <div style={{
+                                position: "absolute",
+                                right: "0",
+                                top: "100%",
+                                backgroundColor: "white",
+                                border: "1px solid #c9cccf",
+                                borderRadius: "6px",
+                                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                                zIndex: 1000,
+                                minWidth: "150px"
+                              }}>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowDuplicateModal(note.id);
+                                    setOpenNoteMenu(null);
+                                  }}
+                                  style={{
+                                    width: "100%",
+                                    padding: "8px 12px",
+                                    border: "none",
+                                    background: "none",
+                                    textAlign: "left",
+                                    cursor: "pointer",
+                                    fontSize: "14px"
+                                  }}
+                                >
+                                  Duplicate Note
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowChangeFolderModal(note.id);
+                                    setOpenNoteMenu(null);
+                                  }}
+                                  style={{
+                                    width: "100%",
+                                    padding: "8px 12px",
+                                    border: "none",
+                                    background: "none",
+                                    textAlign: "left",
+                                    cursor: "pointer",
+                                    fontSize: "14px"
+                                  }}
+                                >
+                                  Change Folder
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowDeleteNoteConfirm(note.id);
+                                    setOpenNoteMenu(null);
+                                  }}
+                                  style={{
+                                    width: "100%",
+                                    padding: "8px 12px",
+                                    border: "none",
+                                    background: "none",
+                                    textAlign: "left",
+                                    cursor: "pointer",
+                                    fontSize: "14px",
+                                    color: "#d82c0d"
+                                  }}
+                                >
+                                  Delete Note
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -2082,6 +2247,122 @@ export default function Index() {
                   }}
                 >
                   Move Note
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Duplicate Note Modal */}
+        {showDuplicateModal && (
+          <div style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000
+          }}>
+            <div style={{
+              backgroundColor: "white",
+              padding: "24px",
+              borderRadius: "8px",
+              maxWidth: "400px",
+              width: "90%"
+            }}>
+              <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                Duplicate Note
+              </Text>
+              <div style={{ marginBottom: "24px" }}>
+                <label htmlFor="duplicateFolderSelect" style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                  Select a folder to duplicate the note to:
+                </label>
+                <select
+                  id="duplicateFolderSelect"
+                  value={duplicateFolderId}
+                  onChange={(e) => setDuplicateFolderId(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    border: "1px solid #c9cccf",
+                    borderRadius: "4px",
+                    fontSize: "14px",
+                  }}
+                >
+                  <option value="">Select a folder...</option>
+                  {folderOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setShowDuplicateModal(null);
+                    setDuplicateFolderId("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleDuplicateNote}
+                  disabled={!duplicateFolderId}
+                >
+                  Duplicate Note
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Multiple Notes Confirmation Modal */}
+        {showDeleteMultipleConfirm && (
+          <div style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000
+          }}>
+            <div style={{
+              backgroundColor: "white",
+              padding: "24px",
+              borderRadius: "8px",
+              maxWidth: "400px",
+              width: "90%"
+            }}>
+              <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                Delete Multiple Notes
+              </Text>
+              <Text as="p" style={{ marginBottom: "24px" }}>
+                Are you sure you want to delete {selectedNotes.length} selected note{selectedNotes.length > 1 ? 's' : ''}? This action is permanent and cannot be undone.
+              </Text>
+              <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowDeleteMultipleConfirm(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  tone="critical"
+                  onClick={handleDeleteMultipleNotes}
+                >
+                  Delete {selectedNotes.length} Note{selectedNotes.length > 1 ? 's' : ''}
                 </Button>
               </div>
             </div>
