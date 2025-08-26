@@ -677,7 +677,7 @@ export default function Index() {
   };
 
       return (
-      <Page title="scriberr">
+      <Page title="scriberr" style={{ paddingBottom: "20px" }}>
         {/* Material Symbols Rounded CDN */}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
@@ -765,6 +765,10 @@ export default function Index() {
             padding: 0 !important;
           }
           
+          body {
+            padding-bottom: 20px !important;
+          }
+          
           .Polaris-Page {
             max-width: none !important;
             margin: 0 !important;
@@ -834,7 +838,7 @@ export default function Index() {
           </div>
         )}
         
-        <div className="app-layout" style={{ display: "flex", gap: "16px", height: "calc(100vh - 200px)", marginBottom: "20px" }}>
+        <div className="app-layout" style={{ display: "flex", gap: "16px", minHeight: "calc(100vh - 220px)", paddingBottom: "20px" }}>
         {/* FOLDERS */}
         <div className="col-folders" style={{ width: "25%" }}>
         <Card
