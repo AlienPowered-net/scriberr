@@ -549,118 +549,118 @@ export default function Index() {
       return (
       <Page title="scriberr">
 
+        {/* Global Styles - Always Applied */}
+        <style>{`
+          @keyframes slideIn {
+            from {
+              transform: translateX(100%);
+              opacity: 0;
+            }
+            to {
+              transform: translateX(0);
+              opacity: 1;
+            }
+          }
+          
+          /* Mobile responsive layout */
+          @media (max-width: 768px) {
+            .app-layout {
+              flex-direction: column;
+              height: auto;
+            }
+            .col-folders,
+            .col-notes,
+            .col-editor {
+              width: 100% !important;
+            }
+            .Polaris-Card {
+              margin-bottom: 12px;
+            }
+          }
+          
+          /* Tablet responsive layout */
+          @media (min-width: 769px) and (max-width: 1200px) {
+            .app-layout {
+              flex-wrap: wrap;
+              height: auto;
+            }
+            .col-folders,
+            .col-notes {
+              width: 50% !important;
+            }
+            .col-editor {
+              width: 100% !important;
+            }
+            .Polaris-Card {
+              margin-bottom: 12px;
+            }
+          }
+
+          /* Desktop wide layout */
+          @media (min-width: 1201px) {
+            .app-layout {
+              width: 100%;
+            }
+            .col-folders { width: 30% !important; }
+            .col-notes   { width: 30% !important; }
+            .col-editor  { width: 40% !important; }
+          }
+          
+          body, html {
+            width: 100% !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          
+          .Polaris-Page {
+            max-width: none !important;
+            margin: 0 !important;
+            width: 100% !important;
+          }
+          
+          .Polaris-Page__Content {
+            max-width: none !important;
+            margin: 0 !important;
+            width: 100% !important;
+          }
+          
+          .Polaris-Layout {
+            max-width: none !important;
+            margin: 0 !important;
+            width: 100% !important;
+          }
+          
+          .Polaris-Layout__Section {
+            max-width: none !important;
+            margin: 0 !important;
+            width: 100% !important;
+          }
+          
+          .Polaris-Card {
+            width: 100% !important;
+          }
+        `}</style>
+
         {/* Custom Alert */}
         {alertMessage && (
-          <>
-            <style>{`
-              @keyframes slideIn {
-                from {
-                  transform: translateX(100%);
-                  opacity: 0;
-                }
-                to {
-                  transform: translateX(0);
-                  opacity: 1;
-                }
-              }
-              
-              /* Mobile responsive layout */
-              @media (max-width: 768px) {
-                .app-layout {
-                  flex-direction: column;
-                  height: auto;
-                }
-                .col-folders,
-                .col-notes,
-                .col-editor {
-                  width: 100% !important;
-                }
-                .Polaris-Card {
-                  margin-bottom: 12px;
-                }
-              }
-              
-              /* Tablet responsive layout */
-              @media (min-width: 769px) and (max-width: 1200px) {
-                .app-layout {
-                  flex-wrap: wrap;
-                  height: auto;
-                }
-                .col-folders,
-                .col-notes {
-                  width: 50% !important;
-                }
-                .col-editor {
-                  width: 100% !important;
-                }
-                .Polaris-Card {
-                  margin-bottom: 12px;
-                }
-              }
-
-              /* Desktop wide layout */
-              @media (min-width: 1201px) {
-                .app-layout {
-                  width: 100%;
-                }
-                .col-folders { width: 30% !important; }
-                .col-notes   { width: 30% !important; }
-                .col-editor  { width: 40% !important; }
-              }
-              
-              body, html {
-                width: 100% !important;
-                max-width: none !important;
-                margin: 0 !important;
-                padding: 0 !important;
-              }
-              
-              .Polaris-Page {
-                max-width: none !important;
-                margin: 0 !important;
-                width: 100% !important;
-              }
-              
-              .Polaris-Page__Content {
-                max-width: none !important;
-                margin: 0 !important;
-                width: 100% !important;
-              }
-              
-              .Polaris-Layout {
-                max-width: none !important;
-                margin: 0 !important;
-                width: 100% !important;
-              }
-              
-              .Polaris-Layout__Section {
-                max-width: none !important;
-                margin: 0 !important;
-                width: 100% !important;
-              }
-              
-              .Polaris-Card {
-                width: 100% !important;
-              }
-            `}</style>
-            <div style={{
-              position: "fixed",
-              top: "20px",
-              right: "20px",
-              padding: "12px 16px",
-              borderRadius: "6px",
-              color: "white",
-              fontSize: "14px",
-              fontWeight: "500",
-              zIndex: 3000,
-              maxWidth: "300px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-              animation: "slideIn 0.3s ease-out",
-              backgroundColor: alertType === 'error' ? "#d82c0d" : "#008060"
-            }}>
-              {alertMessage}
-            </div>
-          </>
+          <div style={{
+            position: "fixed",
+            top: "20px",
+            right: "20px",
+            padding: "12px 16px",
+            borderRadius: "6px",
+            color: "white",
+            fontSize: "14px",
+            fontWeight: "500",
+            zIndex: 3000,
+            maxWidth: "300px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            animation: "slideIn 0.3s ease-out",
+            backgroundColor: alertType === 'error' ? "#d82c0d" : "#008060"
+          }}>
+            {alertMessage}
+          </div>
         )}
         
         <div className="app-layout" style={{ display: "flex", gap: "16px", height: "calc(100vh - 200px)" }}>
