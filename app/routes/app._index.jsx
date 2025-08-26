@@ -259,6 +259,10 @@ export default function Index() {
     setTitle(note.title || "");
     setBody(note.content || "");
     setFolderId(note.folderId || "");
+    // Automatically select the folder associated with this note
+    if (note.folderId) {
+      setSelectedFolder(note.folderId);
+    }
   };
 
   // Handle saving note changes
@@ -1040,7 +1044,7 @@ export default function Index() {
                    Notes
                  </Text>
                  {selectedFolder && (
-                   <Text as="h3" style={{ fontSize: "16px", fontWeight: "bold", color: "#202223", marginTop: "4px" }}>
+                   <Text as="h2" style={{ fontSize: "18px", fontWeight: "bold", color: "#202223", marginTop: "4px" }}>
                      {folders.find(f => f.id === selectedFolder)?.name}
                    </Text>
                  )}
