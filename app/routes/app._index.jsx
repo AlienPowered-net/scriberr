@@ -1721,6 +1721,7 @@ export default function Index() {
                                 backgroundColor: "#F9FAFB",
                                 padding: "12px 8px",
                                 textAlign: "center",
+                                width: "fit-content",
                                 minWidth: "80px"
                               }}>
                                 <div style={{ 
@@ -1766,6 +1767,7 @@ export default function Index() {
                                 backgroundColor: "#F9FAFB",
                                 padding: "12px 8px",
                                 textAlign: "center",
+                                width: "fit-content",
                                 minWidth: "80px"
                               }}>
                                 <div style={{ 
