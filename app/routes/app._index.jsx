@@ -236,9 +236,7 @@ export default function Index() {
   const [showDuplicateModal, setShowDuplicateModal] = useState(null);
   const [duplicateFolderId, setDuplicateFolderId] = useState("");
   
-  // Note menu states
-  const [openNoteMenu, setOpenNoteMenu] = useState(null);
-  const [showDeleteNoteConfirm, setShowDeleteNoteConfirm] = useState(null);
+
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -1552,7 +1550,7 @@ export default function Index() {
                           }} />
                         )}
 
-                                                <div style={{ 
+                        <div style={{ 
                           position: "relative",
                           zIndex: "10",
                           display: "flex",
