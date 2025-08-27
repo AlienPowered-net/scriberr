@@ -1734,34 +1734,65 @@ export default function Index() {
                             </div>
                           </div>
 
-                          {/* Button aligned bottom */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
-                            }}
-                            style={{
-                              background: "orange",
-                              color: "white",
-                              fontWeight: "bold",
-                              padding: "8px 16px",
-                              border: "none",
-                              borderRadius: "5px",
-                              cursor: "pointer",
-                              transition: "background 0.2s ease-in-out",
-                              marginTop: "12px",
-                              width: "fit-content",
-                              fontSize: "12px"
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.background = "#e69500";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.background = "orange";
-                            }}
-                          >
-                            MANAGE NOTE
-                          </button>
+                          {/* Buttons aligned bottom */}
+                          <div style={{
+                            display: "flex",
+                            gap: "8px",
+                            marginTop: "12px"
+                          }}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
+                              }}
+                              style={{
+                                background: "orange",
+                                color: "white",
+                                fontWeight: "bold",
+                                padding: "8px 16px",
+                                border: "none",
+                                borderRadius: "5px",
+                                cursor: "pointer",
+                                transition: "background 0.2s ease-in-out",
+                                width: "fit-content",
+                                fontSize: "12px"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.background = "#e69500";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.background = "orange";
+                              }}
+                            >
+                              MANAGE NOTE
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowDeleteNoteConfirm(note.id);
+                              }}
+                              style={{
+                                background: "#dc2626",
+                                color: "white",
+                                fontWeight: "bold",
+                                padding: "8px 16px",
+                                border: "none",
+                                borderRadius: "5px",
+                                cursor: "pointer",
+                                transition: "background 0.2s ease-in-out",
+                                width: "fit-content",
+                                fontSize: "12px"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.background = "#b91c1c";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.background = "#dc2626";
+                              }}
+                            >
+                              DELETE
+                            </button>
+                          </div>
                           
                           {openNoteMenu === note.id && (
                             <div style={{
