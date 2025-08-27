@@ -1702,7 +1702,9 @@ export default function Index() {
                             overflow: "visible",
                             display: "flex", 
                             flexDirection: "column", 
-                            gap: "12px" 
+                            gap: "12px",
+                            alignItems: "flex-end",
+                            paddingRight: "5px"
                           }}>
                             <div>
                               <div style={{ 
