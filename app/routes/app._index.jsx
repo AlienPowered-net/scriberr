@@ -1515,21 +1515,19 @@ export default function Index() {
                           borderRadius: "12px",
                           padding: "20px",
                           boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                          borderRight: "6px solid #0a0",
+                          borderRight: isSelected ? "6px solid #0a0" : "6px solid transparent",
                           cursor: "pointer",
                           transition: "all 0.2s ease",
                           marginBottom: "8px"
                         }}
                         onClick={() => handleEditNote(note)}
                         onMouseEnter={(e) => {
-                          if (!isSelected) {
-                            e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
-                          }
+                          e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+                          e.currentTarget.style.transform = "translateY(-2px)";
                         }}
                         onMouseLeave={(e) => {
-                          if (!isSelected) {
-                            e.currentTarget.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.1)";
-                          }
+                          e.currentTarget.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.1)";
+                          e.currentTarget.style.transform = "translateY(0)";
                         }}
                       >
                         {/* Left checkbox area */}
