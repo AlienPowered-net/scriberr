@@ -1530,7 +1530,7 @@ export default function Index() {
 
                         <div style={{ 
                           display: "grid", 
-                          gridTemplateColumns: "1fr 220px", 
+                          gridTemplateColumns: "1fr 180px", 
                           gap: "16px",
                           alignItems: "start"
                         }}
@@ -1577,7 +1577,7 @@ export default function Index() {
                                 marginTop: "8px", 
                                 display: "flex", 
                                 flexWrap: "wrap", 
-                                gap: "8px" 
+                                gap: "6px" 
                               }}>
                                 {note.tags.slice(0, 3).map((tag, index) => (
                                   <span key={index} style={{
@@ -1585,10 +1585,9 @@ export default function Index() {
                                     alignItems: "center",
                                     borderRadius: "9999px",
                                     backgroundColor: "#16A34A",
-                                    padding: "0 10px",
-                                    height: "24px",
+                                    padding: "2px 8px",
                                     fontSize: "12px",
-                                    fontWeight: "600",
+                                    fontWeight: "500",
                                     color: "white"
                                   }}>
                                     {tag}
@@ -1599,7 +1598,7 @@ export default function Index() {
 
                             {/* Preview row */}
                             <div style={{ 
-                              marginTop: "12px", 
+                              marginTop: "8px", 
                               display: "flex", 
                               alignItems: "flex-start", 
                               gap: "8px" 
@@ -1624,7 +1623,13 @@ export default function Index() {
                                 fontSize: "14px", 
                                 fontStyle: "italic", 
                                 color: "#6B7280",
-                                margin: "0"
+                                margin: "0",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                display: "-webkit-box",
+                                WebkitLineClamp: "2",
+                                WebkitBoxOrient: "vertical",
+                                lineHeight: "1.4"
                               }}>
                                 <span style={{ 
                                   fontStyle: "normal", 
@@ -1632,7 +1637,7 @@ export default function Index() {
                                   color: "#1F2937" 
                                 }}>
                                   Preview:
-                                </span> {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 100) + "..." : "No content"}
+                                </span> {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 80) + "..." : "No content"}
                               </p>
                             </div>
 
@@ -1651,7 +1656,7 @@ export default function Index() {
                                 borderRadius: "12px",
                                 padding: "12px 20px",
                                 fontSize: "14px",
-                                fontWeight: "700",
+                                fontWeight: "600",
                                 textTransform: "uppercase",
                                 cursor: "pointer",
                                 transition: "all 0.2s ease"
@@ -1681,15 +1686,15 @@ export default function Index() {
                                 Last Edited
                               </div>
                               <div style={{
-                                borderRadius: "12px",
+                                borderRadius: "8px",
                                 border: "1px solid #E5E7EB",
-                                backgroundColor: "#F3F4F6",
-                                padding: "12px 16px",
+                                backgroundColor: "#F9FAFB",
+                                padding: "8px 12px",
                                 textAlign: "center"
                               }}>
                                 <div style={{ 
-                                  fontSize: "30px", 
-                                  fontWeight: "800", 
+                                  fontSize: "24px", 
+                                  fontWeight: "700", 
                                   color: "#111827", 
                                   lineHeight: "1"
                                 }}>
@@ -1699,7 +1704,8 @@ export default function Index() {
                                   fontSize: "10px", 
                                   fontWeight: "600", 
                                   color: "#6B7280", 
-                                  textTransform: "uppercase"
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.05em"
                                 }}>
                                   {monthNames[updatedDate.getMonth()]}
                                 </div>
@@ -1724,15 +1730,15 @@ export default function Index() {
                                 Note Created
                               </div>
                               <div style={{
-                                borderRadius: "12px",
+                                borderRadius: "8px",
                                 border: "1px solid #E5E7EB",
-                                backgroundColor: "#F3F4F6",
-                                padding: "12px 16px",
+                                backgroundColor: "#F9FAFB",
+                                padding: "8px 12px",
                                 textAlign: "center"
                               }}>
                                 <div style={{ 
-                                  fontSize: "30px", 
-                                  fontWeight: "800", 
+                                  fontSize: "24px", 
+                                  fontWeight: "700", 
                                   color: "#111827", 
                                   lineHeight: "1"
                                 }}>
@@ -1742,7 +1748,8 @@ export default function Index() {
                                   fontSize: "10px", 
                                   fontWeight: "600", 
                                   color: "#6B7280", 
-                                  textTransform: "uppercase"
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.05em"
                                 }}>
                                   {monthNames[createdDate.getMonth()]}
                                 </div>
