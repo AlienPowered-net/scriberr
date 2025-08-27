@@ -1602,12 +1602,15 @@ export default function Index() {
                                   <span key={index} style={{
                                     display: "inline-flex",
                                     alignItems: "center",
+                                    justifyContent: "center",
                                     borderRadius: "9999px",
                                     backgroundColor: "#16A34A",
                                     padding: "2px 8px",
+                                    height: "20px",
                                     fontSize: "12px",
                                     fontWeight: "500",
-                                    color: "white"
+                                    color: "white",
+                                    whiteSpace: "nowrap"
                                   }}>
                                     {tag}
                                   </span>
