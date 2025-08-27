@@ -841,6 +841,17 @@ export default function Index() {
             .col-editor  { width: 54% !important; }
           }
           
+          /* Note card responsive layout */
+          @media (max-width: 640px) {
+            .note-grid {
+              grid-template-columns: 1fr !important;
+            }
+            .note-grid aside {
+              order: -1;
+              margin-bottom: 16px;
+            }
+          }
+          
           body, html {
             width: 100% !important;
             max-width: none !important;
@@ -1466,406 +1477,286 @@ export default function Index() {
                   {selectedFolder ? "No notes in this folder" : "No notes yet"}
                 </Text>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                   {filteredNotes.map((note) => {
                     const createdDate = new Date(note.createdAt);
                     const updatedDate = new Date(note.updatedAt);
-                    const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                     const isSelected = editingNoteId === note.id;
+                    const isCheckboxSelected = selectedNotes.includes(note.id);
                     
                     return (
-                      <div key={note.id} style={{ 
-                        backgroundColor: "#FFFFFF",
-                        border: isSelected ? "1px solid #16A34A" : "1px solid #E5E7EB",
-                        borderRadius: "10px",
-                        padding: "16px",
-                        cursor: "pointer",
-                        position: "relative",
-                        transition: "all 0.2s ease",
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                        maxWidth: "100%"
-                      }}
-                      onClick={() => handleEditNote(note)}
-                      onMouseEnter={(e) => {
-                        if (!isSelected) {
-                          e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
-                          e.currentTarget.style.borderColor = "#D1D5DB";
-                          e.currentTarget.style.transform = "translateY(-2px)";
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isSelected) {
-                          e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
-                          e.currentTarget.style.borderColor = "#E5E7EB";
-                          e.currentTarget.style.transform = "translateY(0)";
-                        }
-                      }}
+                      <article 
+                        key={note.id} 
+                        style={{ 
+                          position: "relative",
+                          backgroundColor: "#FFFFFF",
+                          borderRadius: "12px",
+                          border: isCheckboxSelected ? "1px solid #16A34A" : "1px solid #E5E7EB",
+                          boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                          padding: "16px",
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                          maxWidth: "100%"
+                        }}
+                        onClick={() => handleEditNote(note)}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.1)";
+                            e.currentTarget.style.borderColor = "#D1D5DB";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.boxShadow = "0 1px 2px rgba(0,0,0,0.05)";
+                            e.currentTarget.style.borderColor = "#E5E7EB";
+                          }
+                        }}
                       >
-                        {/* Green accent bar for selected state */}
+                        {/* Right accent bar */}
                         {isSelected && (
                           <div style={{
+                            pointerEvents: "none",
                             position: "absolute",
                             right: "0",
-                            top: "0",
-                            bottom: "0",
-                            width: "4px",
+                            top: "12px",
+                            bottom: "12px",
+                            width: "6px",
                             backgroundColor: "#16A34A",
-                            borderTopRightRadius: "10px",
-                            borderBottomRightRadius: "10px"
+                            borderTopLeftRadius: "3px",
+                            borderBottomLeftRadius: "3px"
                           }} />
                         )}
-                        
-                        <div style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
-                          {/* Left: Content block */}
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            {/* Title */}
-                            <div style={{ 
-                              fontSize: "20px", 
+
+                        <div style={{ 
+                          display: "grid", 
+                          gridTemplateColumns: "1fr 220px", 
+                          gap: "16px",
+                          alignItems: "start"
+                        }}
+                        className="note-grid"
+                        >
+                          {/* LEFT: content */}
+                          <div>
+                            <h3 style={{ 
+                              fontSize: "18px", 
                               fontWeight: "700", 
-                              color: "#1E1E1E",
-                              marginBottom: "8px",
-                              lineHeight: "1.3"
+                              color: "#111827", 
+                              lineHeight: "1.25",
+                              margin: "0"
                             }}>
                               {note.title || "(untitled)"}
-                            </div>
-                            
-                            {/* Folder */}
-                            <div style={{ 
-                              fontSize: "14px", 
-                              color: "#6B7280",
-                              marginBottom: "8px",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px"
+                            </h3>
+
+                            <p style={{ 
+                              marginTop: "4px", 
+                              fontSize: "14px",
+                              color: "#6B7280"
                             }}>
-                              <span style={{ fontWeight: "600", textTransform: "uppercase", fontSize: "12px" }}>
+                              <span style={{ 
+                                color: "#374151", 
+                                fontWeight: "600", 
+                                textTransform: "uppercase", 
+                                letterSpacing: "0.05em",
+                                fontSize: "11px"
+                              }}>
                                 Folder:
                               </span>
-                              {note.folder ? note.folder.name : "No folder"}
-                            </div>
-                            
-                            {/* Tags */}
+                              <span style={{ 
+                                color: "#1F2937", 
+                                textTransform: "none",
+                                marginLeft: "4px"
+                              }}>
+                                {note.folder ? note.folder.name : "No folder"}
+                              </span>
+                            </p>
+
+                            {/* Tags, optional */}
                             {note.tags && note.tags.length > 0 && (
                               <div style={{ 
+                                marginTop: "8px", 
                                 display: "flex", 
                                 flexWrap: "wrap", 
-                                gap: "6px", 
-                                marginBottom: "10px" 
+                                gap: "8px" 
                               }}>
-                                {note.tags.map((tag, index) => (
+                                {note.tags.slice(0, 3).map((tag, index) => (
                                   <span key={index} style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    borderRadius: "9999px",
                                     backgroundColor: "#16A34A",
-                                    color: "white",
-                                    padding: "4px 8px",
-                                    borderRadius: "6px",
+                                    padding: "0 10px",
+                                    height: "24px",
                                     fontSize: "12px",
-                                    fontWeight: "500",
-                                    cursor: "pointer",
-                                    transition: "background-color 0.2s ease"
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    e.target.style.backgroundColor = "#15803d";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.target.style.backgroundColor = "#16A34A";
-                                  }}
-                                  >
+                                    fontWeight: "600",
+                                    color: "white"
+                                  }}>
                                     {tag}
                                   </span>
                                 ))}
                               </div>
                             )}
-                            
-                            {/* Preview */}
-                            {note.content && (
-                              <div style={{ 
-                                fontSize: "15px", 
-                                color: "#6B7280",
-                                fontStyle: "italic",
-                                lineHeight: "1.5",
-                                marginBottom: "16px"
-                              }}>
-                                {note.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
-                              </div>
-                            )}
-                            
-                            {/* Checkbox and CTA row */}
+
+                            {/* Preview row */}
                             <div style={{ 
+                              marginTop: "12px", 
                               display: "flex", 
-                              alignItems: "center", 
-                              justifyContent: "space-between",
-                              marginTop: "16px"
+                              alignItems: "flex-start", 
+                              gap: "8px" 
                             }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                <input
-                                  type="checkbox"
-                                  checked={selectedNotes.includes(note.id)}
-                                  onChange={(e) => {
-                                    e.stopPropagation();
-                                    handleNoteSelection(note.id);
-                                  }}
-                                  style={{
-                                    width: "16px",
-                                    height: "16px",
-                                    cursor: "pointer",
-                                    accentColor: "#16A34A"
-                                  }}
-                                />
+                              <input
+                                type="checkbox"
+                                checked={isCheckboxSelected}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  handleNoteSelection(note.id);
+                                }}
+                                style={{
+                                  marginTop: "2px",
+                                  height: "16px",
+                                  width: "16px",
+                                  borderRadius: "4px",
+                                  border: "1px solid #D1D5DB",
+                                  accentColor: "#16A34A"
+                                }}
+                              />
+                              <p style={{ 
+                                fontSize: "14px", 
+                                fontStyle: "italic", 
+                                color: "#6B7280",
+                                margin: "0"
+                              }}>
                                 <span style={{ 
-                                  fontSize: "12px", 
+                                  fontStyle: "normal", 
                                   fontWeight: "600", 
-                                  textTransform: "uppercase",
+                                  color: "#1F2937" 
+                                }}>
+                                  Preview:
+                                </span> {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 100) + "..." : "No content"}
+                              </p>
+                            </div>
+
+                            {/* CTA */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditNote(note);
+                              }}
+                              style={{
+                                marginTop: "16px",
+                                width: "100%",
+                                backgroundColor: "#F59E0B",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "12px",
+                                padding: "12px 20px",
+                                fontSize: "14px",
+                                fontWeight: "700",
+                                textTransform: "uppercase",
+                                cursor: "pointer",
+                                transition: "all 0.2s ease"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = "#D97706";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = "#F59E0B";
+                              }}
+                            >
+                              Edit Note
+                            </button>
+                          </div>
+
+                          {/* RIGHT: meta */}
+                          <aside style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                            <div>
+                              <div style={{ 
+                                fontSize: "11px", 
+                                fontWeight: "600", 
+                                letterSpacing: "0.05em", 
+                                color: "#6B7280", 
+                                textTransform: "uppercase",
+                                marginBottom: "4px"
+                              }}>
+                                Last Edited
+                              </div>
+                              <div style={{
+                                borderRadius: "12px",
+                                border: "1px solid #E5E7EB",
+                                backgroundColor: "#F3F4F6",
+                                padding: "12px 16px",
+                                textAlign: "center"
+                              }}>
+                                <div style={{ 
+                                  fontSize: "30px", 
+                                  fontWeight: "800", 
+                                  color: "#111827", 
+                                  lineHeight: "1"
+                                }}>
+                                  {updatedDate.getDate()}
+                                </div>
+                                <div style={{ 
+                                  fontSize: "10px", 
+                                  fontWeight: "600", 
+                                  color: "#6B7280", 
+                                  textTransform: "uppercase"
+                                }}>
+                                  {monthNames[updatedDate.getMonth()]}
+                                </div>
+                                <div style={{ 
+                                  fontSize: "12px", 
                                   color: "#6B7280"
                                 }}>
-                                  Preview
-                                </span>
+                                  {updatedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </div>
                               </div>
-                              
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEditNote(note);
-                                }}
-                                style={{
-                                  backgroundColor: "#F59E0B",
-                                  color: "white",
-                                  border: "none",
-                                  padding: "10px 16px",
-                                  borderRadius: "6px",
-                                  fontSize: "14px",
-                                  fontWeight: "700",
-                                  textTransform: "uppercase",
-                                  cursor: "pointer",
-                                  transition: "all 0.2s ease",
-                                  minHeight: "44px"
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.target.style.backgroundColor = "#D97706";
-                                  e.target.style.boxShadow = "inset 0 2px 4px rgba(0,0,0,0.1)";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.target.style.backgroundColor = "#F59E0B";
-                                  e.target.style.boxShadow = "none";
-                                }}
-                              >
-                                Edit Note
-                              </button>
                             </div>
-                          </div>
-                          
-                          {/* Right: Meta block with date badges */}
-                          <div style={{ 
-                            display: "flex", 
-                            flexDirection: "column", 
-                            gap: "12px",
-                            alignItems: "flex-end"
-                          }}>
-                            {/* Created date badge */}
-                            <div style={{
-                              backgroundColor: "#F3F4F6",
-                              border: "1px solid #E5E7EB",
-                              borderRadius: "8px",
-                              padding: "12px",
-                              textAlign: "center",
-                              minWidth: "80px"
-                            }}>
-                              <div style={{ 
-                                fontSize: "32px", 
-                                fontWeight: "800", 
-                                color: "#1E1E1E",
-                                lineHeight: "1"
-                              }}>
-                                {createdDate.getDate()}
-                              </div>
+
+                            <div>
                               <div style={{ 
                                 fontSize: "11px", 
-                                color: "#6B7280",
-                                fontWeight: "600",
+                                fontWeight: "600", 
+                                letterSpacing: "0.05em", 
+                                color: "#6B7280", 
                                 textTransform: "uppercase",
-                                marginTop: "2px"
+                                marginBottom: "4px"
                               }}>
-                                {monthNames[createdDate.getMonth()]}
+                                Note Created
                               </div>
-                              <div style={{ 
-                                fontSize: "12px", 
-                                color: "#6B7280",
-                                marginTop: "4px",
-                                fontWeight: "600",
-                                textTransform: "uppercase"
+                              <div style={{
+                                borderRadius: "12px",
+                                border: "1px solid #E5E7EB",
+                                backgroundColor: "#F3F4F6",
+                                padding: "12px 16px",
+                                textAlign: "center"
                               }}>
-                                Created
-                              </div>
-                            </div>
-                            
-                            {/* Updated date badge */}
-                            <div style={{
-                              backgroundColor: "#F3F4F6",
-                              border: "1px solid #E5E7EB",
-                              borderRadius: "8px",
-                              padding: "12px",
-                              textAlign: "center",
-                              minWidth: "80px"
-                            }}>
-                              <div style={{ 
-                                fontSize: "32px", 
-                                fontWeight: "800", 
-                                color: "#1E1E1E",
-                                lineHeight: "1"
-                              }}>
-                                {updatedDate.getDate()}
-                              </div>
-                              <div style={{ 
-                                fontSize: "11px", 
-                                color: "#6B7280",
-                                fontWeight: "600",
-                                textTransform: "uppercase",
-                                marginTop: "2px"
-                              }}>
-                                {monthNames[updatedDate.getMonth()]}
-                              </div>
-                              <div style={{ 
-                                fontSize: "12px", 
-                                color: "#6B7280",
-                                marginTop: "2px"
-                              }}>
-                                {updatedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </div>
-                              <div style={{ 
-                                fontSize: "12px", 
-                                color: "#6B7280",
-                                marginTop: "2px",
-                                fontWeight: "600",
-                                textTransform: "uppercase"
-                              }}>
-                                Edited
+                                <div style={{ 
+                                  fontSize: "30px", 
+                                  fontWeight: "800", 
+                                  color: "#111827", 
+                                  lineHeight: "1"
+                                }}>
+                                  {createdDate.getDate()}
+                                </div>
+                                <div style={{ 
+                                  fontSize: "10px", 
+                                  fontWeight: "600", 
+                                  color: "#6B7280", 
+                                  textTransform: "uppercase"
+                                }}>
+                                  {monthNames[createdDate.getMonth()]}
+                                </div>
+                                <div style={{ 
+                                  fontSize: "12px", 
+                                  color: "#6B7280"
+                                }}>
+                                  {createdDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          </aside>
                         </div>
-                        
-                        {/* Three-dot menu */}
-                        <div className="note-menu-container" style={{ 
-                          position: "absolute", 
-                          top: "16px", 
-                          right: "16px" 
-                        }}>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
-                            }}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              fontSize: "18px",
-                              cursor: "pointer",
-                              padding: "4px",
-                              borderRadius: "4px",
-                              color: "#6B7280",
-                              transition: "background-color 0.2s ease"
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.backgroundColor = "#F3F4F6";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.backgroundColor = "transparent";
-                            }}
-                          >
-                            ⋯
-                          </button>
-                          {openNoteMenu === note.id && (
-                            <div style={{
-                              position: "absolute",
-                              right: "0",
-                              top: "100%",
-                              backgroundColor: "white",
-                              border: "1px solid #E5E7EB",
-                              borderRadius: "8px",
-                              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                              zIndex: 1000,
-                              minWidth: "160px",
-                              marginTop: "4px"
-                            }}>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setShowDuplicateModal(note.id);
-                                  setOpenNoteMenu(null);
-                                }}
-                                style={{
-                                  width: "100%",
-                                  padding: "10px 12px",
-                                  border: "none",
-                                  background: "none",
-                                  textAlign: "left",
-                                  cursor: "pointer",
-                                  fontSize: "14px",
-                                  transition: "background-color 0.2s ease"
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.target.style.backgroundColor = "#F3F4F6";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.target.style.backgroundColor = "transparent";
-                                }}
-                              >
-                                Duplicate Note
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setShowChangeFolderModal(note.id);
-                                  setOpenNoteMenu(null);
-                                }}
-                                style={{
-                                  width: "100%",
-                                  padding: "10px 12px",
-                                  border: "none",
-                                  background: "none",
-                                  textAlign: "left",
-                                  cursor: "pointer",
-                                  fontSize: "14px",
-                                  transition: "background-color 0.2s ease"
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.target.style.backgroundColor = "#F3F4F6";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.target.style.backgroundColor = "transparent";
-                                }}
-                              >
-                                Change Folder
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setShowDeleteNoteConfirm(note.id);
-                                  setOpenNoteMenu(null);
-                                }}
-                                style={{
-                                  width: "100%",
-                                  padding: "10px 12px",
-                                  border: "none",
-                                  background: "none",
-                                  textAlign: "left",
-                                  cursor: "pointer",
-                                  fontSize: "14px",
-                                  color: "#d82c0d",
-                                  transition: "background-color 0.2s ease"
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.target.style.backgroundColor = "#FEF2F2";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.target.style.backgroundColor = "transparent";
-                                }}
-                              >
-                                Delete Note
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                      </article>
                     );
                   })}
                 </div>
