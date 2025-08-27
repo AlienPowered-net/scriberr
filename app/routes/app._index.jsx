@@ -1518,7 +1518,9 @@ export default function Index() {
                           borderRight: isSelected ? "6px solid #0a0" : "6px solid transparent",
                           cursor: "pointer",
                           transition: "all 0.2s ease",
-                          marginBottom: "8px"
+                          marginBottom: "8px",
+                          position: "relative",
+                          zIndex: openNoteMenu === note.id ? 1000 : 1
                         }}
                         onClick={() => handleEditNote(note)}
                         onMouseEnter={(e) => {
@@ -1575,7 +1577,8 @@ export default function Index() {
                                 fontWeight: "bold", 
                                 fontSize: "16px", 
                                 lineHeight: "1.3",
-                                color: "#111827"
+                                color: "#111827",
+                                paddingRight: "16px"
                               }}>
                                 {note.title || "(untitled)"}
                               </div>
@@ -1633,7 +1636,8 @@ export default function Index() {
                               flexDirection: "column", 
                               gap: "16px", 
                               alignItems: "center",
-                              flexShrink: "0"
+                              flexShrink: "0",
+                              justifyContent: "flex-end"
                             }}>
                               <div>
                                 <div style={{ 
@@ -1738,8 +1742,8 @@ export default function Index() {
                               backgroundColor: "white",
                               border: "1px solid #E5E7EB",
                               borderRadius: "6px",
-                              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                              zIndex: 9999,
+                              boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
+                              zIndex: 99999,
                               marginTop: "4px"
                             }}>
                               <button
