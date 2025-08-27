@@ -1894,7 +1894,8 @@ export default function Index() {
                             )}
                           </div>
                         </div>
-                      </article>
+                      </div>
+                    </article>
                     );
                   })}
                 </div>
