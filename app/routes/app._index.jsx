@@ -1530,7 +1530,7 @@ export default function Index() {
 
                         <div style={{ 
                           display: "grid", 
-                          gridTemplateColumns: "1fr 180px", 
+                          gridTemplateColumns: "1fr 220px", 
                           gap: "16px",
                           alignItems: "start"
                         }}
@@ -1539,7 +1539,7 @@ export default function Index() {
                           {/* LEFT: content */}
                           <div>
                             <h3 style={{ 
-                              fontSize: "18px", 
+                              fontSize: "20px", 
                               fontWeight: "700", 
                               color: "#111827", 
                               lineHeight: "1.25",
@@ -1558,14 +1558,15 @@ export default function Index() {
                                 fontWeight: "600", 
                                 textTransform: "uppercase", 
                                 letterSpacing: "0.05em",
-                                fontSize: "11px"
+                                fontSize: "12px"
                               }}>
                                 Folder:
                               </span>
                               <span style={{ 
                                 color: "#1F2937", 
                                 textTransform: "none",
-                                marginLeft: "4px"
+                                marginLeft: "4px",
+                                fontSize: "14px"
                               }}>
                                 {note.folder ? note.folder.name : "No folder"}
                               </span>
@@ -1585,7 +1586,8 @@ export default function Index() {
                                     alignItems: "center",
                                     borderRadius: "9999px",
                                     backgroundColor: "#16A34A",
-                                    padding: "2px 8px",
+                                    padding: "4px 8px",
+                                    height: "20px",
                                     fontSize: "12px",
                                     fontWeight: "500",
                                     color: "white"
@@ -1659,7 +1661,8 @@ export default function Index() {
                                 fontWeight: "600",
                                 textTransform: "uppercase",
                                 cursor: "pointer",
-                                transition: "all 0.2s ease"
+                                transition: "all 0.2s ease",
+                                minHeight: "44px"
                               }}
                               onMouseEnter={(e) => {
                                 e.target.style.backgroundColor = "#D97706";
@@ -1693,7 +1696,7 @@ export default function Index() {
                                 textAlign: "center"
                               }}>
                                 <div style={{ 
-                                  fontSize: "24px", 
+                                  fontSize: "26px", 
                                   fontWeight: "700", 
                                   color: "#111827", 
                                   lineHeight: "1"
@@ -1737,7 +1740,7 @@ export default function Index() {
                                 textAlign: "center"
                               }}>
                                 <div style={{ 
-                                  fontSize: "24px", 
+                                  fontSize: "26px", 
                                   fontWeight: "700", 
                                   color: "#111827", 
                                   lineHeight: "1"
