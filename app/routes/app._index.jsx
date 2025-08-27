@@ -1705,7 +1705,7 @@ export default function Index() {
                             gap: "12px",
                             alignItems: "flex-end",
                             marginRight: "5px",
-                            marginLeft: "40%",
+                            marginLeft: "35%",
                             maxWidth: "max-content"
                           }}>
                             <div>
