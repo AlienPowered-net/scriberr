@@ -1738,7 +1738,8 @@ export default function Index() {
                           <div style={{
                             display: "flex",
                             gap: "8px",
-                            marginTop: "12px"
+                            marginTop: "12px",
+                            justifyContent: "flex-end"
                           }}>
                             <button
                               onClick={(e) => {
