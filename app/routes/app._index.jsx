@@ -852,6 +852,16 @@ export default function Index() {
             }
           }
           
+          /* Ensure no overflow issues */
+          .note-grid {
+            overflow: visible !important;
+          }
+          
+          .note-grid > div,
+          .note-grid > aside {
+            overflow: visible !important;
+          }
+          
           /* Preview text clamp fallback */
           .preview-clip {
             display: -webkit-box;
@@ -1531,11 +1541,14 @@ export default function Index() {
                             width: "6px",
                             backgroundColor: "#16A34A",
                             borderTopLeftRadius: "3px",
-                            borderBottomLeftRadius: "3px"
+                            borderBottomLeftRadius: "3px",
+                            zIndex: "0"
                           }} />
                         )}
 
                         <div style={{ 
+                          position: "relative",
+                          zIndex: "10",
                           display: "grid", 
                           gridTemplateColumns: "1fr 220px", 
                           gap: "16px"
@@ -1543,7 +1556,7 @@ export default function Index() {
                         className="note-grid"
                         >
                           {/* LEFT: content */}
-                          <div>
+                          <div style={{ overflow: "visible" }}>
                             <h3 style={{ 
                               fontSize: "18px", 
                               fontWeight: "700", 
@@ -1678,7 +1691,12 @@ export default function Index() {
                           </div>
 
                           {/* RIGHT: meta */}
-                          <aside style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                          <aside style={{ 
+                            overflow: "visible",
+                            display: "flex", 
+                            flexDirection: "column", 
+                            gap: "12px" 
+                          }}>
                             <div>
                               <div style={{ 
                                 fontSize: "11px", 
