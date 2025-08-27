@@ -1507,7 +1507,7 @@ export default function Index() {
                     const isCheckboxSelected = selectedNotes.includes(note.id);
                     
                     return (
-                      <article 
+                      <div 
                         key={note.id} 
                         style={{ 
                           position: "relative",
@@ -1551,21 +1551,10 @@ export default function Index() {
                         )}
 
                         <div style={{ 
-                          position: "relative",
-                          zIndex: "10",
-                          display: "flex",
-                          flexDirection: "column",
-                          height: "100%"
-                        }}
-                        className="note-grid"
-                        >
-                          {/* Content row */}
-                          <div style={{ 
-                            display: "grid", 
-                            gridTemplateColumns: "1fr 180px", 
-                            gap: "12px",
-                            flex: "1"
-                          }}>
+                          display: "grid", 
+                          gridTemplateColumns: "1fr 180px", 
+                          gap: "12px"
+                        }}>
                             {/* LEFT: content */}
                             <div style={{ overflow: "visible" }}>
                               <h3 style={{ 
@@ -1895,7 +1884,7 @@ export default function Index() {
                           </div>
                         </div>
                       </div>
-                    </article>
+                    </div>
                     );
                   })}
                 </div>
