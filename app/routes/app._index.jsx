@@ -222,6 +222,7 @@ export default function Index() {
   const [openNoteMenu, setOpenNoteMenu] = useState(null);
   const [showDeleteNoteConfirm, setShowDeleteNoteConfirm] = useState(null);
   const [showChangeFolderModal, setShowChangeFolderModal] = useState(null);
+  const [showMoveModal, setShowMoveModal] = useState(null);
   const [highlightFolders, setHighlightFolders] = useState(false);
   const [globalSearchQuery, setGlobalSearchQuery] = useState("");
   const [folderSearchQuery, setFolderSearchQuery] = useState("");
@@ -559,6 +560,64 @@ export default function Index() {
     } catch (error) {
       console.error('Error duplicating note:', error);
       setAlertMessage('Failed to duplicate note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+    }
+  };
+
+  // Handle moving a note or multiple notes
+  const handleMoveNote = async (moveType) => {
+    if (!duplicateFolderId) return;
+    
+    try {
+      if (moveType === 'bulk') {
+        // Move multiple notes
+        const movePromises = selectedNotes.map(noteId => {
+          const formData = new FormData();
+          formData.append('noteId', noteId);
+          formData.append('folderId', duplicateFolderId);
+          return fetch('/api/update-note', {
+            method: 'POST',
+            body: formData
+          });
+        });
+        
+        await Promise.all(movePromises);
+        setSelectedNotes([]);
+        setShowMoveModal(null);
+        setDuplicateFolderId("");
+        window.location.reload();
+      } else {
+        // Move single note
+        const formData = new FormData();
+        formData.append('noteId', moveType);
+        formData.append('folderId', duplicateFolderId);
+        
+        const response = await fetch('/api/update-note', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            setShowMoveModal(null);
+            setDuplicateFolderId("");
+            window.location.reload();
+          } else {
+            setAlertMessage(result.error || 'Failed to move note');
+            setAlertType('error');
+            setTimeout(() => setAlertMessage(''), 3000);
+          }
+        } else {
+          setAlertMessage('Failed to move note');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
+        }
+      }
+    } catch (error) {
+      console.error('Error moving note(s):', error);
+      setAlertMessage('Failed to move note(s)');
       setAlertType('error');
       setTimeout(() => setAlertMessage(''), 3000);
     }
@@ -1459,9 +1518,13 @@ export default function Index() {
                 </span>
               </div>
               
-              {/* Multi-select delete button */}
+              {/* Multi-select action buttons */}
               {selectedNotes.length > 0 && (
-                <div style={{ marginBottom: "24px" }}>
+                <div style={{ 
+                  marginBottom: "24px",
+                  display: "flex",
+                  gap: "12px"
+                }}>
                   <Button
                     variant="primary"
                     tone="critical"
@@ -1489,6 +1552,33 @@ export default function Index() {
                     }}
                   >
                     Delete {selectedNotes.length} Selected Note{selectedNotes.length > 1 ? 's' : ''}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => setShowMoveModal('bulk')}
+                    style={{
+                      backgroundColor: "#16A34A",
+                      border: "none",
+                      color: "white",
+                      padding: "12px 20px",
+                      borderRadius: "8px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "700",
+                      textTransform: "uppercase",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      transition: "all 0.2s ease"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = "#15803D";
+                      e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = "#16A34A";
+                      e.target.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+                    }}
+                  >
+                    Move {selectedNotes.length} Selected Note{selectedNotes.length > 1 ? 's' : ''}
                   </Button>
                 </div>
               )}
@@ -1837,7 +1927,7 @@ export default function Index() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setShowDeleteNoteConfirm(note.id);
+                                  setShowMoveModal(note.id);
                                   setOpenNoteMenu(null);
                                 }}
                                 style={{
@@ -1849,16 +1939,16 @@ export default function Index() {
                                   textAlign: "left",
                                   cursor: "pointer",
                                   fontSize: "12px",
-                                  color: "#d82c0d"
+                                  color: "#374151"
                                 }}
                                 onMouseEnter={(e) => {
-                                  e.target.style.backgroundColor = "#FEF2F2";
+                                  e.target.style.backgroundColor = "#F3F4F6";
                                 }}
                                 onMouseLeave={(e) => {
                                   e.target.style.backgroundColor = "transparent";
                                 }}
                               >
-                                Delete Note
+                                Move to Folder
                               </button>
                             </div>
                           )}
@@ -2540,6 +2630,76 @@ export default function Index() {
                   disabled={!duplicateFolderId}
                 >
                   Duplicate Note
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Move Note Modal */}
+        {showMoveModal && (
+          <div style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000
+          }}>
+            <div style={{
+              backgroundColor: "white",
+              padding: "24px",
+              borderRadius: "8px",
+              maxWidth: "400px",
+              width: "90%"
+            }}>
+              <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                {showMoveModal === 'bulk' ? 'Move Selected Notes' : 'Move Note'}
+              </Text>
+              <div style={{ marginBottom: "24px" }}>
+                <label htmlFor="moveFolderSelect" style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                  Select a folder to move the note{showMoveModal === 'bulk' ? 's' : ''} to:
+                </label>
+                <select
+                  id="moveFolderSelect"
+                  value={duplicateFolderId}
+                  onChange={(e) => setDuplicateFolderId(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    border: "1px solid #c9cccf",
+                    borderRadius: "4px",
+                    fontSize: "14px",
+                  }}
+                >
+                  <option value="">Select a folder...</option>
+                  {folderOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setShowMoveModal(null);
+                    setDuplicateFolderId("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => handleMoveNote(showMoveModal)}
+                  disabled={!duplicateFolderId}
+                >
+                  Move Note{showMoveModal === 'bulk' ? 's' : ''}
                 </Button>
               </div>
             </div>
