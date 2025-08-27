@@ -1533,8 +1533,9 @@ export default function Index() {
                         {/* Left checkbox area */}
                         <div style={{ 
                           display: "flex", 
-                          alignItems: "center", 
-                          paddingRight: "15px" 
+                          alignItems: "flex-start", 
+                          paddingRight: "12px",
+                          paddingTop: "2px"
                         }}>
                           <input
                             type="checkbox"
@@ -1544,9 +1545,9 @@ export default function Index() {
                               handleNoteSelection(note.id);
                             }}
                             style={{
-                              width: "20px",
-                              height: "20px",
-                              transform: "scale(1.2)"
+                              width: "16px",
+                              height: "16px",
+                              transform: "scale(1.1)"
                             }}
                           />
                         </div>
@@ -1555,39 +1556,58 @@ export default function Index() {
                         <div style={{ 
                           display: "flex", 
                           flexDirection: "column", 
-                          flex: "1" 
+                          flex: "1",
+                          minHeight: "0"
                         }}>
                           <div style={{ 
                             display: "flex", 
-                            justifyContent: "space-between" 
+                            justifyContent: "space-between",
+                            gap: "16px"
                           }}>
-                            <div style={{ flex: "1" }}>
+                            <div style={{ 
+                              flex: "1",
+                              minWidth: "0",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "8px"
+                            }}>
                               <div style={{ 
                                 fontWeight: "bold", 
                                 fontSize: "16px", 
-                                marginBottom: "5px" 
+                                lineHeight: "1.3",
+                                color: "#111827"
                               }}>
                                 {note.title || "(untitled)"}
                               </div>
                               <div style={{ 
-                                fontSize: "14px", 
-                                marginBottom: "8px" 
+                                fontSize: "13px",
+                                color: "#6B7280",
+                                lineHeight: "1.4"
                               }}>
-                                <strong>Folder:</strong> {note.folder ? note.folder.name : "No folder"}
+                                <strong style={{ color: "#374151" }}>Folder:</strong> {note.folder ? note.folder.name : "No folder"}
                               </div>
                               {note.tags && note.tags.length > 0 && (
-                                <div style={{ marginBottom: "10px" }}>
-                                  <strong>Tags:</strong>
+                                <div style={{ 
+                                  display: "flex",
+                                  flexWrap: "wrap",
+                                  gap: "4px",
+                                  alignItems: "center"
+                                }}>
+                                  <strong style={{ 
+                                    fontSize: "12px",
+                                    color: "#374151",
+                                    marginRight: "4px"
+                                  }}>Tags:</strong>
                                   {note.tags.slice(0, 3).map((tag, index) => (
                                     <span key={index} style={{
                                       display: "inline-block",
                                       background: "#28a745",
                                       color: "white",
-                                      fontSize: "12px",
-                                      fontWeight: "bold",
-                                      padding: "4px 10px",
-                                      borderRadius: "12px",
-                                      marginRight: "5px"
+                                      fontSize: "11px",
+                                      fontWeight: "600",
+                                      padding: "3px 8px",
+                                      borderRadius: "10px",
+                                      lineHeight: "1.2"
                                     }}>
                                       {tag}
                                     </span>
@@ -1595,12 +1615,15 @@ export default function Index() {
                                 </div>
                               )}
                               <div style={{ 
-                                fontSize: "13px", 
+                                fontSize: "12px", 
                                 fontStyle: "italic", 
-                                color: "#555", 
-                                marginBottom: "10px" 
+                                color: "#6B7280", 
+                                lineHeight: "1.4"
                               }}>
-                                <strong>Preview:</strong> {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 80) : "No content"}
+                                <strong style={{ 
+                                  fontStyle: "normal",
+                                  color: "#374151"
+                                }}>Preview:</strong> {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 100) : "No content"}
                               </div>
                             </div>
 
@@ -1608,8 +1631,9 @@ export default function Index() {
                             <div style={{ 
                               display: "flex", 
                               flexDirection: "column", 
-                              gap: "20px", 
-                              alignItems: "center" 
+                              gap: "16px", 
+                              alignItems: "center",
+                              flexShrink: "0"
                             }}>
                               <div>
                                 <div style={{ 
@@ -1686,13 +1710,14 @@ export default function Index() {
                               background: "orange",
                               color: "white",
                               fontWeight: "bold",
-                              padding: "10px 18px",
+                              padding: "8px 16px",
                               border: "none",
                               borderRadius: "5px",
                               cursor: "pointer",
                               transition: "background 0.2s ease-in-out",
-                              marginTop: "auto",
-                              width: "fit-content"
+                              marginTop: "12px",
+                              width: "fit-content",
+                              fontSize: "12px"
                             }}
                             onMouseEnter={(e) => {
                               e.target.style.background = "#e69500";
