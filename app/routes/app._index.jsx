@@ -868,6 +868,7 @@ export default function Index() {
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            max-height: calc(1.4em * 2);
           }
           
           body, html {
@@ -1633,7 +1634,7 @@ export default function Index() {
                                   handleNoteSelection(note.id);
                                 }}
                                 style={{
-                                  marginTop: "2px",
+                                  marginTop: "4px",
                                   height: "16px",
                                   width: "16px",
                                   borderRadius: "4px",
@@ -1650,7 +1651,8 @@ export default function Index() {
                                 WebkitLineClamp: "2",
                                 WebkitBoxOrient: "vertical",
                                 overflow: "hidden",
-                                lineHeight: "1.4"
+                                lineHeight: "1.4",
+                                maxHeight: "calc(1.4em * 2)"
                               }}>
                                 <span style={{ 
                                   fontStyle: "normal", 
@@ -1658,7 +1660,7 @@ export default function Index() {
                                   color: "#1F2937" 
                                 }}>
                                   Preview:
-                                </span> {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 80) + "..." : "No content"}
+                                </span> {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 100) + "..." : "No content"}
                               </p>
                             </div>
 
