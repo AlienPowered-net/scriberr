@@ -1563,7 +1563,8 @@ export default function Index() {
                           <div style={{ 
                             display: "flex", 
                             justifyContent: "space-between",
-                            gap: "16px"
+                            gap: "16px",
+                            flex: "1"
                           }}>
                             <div style={{ 
                               flex: "1",
@@ -1636,7 +1637,7 @@ export default function Index() {
                               gap: "16px", 
                               alignItems: "center",
                               flexShrink: "0",
-                              justifyContent: "flex-end"
+                              alignSelf: "flex-end"
                             }}>
                               <div>
                                 <div style={{ 
