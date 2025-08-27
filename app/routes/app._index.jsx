@@ -235,6 +235,10 @@ export default function Index() {
   // Duplicate note states
   const [showDuplicateModal, setShowDuplicateModal] = useState(null);
   const [duplicateFolderId, setDuplicateFolderId] = useState("");
+  
+  // Note menu states
+  const [openNoteMenu, setOpenNoteMenu] = useState(null);
+  const [showDeleteNoteConfirm, setShowDeleteNoteConfirm] = useState(null);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -1548,154 +1552,138 @@ export default function Index() {
                           }} />
                         )}
 
-                        <div style={{ 
+                                                <div style={{ 
                           position: "relative",
                           zIndex: "10",
-                          display: "grid", 
-                          gridTemplateColumns: "1fr 180px", 
-                          gap: "12px"
+                          display: "flex",
+                          flexDirection: "column",
+                          height: "100%"
                         }}
                         className="note-grid"
                         >
-                          {/* LEFT: content */}
-                          <div style={{ overflow: "visible" }}>
-                            <h3 style={{ 
-                              fontSize: "16px", 
-                              fontWeight: "600", 
-                              color: "#111827", 
-                              lineHeight: "1.3",
-                              margin: "0",
-                              marginBottom: "4px"
-                            }}>
-                              {note.title || "(untitled)"}
-                            </h3>
-
-                            <p style={{ 
-                              fontSize: "12px",
-                              color: "#6B7280",
-                              margin: "0",
-                              marginBottom: "6px"
-                            }}>
-                              <span style={{ 
-                                color: "#374151", 
-                                fontWeight: "500",
-                                fontSize: "11px"
+                          {/* Content row */}
+                          <div style={{ 
+                            display: "grid", 
+                            gridTemplateColumns: "1fr 180px", 
+                            gap: "12px",
+                            flex: "1"
+                          }}>
+                            {/* LEFT: content */}
+                            <div style={{ overflow: "visible" }}>
+                              <h3 style={{ 
+                                fontSize: "16px", 
+                                fontWeight: "600", 
+                                color: "#111827", 
+                                lineHeight: "1.3",
+                                margin: "0",
+                                marginBottom: "4px"
                               }}>
-                                Folder: 
-                              </span>
-                              <span style={{ 
-                                color: "#1F2937",
-                                marginLeft: "2px"
-                              }}>
-                                {note.folder ? note.folder.name : "No folder"}
-                              </span>
-                            </p>
-
-                            {/* Tags, optional */}
-                            {note.tags && note.tags.length > 0 && (
-                              <div style={{ 
-                                display: "flex", 
-                                flexWrap: "wrap", 
-                                gap: "4px",
-                                marginBottom: "6px"
-                              }}>
-                                {note.tags.slice(0, 3).map((tag, index) => (
-                                  <span key={index} style={{
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    borderRadius: "12px",
-                                    backgroundColor: "#16A34A",
-                                    padding: "2px 6px",
-                                    height: "16px",
-                                    fontSize: "10px",
-                                    fontWeight: "500",
-                                    color: "white",
-                                    whiteSpace: "nowrap"
-                                  }}>
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-
-                            {/* Preview row */}
-                            <div style={{ 
-                              display: "flex", 
-                              alignItems: "flex-start", 
-                              gap: "6px",
-                              marginBottom: "8px"
-                            }}>
-                              <input
-                                type="checkbox"
-                                checked={isCheckboxSelected}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  handleNoteSelection(note.id);
-                                }}
-                                style={{
-                                  marginTop: "2px",
-                                  height: "14px",
-                                  width: "14px",
-                                  borderRadius: "3px",
-                                  border: "1px solid #D1D5DB",
-                                  accentColor: "#16A34A"
-                                }}
-                              />
+                                {note.title || "(untitled)"}
+                              </h3>
+                              
                               <p style={{ 
-                                fontSize: "12px", 
-                                fontStyle: "italic", 
+                                fontSize: "12px",
                                 color: "#6B7280",
                                 margin: "0",
-                                display: "-webkit-box",
-                                WebkitLineClamp: "2",
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                                lineHeight: "1.3",
-                                maxHeight: "calc(1.3em * 2)"
+                                marginBottom: "6px"
                               }}>
                                 <span style={{ 
-                                  fontStyle: "normal", 
-                                  fontWeight: "500", 
-                                  color: "#1F2937" 
+                                  color: "#374151", 
+                                  fontWeight: "500",
+                                  fontSize: "11px"
                                 }}>
-                                  Preview: 
-                                </span> {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 80) : "No content"}
+                                  Folder: 
+                                </span>
+                                <span style={{ 
+                                  color: "#1F2937",
+                                  marginLeft: "2px"
+                                }}>
+                                  {note.folder ? note.folder.name : "No folder"}
+                                </span>
                               </p>
+
+                              {/* Tags, optional */}
+                              {note.tags && note.tags.length > 0 && (
+                                <div style={{ 
+                                  display: "flex", 
+                                  flexWrap: "wrap", 
+                                  gap: "4px",
+                                  marginBottom: "6px"
+                                }}>
+                                  {note.tags.slice(0, 3).map((tag, index) => (
+                                    <span key={index} style={{
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      borderRadius: "12px",
+                                      backgroundColor: "#16A34A",
+                                      padding: "2px 6px",
+                                      height: "16px",
+                                      fontSize: "10px",
+                                      fontWeight: "500",
+                                      color: "white",
+                                      whiteSpace: "nowrap"
+                                    }}>
+                                      {tag}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Preview row */}
+                              <div style={{ 
+                                display: "flex", 
+                                alignItems: "flex-start", 
+                                gap: "6px"
+                              }}>
+                                <input
+                                  type="checkbox"
+                                  checked={isCheckboxSelected}
+                                  onChange={(e) => {
+                                    e.stopPropagation();
+                                    handleNoteSelection(note.id);
+                                  }}
+                                  style={{
+                                    marginTop: "2px",
+                                    height: "14px",
+                                    width: "14px",
+                                    borderRadius: "3px",
+                                    border: "1px solid #D1D5DB",
+                                    accentColor: "#16A34A"
+                                  }}
+                                />
+                                <p style={{ 
+                                  fontSize: "12px", 
+                                  fontStyle: "italic", 
+                                  color: "#6B7280",
+                                  margin: "0",
+                                  display: "-webkit-box",
+                                  WebkitLineClamp: "2",
+                                  WebkitBoxOrient: "vertical",
+                                  overflow: "hidden",
+                                  lineHeight: "1.3",
+                                  maxHeight: "calc(1.3em * 2)"
+                                }}>
+                                  <span style={{ 
+                                    fontStyle: "normal", 
+                                    fontWeight: "500", 
+                                    color: "#1F2937" 
+                                  }}>
+                                    Preview: 
+                                  </span> {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 80) : "No content"}
+                                </p>
+                              </div>
                             </div>
 
-                            {/* CTA */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEditNote(note);
-                              }}
-                              style={{
-                                width: "100%",
-                                backgroundColor: "#F59E0B",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "6px",
-                                padding: "8px 12px",
-                                fontSize: "12px",
-                                fontWeight: "600",
-                                cursor: "pointer",
-                                transition: "all 0.2s ease",
-                                minHeight: "32px",
-                                boxSizing: "border-box"
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = "#D97706";
-                                e.target.style.transform = "translateY(-1px)";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = "#F59E0B";
-                                e.target.style.transform = "translateY(0)";
-                              }}
-                            >
-                              Edit Note
-                            </button>
-                          </div>
+                            {/* RIGHT: meta */}
+                            <aside style={{ 
+                              overflow: "visible",
+                              display: "flex", 
+                              flexDirection: "column", 
+                              gap: "8px",
+                              alignItems: "center",
+                              marginRight: "4px"
+                            }}>
 
                           {/* RIGHT: meta */}
                           <aside style={{ 
@@ -1703,20 +1691,21 @@ export default function Index() {
                             display: "flex", 
                             flexDirection: "column", 
                             gap: "8px",
-                            alignItems: "flex-end",
+                            alignItems: "center",
                             marginRight: "4px"
                           }}>
                             <div>
-                              <div style={{ 
-                                fontSize: "11px", 
-                                fontWeight: "600", 
-                                letterSpacing: "0.05em", 
-                                color: "#6B7280", 
-                                textTransform: "uppercase",
-                                marginBottom: "4px"
-                              }}>
-                                Last Edited
-                              </div>
+                                                              <div style={{ 
+                                  fontSize: "11px", 
+                                  fontWeight: "600", 
+                                  letterSpacing: "0.05em", 
+                                  color: "#6B7280", 
+                                  textTransform: "uppercase",
+                                  marginBottom: "4px",
+                                  textAlign: "center"
+                                }}>
+                                  Edited
+                                </div>
                               <div style={{
                                 borderRadius: "6px",
                                 border: "1px solid #E5E7EB",
@@ -1759,9 +1748,10 @@ export default function Index() {
                                 letterSpacing: "0.05em", 
                                 color: "#6B7280", 
                                 textTransform: "uppercase",
-                                marginBottom: "4px"
+                                marginBottom: "4px",
+                                textAlign: "center"
                               }}>
-                                Note Created
+                                Created
                               </div>
                               <div style={{
                                 borderRadius: "6px",
@@ -1798,6 +1788,113 @@ export default function Index() {
                               </div>
                             </div>
                           </aside>
+                        </div>
+                        
+                        {/* Bottom button row */}
+                        <div style={{ 
+                          marginTop: "auto",
+                          paddingTop: "10px"
+                        }}>
+                          <div className="note-menu-container" style={{ position: "relative" }}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
+                              }}
+                              style={{
+                                width: "100%",
+                                backgroundColor: "#F59E0B",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "6px",
+                                padding: "8px 12px",
+                                fontSize: "12px",
+                                fontWeight: "600",
+                                cursor: "pointer",
+                                transition: "all 0.2s ease",
+                                minHeight: "32px",
+                                boxSizing: "border-box"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = "#D97706";
+                                e.target.style.transform = "translateY(-1px)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = "#F59E0B";
+                                e.target.style.transform = "translateY(0)";
+                              }}
+                            >
+                              Manage Note
+                            </button>
+                            
+                            {openNoteMenu === note.id && (
+                              <div style={{
+                                position: "absolute",
+                                top: "100%",
+                                left: "0",
+                                right: "0",
+                                backgroundColor: "white",
+                                border: "1px solid #E5E7EB",
+                                borderRadius: "6px",
+                                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                                zIndex: 1000,
+                                marginTop: "4px"
+                              }}>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowDuplicateModal(note.id);
+                                    setOpenNoteMenu(null);
+                                  }}
+                                  style={{
+                                    display: "block",
+                                    width: "100%",
+                                    padding: "8px 12px",
+                                    border: "none",
+                                    background: "none",
+                                    textAlign: "left",
+                                    cursor: "pointer",
+                                    fontSize: "12px",
+                                    color: "#374151"
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.target.style.backgroundColor = "#F3F4F6";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.target.style.backgroundColor = "transparent";
+                                  }}
+                                >
+                                  Duplicate Note
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowDeleteNoteConfirm(note.id);
+                                    setOpenNoteMenu(null);
+                                  }}
+                                  style={{
+                                    display: "block",
+                                    width: "100%",
+                                    padding: "8px 12px",
+                                    border: "none",
+                                    background: "none",
+                                    textAlign: "left",
+                                    cursor: "pointer",
+                                    fontSize: "12px",
+                                    color: "#d82c0d"
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.target.style.backgroundColor = "#FEF2F2";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.target.style.backgroundColor = "transparent";
+                                  }}
+                                >
+                                  Delete Note
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </article>
                     );
@@ -2476,6 +2573,52 @@ export default function Index() {
                   disabled={!duplicateFolderId}
                 >
                   Duplicate Note
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Note Confirmation Modal */}
+        {showDeleteNoteConfirm && (
+          <div style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000
+          }}>
+            <div style={{
+              backgroundColor: "white",
+              padding: "24px",
+              borderRadius: "8px",
+              maxWidth: "400px",
+              width: "90%"
+            }}>
+              <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                Delete Note
+              </Text>
+              <Text as="p" style={{ marginBottom: "24px" }}>
+                Are you sure you want to delete this note? This action is permanent and cannot be undone.
+              </Text>
+              <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowDeleteNoteConfirm(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  tone="critical"
+                  onClick={() => handleDeleteNote(showDeleteNoteConfirm)}
+                >
+                  Delete Note
                 </Button>
               </div>
             </div>
