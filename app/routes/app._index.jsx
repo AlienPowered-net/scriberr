@@ -1535,9 +1535,8 @@ export default function Index() {
                         {/* Left checkbox area */}
                         <div style={{ 
                           display: "flex", 
-                          alignItems: "flex-start", 
-                          paddingRight: "12px",
-                          paddingTop: "2px"
+                          alignItems: "center", 
+                          paddingRight: "12px"
                         }}>
                           <input
                             type="checkbox"
