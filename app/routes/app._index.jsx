@@ -285,6 +285,8 @@ export default function Index() {
     ...folders.map((f) => ({ label: f.name, value: String(f.id) })),
   ];
 
+  const moveFolderOptions = folders.map((f) => ({ label: f.name, value: String(f.id) }));
+
   // Filter notes based on selected folder and search queries
   const filteredNotes = notes.filter(note => {
     // First filter by selected folder
@@ -1557,7 +1559,7 @@ export default function Index() {
                     variant="primary"
                     onClick={() => setShowMoveModal('bulk')}
                     style={{
-                      backgroundColor: "#16A34A",
+                      backgroundColor: "#374151",
                       border: "none",
                       color: "white",
                       padding: "12px 20px",
@@ -1570,11 +1572,11 @@ export default function Index() {
                       transition: "all 0.2s ease"
                     }}
                     onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = "#15803D";
+                      e.target.style.backgroundColor = "#1F2937";
                       e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
                     }}
                     onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = "#16A34A";
+                      e.target.style.backgroundColor = "#374151";
                       e.target.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
                     }}
                   >
@@ -1605,7 +1607,7 @@ export default function Index() {
                           borderRadius: "12px",
                           padding: "20px",
                           boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                          borderRight: isSelected ? "6px solid #0a0" : "6px solid transparent",
+                          borderRight: isSelected ? "6px solid #0a0" : isCheckboxSelected ? "6px solid #16A34A" : "6px solid transparent",
                           cursor: "pointer",
                           transition: "all 0.2s ease",
                           marginBottom: "8px",
@@ -2607,7 +2609,7 @@ export default function Index() {
                   }}
                 >
                   <option value="">Select a folder...</option>
-                  {folderOptions.map((option) => (
+                  {moveFolderOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
@@ -2677,7 +2679,7 @@ export default function Index() {
                   }}
                 >
                   <option value="">Select a folder...</option>
-                  {folderOptions.map((option) => (
+                  {moveFolderOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
