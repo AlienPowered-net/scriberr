@@ -1712,8 +1712,9 @@ export default function Index() {
                                 borderRadius: "8px",
                                 border: "1px solid #E5E7EB",
                                 backgroundColor: "#F9FAFB",
-                                padding: "8px 12px",
-                                textAlign: "center"
+                                padding: "12px 8px",
+                                textAlign: "center",
+                                minWidth: "80px"
                               }}>
                                 <div style={{ 
                                   fontSize: "24px", 
@@ -1756,8 +1757,9 @@ export default function Index() {
                                 borderRadius: "8px",
                                 border: "1px solid #E5E7EB",
                                 backgroundColor: "#F9FAFB",
-                                padding: "8px 12px",
-                                textAlign: "center"
+                                padding: "12px 8px",
+                                textAlign: "center",
+                                minWidth: "80px"
                               }}>
                                 <div style={{ 
                                   fontSize: "24px", 
