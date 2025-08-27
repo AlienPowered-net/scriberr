@@ -1577,8 +1577,7 @@ export default function Index() {
                                 fontWeight: "bold", 
                                 fontSize: "16px", 
                                 lineHeight: "1.3",
-                                color: "#111827",
-                                paddingRight: "16px"
+                                color: "#111827"
                               }}>
                                 {note.title || "(untitled)"}
                               </div>
