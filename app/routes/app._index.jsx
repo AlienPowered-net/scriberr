@@ -1560,6 +1560,19 @@ export default function Index() {
                           flex: "1",
                           minHeight: "0"
                         }}>
+                          {/* Title section */}
+                          <div style={{ 
+                            fontWeight: "bold", 
+                            fontSize: "18px", 
+                            lineHeight: "1.2",
+                            color: "#111827",
+                            marginBottom: "12px",
+                            paddingBottom: "8px",
+                            borderBottom: "1px solid #E5E7EB"
+                          }}>
+                            {note.title || "(untitled)"}
+                          </div>
+                          
                           <div style={{ 
                             display: "flex", 
                             justifyContent: "space-between",
@@ -1573,14 +1586,6 @@ export default function Index() {
                               flexDirection: "column",
                               gap: "8px"
                             }}>
-                              <div style={{ 
-                                fontWeight: "bold", 
-                                fontSize: "16px", 
-                                lineHeight: "1.3",
-                                color: "#111827"
-                              }}>
-                                {note.title || "(untitled)"}
-                              </div>
                               <div style={{ 
                                 fontSize: "13px",
                                 color: "#6B7280",
