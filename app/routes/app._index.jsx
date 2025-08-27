@@ -1704,7 +1704,9 @@ export default function Index() {
                             flexDirection: "column", 
                             gap: "12px",
                             alignItems: "flex-end",
-                            marginRight: "5px"
+                            marginRight: "5px",
+                            marginLeft: "40%",
+                            maxWidth: "max-content"
                           }}>
                             <div>
                               <div style={{ 
