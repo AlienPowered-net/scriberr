@@ -852,6 +852,14 @@ export default function Index() {
             }
           }
           
+          /* Preview text clamp fallback */
+          .preview-clip {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+          
           body, html {
             width: 100% !important;
             max-width: none !important;
@@ -1496,8 +1504,7 @@ export default function Index() {
                           boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
                           padding: "16px",
                           cursor: "pointer",
-                          transition: "all 0.2s ease",
-                          maxWidth: "100%"
+                          transition: "all 0.2s ease"
                         }}
                         onClick={() => handleEditNote(note)}
                         onMouseEnter={(e) => {
@@ -1531,15 +1538,14 @@ export default function Index() {
                         <div style={{ 
                           display: "grid", 
                           gridTemplateColumns: "1fr 220px", 
-                          gap: "16px",
-                          alignItems: "start"
+                          gap: "16px"
                         }}
                         className="note-grid"
                         >
                           {/* LEFT: content */}
                           <div>
                             <h3 style={{ 
-                              fontSize: "20px", 
+                              fontSize: "18px", 
                               fontWeight: "700", 
                               color: "#111827", 
                               lineHeight: "1.25",
@@ -1558,15 +1564,14 @@ export default function Index() {
                                 fontWeight: "600", 
                                 textTransform: "uppercase", 
                                 letterSpacing: "0.05em",
-                                fontSize: "12px"
+                                fontSize: "11px"
                               }}>
                                 Folder:
                               </span>
                               <span style={{ 
                                 color: "#1F2937", 
                                 textTransform: "none",
-                                marginLeft: "4px",
-                                fontSize: "14px"
+                                marginLeft: "4px"
                               }}>
                                 {note.folder ? note.folder.name : "No folder"}
                               </span>
@@ -1578,7 +1583,7 @@ export default function Index() {
                                 marginTop: "8px", 
                                 display: "flex", 
                                 flexWrap: "wrap", 
-                                gap: "6px" 
+                                gap: "8px" 
                               }}>
                                 {note.tags.slice(0, 3).map((tag, index) => (
                                   <span key={index} style={{
@@ -1586,8 +1591,7 @@ export default function Index() {
                                     alignItems: "center",
                                     borderRadius: "9999px",
                                     backgroundColor: "#16A34A",
-                                    padding: "4px 8px",
-                                    height: "20px",
+                                    padding: "2px 8px",
                                     fontSize: "12px",
                                     fontWeight: "500",
                                     color: "white"
@@ -1626,11 +1630,10 @@ export default function Index() {
                                 fontStyle: "italic", 
                                 color: "#6B7280",
                                 margin: "0",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
                                 display: "-webkit-box",
                                 WebkitLineClamp: "2",
                                 WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
                                 lineHeight: "1.4"
                               }}>
                                 <span style={{ 
@@ -1661,8 +1664,7 @@ export default function Index() {
                                 fontWeight: "600",
                                 textTransform: "uppercase",
                                 cursor: "pointer",
-                                transition: "all 0.2s ease",
-                                minHeight: "44px"
+                                transition: "all 0.2s ease"
                               }}
                               onMouseEnter={(e) => {
                                 e.target.style.backgroundColor = "#D97706";
@@ -1696,8 +1698,8 @@ export default function Index() {
                                 textAlign: "center"
                               }}>
                                 <div style={{ 
-                                  fontSize: "26px", 
-                                  fontWeight: "700", 
+                                  fontSize: "24px", 
+                                  fontWeight: "800", 
                                   color: "#111827", 
                                   lineHeight: "1"
                                 }}>
@@ -1740,8 +1742,8 @@ export default function Index() {
                                 textAlign: "center"
                               }}>
                                 <div style={{ 
-                                  fontSize: "26px", 
-                                  fontWeight: "700", 
+                                  fontSize: "24px", 
+                                  fontWeight: "800", 
                                   color: "#111827", 
                                   lineHeight: "1"
                                 }}>
