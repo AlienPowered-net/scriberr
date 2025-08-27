@@ -1790,7 +1790,7 @@ export default function Index() {
                                 e.target.style.background = "#dc2626";
                               }}
                             >
-                              DELETE
+                              DELETE NOTE
                             </button>
                           </div>
                           
