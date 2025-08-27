@@ -1764,7 +1764,7 @@ export default function Index() {
                                 e.target.style.background = "orange";
                               }}
                             >
-                              MANAGE NOTE
+                              MANAGE
                             </button>
                             <button
                               onClick={(e) => {
@@ -1790,7 +1790,7 @@ export default function Index() {
                                 e.target.style.background = "#dc2626";
                               }}
                             >
-                              DELETE NOTE
+                              DELETE
                             </button>
                           </div>
                           
