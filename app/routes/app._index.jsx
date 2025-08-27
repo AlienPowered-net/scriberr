@@ -1510,23 +1510,24 @@ export default function Index() {
                         style={{ 
                           position: "relative",
                           backgroundColor: "#FFFFFF",
-                          borderRadius: "12px",
+                          borderRadius: "8px",
                           border: isCheckboxSelected ? "1px solid #16A34A" : "1px solid #E5E7EB",
-                          boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-                          padding: "16px",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                          padding: "12px",
                           cursor: "pointer",
-                          transition: "all 0.2s ease"
+                          transition: "all 0.2s ease",
+                          marginBottom: "8px"
                         }}
                         onClick={() => handleEditNote(note)}
                         onMouseEnter={(e) => {
                           if (!isSelected) {
-                            e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.1)";
+                            e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
                             e.currentTarget.style.borderColor = "#D1D5DB";
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (!isSelected) {
-                            e.currentTarget.style.boxShadow = "0 1px 2px rgba(0,0,0,0.05)";
+                            e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
                             e.currentTarget.style.borderColor = "#E5E7EB";
                           }
                         }}
@@ -1537,12 +1538,12 @@ export default function Index() {
                             pointerEvents: "none",
                             position: "absolute",
                             right: "0",
-                            top: "12px",
-                            bottom: "12px",
-                            width: "6px",
+                            top: "8px",
+                            bottom: "8px",
+                            width: "4px",
                             backgroundColor: "#16A34A",
-                            borderTopLeftRadius: "3px",
-                            borderBottomLeftRadius: "3px",
+                            borderTopLeftRadius: "2px",
+                            borderBottomLeftRadius: "2px",
                             zIndex: "0"
                           }} />
                         )}
@@ -1551,41 +1552,40 @@ export default function Index() {
                           position: "relative",
                           zIndex: "10",
                           display: "grid", 
-                          gridTemplateColumns: "1fr 220px", 
-                          gap: "16px"
+                          gridTemplateColumns: "1fr 180px", 
+                          gap: "12px"
                         }}
                         className="note-grid"
                         >
                           {/* LEFT: content */}
                           <div style={{ overflow: "visible" }}>
                             <h3 style={{ 
-                              fontSize: "18px", 
-                              fontWeight: "700", 
+                              fontSize: "16px", 
+                              fontWeight: "600", 
                               color: "#111827", 
-                              lineHeight: "1.25",
-                              margin: "0"
+                              lineHeight: "1.3",
+                              margin: "0",
+                              marginBottom: "4px"
                             }}>
                               {note.title || "(untitled)"}
                             </h3>
 
                             <p style={{ 
-                              marginTop: "4px", 
-                              fontSize: "14px",
-                              color: "#6B7280"
+                              fontSize: "12px",
+                              color: "#6B7280",
+                              margin: "0",
+                              marginBottom: "6px"
                             }}>
                               <span style={{ 
                                 color: "#374151", 
-                                fontWeight: "600", 
-                                textTransform: "uppercase", 
-                                letterSpacing: "0.05em",
+                                fontWeight: "500",
                                 fontSize: "11px"
                               }}>
-                                Folder:
+                                Folder: 
                               </span>
                               <span style={{ 
-                                color: "#1F2937", 
-                                textTransform: "none",
-                                marginLeft: "4px"
+                                color: "#1F2937",
+                                marginLeft: "2px"
                               }}>
                                 {note.folder ? note.folder.name : "No folder"}
                               </span>
@@ -1594,21 +1594,21 @@ export default function Index() {
                             {/* Tags, optional */}
                             {note.tags && note.tags.length > 0 && (
                               <div style={{ 
-                                marginTop: "8px", 
                                 display: "flex", 
                                 flexWrap: "wrap", 
-                                gap: "8px" 
+                                gap: "4px",
+                                marginBottom: "6px"
                               }}>
                                 {note.tags.slice(0, 3).map((tag, index) => (
                                   <span key={index} style={{
                                     display: "inline-flex",
                                     alignItems: "center",
                                     justifyContent: "center",
-                                    borderRadius: "9999px",
+                                    borderRadius: "12px",
                                     backgroundColor: "#16A34A",
-                                    padding: "2px 8px",
-                                    height: "20px",
-                                    fontSize: "12px",
+                                    padding: "2px 6px",
+                                    height: "16px",
+                                    fontSize: "10px",
                                     fontWeight: "500",
                                     color: "white",
                                     whiteSpace: "nowrap"
@@ -1621,10 +1621,10 @@ export default function Index() {
 
                             {/* Preview row */}
                             <div style={{ 
-                              marginTop: "8px", 
                               display: "flex", 
                               alignItems: "flex-start", 
-                              gap: "8px" 
+                              gap: "6px",
+                              marginBottom: "8px"
                             }}>
                               <input
                                 type="checkbox"
@@ -1634,16 +1634,16 @@ export default function Index() {
                                   handleNoteSelection(note.id);
                                 }}
                                 style={{
-                                  marginTop: "4px",
-                                  height: "16px",
-                                  width: "16px",
-                                  borderRadius: "4px",
+                                  marginTop: "2px",
+                                  height: "14px",
+                                  width: "14px",
+                                  borderRadius: "3px",
                                   border: "1px solid #D1D5DB",
                                   accentColor: "#16A34A"
                                 }}
                               />
                               <p style={{ 
-                                fontSize: "14px", 
+                                fontSize: "12px", 
                                 fontStyle: "italic", 
                                 color: "#6B7280",
                                 margin: "0",
@@ -1651,16 +1651,16 @@ export default function Index() {
                                 WebkitLineClamp: "2",
                                 WebkitBoxOrient: "vertical",
                                 overflow: "hidden",
-                                lineHeight: "1.4",
-                                maxHeight: "calc(1.4em * 2)"
+                                lineHeight: "1.3",
+                                maxHeight: "calc(1.3em * 2)"
                               }}>
                                 <span style={{ 
                                   fontStyle: "normal", 
-                                  fontWeight: "600", 
+                                  fontWeight: "500", 
                                   color: "#1F2937" 
                                 }}>
-                                  Preview:
-                                </span> {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 100) + "..." : "No content"}
+                                  Preview: 
+                                </span> {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 80) : "No content"}
                               </p>
                             </div>
 
@@ -1671,26 +1671,26 @@ export default function Index() {
                                 handleEditNote(note);
                               }}
                               style={{
-                                marginTop: "16px",
                                 width: "100%",
                                 backgroundColor: "#F59E0B",
                                 color: "white",
                                 border: "none",
-                                borderRadius: "12px",
-                                padding: "12px 20px",
-                                fontSize: "14px",
+                                borderRadius: "6px",
+                                padding: "8px 12px",
+                                fontSize: "12px",
                                 fontWeight: "600",
-                                textTransform: "uppercase",
                                 cursor: "pointer",
                                 transition: "all 0.2s ease",
-                                minHeight: "44px",
+                                minHeight: "32px",
                                 boxSizing: "border-box"
                               }}
                               onMouseEnter={(e) => {
                                 e.target.style.backgroundColor = "#D97706";
+                                e.target.style.transform = "translateY(-1px)";
                               }}
                               onMouseLeave={(e) => {
                                 e.target.style.backgroundColor = "#F59E0B";
+                                e.target.style.transform = "translateY(0)";
                               }}
                             >
                               Edit Note
@@ -1702,11 +1702,9 @@ export default function Index() {
                             overflow: "visible",
                             display: "flex", 
                             flexDirection: "column", 
-                            gap: "12px",
+                            gap: "8px",
                             alignItems: "flex-end",
-                            marginRight: "5px",
-                            marginLeft: "45%",
-                            maxWidth: "max-content"
+                            marginRight: "4px"
                           }}>
                             <div>
                               <div style={{ 
@@ -1720,24 +1718,24 @@ export default function Index() {
                                 Last Edited
                               </div>
                               <div style={{
-                                borderRadius: "8px",
+                                borderRadius: "6px",
                                 border: "1px solid #E5E7EB",
                                 backgroundColor: "#F9FAFB",
-                                padding: "12px 8px",
+                                padding: "8px 6px",
                                 textAlign: "center",
                                 width: "fit-content",
-                                minWidth: "80px"
+                                minWidth: "60px"
                               }}>
                                 <div style={{ 
-                                  fontSize: "24px", 
-                                  fontWeight: "800", 
+                                  fontSize: "18px", 
+                                  fontWeight: "700", 
                                   color: "#111827", 
                                   lineHeight: "1"
                                 }}>
                                   {updatedDate.getDate()}
                                 </div>
                                 <div style={{ 
-                                  fontSize: "10px", 
+                                  fontSize: "9px", 
                                   fontWeight: "600", 
                                   color: "#6B7280", 
                                   textTransform: "uppercase",
@@ -1746,7 +1744,7 @@ export default function Index() {
                                   {monthNames[updatedDate.getMonth()]}
                                 </div>
                                 <div style={{ 
-                                  fontSize: "12px", 
+                                  fontSize: "10px", 
                                   color: "#6B7280"
                                 }}>
                                   {updatedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -1766,24 +1764,24 @@ export default function Index() {
                                 Note Created
                               </div>
                               <div style={{
-                                borderRadius: "8px",
+                                borderRadius: "6px",
                                 border: "1px solid #E5E7EB",
                                 backgroundColor: "#F9FAFB",
-                                padding: "12px 8px",
+                                padding: "8px 6px",
                                 textAlign: "center",
                                 width: "fit-content",
-                                minWidth: "80px"
+                                minWidth: "60px"
                               }}>
                                 <div style={{ 
-                                  fontSize: "24px", 
-                                  fontWeight: "800", 
+                                  fontSize: "18px", 
+                                  fontWeight: "700", 
                                   color: "#111827", 
                                   lineHeight: "1"
                                 }}>
                                   {createdDate.getDate()}
                                 </div>
                                 <div style={{ 
-                                  fontSize: "10px", 
+                                  fontSize: "9px", 
                                   fontWeight: "600", 
                                   color: "#6B7280", 
                                   textTransform: "uppercase",
@@ -1792,7 +1790,7 @@ export default function Index() {
                                   {monthNames[createdDate.getMonth()]}
                                 </div>
                                 <div style={{ 
-                                  fontSize: "12px", 
+                                  fontSize: "10px", 
                                   color: "#6B7280"
                                 }}>
                                   {createdDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
