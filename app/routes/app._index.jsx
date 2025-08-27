@@ -1682,7 +1682,9 @@ export default function Index() {
                                 fontWeight: "600",
                                 textTransform: "uppercase",
                                 cursor: "pointer",
-                                transition: "all 0.2s ease"
+                                transition: "all 0.2s ease",
+                                minHeight: "44px",
+                                boxSizing: "border-box"
                               }}
                               onMouseEnter={(e) => {
                                 e.target.style.backgroundColor = "#D97706";
