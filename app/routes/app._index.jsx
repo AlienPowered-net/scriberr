@@ -1666,8 +1666,21 @@ export default function Index() {
                                   }}>
                                     {updatedDate.getDate()}
                                   </span>
-                                  <span>{monthNames[updatedDate.getMonth()]}</span>
-                                  <span>{updatedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                  <span style={{ 
+                                    display: "block",
+                                    fontSize: "12px",
+                                    fontWeight: "600",
+                                    textTransform: "uppercase"
+                                  }}>
+                                    {monthNames[updatedDate.getMonth()]}
+                                  </span>
+                                  <span style={{ 
+                                    display: "block",
+                                    fontSize: "11px",
+                                    marginTop: "2px"
+                                  }}>
+                                    {updatedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
                                 </div>
                               </div>
                               <div>
@@ -1697,8 +1710,21 @@ export default function Index() {
                                   }}>
                                     {createdDate.getDate()}
                                   </span>
-                                  <span>{monthNames[createdDate.getMonth()]}</span>
-                                  <span>{createdDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                  <span style={{ 
+                                    display: "block",
+                                    fontSize: "12px",
+                                    fontWeight: "600",
+                                    textTransform: "uppercase"
+                                  }}>
+                                    {monthNames[createdDate.getMonth()]}
+                                  </span>
+                                  <span style={{ 
+                                    display: "block",
+                                    fontSize: "11px",
+                                    marginTop: "2px"
+                                  }}>
+                                    {createdDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
                                 </div>
                               </div>
                             </div>
