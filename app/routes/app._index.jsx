@@ -578,7 +578,7 @@ export default function Index() {
           const formData = new FormData();
           formData.append('noteId', noteId);
           formData.append('folderId', duplicateFolderId);
-          return fetch('/api/update-note', {
+          return fetch('/api/move-note', {
             method: 'POST',
             body: formData
           });
@@ -595,7 +595,7 @@ export default function Index() {
         formData.append('noteId', moveType);
         formData.append('folderId', duplicateFolderId);
         
-        const response = await fetch('/api/update-note', {
+        const response = await fetch('/api/move-note', {
           method: 'POST',
           body: formData
         });
