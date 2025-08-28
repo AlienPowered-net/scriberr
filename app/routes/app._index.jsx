@@ -1839,12 +1839,15 @@ export default function Index() {
                           </div>
 
                           {/* Buttons aligned bottom */}
-                          <div style={{
-                            display: "flex",
-                            gap: "8px",
-                            marginTop: "12px",
-                            justifyContent: "flex-end"
-                          }}>
+                                                    <div 
+                            className="note-menu-container"
+                            style={{ 
+                              display: "flex", 
+                              gap: "8px",
+                              marginTop: "12px",
+                              justifyContent: "flex-end"
+                            }}
+                          >
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -1900,18 +1903,21 @@ export default function Index() {
                           </div>
                           
                           {openNoteMenu === note.id && (
-                            <div style={{
-                              position: "absolute",
-                              top: "100%",
-                              left: "0",
-                              right: "0",
-                              backgroundColor: "white",
-                              border: "1px solid #E5E7EB",
-                              borderRadius: "6px",
-                              boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
-                              zIndex: 99999,
-                              marginTop: "4px"
-                            }}>
+                            <div 
+                              className="note-menu-container"
+                              style={{
+                                position: "absolute",
+                                top: "100%",
+                                left: "0",
+                                right: "0",
+                                backgroundColor: "white",
+                                border: "1px solid #E5E7EB",
+                                borderRadius: "6px",
+                                boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
+                                zIndex: 99999,
+                                marginTop: "4px"
+                              }}
+                            >
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
