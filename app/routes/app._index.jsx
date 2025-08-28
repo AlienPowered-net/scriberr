@@ -1133,8 +1133,8 @@ export default function Index() {
                     justifyContent: "space-between",
                     alignItems: "center",
                     cursor: "pointer",
-                    backgroundColor: selectedFolder === folder.id ? "#f6f6f7" : "transparent",
-                    borderRight: selectedFolder === folder.id ? "3px solid #2e7d32" : "none",
+                                                  backgroundColor: selectedFolder === folder.id ? "#f6f6f7" : "transparent",
+                              borderRight: selectedFolder === folder.id ? "3px solid #0a0" : "none",
                     borderRadius: "8px",
                     position: "relative",
                     transition: "background-color 0.2s ease"
