@@ -1607,7 +1607,7 @@ export default function Index() {
                           borderRadius: "12px",
                           padding: "20px",
                           boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                          borderRight: isSelected ? "6px solid #0a0" : isCheckboxSelected ? "6px solid #16A34A" : "6px solid transparent",
+                          borderRight: isSelected ? "6px solid #0a0" : isCheckboxSelected ? "6px solid #FF8C00" : "6px solid transparent",
                           cursor: "pointer",
                           transition: "all 0.2s ease",
                           marginBottom: "8px",
