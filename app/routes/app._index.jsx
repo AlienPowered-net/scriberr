@@ -224,6 +224,8 @@ export default function Index() {
   const [showChangeFolderModal, setShowChangeFolderModal] = useState(null);
   const [showMoveModal, setShowMoveModal] = useState(null);
   const [showRenameFolderModal, setShowRenameFolderModal] = useState(null);
+  const [showTagPopup, setShowTagPopup] = useState(null);
+  const [tagPopupPosition, setTagPopupPosition] = useState({ x: 0, y: 0 });
   const [highlightFolders, setHighlightFolders] = useState(false);
   const [globalSearchQuery, setGlobalSearchQuery] = useState("");
   const [folderSearchQuery, setFolderSearchQuery] = useState("");
@@ -302,11 +304,21 @@ export default function Index() {
     // First filter by selected folder
     const folderMatch = selectedFolder ? note.folderId === selectedFolder : true;
     
-    // Then filter by search queries
-    const globalSearchMatch = !globalSearchQuery || 
-      note.title?.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
-      note.content?.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
-      (note.tags && note.tags.some(tag => tag.toLowerCase().includes(globalSearchQuery.toLowerCase())));
+    // Handle tag filtering
+    let globalSearchMatch = true;
+    if (globalSearchQuery) {
+      if (globalSearchQuery.startsWith('tag:')) {
+        // Tag-specific search
+        const tagName = globalSearchQuery.substring(4).toLowerCase();
+        globalSearchMatch = note.tags && note.tags.some(tag => tag.toLowerCase() === tagName);
+      } else {
+        // Regular search
+        globalSearchMatch = 
+          note.title?.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
+          note.content?.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
+          (note.tags && note.tags.some(tag => tag.toLowerCase().includes(globalSearchQuery.toLowerCase())));
+      }
+    }
     
     const folderSearchMatch = !folderSearchQuery || 
       note.title?.toLowerCase().includes(folderSearchQuery.toLowerCase()) ||
@@ -1313,37 +1325,62 @@ export default function Index() {
                   <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
                     New folder name
                   </label>
-                  <input
-                    type="text"
-                    style={{
-                      border: "none",
-                      outline: "none",
-                      fontSize: "14px",
-                      color: "#202223",
-                      padding: "8px 0",
-                      borderBottom: "1px solid #e1e3e5",
-                      cursor: "text",
-                      width: "100%",
-                      backgroundColor: "transparent",
-                      fontFamily: "inherit",
-                      transition: "border-color 0.2s ease"
-                    }}
-                    value={folderName}
-                    onChange={(e) => setFolderName(e.target.value)}
-                    placeholder="Enter folder name..."
-                    maxLength={35}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleCreateFolder();
-                      }
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderBottomColor = "#008060";
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderBottomColor = "#e1e3e5";
-                    }}
-                  />
+                  <div style={{ position: "relative" }}>
+                    <input
+                      type="text"
+                      style={{
+                        border: "none",
+                        outline: "none",
+                        fontSize: "14px",
+                        color: "#202223",
+                        padding: "8px 0",
+                        borderBottom: "1px solid #e1e3e5",
+                        cursor: "text",
+                        width: "100%",
+                        backgroundColor: "transparent",
+                        fontFamily: "inherit",
+                        transition: "border-color 0.2s ease"
+                      }}
+                      value={folderName}
+                      onChange={(e) => {
+                        const newValue = e.target.value;
+                        if (newValue.length <= 30) {
+                          setFolderName(newValue);
+                        }
+                      }}
+                      placeholder="Enter folder name..."
+                      maxLength={30}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleCreateFolder();
+                        }
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderBottomColor = "#008060";
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderBottomColor = "#e1e3e5";
+                      }}
+                    />
+                    {folderName.length >= 30 && (
+                      <div style={{
+                        position: "absolute",
+                        top: "-30px",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        backgroundColor: "#374151",
+                        color: "white",
+                        padding: "4px 8px",
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        whiteSpace: "nowrap",
+                        zIndex: 1000,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.2)"
+                      }}>
+                        Maximum 30 characters reached
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <button 
                   onClick={handleCreateFolder}
@@ -1671,7 +1708,12 @@ export default function Index() {
                                   ))}
                                   {note.tags.length > 3 && (
                                     <span 
-                                      onClick={() => handleEditNote(note)}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const rect = e.target.getBoundingClientRect();
+                                        setTagPopupPosition({ x: rect.left, y: rect.bottom + 5 });
+                                        setShowTagPopup(note.id);
+                                      }}
                                       style={{
                                         display: "inline-block",
                                         background: "#6B7280",
@@ -2140,16 +2182,19 @@ export default function Index() {
                         transition: "border-color 0.2s ease"
                       }}
                       value={newTagInput}
-                      onChange={(e) => setNewTagInput(e.target.value)}
+                      onChange={(e) => {
+                        const newValue = e.target.value;
+                        if (newValue.length <= 32) {
+                          setNewTagInput(newValue);
+                        } else {
+                          setAlertMessage('Tag cannot exceed 32 characters');
+                          setAlertType('error');
+                          setTimeout(() => setAlertMessage(''), 3000);
+                        }
+                      }}
                       placeholder="Add a tag and press Enter..."
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && newTagInput.trim()) {
-                          if (newTagInput.trim().length > 32) {
-                            setAlertMessage('Tag cannot exceed 32 characters');
-                            setAlertType('error');
-                            setTimeout(() => setAlertMessage(''), 3000);
-                            return;
-                          }
                           if (!noteTags.includes(newTagInput.trim())) {
                             setNoteTags([...noteTags, newTagInput.trim()]);
                           }
@@ -2825,12 +2870,17 @@ export default function Index() {
                 <label htmlFor="renameFolderInput" style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
                   Enter new folder name:
                 </label>
-                <input
-                  id="renameFolderInput"
-                  type="text"
-                  value={editingFolderName}
-                  onChange={(e) => setEditingFolderName(e.target.value)}
-                  maxLength={35}
+                                  <input
+                    id="renameFolderInput"
+                    type="text"
+                    value={editingFolderName}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      if (newValue.length <= 30) {
+                        setEditingFolderName(newValue);
+                      }
+                    }}
+                    maxLength={30}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       handleSaveFolderName(showRenameFolderModal);
@@ -2866,6 +2916,82 @@ export default function Index() {
                 >
                   Rename Folder
                 </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tag Popup Modal */}
+        {showTagPopup && (
+          <div 
+            onClick={() => setShowTagPopup(null)}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 1500
+            }}
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: "fixed",
+                left: tagPopupPosition.x,
+                top: tagPopupPosition.y,
+                backgroundColor: "white",
+                border: "1px solid #E5E7EB",
+                borderRadius: "8px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                padding: "12px",
+                zIndex: 1501,
+                maxWidth: "300px",
+                minWidth: "200px"
+              }}
+            >
+              <div style={{ marginBottom: "8px", fontSize: "12px", fontWeight: "600", color: "#374151" }}>
+                All Tags:
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                {notes.find(n => n.id === showTagPopup)?.tags?.map((tag, index) => (
+                  <span 
+                    key={index}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Filter notes by this tag
+                      const tagFilter = `tag:${tag}`;
+                      if (selectedFolder) {
+                        // In a specific folder, show notes with this tag in this folder
+                        setGlobalSearchQuery(tagFilter);
+                      } else {
+                        // In "All Notes", show all notes with this tag
+                        setGlobalSearchQuery(tagFilter);
+                      }
+                      setShowTagPopup(null);
+                    }}
+                    style={{
+                      display: "inline-block",
+                      background: "#28a745",
+                      color: "white",
+                      fontSize: "11px",
+                      fontWeight: "600",
+                      padding: "3px 8px",
+                      borderRadius: "10px",
+                      lineHeight: "1.2",
+                      cursor: "pointer",
+                      transition: "background-color 0.2s ease"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = "#1e7e34";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = "#28a745";
+                    }}
+                  >
+                    {tag}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
