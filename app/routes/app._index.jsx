@@ -223,6 +223,7 @@ export default function Index() {
   const [showDeleteNoteConfirm, setShowDeleteNoteConfirm] = useState(null);
   const [showChangeFolderModal, setShowChangeFolderModal] = useState(null);
   const [showMoveModal, setShowMoveModal] = useState(null);
+  const [showRenameFolderModal, setShowRenameFolderModal] = useState(null);
   const [highlightFolders, setHighlightFolders] = useState(false);
   const [globalSearchQuery, setGlobalSearchQuery] = useState("");
   const [folderSearchQuery, setFolderSearchQuery] = useState("");
@@ -697,6 +698,7 @@ export default function Index() {
     formData.append('title', trimmedTitle);
     formData.append('body', trimmedBody);
     formData.append('folderId', trimmedFolderId);
+    formData.append('tags', JSON.stringify(noteTags));
     
     try {
       const endpoint = editingNoteId ? '/api/update-note' : '/api/create-note';
@@ -1089,42 +1091,54 @@ export default function Index() {
                   search
                 </span>
               </div>
+              {/* All Notes Button - Separated from folder list */}
+              <div 
+                style={{ 
+                  padding: "12px 16px", 
+                  marginBottom: "16px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  backgroundColor: selectedFolder === null ? "#E8F5E8" : "#F8F9FA",
+                  border: selectedFolder === null ? "2px solid #0a0" : "2px solid #E1E3E5",
+                  borderRadius: "12px",
+                  position: "relative",
+                  transition: "all 0.2s ease",
+                  boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                }}
+                onClick={() => setSelectedFolder(null)}
+                onMouseEnter={(e) => {
+                  if (selectedFolder !== null) {
+                    e.currentTarget.style.backgroundColor = "#E8F5E8";
+                    e.currentTarget.style.borderColor = "#0a0";
+                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedFolder !== null) {
+                    e.currentTarget.style.backgroundColor = "#F8F9FA";
+                    e.currentTarget.style.borderColor = "#E1E3E5";
+                    e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
+                  }
+                }}
+              >
+                <Text as="span" variant="headingSm" style={{ 
+                  fontWeight: "700", 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: "8px",
+                  color: selectedFolder === null ? "#0a0" : "#374151"
+                }}>
+                  <span className="material-symbols-rounded" style={{ fontSize: "20px" }}>note_stack</span>
+                  All Notes
+                </Text>
+              </div>
+
               {folders.length === 0 ? (
                 <Text as="p">No folders yet</Text>
               ) : (
                 <div>
-                  {/* All Notes Option */}
-                <div 
-                  style={{ 
-                    padding: "8px 16px", 
-                    borderBottom: "1px solid #e1e3e5",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    cursor: "pointer",
-                    backgroundColor: selectedFolder === null ? "#f6f6f7" : "transparent",
-                    borderRight: selectedFolder === null ? "3px solid #2e7d32" : "none",
-                    borderRadius: "8px",
-                    position: "relative",
-                    transition: "background-color 0.2s ease"
-                  }}
-                  onClick={() => setSelectedFolder(null)}
-                  onMouseEnter={(e) => {
-                    if (selectedFolder !== null) {
-                      e.currentTarget.style.backgroundColor = "#f0f0f0";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedFolder !== null) {
-                      e.currentTarget.style.backgroundColor = "transparent";
-                    }
-                  }}
-                >
-                  <Text as="span" variant="headingSm" style={{ fontWeight: "600", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span className="material-symbols-rounded" style={{ fontSize: "18px" }}>note_stack</span>
-                    All Notes
-                  </Text>
-                </div>
                 {folders.map((folder) => (
                   <div key={folder.id} style={{ 
                     padding: "8px 16px", 
@@ -1151,78 +1165,10 @@ export default function Index() {
                     }
                   }}
                   >
-                    {editingFolderId === folder.id ? (
-                      <div style={{ 
-                        display: "flex", 
-                        alignItems: "center", 
-                        gap: "8px",
-                        flex: 1,
-                        marginRight: "8px"
-                      }}>
-                        <input
-                          type="text"
-                          value={editingFolderName}
-                          onChange={(e) => setEditingFolderName(e.target.value)}
-                          maxLength={35}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              handleSaveFolderName(folder.id);
-                            } else if (e.key === 'Escape') {
-                              setEditingFolderId(null);
-                              setEditingFolderName("");
-                            }
-                          }}
-                          style={{
-                            flex: 1,
-                            padding: "4px 8px",
-                            border: "1px solid #c9cccf",
-                            borderRadius: "4px",
-                            fontSize: "14px"
-                          }}
-                          autoFocus
-                        />
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSaveFolderName(folder.id);
-                          }}
-                          style={{
-                            padding: "4px 8px",
-                            background: "#2e7d32",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            fontSize: "12px"
-                          }}
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingFolderId(null);
-                            setEditingFolderName("");
-                          }}
-                          style={{
-                            padding: "4px 8px",
-                            background: "#6d7175",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                            fontSize: "12px"
-                          }}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <Text as="span" variant="headingSm" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span className="material-symbols-rounded" style={{ fontSize: "18px" }}>folder</span>
-                        {folder.name}
-                      </Text>
-                    )}
+                    <Text as="span" variant="headingSm" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span className="material-symbols-rounded" style={{ fontSize: "18px" }}>folder</span>
+                      {folder.name}
+                    </Text>
                     <div className="folder-menu-container" style={{ position: "relative", paddingRight: "8px" }}>
                       <button
                         onClick={(e) => {
@@ -1254,7 +1200,7 @@ export default function Index() {
                           <button
                             type="button"
                             onClick={() => {
-                              setEditingFolderId(folder.id);
+                              setShowRenameFolderModal(folder.id);
                               setEditingFolderName(folder.name);
                               setOpenFolderMenu(null);
                             }}
@@ -1723,6 +1669,31 @@ export default function Index() {
                                       {tag}
                                     </span>
                                   ))}
+                                  {note.tags.length > 3 && (
+                                    <span 
+                                      onClick={() => handleEditNote(note)}
+                                      style={{
+                                        display: "inline-block",
+                                        background: "#6B7280",
+                                        color: "white",
+                                        fontSize: "11px",
+                                        fontWeight: "600",
+                                        padding: "3px 8px",
+                                        borderRadius: "10px",
+                                        lineHeight: "1.2",
+                                        cursor: "pointer",
+                                        transition: "background-color 0.2s ease"
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        e.target.style.backgroundColor = "#4B5563";
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.target.style.backgroundColor = "#6B7280";
+                                      }}
+                                    >
+                                      View All
+                                    </span>
+                                  )}
                                 </div>
                               )}
                               <div style={{ 
@@ -2173,6 +2144,12 @@ export default function Index() {
                       placeholder="Add a tag and press Enter..."
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && newTagInput.trim()) {
+                          if (newTagInput.trim().length > 32) {
+                            setAlertMessage('Tag cannot exceed 32 characters');
+                            setAlertType('error');
+                            setTimeout(() => setAlertMessage(''), 3000);
+                            return;
+                          }
                           if (!noteTags.includes(newTagInput.trim())) {
                             setNoteTags([...noteTags, newTagInput.trim()]);
                           }
@@ -2814,6 +2791,80 @@ export default function Index() {
                   onClick={handleDeleteMultipleNotes}
                 >
                   Delete {selectedNotes.length} Note{selectedNotes.length > 1 ? 's' : ''}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Rename Folder Modal */}
+        {showRenameFolderModal && (
+          <div style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000
+          }}>
+            <div style={{
+              backgroundColor: "white",
+              padding: "24px",
+              borderRadius: "8px",
+              maxWidth: "400px",
+              width: "90%"
+            }}>
+              <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                Rename Folder
+              </Text>
+              <div style={{ marginBottom: "24px" }}>
+                <label htmlFor="renameFolderInput" style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                  Enter new folder name:
+                </label>
+                <input
+                  id="renameFolderInput"
+                  type="text"
+                  value={editingFolderName}
+                  onChange={(e) => setEditingFolderName(e.target.value)}
+                  maxLength={35}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSaveFolderName(showRenameFolderModal);
+                    } else if (e.key === 'Escape') {
+                      setShowRenameFolderModal(null);
+                      setEditingFolderName("");
+                    }
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    border: "1px solid #c9cccf",
+                    borderRadius: "4px",
+                    fontSize: "14px",
+                  }}
+                  autoFocus
+                />
+              </div>
+              <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setShowRenameFolderModal(null);
+                    setEditingFolderName("");
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => handleSaveFolderName(showRenameFolderModal)}
+                  disabled={!editingFolderName.trim()}
+                >
+                  Rename Folder
                 </Button>
               </div>
             </div>
