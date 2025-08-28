@@ -259,6 +259,15 @@ export default function Index() {
     };
   }, [openFolderMenu, openNoteMenu]);
 
+  // Debug state changes
+  useEffect(() => {
+    console.log('showDuplicateModal changed:', showDuplicateModal);
+  }, [showDuplicateModal]);
+
+  useEffect(() => {
+    console.log('showMoveModal changed:', showMoveModal);
+  }, [showMoveModal]);
+
   // Restore selected note and folder from localStorage on page load
   useEffect(() => {
     const savedNoteId = localStorage.getItem('selectedNoteId');
@@ -1906,6 +1915,7 @@ export default function Index() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  console.log('Duplicate button clicked for note:', note.id);
                                   setShowDuplicateModal(note.id);
                                   setOpenNoteMenu(null);
                                 }}
@@ -1932,6 +1942,7 @@ export default function Index() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  console.log('Move button clicked for note:', note.id);
                                   setShowMoveModal(note.id);
                                   setOpenNoteMenu(null);
                                 }}
