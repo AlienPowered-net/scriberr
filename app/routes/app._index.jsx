@@ -1625,11 +1625,14 @@ export default function Index() {
                         }}
                       >
                         {/* Left checkbox area */}
-                        <div style={{ 
-                          display: "flex", 
-                          alignItems: "center", 
-                          paddingRight: "12px"
-                        }}>
+                        <div 
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ 
+                            display: "flex", 
+                            alignItems: "center", 
+                            paddingRight: "12px"
+                          }}
+                        >
                           <input
                             type="checkbox"
                             checked={isCheckboxSelected}
