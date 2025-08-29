@@ -226,6 +226,7 @@ export default function Index() {
   const [showRenameFolderModal, setShowRenameFolderModal] = useState(null);
   const [showTagPopup, setShowTagPopup] = useState(null);
   const [tagPopupPosition, setTagPopupPosition] = useState({ x: 0, y: 0 });
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [highlightFolders, setHighlightFolders] = useState(false);
   const [globalSearchQuery, setGlobalSearchQuery] = useState("");
   const [folderSearchQuery, setFolderSearchQuery] = useState("");
@@ -270,6 +271,27 @@ export default function Index() {
   useEffect(() => {
     console.log('showMoveModal changed:', showMoveModal);
   }, [showMoveModal]);
+
+  // Track unsaved changes
+  useEffect(() => {
+    if (!editingNoteId) {
+      setHasUnsavedChanges(false);
+      return;
+    }
+
+    const currentNote = notes.find(note => note.id === editingNoteId);
+    if (!currentNote) {
+      setHasUnsavedChanges(false);
+      return;
+    }
+
+    const hasChanges = 
+      title !== (currentNote.title || "") ||
+      body !== (currentNote.content || "") ||
+      JSON.stringify(noteTags) !== JSON.stringify(currentNote.tags || []);
+
+    setHasUnsavedChanges(hasChanges);
+  }, [title, body, noteTags, editingNoteId, notes]);
 
   // Restore selected note and folder from localStorage on page load
   useEffect(() => {
@@ -335,6 +357,7 @@ export default function Index() {
     setBody(note.content || "");
     setFolderId(note.folderId || "");
     setNoteTags(note.tags || []);
+    setHasUnsavedChanges(false);
     // Automatically select the folder associated with this note
     if (note.folderId) {
       setSelectedFolder(note.folderId);
@@ -515,6 +538,7 @@ export default function Index() {
     setBody('');
     setFolderId('');
     setNoteTags([]);
+    setHasUnsavedChanges(false);
   };
 
   // Handle deleting a note
@@ -2001,10 +2025,26 @@ export default function Index() {
         <div className="col-editor" style={{ width: "50%" }}>
           <Card>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                <span className="material-symbols-rounded">edit_note</span>
-                Note Editor
-              </Text>
+              <div>
+                <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                  <span className="material-symbols-rounded">edit_note</span>
+                  Note Editor
+                </Text>
+                {hasUnsavedChanges && (
+                  <Text as="p" style={{ 
+                    fontSize: "14px", 
+                    color: "#d82c0d", 
+                    fontWeight: "500", 
+                    marginTop: "4px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px"
+                  }}>
+                    <span className="material-symbols-rounded" style={{ fontSize: "16px" }}>warning</span>
+                    You have unsaved changes
+                  </Text>
+                )}
+              </div>
               <InlineStack gap="200">
                 {editingNoteId ? (
                   <>
