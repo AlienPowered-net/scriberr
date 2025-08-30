@@ -469,6 +469,7 @@ export default function Index() {
       formData.append('title', trimmedTitle);
       formData.append('body', trimmedBody);
       formData.append('folderId', trimmedFolderId);
+      formData.append('tags', JSON.stringify(noteTags));
       
       try {
         const response = await fetch('/api/update-note', {
