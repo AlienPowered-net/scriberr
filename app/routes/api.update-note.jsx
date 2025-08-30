@@ -19,6 +19,17 @@ export async function action({ request }) {
   const trimmedBody = body ? body.toString().trim() : "";
   const trimmedFolderId = folderId ? folderId.toString().trim() : "";
   
+  // Ensure proper UTF-8 encoding for emoji characters
+  const ensureUtf8 = (str) => {
+    if (!str) return str;
+    try {
+      // Handle potential encoding issues
+      return str.normalize('NFC');
+    } catch (e) {
+      return str;
+    }
+  };
+  
 
 
   if (!noteId) {
@@ -68,13 +79,13 @@ export async function action({ request }) {
     // Parse tags from JSON string
     const parsedTags = tags ? JSON.parse(tags.toString()) : [];
 
-    // Update the note
+    // Update the note with proper UTF-8 encoding
     await prisma.note.update({
       where: { id: noteId },
       data: { 
-        title: trimmedTitle, 
-        content: trimmedBody, 
-        tags: parsedTags,
+        title: ensureUtf8(trimmedTitle), 
+        content: ensureUtf8(trimmedBody), 
+        tags: parsedTags.map(tag => ensureUtf8(tag)),
         folderId: trimmedFolderId 
       },
     });

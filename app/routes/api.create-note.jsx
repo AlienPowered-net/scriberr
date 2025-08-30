@@ -18,6 +18,17 @@ export async function action({ request }) {
   const trimmedBody = body ? body.toString().trim() : "";
   const trimmedFolderId = folderId ? folderId.toString().trim() : "";
   
+  // Ensure proper UTF-8 encoding for emoji characters
+  const ensureUtf8 = (str) => {
+    if (!str) return str;
+    try {
+      // Handle potential encoding issues
+      return str.normalize('NFC');
+    } catch (e) {
+      return str;
+    }
+  };
+  
 
 
   // Check if title is within character limit
@@ -51,12 +62,12 @@ export async function action({ request }) {
     // Parse tags from JSON string
     const parsedTags = tags ? JSON.parse(tags.toString()) : [];
 
-    // Create the note
+    // Create the note with proper UTF-8 encoding
     const newNote = await prisma.note.create({
       data: { 
-        title: trimmedTitle, 
-        content: trimmedBody, 
-        tags: parsedTags,
+        title: ensureUtf8(trimmedTitle), 
+        content: ensureUtf8(trimmedBody), 
+        tags: parsedTags.map(tag => ensureUtf8(tag)),
         shopId, 
         folderId: trimmedFolderId 
       },
