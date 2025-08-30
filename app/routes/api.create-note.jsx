@@ -13,6 +13,7 @@ export async function action({ request }) {
   const folderId = form.get("folderId");
   const tags = form.get("tags");
 
+  // Ensure proper UTF-8 encoding for emoji support
   const trimmedTitle = title ? title.toString().trim() : "";
   const trimmedBody = body ? body.toString().trim() : "";
   const trimmedFolderId = folderId ? folderId.toString().trim() : "";
@@ -59,7 +60,11 @@ export async function action({ request }) {
       },
     });
     
-    return json({ success: true, message: "Note created successfully", noteId: newNote.id });
+    return json({ success: true, message: "Note created successfully", noteId: newNote.id }, {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8"
+      }
+    });
   } catch (error) {
     console.error("Error creating note:", error);
     return json({ error: "Failed to create note" });

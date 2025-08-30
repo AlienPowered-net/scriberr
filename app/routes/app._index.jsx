@@ -101,7 +101,11 @@ export async function loader({ request }) {
     },
   });
 
-  return json({ folders, notes });
+  return json({ folders, notes }, {
+    headers: {
+      "Content-Type": "application/json; charset=utf-8"
+    }
+  });
 }
 
 /* ------------------ Action ------------------ */

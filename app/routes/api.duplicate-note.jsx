@@ -63,6 +63,10 @@ export async function action({ request }) {
     return json({ 
       success: true, 
       note: duplicatedNote 
+    }, {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8"
+      }
     });
 
   } catch (error) {

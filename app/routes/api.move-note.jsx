@@ -55,7 +55,11 @@ export async function action({ request }) {
       },
     });
     
-    return json({ success: true, message: "Note moved successfully" });
+    return json({ success: true, message: "Note moved successfully" }, {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8"
+      }
+    });
   } catch (error) {
     console.error("Error moving note:", error);
     return json({ error: "Failed to move note" });
