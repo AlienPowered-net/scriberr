@@ -26,6 +26,6 @@ if (process.env.NODE_ENV === "production") {
 }
 
 // Ensure proper UTF-8 encoding for database operations
-// Note: Prisma automatically handles UTF-8 encoding for PostgreSQL
+// PostgreSQL with Prisma automatically handles UTF-8 encoding
 
 export { prisma };
