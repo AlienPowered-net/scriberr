@@ -19,9 +19,7 @@ export async function action({ request }) {
   const trimmedBody = body ? body.toString().trim() : "";
   const trimmedFolderId = folderId ? folderId.toString().trim() : "";
   
-  // Log the data to debug encoding issues
-  console.log('Updating note with title:', trimmedTitle);
-  console.log('Updating note with body length:', trimmedBody.length);
+
 
   if (!noteId) {
     return json({ error: "Missing note ID" });
@@ -71,9 +69,6 @@ export async function action({ request }) {
     const parsedTags = tags ? JSON.parse(tags.toString()) : [];
 
     // Update the note
-    console.log('Updating database - title:', trimmedTitle);
-    console.log('Updating database - content preview:', trimmedBody.substring(0, 100));
-    
     await prisma.note.update({
       where: { id: noteId },
       data: { 
@@ -83,8 +78,6 @@ export async function action({ request }) {
         folderId: trimmedFolderId 
       },
     });
-    
-    console.log('Note updated successfully');
     
     return json({ success: true, message: "Note updated successfully" }, {
       headers: {
