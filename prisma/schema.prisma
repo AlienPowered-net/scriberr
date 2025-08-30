@@ -6,7 +6,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL") // pooled URL
+  url       = env("DATABASE_URL")   // use pooled URL at runtime
+  directUrl = env("DIRECT_URL")     // use primary for migrations
 }
 
 model Shop {
