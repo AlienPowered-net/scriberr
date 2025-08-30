@@ -397,9 +397,7 @@ export default function Index() {
     formData.append('folderId', trimmedFolderId);
     formData.append('tags', JSON.stringify(noteTags));
     
-    // Ensure proper UTF-8 encoding for emoji support
-    formData.set('title', trimmedTitle);
-    formData.set('body', trimmedBody);
+
     
     try {
       const response = await fetch('/api/update-note', {
@@ -483,9 +481,7 @@ export default function Index() {
       formData.append('folderId', trimmedFolderId);
       formData.append('tags', JSON.stringify(noteTags));
       
-      // Ensure proper UTF-8 encoding for emoji support
-      formData.set('title', trimmedTitle);
-      formData.set('body', trimmedBody);
+
       
       try {
         const response = await fetch('/api/update-note', {
@@ -520,9 +516,7 @@ export default function Index() {
     formData.append('folderId', currentFolderId);
     formData.append('tags', JSON.stringify([]));
     
-    // Ensure proper UTF-8 encoding for emoji support
-    formData.set('title', '');
-    formData.set('body', 'Type your note here...');
+
     
     try {
       const response = await fetch('/api/create-note', {

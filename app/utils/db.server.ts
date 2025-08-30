@@ -25,23 +25,7 @@ if (process.env.NODE_ENV === "production") {
   prisma = global.__prisma;
 }
 
-// Ensure proper UTF-8 encoding for all database operations
-prisma.$use(async (params, next) => {
-  // Add charset=utf8mb4 to ensure proper emoji support
-  if (params.runInTransaction) {
-    return next(params);
-  }
-  
-  // For all other operations, ensure UTF-8 encoding
-  const result = await next(params);
-  return result;
-});
-
-// Set connection charset for UTF-8 support
-prisma.$connect().then(() => {
-  console.log('Database connected with UTF-8 support');
-}).catch((error) => {
-  console.error('Database connection error:', error);
-});
+// Ensure proper UTF-8 encoding for database operations
+// Note: Prisma automatically handles UTF-8 encoding for PostgreSQL
 
 export { prisma };
