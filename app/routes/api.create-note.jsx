@@ -17,6 +17,10 @@ export async function action({ request }) {
   const trimmedTitle = title ? title.toString().trim() : "";
   const trimmedBody = body ? body.toString().trim() : "";
   const trimmedFolderId = folderId ? folderId.toString().trim() : "";
+  
+  // Log the data to debug encoding issues
+  console.log('Creating note with title:', trimmedTitle);
+  console.log('Creating note with body length:', trimmedBody.length);
 
   // Check if title is within character limit
   if (trimmedTitle.length > 35) {
@@ -50,6 +54,9 @@ export async function action({ request }) {
     const parsedTags = tags ? JSON.parse(tags.toString()) : [];
 
     // Create the note
+    console.log('Saving to database - title:', trimmedTitle);
+    console.log('Saving to database - content preview:', trimmedBody.substring(0, 100));
+    
     const newNote = await prisma.note.create({
       data: { 
         title: trimmedTitle, 
@@ -59,6 +66,8 @@ export async function action({ request }) {
         folderId: trimmedFolderId 
       },
     });
+    
+    console.log('Note created successfully with ID:', newNote.id);
     
     return json({ success: true, message: "Note created successfully", noteId: newNote.id }, {
       headers: {

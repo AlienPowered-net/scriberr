@@ -101,6 +101,14 @@ export async function loader({ request }) {
     },
   });
 
+  // Log the retrieved data to debug encoding issues
+  console.log('Retrieved notes count:', notes.length);
+  notes.forEach((note, index) => {
+    console.log(`Note ${index + 1} - Title:`, note.title);
+    console.log(`Note ${index + 1} - Content preview:`, note.content.substring(0, 100));
+    console.log(`Note ${index + 1} - Tags:`, note.tags);
+  });
+
   return json({ folders, notes }, {
     headers: {
       "Content-Type": "application/json; charset=utf-8"
