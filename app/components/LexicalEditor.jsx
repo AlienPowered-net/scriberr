@@ -23,27 +23,59 @@ function ClientQuill({ value, onChange, placeholder }) {
         setReactQuill(() => module.default);
         setIsLoaded(true);
         
-        // Add minimal CSS to fix z-index issues only
+        // Add comprehensive CSS to fix all z-index and positioning issues
         const style = document.createElement('style');
         style.textContent = `
-          /* Fix Quill popup z-index issues - minimal approach */
+          /* Ensure Quill editor container is above everything */
+          .editor-container {
+            position: relative !important;
+            z-index: 99999 !important;
+          }
+          
+          /* Fix Quill popup z-index issues - comprehensive approach */
           .ql-tooltip {
-            z-index: 9999 !important;
+            z-index: 999999 !important;
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            background: white !important;
+            border: 1px solid #ccc !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+            padding: 10px !important;
+            border-radius: 4px !important;
+            min-width: 300px !important;
           }
           
           /* Ensure Quill tooltips appear above all other elements */
           .ql-editor .ql-tooltip {
-            z-index: 9999 !important;
+            z-index: 999999 !important;
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
           }
           
           /* Fix any positioning issues */
           .ql-tooltip[data-mode="link"] {
-            z-index: 9999 !important;
+            z-index: 999999 !important;
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+          }
+          
+          .ql-tooltip[data-mode="video"] {
+            z-index: 999999 !important;
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
           }
           
           /* Ensure table UI appears above other elements */
           .ql-table-ui {
-            z-index: 9999 !important;
+            z-index: 999999 !important;
           }
           
           /* Fix double border issue */
@@ -53,6 +85,46 @@ function ClientQuill({ value, onChange, placeholder }) {
           
           .ql-toolbar {
             border-bottom: 1px solid #c9cccf !important;
+          }
+          
+          /* Ensure Quill editor itself is above other elements */
+          .ql-editor {
+            z-index: 99999 !important;
+            position: relative !important;
+          }
+          
+          .ql-toolbar {
+            z-index: 99999 !important;
+            position: relative !important;
+          }
+          
+          /* Fix input fields in tooltips */
+          .ql-tooltip input[type=text] {
+            width: 100% !important;
+            padding: 5px !important;
+            border: 1px solid #ccc !important;
+            border-radius: 3px !important;
+            margin-bottom: 5px !important;
+            box-sizing: border-box !important;
+          }
+          
+          /* Fix tooltip links */
+          .ql-tooltip a {
+            margin-right: 10px !important;
+            text-decoration: none !important;
+            color: #06c !important;
+            cursor: pointer !important;
+          }
+          
+          /* Ensure all Quill elements are above everything */
+          .ql-container,
+          .ql-toolbar,
+          .ql-editor,
+          .ql-tooltip,
+          .ql-table-ui,
+          .ql-picker,
+          .ql-picker-options {
+            z-index: 99999 !important;
           }
         `;
         document.head.appendChild(style);
@@ -119,7 +191,9 @@ function ClientQuill({ value, onChange, placeholder }) {
         borderRadius: '4px', 
         minHeight: '300px',
         padding: '12px',
-        backgroundColor: '#f9f9f9'
+        backgroundColor: '#f9f9f9',
+        position: 'relative',
+        zIndex: 99999
       }}>
         <div style={{ 
           color: '#6d7175',
@@ -137,7 +211,9 @@ function ClientQuill({ value, onChange, placeholder }) {
       border: '1px solid #c9cccf', 
       borderRadius: '4px', 
       minHeight: '300px',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      position: 'relative',
+      zIndex: 99999
     }}>
       <ReactQuill
         ref={quillRef}
