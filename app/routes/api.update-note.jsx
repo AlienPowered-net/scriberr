@@ -14,21 +14,16 @@ export async function action({ request }) {
   const folderId = form.get("folderId");
   const tags = form.get("tags");
 
-  // Ensure proper UTF-8 encoding for emoji support
-  const trimmedTitle = title ? title.toString().trim() : "";
-  const trimmedBody = body ? body.toString().trim() : "";
-  const trimmedFolderId = folderId ? folderId.toString().trim() : "";
-  
-  // Ensure proper UTF-8 encoding for emoji characters
-  const ensureUtf8 = (str) => {
+  // Remove emoji characters from input
+  const removeEmojis = (str) => {
     if (!str) return str;
-    try {
-      // Handle potential encoding issues
-      return str.normalize('NFC');
-    } catch (e) {
-      return str;
-    }
+    // Remove emoji characters using regex
+    return str.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1F018}-\u{1F270}]|[\u{238C}-\u{2454}]|[\u{20D0}-\u{20FF}]|[\u{FE00}-\u{FE0F}]|[\u{1F900}-\u{1F9FF}]|[\u{1F018}-\u{1F270}]|[\u{238C}-\u{2454}]|[\u{20D0}-\u{20FF}]|[\u{FE00}-\u{FE0F}]/gu, '');
   };
+
+  const trimmedTitle = title ? removeEmojis(title.toString().trim()) : "";
+  const trimmedBody = body ? removeEmojis(body.toString().trim()) : "";
+  const trimmedFolderId = folderId ? folderId.toString().trim() : "";
   
 
 
@@ -79,13 +74,13 @@ export async function action({ request }) {
     // Parse tags from JSON string
     const parsedTags = tags ? JSON.parse(tags.toString()) : [];
 
-    // Update the note with proper UTF-8 encoding
+    // Update the note with emojis removed
     await prisma.note.update({
       where: { id: noteId },
       data: { 
-        title: ensureUtf8(trimmedTitle), 
-        content: ensureUtf8(trimmedBody), 
-        tags: parsedTags.map(tag => ensureUtf8(tag)),
+        title: trimmedTitle, 
+        content: trimmedBody, 
+        tags: parsedTags.map(tag => removeEmojis(tag)),
         folderId: trimmedFolderId 
       },
     });

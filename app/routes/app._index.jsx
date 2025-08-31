@@ -370,10 +370,17 @@ export default function Index() {
     }
   };
 
+  // Remove emoji characters from input
+  const removeEmojis = (str) => {
+    if (!str) return str;
+    // Remove emoji characters using regex
+    return str.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1F018}-\u{1F270}]|[\u{238C}-\u{2454}]|[\u{20D0}-\u{20FF}]|[\u{FE00}-\u{FE0F}]|[\u{1F900}-\u{1F9FF}]|[\u{1F018}-\u{1F270}]|[\u{238C}-\u{2454}]|[\u{20D0}-\u{20FF}]|[\u{FE00}-\u{FE0F}]/gu, '');
+  };
+
   // Handle saving note changes
   const handleSaveNote = async () => {
-    const trimmedTitle = title.trim();
-    const trimmedBody = body.trim();
+    const trimmedTitle = removeEmojis(title.trim());
+    const trimmedBody = removeEmojis(body.trim());
     const trimmedFolderId = folderId.trim();
 
     // Check if at least title or body is provided
@@ -397,7 +404,7 @@ export default function Index() {
     formData.append('title', trimmedTitle);
     formData.append('body', trimmedBody);
     formData.append('folderId', trimmedFolderId);
-    formData.append('tags', JSON.stringify(noteTags));
+    formData.append('tags', JSON.stringify(noteTags.map(tag => removeEmojis(tag))));
     
 
     
@@ -465,8 +472,8 @@ export default function Index() {
 
     // If there's an open note being edited, save it first
     if (editingNoteId && (title.trim() || body.trim())) {
-      const trimmedTitle = title.trim();
-      const trimmedBody = body.trim();
+      const trimmedTitle = removeEmojis(title.trim());
+      const trimmedBody = removeEmojis(body.trim());
       const trimmedFolderId = folderId.trim();
 
       if (!trimmedBody) {
@@ -481,7 +488,7 @@ export default function Index() {
       formData.append('title', trimmedTitle);
       formData.append('body', trimmedBody);
       formData.append('folderId', trimmedFolderId);
-      formData.append('tags', JSON.stringify(noteTags));
+      formData.append('tags', JSON.stringify(noteTags.map(tag => removeEmojis(tag))));
       
 
       
@@ -2265,8 +2272,10 @@ export default function Index() {
                       value={newTagInput}
                       onChange={(e) => {
                         const newValue = e.target.value;
-                        if (newValue.length <= 32) {
-                          setNewTagInput(newValue);
+                        // Remove emojis from tag input
+                        const cleanValue = removeEmojis(newValue);
+                        if (cleanValue.length <= 32) {
+                          setNewTagInput(cleanValue);
                         } else {
                           setAlertMessage('Tag cannot exceed 32 characters');
                           setAlertType('error');
@@ -2276,8 +2285,9 @@ export default function Index() {
                       placeholder="Add a tag and press Enter..."
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && newTagInput.trim()) {
-                          if (!noteTags.includes(newTagInput.trim())) {
-                            setNoteTags([...noteTags, newTagInput.trim()]);
+                          const cleanTag = removeEmojis(newTagInput.trim());
+                          if (!noteTags.includes(cleanTag)) {
+                            setNoteTags([...noteTags, cleanTag]);
                           }
                           setNewTagInput("");
                         }
@@ -2331,7 +2341,7 @@ export default function Index() {
                   <input
                     type="text"
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={(e) => setTitle(removeEmojis(e.target.value))}
                     placeholder="Add a title to your note here..."
                     maxLength={35}
                     style={{
