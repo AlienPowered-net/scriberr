@@ -1903,7 +1903,7 @@ export default function Index() {
 
             {/* Scrollable Notes Section */}
             <div style={{ 
-              height: "calc(3 * 120px)", // Fixed height for exactly 3 notes
+              height: "calc(3 * 140px)", // Fixed height for exactly 3 notes (140px per note including padding/margin)
               overflowY: "auto", 
               padding: "16px",
               paddingBottom: "0"
