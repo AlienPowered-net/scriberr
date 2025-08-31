@@ -1362,40 +1362,54 @@ export default function Index() {
                   {getAllTagsWithCounts().length === 0 ? (
                     <Text as="p" style={{ color: "#6d7175", fontSize: "14px" }}>No tags created yet</Text>
                   ) : (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <div style={{ 
+                      display: "flex", 
+                      flexWrap: "wrap", 
+                      gap: "8px",
+                      padding: "8px 0"
+                    }}>
                       {getAllTagsWithCounts().map(({ tag, count }) => (
                         <div
                           key={tag}
                           style={{
-                            display: "flex",
-                            justifyContent: "space-between",
+                            display: "inline-flex",
                             alignItems: "center",
-                            padding: "8px 12px",
+                            gap: "6px",
+                            padding: "6px 12px",
                             backgroundColor: "white",
-                            borderRadius: "6px",
+                            borderRadius: "20px",
                             border: "1px solid #e1e3e5",
                             cursor: "pointer",
-                            transition: "all 0.2s ease"
+                            transition: "all 0.2s ease",
+                            position: "relative",
+                            fontSize: "13px",
+                            fontWeight: "500",
+                            color: "#374151"
                           }}
                           onClick={() => setGlobalSearchQuery(`tag:${tag}`)}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.backgroundColor = "#f0f0f0";
                             e.currentTarget.style.borderColor = "#0a0";
+                            e.currentTarget.style.transform = "scale(1.05)";
                           }}
                           onMouseLeave={(e) => {
                             e.currentTarget.style.backgroundColor = "white";
                             e.currentTarget.style.borderColor = "#e1e3e5";
+                            e.currentTarget.style.transform = "scale(1)";
                           }}
                         >
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <span className="material-symbols-rounded" style={{ fontSize: "16px", color: "#6d7175" }}>tag</span>
-                            <Text as="span" style={{ fontSize: "14px", fontWeight: "500" }}>
-                              {tag}
-                            </Text>
-                            <Text as="span" style={{ fontSize: "12px", color: "#6d7175", backgroundColor: "#e1e3e5", padding: "2px 6px", borderRadius: "10px" }}>
-                              x{count}
-                            </Text>
-                          </div>
+                          <span className="material-symbols-rounded" style={{ fontSize: "14px", color: "#6d7175" }}>tag</span>
+                          <span>{tag}</span>
+                          <span style={{ 
+                            fontSize: "11px", 
+                            color: "#6d7175", 
+                            backgroundColor: "#e1e3e5", 
+                            padding: "2px 6px", 
+                            borderRadius: "10px",
+                            fontWeight: "600"
+                          }}>
+                            x{count}
+                          </span>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -1405,14 +1419,17 @@ export default function Index() {
                               background: "none",
                               border: "none",
                               cursor: "pointer",
-                              fontSize: "14px",
+                              fontSize: "12px",
                               color: "#d82c0d",
-                              padding: "4px",
-                              borderRadius: "4px",
+                              padding: "2px",
+                              borderRadius: "50%",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              transition: "all 0.2s ease"
+                              transition: "all 0.2s ease",
+                              marginLeft: "4px",
+                              width: "16px",
+                              height: "16px"
                             }}
                             onMouseEnter={(e) => {
                               e.target.style.backgroundColor = "#d82c0d";
@@ -1438,32 +1455,43 @@ export default function Index() {
                 <div>
                 {folders.map((folder) => (
                   <div key={folder.id} style={{ 
-                    padding: "8px 16px", 
-                    borderBottom: "1px solid #e1e3e5",
+                    padding: "12px 16px", 
+                    marginBottom: "8px",
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
                     cursor: "pointer",
-                                                  backgroundColor: selectedFolder === folder.id ? "#f6f6f7" : "transparent",
-                              borderRight: selectedFolder === folder.id ? "3px solid #0a0" : "none",
-                    borderRadius: "8px",
+                    backgroundColor: selectedFolder === folder.id ? "#E8F5E8" : "#F8F9FA",
+                    border: selectedFolder === folder.id ? "2px solid #0a0" : "2px solid #E1E3E5",
+                    borderRadius: "12px",
                     position: "relative",
-                    transition: "background-color 0.2s ease"
+                    transition: "all 0.2s ease",
+                    boxShadow: selectedFolder === folder.id ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
                   }}
                   onClick={() => setSelectedFolder(selectedFolder === folder.id ? null : folder.id)}
                   onMouseEnter={(e) => {
                     if (selectedFolder !== folder.id) {
-                      e.currentTarget.style.backgroundColor = "#f0f0f0";
+                      e.currentTarget.style.backgroundColor = "#E8F5E8";
+                      e.currentTarget.style.borderColor = "#0a0";
+                      e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (selectedFolder !== folder.id) {
-                      e.currentTarget.style.backgroundColor = "transparent";
+                      e.currentTarget.style.backgroundColor = "#F8F9FA";
+                      e.currentTarget.style.borderColor = "#E1E3E5";
+                      e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
                     }
                   }}
                   >
-                    <Text as="span" variant="headingSm" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span className="material-symbols-rounded" style={{ fontSize: "18px" }}>folder</span>
+                    <Text as="span" variant="headingSm" style={{ 
+                      fontWeight: "700", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: "8px",
+                      color: selectedFolder === folder.id ? "#0a0" : "#374151"
+                    }}>
+                      <span className="material-symbols-rounded" style={{ fontSize: "20px" }}>folder</span>
                       {folder.name}
                     </Text>
                     <div className="folder-menu-container" style={{ position: "relative", paddingRight: "8px" }}>
