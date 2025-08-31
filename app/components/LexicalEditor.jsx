@@ -45,6 +45,15 @@ function ClientQuill({ value, onChange, placeholder }) {
           .ql-table-ui {
             z-index: 9999 !important;
           }
+          
+          /* Fix double border issue */
+          .ql-container {
+            border-bottom: none !important;
+          }
+          
+          .ql-toolbar {
+            border-bottom: 1px solid #c9cccf !important;
+          }
         `;
         document.head.appendChild(style);
       });
@@ -124,7 +133,12 @@ function ClientQuill({ value, onChange, placeholder }) {
   }
 
   return (
-    <div className="editor-container" style={{ border: '1px solid #c9cccf', borderRadius: '4px', minHeight: '300px' }}>
+    <div className="editor-container" style={{ 
+      border: '1px solid #c9cccf', 
+      borderRadius: '4px', 
+      minHeight: '300px',
+      overflow: 'hidden'
+    }}>
       <ReactQuill
         ref={quillRef}
         theme="snow"
