@@ -1494,7 +1494,7 @@ export default function Index() {
 
             {/* Scrollable Folders Section */}
             <div style={{ 
-              flex: 1, 
+              height: "calc(7 * 60px + 32px)", // Height for 7 folders + padding
               overflowY: "auto", 
               padding: "16px",
               paddingBottom: "0"
