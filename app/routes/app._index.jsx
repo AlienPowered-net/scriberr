@@ -3461,7 +3461,7 @@ export default function Index() {
         {/* Copyright Footer */}
         <div style={{
           position: "fixed",
-          bottom: "0",
+          bottom: "10px",
           left: "0",
           right: "0",
           backgroundColor: "#f8f9fa",
