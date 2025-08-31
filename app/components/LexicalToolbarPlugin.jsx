@@ -51,6 +51,12 @@ function LexicalToolbarPlugin() {
     editor.dispatchCommand(REDO_COMMAND);
   };
 
+  // Debug function to test if commands are being dispatched
+  const testCommand = (command, format) => {
+    console.log(`Dispatching ${command} with format: ${format}`);
+    editor.dispatchCommand(command, format);
+  };
+
   return (
     <div className="toolbar" style={{
       borderBottom: '1px solid #c9cccf',
@@ -62,6 +68,11 @@ function LexicalToolbarPlugin() {
       gap: '4px',
       flexWrap: 'wrap'
     }}>
+      {/* Debug Info */}
+      <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px', width: '100%' }}>
+        Format: {elementFormat} | Bold: {isBold ? 'Y' : 'N'} | Italic: {isItalic ? 'Y' : 'N'} | Underline: {isUnderline ? 'Y' : 'N'}
+      </div>
+
       {/* Undo/Redo */}
       <button
         onClick={handleUndo}
@@ -110,7 +121,7 @@ function LexicalToolbarPlugin() {
 
       {/* Text Formatting */}
       <button
-        onClick={() => formatText('bold')}
+        onClick={() => testCommand(FORMAT_TEXT_COMMAND, 'bold')}
         className={`toolbar-item ${isBold ? 'active' : ''}`}
         style={{
           padding: '6px 8px',
@@ -133,7 +144,7 @@ function LexicalToolbarPlugin() {
       </button>
       
       <button
-        onClick={() => formatText('italic')}
+        onClick={() => testCommand(FORMAT_TEXT_COMMAND, 'italic')}
         className={`toolbar-item ${isItalic ? 'active' : ''}`}
         style={{
           padding: '6px 8px',
@@ -156,7 +167,7 @@ function LexicalToolbarPlugin() {
       </button>
       
       <button
-        onClick={() => formatText('underline')}
+        onClick={() => testCommand(FORMAT_TEXT_COMMAND, 'underline')}
         className={`toolbar-item ${isUnderline ? 'active' : ''}`}
         style={{
           padding: '6px 8px',
@@ -183,7 +194,7 @@ function LexicalToolbarPlugin() {
 
       {/* Headers */}
       <button
-        onClick={() => formatElement('h1')}
+        onClick={() => testCommand(FORMAT_ELEMENT_COMMAND, 'h1')}
         style={{
           padding: '6px 8px',
           border: '1px solid #c9cccf',
@@ -205,7 +216,7 @@ function LexicalToolbarPlugin() {
       </button>
       
       <button
-        onClick={() => formatElement('h2')}
+        onClick={() => testCommand(FORMAT_ELEMENT_COMMAND, 'h2')}
         style={{
           padding: '6px 8px',
           border: '1px solid #c9cccf',
@@ -227,7 +238,7 @@ function LexicalToolbarPlugin() {
       </button>
       
       <button
-        onClick={() => formatElement('h3')}
+        onClick={() => testCommand(FORMAT_ELEMENT_COMMAND, 'h3')}
         style={{
           padding: '6px 8px',
           border: '1px solid #c9cccf',
@@ -253,7 +264,7 @@ function LexicalToolbarPlugin() {
 
       {/* Lists */}
       <button
-        onClick={() => formatElement('ul')}
+        onClick={() => testCommand(FORMAT_ELEMENT_COMMAND, 'ul')}
         style={{
           padding: '6px 8px',
           border: '1px solid #c9cccf',
@@ -274,7 +285,7 @@ function LexicalToolbarPlugin() {
       </button>
       
       <button
-        onClick={() => formatElement('ol')}
+        onClick={() => testCommand(FORMAT_ELEMENT_COMMAND, 'ol')}
         style={{
           padding: '6px 8px',
           border: '1px solid #c9cccf',
