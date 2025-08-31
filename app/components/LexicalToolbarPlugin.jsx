@@ -61,11 +61,11 @@ function LexicalToolbarPlugin() {
     editor.dispatchCommand(REDO_COMMAND);
   };
 
-  // Test function to verify editor is working
   const testEditor = () => {
     console.log('Testing editor...');
     console.log('Editor instance:', editor);
     console.log('Current selection:', $getSelection());
+    console.log('Editor state:', editor.getEditorState());
   };
 
   return (
