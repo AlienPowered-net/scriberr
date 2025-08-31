@@ -2,7 +2,7 @@
   "name": "scriberr",
   "private": true,
   "scripts": {
-    "vercel-build": "prisma generate && prisma migrate deploy && npm run build",
+    "vercel-build": "prisma generate && npm run build",
     "build": "remix vite:build",
     "dev": "shopify app dev",
     "config:link": "shopify app config link",
