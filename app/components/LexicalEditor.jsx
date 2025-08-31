@@ -20,8 +20,6 @@ import { TablePlugin } from '@lexical/react/LexicalTablePlugin';
 import { HashtagNode } from '@lexical/hashtag';
 import { HashtagPlugin } from '@lexical/react/LexicalHashtagPlugin';
 import { ClearEditorPlugin } from '@lexical/react/LexicalClearEditorPlugin';
-import { MaxLengthPlugin } from '@lexical/react/LexicalMaxLengthPlugin';
-import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { useEffect } from 'react';
 
@@ -121,8 +119,6 @@ function LexicalEditor({ value, onChange, placeholder }) {
           <HashtagPlugin />
           <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
           <ClearEditorPlugin />
-          <MaxLengthPlugin maxLength={10000} />
-          <TabIndentationPlugin />
           <TestPlugin />
           <OnChangePlugin 
             onChange={(editorState) => {
