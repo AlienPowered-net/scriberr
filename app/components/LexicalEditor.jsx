@@ -40,12 +40,11 @@ function ClientQuill({ value, onChange, placeholder }) {
     }
   }, []);
 
-  // Quill modules to attach to editor - comprehensive toolbar without emoji for now
+  // Quill modules to attach to editor - comprehensive toolbar without font size
   const modules = {
     toolbar: [
       [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
       [{ 'font': [] }],
-      [{ 'size': ['small', false, 'large', 'huge'] }],
       ['bold', 'italic', 'underline', 'strike'],
       [{ 'color': [] }, { 'background': [] }],
       [{ 'script': 'sub'}, { 'script': 'super' }],
@@ -61,11 +60,10 @@ function ClientQuill({ value, onChange, placeholder }) {
     }
   };
 
-  // Quill editor formats - all available formats
+  // Quill editor formats - all available formats except size
   const formats = [
     'header',
     'font',
-    'size',
     'bold', 'italic', 'underline', 'strike',
     'color', 'background',
     'script',
