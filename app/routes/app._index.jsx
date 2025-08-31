@@ -16,7 +16,7 @@ import {
   InlineStack,
 } from "@shopify/polaris";
 import { useState, useEffect } from "react";
-import LexicalEditor from "../components/LexicalEditor";
+import QuillEditor from "../components/LexicalEditor";
 
 /* ------------------ Loader ------------------ */
 export async function loader({ request }) {
@@ -2615,7 +2615,7 @@ export default function Index() {
                   <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
                     Body
                   </label>
-                  <LexicalEditor
+                  <QuillEditor
                     value={body}
                     onChange={setBody}
                     placeholder="Type your note here..."
