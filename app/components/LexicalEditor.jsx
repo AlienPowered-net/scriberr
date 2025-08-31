@@ -12,15 +12,8 @@ function ClientQuill({ value, onChange, placeholder }) {
       // Import both the component and CSS
       Promise.all([
         import('react-quill'),
-        import('react-quill/dist/quill.snow.css'),
-        import('quill-emoji'),
-        import('quill-emoji/dist/quill-emoji.css')
-      ]).then(([module, quillCSS, emojiModule, emojiCSS]) => {
-        // Register emoji module with Quill
-        const Quill = module.default.Quill;
-        const Emoji = emojiModule.default;
-        Quill.register('modules/emoji', Emoji);
-        
+        import('react-quill/dist/quill.snow.css')
+      ]).then(([module]) => {
         setReactQuill(() => module.default);
         setIsLoaded(true);
         
@@ -41,18 +34,13 @@ function ClientQuill({ value, onChange, placeholder }) {
           .ql-tooltip[data-mode="link"] {
             z-index: 9999 !important;
           }
-          
-          /* Ensure emoji picker appears above other elements */
-          .ql-emoji-picker {
-            z-index: 9999 !important;
-          }
         `;
         document.head.appendChild(style);
       });
     }
   }, []);
 
-  // Quill modules to attach to editor - comprehensive toolbar with emoji
+  // Quill modules to attach to editor - comprehensive toolbar without emoji for now
   const modules = {
     toolbar: [
       [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
@@ -66,62 +54,14 @@ function ClientQuill({ value, onChange, placeholder }) {
       [{ 'indent': '-1'}, { 'indent': '+1' }],
       [{ 'direction': 'rtl' }, { 'align': [] }],
       ['link', 'image', 'video'],
-      ['emoji'],
       ['clean']
     ],
     clipboard: {
       matchVisual: false,
-    },
-    emoji: {
-      showTooltip: true,
-      showCategory: true,
-      showSearch: true,
-      showPreview: true,
-      showVariations: true,
-      emojiData: {
-        categories: [
-          {
-            name: 'Smileys & Emotion',
-            category: 'smileys'
-          },
-          {
-            name: 'People & Body',
-            category: 'people'
-          },
-          {
-            name: 'Animals & Nature',
-            category: 'nature'
-          },
-          {
-            name: 'Food & Drink',
-            category: 'foods'
-          },
-          {
-            name: 'Travel & Places',
-            category: 'places'
-          },
-          {
-            name: 'Activities',
-            category: 'activity'
-          },
-          {
-            name: 'Objects',
-            category: 'objects'
-          },
-          {
-            name: 'Symbols',
-            category: 'symbols'
-          },
-          {
-            name: 'Flags',
-            category: 'flags'
-          }
-        ]
-      }
     }
   };
 
-  // Quill editor formats - all available formats including emoji
+  // Quill editor formats - all available formats
   const formats = [
     'header',
     'font',
@@ -134,12 +74,11 @@ function ClientQuill({ value, onChange, placeholder }) {
     'indent',
     'direction', 'align',
     'link', 'image', 'video',
-    'emoji',
     'clean'
   ];
 
   const handleChange = (content, delta, source, editor) => {
-    // Call onChange directly - no emoji filtering since we now support emojis
+    // Call onChange directly
     onChange(content);
   };
 
