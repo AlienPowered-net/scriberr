@@ -1,6 +1,6 @@
 {
   "name": "scriberr",
-  "version": "v.a212",
+  "version": "v.a213",
   "private": true,
   "scripts": {
     "vercel-build": "prisma generate && npm run build",
