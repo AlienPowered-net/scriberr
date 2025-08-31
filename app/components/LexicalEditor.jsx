@@ -11,6 +11,12 @@ import { $getRoot, $getSelection } from 'lexical';
 import { useEffect } from 'react';
 import LexicalToolbarPlugin from './LexicalToolbarPlugin';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
+import { HeadingNode, QuoteNode } from '@lexical/rich-text';
+import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
+import { ListItemNode, ListNode } from '@lexical/list';
+import { CodeHighlightNode, CodeNode } from '@lexical/code';
+import { AutoLinkNode, LinkNode } from '@lexical/link';
+import { OverflowNode } from '@lexical/overflow';
 
 // Remove emoji characters from input
 const removeEmojis = (str) => {
@@ -61,6 +67,20 @@ function LexicalEditor({ value, onChange, placeholder }) {
     onError: (error) => {
       console.error('Lexical error:', error);
     },
+    nodes: [
+      HeadingNode,
+      QuoteNode,
+      ListItemNode,
+      ListNode,
+      CodeNode,
+      CodeHighlightNode,
+      TableNode,
+      TableCellNode,
+      TableRowNode,
+      AutoLinkNode,
+      LinkNode,
+      OverflowNode,
+    ],
   };
 
   return (
