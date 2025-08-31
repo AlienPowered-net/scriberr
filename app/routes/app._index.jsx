@@ -1365,7 +1365,7 @@ export default function Index() {
                     <div style={{ 
                       display: "flex", 
                       flexWrap: "wrap", 
-                      gap: "8px",
+                      gap: "6px",
                       padding: "8px 0"
                     }}>
                       {getAllTagsWithCounts().map(({ tag, count }) => (
@@ -1374,39 +1374,42 @@ export default function Index() {
                           style={{
                             display: "inline-flex",
                             alignItems: "center",
-                            gap: "6px",
-                            padding: "6px 12px",
-                            backgroundColor: "white",
-                            borderRadius: "20px",
-                            border: "1px solid #e1e3e5",
+                            gap: "4px",
+                            padding: "6px 10px",
+                            backgroundColor: "#E8F5E8",
+                            borderRadius: "16px",
+                            border: "1px solid #0a0",
                             cursor: "pointer",
                             transition: "all 0.2s ease",
                             position: "relative",
-                            fontSize: "13px",
-                            fontWeight: "500",
-                            color: "#374151"
+                            fontSize: "12px",
+                            fontWeight: "600",
+                            color: "#0a0",
+                            minWidth: "60px",
+                            justifyContent: "center"
                           }}
                           onClick={() => setGlobalSearchQuery(`tag:${tag}`)}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = "#f0f0f0";
-                            e.currentTarget.style.borderColor = "#0a0";
+                            e.currentTarget.style.backgroundColor = "#0a0";
+                            e.currentTarget.style.color = "white";
                             e.currentTarget.style.transform = "scale(1.05)";
+                            e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.2)";
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = "white";
-                            e.currentTarget.style.borderColor = "#e1e3e5";
+                            e.currentTarget.style.backgroundColor = "#E8F5E8";
+                            e.currentTarget.style.color = "#0a0";
                             e.currentTarget.style.transform = "scale(1)";
+                            e.currentTarget.style.boxShadow = "none";
                           }}
                         >
-                          <span className="material-symbols-rounded" style={{ fontSize: "14px", color: "#6d7175" }}>tag</span>
                           <span>{tag}</span>
                           <span style={{ 
-                            fontSize: "11px", 
-                            color: "#6d7175", 
-                            backgroundColor: "#e1e3e5", 
-                            padding: "2px 6px", 
-                            borderRadius: "10px",
-                            fontWeight: "600"
+                            fontSize: "10px", 
+                            color: "inherit", 
+                            backgroundColor: "rgba(255, 255, 255, 0.3)", 
+                            padding: "1px 4px", 
+                            borderRadius: "8px",
+                            fontWeight: "700"
                           }}>
                             x{count}
                           </span>
@@ -1419,25 +1422,28 @@ export default function Index() {
                               background: "none",
                               border: "none",
                               cursor: "pointer",
-                              fontSize: "12px",
+                              fontSize: "10px",
                               color: "#d82c0d",
-                              padding: "2px",
+                              padding: "1px",
                               borderRadius: "50%",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
                               transition: "all 0.2s ease",
-                              marginLeft: "4px",
-                              width: "16px",
-                              height: "16px"
+                              marginLeft: "2px",
+                              width: "14px",
+                              height: "14px",
+                              opacity: "0.7"
                             }}
                             onMouseEnter={(e) => {
                               e.target.style.backgroundColor = "#d82c0d";
                               e.target.style.color = "white";
+                              e.target.style.opacity = "1";
                             }}
                             onMouseLeave={(e) => {
                               e.target.style.backgroundColor = "transparent";
                               e.target.style.color = "#d82c0d";
+                              e.target.style.opacity = "0.7";
                             }}
                           >
                             ×
