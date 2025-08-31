@@ -1219,27 +1219,36 @@ export default function Index() {
         )}
         
         <div className="app-layout" style={{ display: "flex", gap: "16px", minHeight: "calc(100vh - 240px)", paddingBottom: "40px" }}>
-        {/* FOLDERS */}
+                {/* FOLDERS */}
         <div className="col-folders" style={{ width: "25%" }}>
-        <Card
-          style={{
-            transition: "all 0.3s ease",
-            ...(highlightFolders && {
-              backgroundColor: "#fff3cd",
-              border: "2px solid #ffc107",
-              borderRadius: "8px",
-              boxShadow: "0 0 20px rgba(255, 193, 7, 0.3)"
-            })
-          }}
-        >
-                      <div style={{ padding: "16px" }}>
-              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <Card
+            style={{
+              transition: "all 0.3s ease",
+              height: "calc(100vh - 240px)",
+              display: "flex",
+              flexDirection: "column",
+              ...(highlightFolders && {
+                backgroundColor: "#fff3cd",
+                border: "2px solid #ffc107",
+                borderRadius: "8px",
+                boxShadow: "0 0 20px rgba(255, 193, 7, 0.3)"
+              })
+            }}
+          >
+            {/* Fixed Header Section */}
+            <div style={{ 
+              padding: "16px", 
+              borderBottom: "1px solid #e1e3e5",
+              backgroundColor: "white",
+              flexShrink: 0
+            }}>
+              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px" }}>
                 <span className="material-symbols-rounded">home_storage</span>
                 Folders & Tags
               </Text>
-            </div>
-                      <div style={{ padding: "16px" }}>
-              <div style={{ marginBottom: "24px", position: "relative" }}>
+              
+              {/* Global Search */}
+              <div style={{ marginBottom: "16px", position: "relative" }}>
                 <input
                   type="text"
                   style={{
@@ -1284,11 +1293,12 @@ export default function Index() {
                   search
                 </span>
               </div>
-              {/* All Notes Button - Separated from folder list */}
+
+              {/* All Notes Button */}
               <div 
                 style={{ 
                   padding: "12px 16px", 
-                  marginBottom: "16px",
+                  marginBottom: "12px",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
@@ -1328,11 +1338,11 @@ export default function Index() {
                 </Text>
               </div>
 
-              {/* Tags Section */}
+              {/* All Tags Button */}
               <div 
                 style={{ 
                   padding: "12px 16px", 
-                  marginBottom: "16px",
+                  marginBottom: "12px",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
@@ -1375,7 +1385,7 @@ export default function Index() {
               {/* Tags List */}
               {showTagsSection && (
                 <div style={{ 
-                  marginBottom: "16px",
+                  marginBottom: "12px",
                   padding: "12px",
                   backgroundColor: "#f8f9fa",
                   borderRadius: "8px",
@@ -1480,7 +1490,15 @@ export default function Index() {
                   )}
                 </div>
               )}
+            </div>
 
+            {/* Scrollable Folders Section */}
+            <div style={{ 
+              flex: 1, 
+              overflowY: "auto", 
+              padding: "16px",
+              paddingBottom: "0"
+            }}>
               {folders.length === 0 ? (
                 <Text as="p">No folders yet</Text>
               ) : (
@@ -1663,9 +1681,16 @@ export default function Index() {
                 ))}
               </div>
             )}
-          </div>
-            <div style={{ padding: "16px" }}>
-              <div style={{ marginBottom: "24px", position: "relative" }}>
+            </div>
+
+            {/* Sticky Bottom - New Folder Input */}
+            <div style={{ 
+              padding: "16px", 
+              borderTop: "1px solid #e1e3e5",
+              backgroundColor: "white",
+              flexShrink: 0
+            }}>
+              <div style={{ position: "relative" }}>
                 <input
                   type="text"
                   style={{
