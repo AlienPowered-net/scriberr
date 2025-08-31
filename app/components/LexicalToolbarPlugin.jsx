@@ -27,31 +27,45 @@ function LexicalToolbarPlugin() {
   }, [editor]);
 
   const handleBold = () => {
+    console.log('Bold button clicked');
     editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
   };
 
   const handleItalic = () => {
+    console.log('Italic button clicked');
     editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
   };
 
   const handleUnderline = () => {
+    console.log('Underline button clicked');
     editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
   };
 
   const handleHeading = (level) => {
+    console.log(`Heading ${level} button clicked`);
     editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, `h${level}`);
   };
 
   const handleList = (type) => {
+    console.log(`${type} list button clicked`);
     editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, type);
   };
 
   const handleUndo = () => {
+    console.log('Undo button clicked');
     editor.dispatchCommand(UNDO_COMMAND);
   };
 
   const handleRedo = () => {
+    console.log('Redo button clicked');
     editor.dispatchCommand(REDO_COMMAND);
+  };
+
+  // Test function to verify editor is working
+  const testEditor = () => {
+    console.log('Testing editor...');
+    console.log('Editor instance:', editor);
+    console.log('Current selection:', $getSelection());
   };
 
   return (
@@ -68,6 +82,9 @@ function LexicalToolbarPlugin() {
       {/* Debug Info */}
       <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px', width: '100%' }}>
         Bold: {isBold ? 'Y' : 'N'} | Italic: {isItalic ? 'Y' : 'N'} | Underline: {isUnderline ? 'Y' : 'N'}
+        <button onClick={testEditor} style={{ marginLeft: '10px', fontSize: '8px', padding: '2px 4px' }}>
+          Test Editor
+        </button>
       </div>
 
       {/* Undo/Redo */}

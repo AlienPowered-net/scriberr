@@ -8,9 +8,7 @@ import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
 import { TRANSFORMERS } from '@lexical/markdown';
 import { $getRoot } from 'lexical';
-import { useEffect } from 'react';
 import LexicalToolbarPlugin from './LexicalToolbarPlugin';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
 import { ListItemNode, ListNode } from '@lexical/list';
@@ -18,6 +16,7 @@ import { CodeHighlightNode, CodeNode } from '@lexical/code';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 import { OverflowNode } from '@lexical/overflow';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
+import { Placeholder } from '@lexical/react/LexicalPlaceholder';
 
 // Remove emoji characters from input
 const removeEmojis = (str) => {
@@ -39,6 +38,7 @@ function LexicalEditor({ value, onChange, placeholder }) {
         strikethrough: 'line-through',
         underlineStrikethrough: 'underline line-through',
       },
+      placeholder: 'editor-placeholder',
     },
     onError: (error) => {
       console.error('Lexical error:', error);
@@ -60,53 +60,60 @@ function LexicalEditor({ value, onChange, placeholder }) {
   };
 
   return (
-    <LexicalComposer initialConfig={initialConfig}>
-      <div className="editor-container" style={{ border: '1px solid #c9cccf', borderRadius: '4px', minHeight: '300px' }}>
-        <LexicalToolbarPlugin />
-        <div className="editor-inner" style={{ padding: '12px', minHeight: '250px' }}>
-          <RichTextPlugin
-            contentEditable={
-              <ContentEditable 
-                style={{ 
-                  outline: 'none',
-                  minHeight: '250px',
-                  fontSize: '14px',
-                  lineHeight: '1.5'
-                }}
-              />
-            }
-            placeholder={
-              <div style={{ 
-                color: '#6d7175',
-                overflow: 'hidden',
-                userSelect: 'none',
-                pointerEvents: 'none',
-                position: 'absolute',
-                top: '12px',
-                left: '12px'
-              }}>
-                {placeholder}
-              </div>
-            }
-          />
-          <HistoryPlugin />
-          <AutoFocusPlugin />
-          <ListPlugin />
-          <LinkPlugin />
-          <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-          <OnChangePlugin 
-            onChange={(editorState) => {
-              editorState.read(() => {
-                const root = $getRoot();
-                const textContent = root.getTextContent();
-                const filteredContent = removeEmojis(textContent);
-                onChange(filteredContent);
-              });
-            }}
-          />
+    <>
+      <style>{`
+        .editor-placeholder {
+          color: #6d7175;
+          overflow: hidden;
+          user-select: none;
+          pointer-events: none;
+          position: absolute;
+          top: 12px;
+          left: 12px;
+          font-size: 14px;
+          line-height: 1.5;
+        }
+      `}</style>
+      <LexicalComposer initialConfig={initialConfig}>
+        <div className="editor-container" style={{ border: '1px solid #c9cccf', borderRadius: '4px', minHeight: '300px' }}>
+          <LexicalToolbarPlugin />
+          <div className="editor-inner" style={{ padding: '12px', minHeight: '250px', position: 'relative' }}>
+            <RichTextPlugin
+              contentEditable={
+                <ContentEditable 
+                  style={{ 
+                    outline: 'none',
+                    minHeight: '250px',
+                    fontSize: '14px',
+                    lineHeight: '1.5'
+                  }}
+                />
+              }
+              placeholder={
+                <Placeholder className="editor-placeholder">
+                  {placeholder}
+                </Placeholder>
+              }
+            />
+            <HistoryPlugin />
+            <AutoFocusPlugin />
+            <ListPlugin />
+            <LinkPlugin />
+            <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+            <OnChangePlugin 
+              onChange={(editorState) => {
+                editorState.read(() => {
+                  const root = $getRoot();
+                  const textContent = root.getTextContent();
+                  const filteredContent = removeEmojis(textContent);
+                  onChange(filteredContent);
+                });
+              }}
+            />
+          </div>
         </div>
-      </div>
-    </LexicalComposer>
+      </LexicalComposer>
+    </>
   );
 }
 
