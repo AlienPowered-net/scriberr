@@ -1,6 +1,6 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND, UNDO_COMMAND, REDO_COMMAND } from 'lexical';
-import { $getSelection, $isRangeSelection, $isElementNode } from 'lexical';
+import { $getSelection, $isRangeSelection } from 'lexical';
 import { useState, useEffect } from 'react';
 
 function LexicalToolbarPlugin() {
@@ -8,33 +8,13 @@ function LexicalToolbarPlugin() {
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
-  const [elementFormat, setElementFormat] = useState('paragraph');
 
   const updateToolbar = () => {
-    try {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) {
-        setIsBold(selection.hasFormat('bold'));
-        setIsItalic(selection.hasFormat('italic'));
-        setIsUnderline(selection.hasFormat('underline'));
-        
-        // Get the parent element format - use proper Lexical API
-        const anchor = selection.anchor;
-        const anchorNode = anchor.getNode();
-        const element = anchorNode.getParent();
-        
-        if ($isElementNode(element)) {
-          // Use getType() instead of getTag() for element type
-          const elementType = element.getType();
-          setElementFormat(elementType);
-        } else {
-          setElementFormat('paragraph');
-        }
-      }
-    } catch (error) {
-      console.warn('Error updating toolbar:', error);
-      // Set default values on error
-      setElementFormat('paragraph');
+    const selection = $getSelection();
+    if ($isRangeSelection(selection)) {
+      setIsBold(selection.hasFormat('bold'));
+      setIsItalic(selection.hasFormat('italic'));
+      setIsUnderline(selection.hasFormat('underline'));
     }
   };
 
@@ -46,12 +26,24 @@ function LexicalToolbarPlugin() {
     });
   }, [editor]);
 
-  const formatText = (format) => {
-    editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
+  const handleBold = () => {
+    editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
   };
 
-  const formatElement = (format) => {
-    editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, format);
+  const handleItalic = () => {
+    editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
+  };
+
+  const handleUnderline = () => {
+    editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
+  };
+
+  const handleHeading = (level) => {
+    editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, `h${level}`);
+  };
+
+  const handleList = (type) => {
+    editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, type);
   };
 
   const handleUndo = () => {
@@ -60,12 +52,6 @@ function LexicalToolbarPlugin() {
 
   const handleRedo = () => {
     editor.dispatchCommand(REDO_COMMAND);
-  };
-
-  // Debug function to test if commands are being dispatched
-  const testCommand = (command, format) => {
-    console.log(`Dispatching ${command.name || command} with format: ${format}`);
-    editor.dispatchCommand(command, format);
   };
 
   return (
@@ -81,7 +67,7 @@ function LexicalToolbarPlugin() {
     }}>
       {/* Debug Info */}
       <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px', width: '100%' }}>
-        Format: {elementFormat} | Bold: {isBold ? 'Y' : 'N'} | Italic: {isItalic ? 'Y' : 'N'} | Underline: {isUnderline ? 'Y' : 'N'}
+        Bold: {isBold ? 'Y' : 'N'} | Italic: {isItalic ? 'Y' : 'N'} | Underline: {isUnderline ? 'Y' : 'N'}
       </div>
 
       {/* Undo/Redo */}
@@ -132,8 +118,7 @@ function LexicalToolbarPlugin() {
 
       {/* Text Formatting */}
       <button
-        onClick={() => testCommand(FORMAT_TEXT_COMMAND, 'bold')}
-        className={`toolbar-item ${isBold ? 'active' : ''}`}
+        onClick={handleBold}
         style={{
           padding: '6px 8px',
           border: '1px solid #c9cccf',
@@ -155,8 +140,7 @@ function LexicalToolbarPlugin() {
       </button>
       
       <button
-        onClick={() => testCommand(FORMAT_TEXT_COMMAND, 'italic')}
-        className={`toolbar-item ${isItalic ? 'active' : ''}`}
+        onClick={handleItalic}
         style={{
           padding: '6px 8px',
           border: '1px solid #c9cccf',
@@ -178,8 +162,7 @@ function LexicalToolbarPlugin() {
       </button>
       
       <button
-        onClick={() => testCommand(FORMAT_TEXT_COMMAND, 'underline')}
-        className={`toolbar-item ${isUnderline ? 'active' : ''}`}
+        onClick={handleUnderline}
         style={{
           padding: '6px 8px',
           border: '1px solid #c9cccf',
@@ -205,66 +188,66 @@ function LexicalToolbarPlugin() {
 
       {/* Headers */}
       <button
-        onClick={() => testCommand(FORMAT_ELEMENT_COMMAND, 'h1')}
+        onClick={() => handleHeading(1)}
         style={{
           padding: '6px 8px',
           border: '1px solid #c9cccf',
           borderRadius: '4px',
-          backgroundColor: elementFormat === 'heading' ? '#007cba' : 'white',
-          color: elementFormat === 'heading' ? 'white' : '#333',
+          backgroundColor: 'white',
+          color: '#333',
           cursor: 'pointer',
           fontSize: '12px',
           fontWeight: 'bold'
         }}
         onMouseEnter={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'heading' ? '#005a87' : '#f0f0f0';
+          e.target.style.backgroundColor = '#f0f0f0';
         }}
         onMouseLeave={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'heading' ? '#007cba' : 'white';
+          e.target.style.backgroundColor = 'white';
         }}
       >
         H1
       </button>
       
       <button
-        onClick={() => testCommand(FORMAT_ELEMENT_COMMAND, 'h2')}
+        onClick={() => handleHeading(2)}
         style={{
           padding: '6px 8px',
           border: '1px solid #c9cccf',
           borderRadius: '4px',
-          backgroundColor: elementFormat === 'heading' ? '#007cba' : 'white',
-          color: elementFormat === 'heading' ? 'white' : '#333',
+          backgroundColor: 'white',
+          color: '#333',
           cursor: 'pointer',
           fontSize: '12px',
           fontWeight: 'bold'
         }}
         onMouseEnter={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'heading' ? '#005a87' : '#f0f0f0';
+          e.target.style.backgroundColor = '#f0f0f0';
         }}
         onMouseLeave={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'heading' ? '#007cba' : 'white';
+          e.target.style.backgroundColor = 'white';
         }}
       >
         H2
       </button>
       
       <button
-        onClick={() => testCommand(FORMAT_ELEMENT_COMMAND, 'h3')}
+        onClick={() => handleHeading(3)}
         style={{
           padding: '6px 8px',
           border: '1px solid #c9cccf',
           borderRadius: '4px',
-          backgroundColor: elementFormat === 'heading' ? '#007cba' : 'white',
-          color: elementFormat === 'heading' ? 'white' : '#333',
+          backgroundColor: 'white',
+          color: '#333',
           cursor: 'pointer',
           fontSize: '12px',
           fontWeight: 'bold'
         }}
         onMouseEnter={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'heading' ? '#005a87' : '#f0f0f0';
+          e.target.style.backgroundColor = '#f0f0f0';
         }}
         onMouseLeave={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'heading' ? '#007cba' : 'white';
+          e.target.style.backgroundColor = 'white';
         }}
       >
         H3
@@ -275,42 +258,42 @@ function LexicalToolbarPlugin() {
 
       {/* Lists */}
       <button
-        onClick={() => testCommand(FORMAT_ELEMENT_COMMAND, 'ul')}
+        onClick={() => handleList('ul')}
         style={{
           padding: '6px 8px',
           border: '1px solid #c9cccf',
           borderRadius: '4px',
-          backgroundColor: elementFormat === 'list' ? '#007cba' : 'white',
-          color: elementFormat === 'list' ? 'white' : '#333',
+          backgroundColor: 'white',
+          color: '#333',
           cursor: 'pointer',
           fontSize: '12px'
         }}
         onMouseEnter={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'list' ? '#005a87' : '#f0f0f0';
+          e.target.style.backgroundColor = '#f0f0f0';
         }}
         onMouseLeave={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'list' ? '#007cba' : 'white';
+          e.target.style.backgroundColor = 'white';
         }}
       >
         • List
       </button>
       
       <button
-        onClick={() => testCommand(FORMAT_ELEMENT_COMMAND, 'ol')}
+        onClick={() => handleList('ol')}
         style={{
           padding: '6px 8px',
           border: '1px solid #c9cccf',
           borderRadius: '4px',
-          backgroundColor: elementFormat === 'list' ? '#007cba' : 'white',
-          color: elementFormat === 'list' ? 'white' : '#333',
+          backgroundColor: 'white',
+          color: '#333',
           cursor: 'pointer',
           fontSize: '12px'
         }}
         onMouseEnter={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'list' ? '#005a87' : '#f0f0f0';
+          e.target.style.backgroundColor = '#f0f0f0';
         }}
         onMouseLeave={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'list' ? '#007cba' : 'white';
+          e.target.style.backgroundColor = 'white';
         }}
       >
         1. List
