@@ -281,6 +281,7 @@ export default function Index() {
   // Tags management states
   const [showTagsSection, setShowTagsSection] = useState(false);
   const [showDeleteTagConfirm, setShowDeleteTagConfirm] = useState(null);
+  const [selectedTags, setSelectedTags] = useState([]);
   
 
 
@@ -324,6 +325,27 @@ export default function Index() {
       }
     });
     return Object.entries(tagCounts).map(([tag, count]) => ({ tag, count }));
+  };
+
+  // Handle tag selection/deselection
+  const handleTagClick = (tag) => {
+    setSelectedTags(prevTags => {
+      if (prevTags.includes(tag)) {
+        // Remove tag if already selected
+        const newTags = prevTags.filter(t => t !== tag);
+        if (newTags.length === 0) {
+          setGlobalSearchQuery("");
+        } else {
+          setGlobalSearchQuery(`tag:${newTags.join(' tag:')}`);
+        }
+        return newTags;
+      } else {
+        // Add tag if not selected
+        const newTags = [...prevTags, tag];
+        setGlobalSearchQuery(`tag:${newTags.join(' tag:')}`);
+        return newTags;
+      }
+    });
   };
 
   // Track unsaved changes
@@ -1213,7 +1235,7 @@ export default function Index() {
                       <div style={{ padding: "16px" }}>
               <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                 <span className="material-symbols-rounded">home_storage</span>
-                Folders
+                Folders & Tags
               </Text>
             </div>
                       <div style={{ padding: "16px" }}>
@@ -1376,7 +1398,7 @@ export default function Index() {
                             alignItems: "center",
                             gap: "4px",
                             padding: "6px 10px",
-                            backgroundColor: "#E8F5E8",
+                            backgroundColor: selectedTags.includes(tag) ? "#0a0" : "#E8F5E8",
                             borderRadius: "16px",
                             border: "1px solid #0a0",
                             cursor: "pointer",
@@ -1384,20 +1406,24 @@ export default function Index() {
                             position: "relative",
                             fontSize: "12px",
                             fontWeight: "600",
-                            color: "#0a0",
+                            color: selectedTags.includes(tag) ? "white" : "#0a0",
                             minWidth: "60px",
                             justifyContent: "center"
                           }}
-                          onClick={() => setGlobalSearchQuery(`tag:${tag}`)}
+                          onClick={() => handleTagClick(tag)}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = "#0a0";
-                            e.currentTarget.style.color = "white";
+                            if (!selectedTags.includes(tag)) {
+                              e.currentTarget.style.backgroundColor = "#0a0";
+                              e.currentTarget.style.color = "white";
+                            }
                             e.currentTarget.style.transform = "scale(1.05)";
                             e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.2)";
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = "#E8F5E8";
-                            e.currentTarget.style.color = "#0a0";
+                            if (!selectedTags.includes(tag)) {
+                              e.currentTarget.style.backgroundColor = "#E8F5E8";
+                              e.currentTarget.style.color = "#0a0";
+                            }
                             e.currentTarget.style.transform = "scale(1)";
                             e.currentTarget.style.boxShadow = "none";
                           }}
@@ -1405,8 +1431,8 @@ export default function Index() {
                           <span>{tag}</span>
                           <span style={{ 
                             fontSize: "10px", 
-                            color: "inherit", 
-                            backgroundColor: "rgba(255, 255, 255, 0.3)", 
+                            color: selectedTags.includes(tag) ? "#0a0" : "inherit", 
+                            backgroundColor: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "rgba(255, 255, 255, 0.3)", 
                             padding: "1px 4px", 
                             borderRadius: "8px",
                             fontWeight: "700"
