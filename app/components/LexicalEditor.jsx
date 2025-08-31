@@ -1,6 +1,4 @@
-import React, { useEffect, useRef } from 'react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import React, { useEffect, useRef, useState } from 'react';
 
 // Remove emoji characters from input
 const removeEmojis = (str) => {
@@ -8,8 +6,25 @@ const removeEmojis = (str) => {
   return str.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1F018}-\u{1F270}]|[\u{238C}-\u{2454}]|[\u{20D0}-\u{20FF}]|[\u{FE00}-\u{FE0F}]|[\u{1F900}-\u{1F9FF}]|[\u{1F018}-\u{1F270}]|[\u{238C}-\u{2454}]|[\u{20D0}-\u{20FF}]|[\u{FE00}-\u{FE0F}]/gu, '');
 };
 
-function QuillEditor({ value, onChange, placeholder }) {
+// Client-only Quill component
+function ClientQuill({ value, onChange, placeholder }) {
+  const [ReactQuill, setReactQuill] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
   const quillRef = useRef(null);
+
+  useEffect(() => {
+    // Only import Quill on the client side
+    if (typeof window !== 'undefined') {
+      // Import both the component and CSS
+      Promise.all([
+        import('react-quill'),
+        import('react-quill/dist/quill.snow.css')
+      ]).then(([module]) => {
+        setReactQuill(() => module.default);
+        setIsLoaded(true);
+      });
+    }
+  }, []);
 
   // Quill modules to attach to editor
   const modules = {
@@ -47,6 +62,27 @@ function QuillEditor({ value, onChange, placeholder }) {
     onChange(filteredContent);
   };
 
+  // Show loading state while Quill is being loaded
+  if (!isLoaded || !ReactQuill) {
+    return (
+      <div className="editor-container" style={{ 
+        border: '1px solid #c9cccf', 
+        borderRadius: '4px', 
+        minHeight: '300px',
+        padding: '12px',
+        backgroundColor: '#f9f9f9'
+      }}>
+        <div style={{ 
+          color: '#6d7175',
+          fontSize: '14px',
+          lineHeight: '1.5'
+        }}>
+          Loading editor...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="editor-container" style={{ border: '1px solid #c9cccf', borderRadius: '4px', minHeight: '300px' }}>
       <ReactQuill
@@ -65,6 +101,10 @@ function QuillEditor({ value, onChange, placeholder }) {
       />
     </div>
   );
+}
+
+function QuillEditor({ value, onChange, placeholder }) {
+  return <ClientQuill value={value} onChange={onChange} placeholder={placeholder} />;
 }
 
 export default QuillEditor;
