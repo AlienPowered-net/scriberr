@@ -8,6 +8,8 @@ function LexicalToolbarPlugin() {
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
+  const [isStrikethrough, setIsStrikethrough] = useState(false);
+  const [isCode, setIsCode] = useState(false);
 
   const updateToolbar = () => {
     const selection = $getSelection();
@@ -15,6 +17,8 @@ function LexicalToolbarPlugin() {
       setIsBold(selection.hasFormat('bold'));
       setIsItalic(selection.hasFormat('italic'));
       setIsUnderline(selection.hasFormat('underline'));
+      setIsStrikethrough(selection.hasFormat('strikethrough'));
+      setIsCode(selection.hasFormat('code'));
     }
   };
 
@@ -38,12 +42,24 @@ function LexicalToolbarPlugin() {
     editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
   };
 
+  const handleStrikethrough = () => {
+    editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
+  };
+
+  const handleCode = () => {
+    editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'code');
+  };
+
   const handleHeading = (level) => {
     editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, `h${level}`);
   };
 
   const handleList = (type) => {
     editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, type);
+  };
+
+  const handleQuote = () => {
+    editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'quote');
   };
 
   const handleUndo = () => {
@@ -67,7 +83,7 @@ function LexicalToolbarPlugin() {
     }}>
       {/* Debug Info */}
       <div style={{ fontSize: '10px', color: '#666', marginBottom: '4px', width: '100%' }}>
-        Bold: {isBold ? 'Y' : 'N'} | Italic: {isItalic ? 'Y' : 'N'} | Underline: {isUnderline ? 'Y' : 'N'}
+        Bold: {isBold ? 'Y' : 'N'} | Italic: {isItalic ? 'Y' : 'N'} | Underline: {isUnderline ? 'Y' : 'N'} | Strikethrough: {isStrikethrough ? 'Y' : 'N'} | Code: {isCode ? 'Y' : 'N'}
       </div>
 
       {/* Undo/Redo */}
@@ -88,6 +104,7 @@ function LexicalToolbarPlugin() {
         onMouseLeave={(e) => {
           e.target.style.backgroundColor = 'white';
         }}
+        title="Undo"
       >
         ↶
       </button>
@@ -109,6 +126,7 @@ function LexicalToolbarPlugin() {
         onMouseLeave={(e) => {
           e.target.style.backgroundColor = 'white';
         }}
+        title="Redo"
       >
         ↷
       </button>
@@ -135,6 +153,7 @@ function LexicalToolbarPlugin() {
         onMouseLeave={(e) => {
           e.target.style.backgroundColor = isBold ? '#007cba' : 'white';
         }}
+        title="Bold"
       >
         B
       </button>
@@ -157,6 +176,7 @@ function LexicalToolbarPlugin() {
         onMouseLeave={(e) => {
           e.target.style.backgroundColor = isItalic ? '#007cba' : 'white';
         }}
+        title="Italic"
       >
         I
       </button>
@@ -179,8 +199,55 @@ function LexicalToolbarPlugin() {
         onMouseLeave={(e) => {
           e.target.style.backgroundColor = isUnderline ? '#007cba' : 'white';
         }}
+        title="Underline"
       >
         U
+      </button>
+
+      <button
+        onClick={handleStrikethrough}
+        style={{
+          padding: '6px 8px',
+          border: '1px solid #c9cccf',
+          borderRadius: '4px',
+          backgroundColor: isStrikethrough ? '#007cba' : 'white',
+          color: isStrikethrough ? 'white' : '#333',
+          cursor: 'pointer',
+          fontSize: '12px',
+          textDecoration: 'line-through'
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.backgroundColor = isStrikethrough ? '#005a87' : '#f0f0f0';
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.backgroundColor = isStrikethrough ? '#007cba' : 'white';
+        }}
+        title="Strikethrough"
+      >
+        S
+      </button>
+
+      <button
+        onClick={handleCode}
+        style={{
+          padding: '6px 8px',
+          border: '1px solid #c9cccf',
+          borderRadius: '4px',
+          backgroundColor: isCode ? '#007cba' : 'white',
+          color: isCode ? 'white' : '#333',
+          cursor: 'pointer',
+          fontSize: '12px',
+          fontFamily: 'monospace'
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.backgroundColor = isCode ? '#005a87' : '#f0f0f0';
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.backgroundColor = isCode ? '#007cba' : 'white';
+        }}
+        title="Code"
+      >
+        {'</>'}
       </button>
 
       {/* Separator */}
@@ -205,6 +272,7 @@ function LexicalToolbarPlugin() {
         onMouseLeave={(e) => {
           e.target.style.backgroundColor = 'white';
         }}
+        title="Heading 1"
       >
         H1
       </button>
@@ -227,6 +295,7 @@ function LexicalToolbarPlugin() {
         onMouseLeave={(e) => {
           e.target.style.backgroundColor = 'white';
         }}
+        title="Heading 2"
       >
         H2
       </button>
@@ -249,6 +318,7 @@ function LexicalToolbarPlugin() {
         onMouseLeave={(e) => {
           e.target.style.backgroundColor = 'white';
         }}
+        title="Heading 3"
       >
         H3
       </button>
@@ -256,7 +326,7 @@ function LexicalToolbarPlugin() {
       {/* Separator */}
       <div style={{ width: '1px', backgroundColor: '#c9cccf', margin: '0 4px' }} />
 
-      {/* Lists */}
+      {/* Lists and Quote */}
       <button
         onClick={() => handleList('ul')}
         style={{
@@ -274,6 +344,7 @@ function LexicalToolbarPlugin() {
         onMouseLeave={(e) => {
           e.target.style.backgroundColor = 'white';
         }}
+        title="Bullet List"
       >
         • List
       </button>
@@ -295,8 +366,31 @@ function LexicalToolbarPlugin() {
         onMouseLeave={(e) => {
           e.target.style.backgroundColor = 'white';
         }}
+        title="Numbered List"
       >
         1. List
+      </button>
+
+      <button
+        onClick={handleQuote}
+        style={{
+          padding: '6px 8px',
+          border: '1px solid #c9cccf',
+          borderRadius: '4px',
+          backgroundColor: 'white',
+          color: '#333',
+          cursor: 'pointer',
+          fontSize: '12px'
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.backgroundColor = '#f0f0f0';
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.backgroundColor = 'white';
+        }}
+        title="Quote"
+      >
+        Quote
       </button>
     </div>
   );
