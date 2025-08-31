@@ -1174,6 +1174,10 @@ export default function Index() {
             width: 100% !important;
           }
           
+          .Polaris-Box {
+            margin-bottom: 5% !important;
+          }
+          
                         .Polaris-Card {
                 width: 100% !important;
               }
