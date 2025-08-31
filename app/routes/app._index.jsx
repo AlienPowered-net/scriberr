@@ -1764,7 +1764,6 @@ export default function Index() {
                 )}
               </div>
             </div>
-            </div>
           </Card>
         </div>
 
