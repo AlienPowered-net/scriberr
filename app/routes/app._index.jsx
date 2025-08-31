@@ -1028,7 +1028,7 @@ export default function Index() {
   };
 
       return (
-              <Page title="Scriberr" style={{ paddingBottom: "160px" }}>
+              <Page title="Scriberr" style={{ paddingBottom: "160px", marginBottom: "10%" }}>
         {/* Material Symbols Rounded CDN */}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
@@ -3460,7 +3460,7 @@ export default function Index() {
 
         {/* Copyright Footer */}
         <div style={{
-          position: "relative",
+          position: "fixed",
           bottom: "0",
           left: "0",
           right: "0",
