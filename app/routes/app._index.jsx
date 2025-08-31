@@ -3461,12 +3461,13 @@ export default function Index() {
         {/* Copyright Footer */}
         <div style={{
           position: "fixed",
-          bottom: "10px",
+          bottom: "0",
           left: "0",
           right: "0",
           backgroundColor: "#f8f9fa",
           borderTop: "1px solid #e1e3e5",
           padding: "12px 24px",
+          marginTop: "10px",
           fontSize: "14px",
           color: "#6d7175",
           zIndex: 100,
