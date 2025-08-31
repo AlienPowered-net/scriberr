@@ -13,9 +13,8 @@ function ClientQuill({ value, onChange, placeholder }) {
       Promise.all([
         import('react-quill'),
         import('react-quill/dist/quill.snow.css'),
-        import('quill-table-ui'),
-        import('quill-table-ui/dist/quill-table-ui.css')
-      ]).then(([module, quillCSS, tableModule, tableCSS]) => {
+        import('quill-table-ui')
+      ]).then(([module, quillCSS, tableModule]) => {
         // Register table UI module with Quill
         const Quill = module.default.Quill;
         const TableUI = tableModule.default;
