@@ -21,6 +21,23 @@ function ClientQuill({ value, onChange, placeholder }) {
   const [QuillComponent, setQuillComponent] = useState(null);
   const [isClient, setIsClient] = useState(false);
 
+  // Remove emoji characters from input
+  const removeEmojis = (str) => {
+    if (!str) return str;
+    // Remove emoji characters using regex
+    return str.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1F018}-\u{1F270}]|[\u{238C}-\u{2454}]|[\u{20D0}-\u{20FF}]|[\u{FE00}-\u{FE0F}]|[\u{1F900}-\u{1F9FF}]|[\u{1F018}-\u{1F270}]|[\u{238C}-\u{2454}]|[\u{20D0}-\u{20FF}]|[\u{FE00}-\u{FE0F}]/gu, '');
+  };
+
+  // Filter emojis from the onChange callback
+  const handleChange = (content, delta, source, editor) => {
+    const filteredContent = removeEmojis(content);
+    if (content !== filteredContent) {
+      // If emojis were detected, update the editor with filtered content
+      editor.setText(removeEmojis(editor.getText()));
+    }
+    onChange(filteredContent);
+  };
+
   useEffect(() => {
     setIsClient(true);
     import("react-quill").then((module) => {
@@ -48,7 +65,7 @@ function ClientQuill({ value, onChange, placeholder }) {
   return (
     <QuillComponent
       value={value}
-      onChange={onChange}
+      onChange={handleChange}
       style={{ height: "300px", marginBottom: "20px" }}
       modules={{
         toolbar: [
@@ -62,6 +79,20 @@ function ClientQuill({ value, onChange, placeholder }) {
         ]
       }}
       placeholder={placeholder}
+      onPaste={(e) => {
+        // Filter emojis from pasted content
+        const pastedText = e.clipboardData.getData('text/plain');
+        const filteredText = removeEmojis(pastedText);
+        if (pastedText !== filteredText) {
+          e.preventDefault();
+          // Insert filtered text
+          const quill = e.target.quill;
+          if (quill) {
+            const range = quill.getSelection();
+            quill.insertText(range.index, filteredText);
+          }
+        }
+      }}
     />
   );
 }
