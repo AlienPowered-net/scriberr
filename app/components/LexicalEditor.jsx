@@ -43,6 +43,7 @@ function ClientQuill({ value, onChange, placeholder }) {
             border: 1px solid #ccc !important;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
             padding: 10px !important;
+            padding-right: 8% !important;
             border-radius: 4px !important;
             min-width: 300px !important;
           }
