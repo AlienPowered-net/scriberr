@@ -11,19 +11,30 @@ function LexicalToolbarPlugin() {
   const [elementFormat, setElementFormat] = useState('paragraph');
 
   const updateToolbar = () => {
-    const selection = $getSelection();
-    if ($isRangeSelection(selection)) {
-      setIsBold(selection.hasFormat('bold'));
-      setIsItalic(selection.hasFormat('italic'));
-      setIsUnderline(selection.hasFormat('underline'));
-      
-      // Get the parent element format
-      const anchor = selection.anchor;
-      const anchorNode = anchor.getNode();
-      const element = anchorNode.getParent();
-      if ($isElementNode(element)) {
-        setElementFormat(element.getTag());
+    try {
+      const selection = $getSelection();
+      if ($isRangeSelection(selection)) {
+        setIsBold(selection.hasFormat('bold'));
+        setIsItalic(selection.hasFormat('italic'));
+        setIsUnderline(selection.hasFormat('underline'));
+        
+        // Get the parent element format - use proper Lexical API
+        const anchor = selection.anchor;
+        const anchorNode = anchor.getNode();
+        const element = anchorNode.getParent();
+        
+        if ($isElementNode(element)) {
+          // Use getType() instead of getTag() for element type
+          const elementType = element.getType();
+          setElementFormat(elementType);
+        } else {
+          setElementFormat('paragraph');
+        }
       }
+    } catch (error) {
+      console.warn('Error updating toolbar:', error);
+      // Set default values on error
+      setElementFormat('paragraph');
     }
   };
 
@@ -53,7 +64,7 @@ function LexicalToolbarPlugin() {
 
   // Debug function to test if commands are being dispatched
   const testCommand = (command, format) => {
-    console.log(`Dispatching ${command} with format: ${format}`);
+    console.log(`Dispatching ${command.name || command} with format: ${format}`);
     editor.dispatchCommand(command, format);
   };
 
@@ -199,17 +210,17 @@ function LexicalToolbarPlugin() {
           padding: '6px 8px',
           border: '1px solid #c9cccf',
           borderRadius: '4px',
-          backgroundColor: elementFormat === 'h1' ? '#007cba' : 'white',
-          color: elementFormat === 'h1' ? 'white' : '#333',
+          backgroundColor: elementFormat === 'heading' ? '#007cba' : 'white',
+          color: elementFormat === 'heading' ? 'white' : '#333',
           cursor: 'pointer',
           fontSize: '12px',
           fontWeight: 'bold'
         }}
         onMouseEnter={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'h1' ? '#005a87' : '#f0f0f0';
+          e.target.style.backgroundColor = elementFormat === 'heading' ? '#005a87' : '#f0f0f0';
         }}
         onMouseLeave={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'h1' ? '#007cba' : 'white';
+          e.target.style.backgroundColor = elementFormat === 'heading' ? '#007cba' : 'white';
         }}
       >
         H1
@@ -221,17 +232,17 @@ function LexicalToolbarPlugin() {
           padding: '6px 8px',
           border: '1px solid #c9cccf',
           borderRadius: '4px',
-          backgroundColor: elementFormat === 'h2' ? '#007cba' : 'white',
-          color: elementFormat === 'h2' ? 'white' : '#333',
+          backgroundColor: elementFormat === 'heading' ? '#007cba' : 'white',
+          color: elementFormat === 'heading' ? 'white' : '#333',
           cursor: 'pointer',
           fontSize: '12px',
           fontWeight: 'bold'
         }}
         onMouseEnter={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'h2' ? '#005a87' : '#f0f0f0';
+          e.target.style.backgroundColor = elementFormat === 'heading' ? '#005a87' : '#f0f0f0';
         }}
         onMouseLeave={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'h2' ? '#007cba' : 'white';
+          e.target.style.backgroundColor = elementFormat === 'heading' ? '#007cba' : 'white';
         }}
       >
         H2
@@ -243,17 +254,17 @@ function LexicalToolbarPlugin() {
           padding: '6px 8px',
           border: '1px solid #c9cccf',
           borderRadius: '4px',
-          backgroundColor: elementFormat === 'h3' ? '#007cba' : 'white',
-          color: elementFormat === 'h3' ? 'white' : '#333',
+          backgroundColor: elementFormat === 'heading' ? '#007cba' : 'white',
+          color: elementFormat === 'heading' ? 'white' : '#333',
           cursor: 'pointer',
           fontSize: '12px',
           fontWeight: 'bold'
         }}
         onMouseEnter={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'h3' ? '#005a87' : '#f0f0f0';
+          e.target.style.backgroundColor = elementFormat === 'heading' ? '#005a87' : '#f0f0f0';
         }}
         onMouseLeave={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'h3' ? '#007cba' : 'white';
+          e.target.style.backgroundColor = elementFormat === 'heading' ? '#007cba' : 'white';
         }}
       >
         H3
@@ -269,16 +280,16 @@ function LexicalToolbarPlugin() {
           padding: '6px 8px',
           border: '1px solid #c9cccf',
           borderRadius: '4px',
-          backgroundColor: elementFormat === 'ul' ? '#007cba' : 'white',
-          color: elementFormat === 'ul' ? 'white' : '#333',
+          backgroundColor: elementFormat === 'list' ? '#007cba' : 'white',
+          color: elementFormat === 'list' ? 'white' : '#333',
           cursor: 'pointer',
           fontSize: '12px'
         }}
         onMouseEnter={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'ul' ? '#005a87' : '#f0f0f0';
+          e.target.style.backgroundColor = elementFormat === 'list' ? '#005a87' : '#f0f0f0';
         }}
         onMouseLeave={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'ul' ? '#007cba' : 'white';
+          e.target.style.backgroundColor = elementFormat === 'list' ? '#007cba' : 'white';
         }}
       >
         • List
@@ -290,16 +301,16 @@ function LexicalToolbarPlugin() {
           padding: '6px 8px',
           border: '1px solid #c9cccf',
           borderRadius: '4px',
-          backgroundColor: elementFormat === 'ol' ? '#007cba' : 'white',
-          color: elementFormat === 'ol' ? 'white' : '#333',
+          backgroundColor: elementFormat === 'list' ? '#007cba' : 'white',
+          color: elementFormat === 'list' ? 'white' : '#333',
           cursor: 'pointer',
           fontSize: '12px'
         }}
         onMouseEnter={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'ol' ? '#005a87' : '#f0f0f0';
+          e.target.style.backgroundColor = elementFormat === 'list' ? '#005a87' : '#f0f0f0';
         }}
         onMouseLeave={(e) => {
-          e.target.style.backgroundColor = elementFormat === 'ol' ? '#007cba' : 'white';
+          e.target.style.backgroundColor = elementFormat === 'list' ? '#007cba' : 'white';
         }}
       >
         1. List
