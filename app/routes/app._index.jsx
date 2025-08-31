@@ -4,6 +4,7 @@ import { useLoaderData, Form } from "@remix-run/react";
 import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
+import packageJson from "../../package.json" assert { type: "json" };
 
 import {
   Page,
@@ -134,7 +135,7 @@ export async function loader({ request }) {
 
 
 
-  return json({ folders, notes }, {
+  return json({ folders, notes, version: packageJson.version }, {
     headers: {
       "Content-Type": "application/json; charset=utf-8"
     }
@@ -232,7 +233,7 @@ export async function action({ request }) {
 
 /* ------------------ UI ------------------ */
 export default function Index() {
-  const { folders, notes } = useLoaderData();
+  const { folders, notes, version } = useLoaderData();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [folderId, setFolderId] = useState("");
@@ -1027,7 +1028,7 @@ export default function Index() {
   };
 
       return (
-              <Page title="Scriberr" style={{ paddingBottom: "80px" }}>
+              <Page title="Scriberr" style={{ paddingBottom: "120px" }}>
         {/* Material Symbols Rounded CDN */}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
@@ -1898,7 +1899,8 @@ export default function Index() {
 
             {/* Scrollable Notes Section */}
             <div style={{ 
-              height: "calc(3 * 120px)", // Height for exactly 3 notes
+              minHeight: "calc(3 * 120px)", // Minimum height for 3 notes
+              maxHeight: "calc(3 * 120px)", // Maximum height for 3 notes
               overflowY: "auto", 
               padding: "16px",
               paddingBottom: "0"
@@ -3465,31 +3467,43 @@ export default function Index() {
           backgroundColor: "#f8f9fa",
           borderTop: "1px solid #e1e3e5",
           padding: "12px 24px",
-          textAlign: "center",
           fontSize: "14px",
           color: "#6d7175",
-          zIndex: 100
+          zIndex: 100,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
         }}>
-          © 2025, Scriberr Powered by{" "}
-          <a 
-            href="https://www.alienpowered.net" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            style={{
-              color: "#0a0",
-              textDecoration: "none",
-              fontWeight: "600",
-              transition: "color 0.2s ease"
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.color = "#008000";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.color = "#0a0";
-            }}
-          >
-            Aliens
-          </a>
+          <div style={{ textAlign: "center", flex: "1" }}>
+            © 2025, Scriberr Powered by{" "}
+            <a 
+              href="https://www.alienpowered.net" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{
+                color: "#0a0",
+                textDecoration: "none",
+                fontWeight: "600",
+                transition: "color 0.2s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.color = "#008000";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.color = "#0a0";
+              }}
+            >
+              Aliens
+            </a>
+          </div>
+          <div style={{ 
+            fontStyle: "italic", 
+            fontSize: "12px", 
+            color: "#9ca3af",
+            marginLeft: "24px"
+          }}>
+            {version}
+          </div>
         </div>
       </Page>
     );
