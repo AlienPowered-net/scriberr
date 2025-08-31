@@ -278,6 +278,10 @@ export default function Index() {
   const [showDuplicateModal, setShowDuplicateModal] = useState(null);
   const [duplicateFolderId, setDuplicateFolderId] = useState("");
   
+  // Tags management states
+  const [showTagsSection, setShowTagsSection] = useState(false);
+  const [showDeleteTagConfirm, setShowDeleteTagConfirm] = useState(null);
+  
 
 
   // Close dropdowns when clicking outside
@@ -308,6 +312,19 @@ export default function Index() {
   useEffect(() => {
     console.log('showMoveModal changed:', showMoveModal);
   }, [showMoveModal]);
+
+  // Get all unique tags and their counts
+  const getAllTagsWithCounts = () => {
+    const tagCounts = {};
+    notes.forEach(note => {
+      if (note.tags && Array.isArray(note.tags)) {
+        note.tags.forEach(tag => {
+          tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+        });
+      }
+    });
+    return Object.entries(tagCounts).map(([tag, count]) => ({ tag, count }));
+  };
 
   // Track unsaved changes
   useEffect(() => {
@@ -679,6 +696,45 @@ export default function Index() {
     } catch (error) {
       console.error('Error duplicating note:', error);
       setAlertMessage('Failed to duplicate note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+    }
+  };
+
+  // Handle deleting a tag from all notes
+  const handleDeleteTag = async (tagToDelete) => {
+    try {
+      // Find all notes that have this tag
+      const notesWithTag = notes.filter(note => 
+        note.tags && Array.isArray(note.tags) && note.tags.includes(tagToDelete)
+      );
+
+      // Update each note to remove the tag
+      const updatePromises = notesWithTag.map(note => {
+        const updatedTags = note.tags.filter(tag => tag !== tagToDelete);
+        const formData = new FormData();
+        formData.append('noteId', note.id);
+        formData.append('title', note.title || '');
+        formData.append('body', note.content || '');
+        formData.append('folderId', note.folderId || '');
+        formData.append('tags', JSON.stringify(updatedTags));
+        
+        return fetch('/api/update-note', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Accept-Charset': 'utf-8'
+          },
+          body: formData
+        });
+      });
+
+      await Promise.all(updatePromises);
+      setShowDeleteTagConfirm(null);
+      window.location.reload();
+    } catch (error) {
+      console.error('Error deleting tag:', error);
+      setAlertMessage('Failed to delete tag');
       setAlertType('error');
       setTimeout(() => setAlertMessage(''), 3000);
     }
@@ -1249,6 +1305,132 @@ export default function Index() {
                   All Notes
                 </Text>
               </div>
+
+              {/* Tags Section */}
+              <div 
+                style={{ 
+                  padding: "12px 16px", 
+                  marginBottom: "16px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  backgroundColor: showTagsSection ? "#E8F5E8" : "#F8F9FA",
+                  border: showTagsSection ? "2px solid #0a0" : "2px solid #E1E3E5",
+                  borderRadius: "12px",
+                  position: "relative",
+                  transition: "all 0.2s ease",
+                  boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                }}
+                onClick={() => setShowTagsSection(!showTagsSection)}
+                onMouseEnter={(e) => {
+                  if (!showTagsSection) {
+                    e.currentTarget.style.backgroundColor = "#E8F5E8";
+                    e.currentTarget.style.borderColor = "#0a0";
+                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!showTagsSection) {
+                    e.currentTarget.style.backgroundColor = "#F8F9FA";
+                    e.currentTarget.style.borderColor = "#E1E3E5";
+                    e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
+                  }
+                }}
+              >
+                <Text as="span" variant="headingSm" style={{ 
+                  fontWeight: "700", 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: "8px",
+                  color: showTagsSection ? "#0a0" : "#374151"
+                }}>
+                  <span className="material-symbols-rounded" style={{ fontSize: "20px" }}>label</span>
+                  Tags
+                </Text>
+              </div>
+
+              {/* Tags List */}
+              {showTagsSection && (
+                <div style={{ 
+                  marginBottom: "16px",
+                  padding: "12px",
+                  backgroundColor: "#f8f9fa",
+                  borderRadius: "8px",
+                  border: "1px solid #e1e3e5"
+                }}>
+                  {getAllTagsWithCounts().length === 0 ? (
+                    <Text as="p" style={{ color: "#6d7175", fontSize: "14px" }}>No tags created yet</Text>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      {getAllTagsWithCounts().map(({ tag, count }) => (
+                        <div
+                          key={tag}
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            padding: "8px 12px",
+                            backgroundColor: "white",
+                            borderRadius: "6px",
+                            border: "1px solid #e1e3e5",
+                            cursor: "pointer",
+                            transition: "all 0.2s ease"
+                          }}
+                          onClick={() => setGlobalSearchQuery(`tag:${tag}`)}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = "#f0f0f0";
+                            e.currentTarget.style.borderColor = "#0a0";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = "white";
+                            e.currentTarget.style.borderColor = "#e1e3e5";
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <span className="material-symbols-rounded" style={{ fontSize: "16px", color: "#6d7175" }}>tag</span>
+                            <Text as="span" style={{ fontSize: "14px", fontWeight: "500" }}>
+                              {tag}
+                            </Text>
+                            <Text as="span" style={{ fontSize: "12px", color: "#6d7175", backgroundColor: "#e1e3e5", padding: "2px 6px", borderRadius: "10px" }}>
+                              x{count}
+                            </Text>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowDeleteTagConfirm(tag);
+                            }}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              fontSize: "14px",
+                              color: "#d82c0d",
+                              padding: "4px",
+                              borderRadius: "4px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              transition: "all 0.2s ease"
+                            }}
+                            onMouseEnter={(e) => {
+                              e.target.style.backgroundColor = "#d82c0d";
+                              e.target.style.color = "white";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.backgroundColor = "transparent";
+                              e.target.style.color = "#d82c0d";
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {folders.length === 0 ? (
                 <Text as="p">No folders yet</Text>
@@ -2960,6 +3142,52 @@ export default function Index() {
                   onClick={handleDeleteMultipleNotes}
                 >
                   Delete {selectedNotes.length} Note{selectedNotes.length > 1 ? 's' : ''}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Tag Confirmation Modal */}
+        {showDeleteTagConfirm && (
+          <div style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000
+          }}>
+            <div style={{
+              backgroundColor: "white",
+              padding: "24px",
+              borderRadius: "8px",
+              maxWidth: "400px",
+              width: "90%"
+            }}>
+              <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                Delete Tag
+              </Text>
+              <Text as="p" style={{ marginBottom: "24px" }}>
+                Are you sure you want to delete the tag "{showDeleteTagConfirm}" from all notes? This action is permanent and cannot be undone.
+              </Text>
+              <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowDeleteTagConfirm(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  tone="critical"
+                  onClick={() => handleDeleteTag(showDeleteTagConfirm)}
+                >
+                  Delete Tag
                 </Button>
               </div>
             </div>
