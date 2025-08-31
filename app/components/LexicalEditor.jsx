@@ -16,7 +16,6 @@ import { CodeHighlightNode, CodeNode } from '@lexical/code';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 import { OverflowNode } from '@lexical/overflow';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
-import { Placeholder } from '@lexical/react/LexicalPlaceholder';
 
 // Remove emoji characters from input
 const removeEmojis = (str) => {
@@ -38,7 +37,6 @@ function LexicalEditor({ value, onChange, placeholder }) {
         strikethrough: 'line-through',
         underlineStrikethrough: 'underline line-through',
       },
-      placeholder: 'editor-placeholder',
     },
     onError: (error) => {
       console.error('Lexical error:', error);
@@ -90,9 +88,9 @@ function LexicalEditor({ value, onChange, placeholder }) {
                 />
               }
               placeholder={
-                <Placeholder className="editor-placeholder">
+                <div className="editor-placeholder">
                   {placeholder}
-                </Placeholder>
+                </div>
               }
             />
             <HistoryPlugin />
