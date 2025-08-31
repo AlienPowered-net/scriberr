@@ -1,7 +1,6 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND, UNDO_COMMAND, REDO_COMMAND } from 'lexical';
 import { $getSelection, $isRangeSelection, $isElementNode } from 'lexical';
-import { $getRoot } from 'lexical';
 import { useState, useEffect } from 'react';
 
 function LexicalToolbarPlugin() {
