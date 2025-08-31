@@ -1,7 +1,7 @@
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { FORMAT_TEXT_COMMAND, FORMAT_ELEMENT_COMMAND } from 'lexical';
 import { $getSelection, $isRangeSelection } from 'lexical';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function LexicalToolbarPlugin() {
   const [editor] = useLexicalComposerContext();
@@ -17,6 +17,14 @@ function LexicalToolbarPlugin() {
       setIsUnderline(selection.hasFormat('underline'));
     }
   };
+
+  useEffect(() => {
+    return editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        updateToolbar();
+      });
+    });
+  }, [editor]);
 
   const formatText = (format) => {
     editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);

@@ -17,6 +17,7 @@ import { ListItemNode, ListNode } from '@lexical/list';
 import { CodeHighlightNode, CodeNode } from '@lexical/code';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 import { OverflowNode } from '@lexical/overflow';
+import { ClearEditorPlugin } from '@lexical/react/LexicalClearEditorPlugin';
 
 // Remove emoji characters from input
 const removeEmojis = (str) => {
@@ -118,6 +119,7 @@ function LexicalEditor({ value, onChange, placeholder }) {
           <ListPlugin />
           <LinkPlugin />
           <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+          <ClearEditorPlugin />
           <OnChangePlugin onChange={onChange} />
         </div>
       </div>
