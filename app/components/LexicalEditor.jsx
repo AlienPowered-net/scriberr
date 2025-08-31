@@ -46,14 +46,20 @@ function ClientQuill({ value, onChange, placeholder }) {
     }
   }, []);
 
-  // Quill modules to attach to editor
+  // Quill modules to attach to editor - comprehensive toolbar
   const modules = {
     toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      [{ 'font': [] }],
+      [{ 'size': ['small', false, 'large', 'huge'] }],
       ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'script': 'sub'}, { 'script': 'super' }],
       ['blockquote', 'code-block'],
-      ['link'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+      [{ 'direction': 'rtl' }, { 'align': [] }],
+      ['link', 'image', 'video'],
       ['clean']
     ],
     clipboard: {
@@ -61,13 +67,20 @@ function ClientQuill({ value, onChange, placeholder }) {
     }
   };
 
-  // Quill editor formats
+  // Quill editor formats - all available formats
   const formats = [
     'header',
+    'font',
+    'size',
     'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
+    'color', 'background',
+    'script',
     'blockquote', 'code-block',
-    'link'
+    'list', 'bullet',
+    'indent',
+    'direction', 'align',
+    'link', 'image', 'video',
+    'clean'
   ];
 
   const handleChange = (content, delta, source, editor) => {
