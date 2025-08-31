@@ -1610,7 +1610,7 @@ export default function Index() {
 
             {/* Sticky Bottom - New Folder Input */}
             <div style={{ 
-              padding: "16px", 
+              padding: "20px", 
               borderTop: "1px solid #e1e3e5",
               backgroundColor: "white",
               flexShrink: 0
