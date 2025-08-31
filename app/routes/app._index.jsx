@@ -1027,7 +1027,7 @@ export default function Index() {
   };
 
       return (
-              <Page title="Scriberr" style={{ paddingBottom: "40px" }}>
+              <Page title="Scriberr" style={{ paddingBottom: "80px" }}>
         {/* Material Symbols Rounded CDN */}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
@@ -1898,7 +1898,7 @@ export default function Index() {
 
             {/* Scrollable Notes Section */}
             <div style={{ 
-              height: "calc(3 * 120px + 32px)", // Height for 3 notes + padding
+              height: "calc(3 * 120px)", // Height for exactly 3 notes
               overflowY: "auto", 
               padding: "16px",
               paddingBottom: "0"
