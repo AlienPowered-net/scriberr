@@ -12,8 +12,15 @@ function ClientQuill({ value, onChange, placeholder }) {
       // Import both the component and CSS
       Promise.all([
         import('react-quill'),
-        import('react-quill/dist/quill.snow.css')
-      ]).then(([module]) => {
+        import('react-quill/dist/quill.snow.css'),
+        import('quill-table-ui'),
+        import('quill-table-ui/dist/quill-table-ui.css')
+      ]).then(([module, quillCSS, tableModule, tableCSS]) => {
+        // Register table UI module with Quill
+        const Quill = module.default.Quill;
+        const TableUI = tableModule.default;
+        Quill.register('modules/tableUI', TableUI);
+        
         setReactQuill(() => module.default);
         setIsLoaded(true);
         
@@ -34,13 +41,18 @@ function ClientQuill({ value, onChange, placeholder }) {
           .ql-tooltip[data-mode="link"] {
             z-index: 9999 !important;
           }
+          
+          /* Ensure table UI appears above other elements */
+          .ql-table-ui {
+            z-index: 9999 !important;
+          }
         `;
         document.head.appendChild(style);
       });
     }
   }, []);
 
-  // Quill modules to attach to editor - comprehensive toolbar without table for now
+  // Quill modules to attach to editor - comprehensive toolbar with table UI
   const modules = {
     toolbar: [
       [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
@@ -53,14 +65,24 @@ function ClientQuill({ value, onChange, placeholder }) {
       [{ 'indent': '-1'}, { 'indent': '+1' }],
       [{ 'direction': 'rtl' }, { 'align': [] }],
       ['link', 'image', 'video'],
+      ['table'],
       ['clean']
     ],
     clipboard: {
       matchVisual: false,
+    },
+    tableUI: {
+      operationMenu: {
+        items: {
+          unmergeCells: {
+            text: 'Unmerge cells'
+          }
+        }
+      }
     }
   };
 
-  // Quill editor formats - all available formats except table
+  // Quill editor formats - all available formats including table
   const formats = [
     'header',
     'font',
@@ -72,6 +94,7 @@ function ClientQuill({ value, onChange, placeholder }) {
     'indent',
     'direction', 'align',
     'link', 'image', 'video',
+    'table',
     'clean'
   ];
 
