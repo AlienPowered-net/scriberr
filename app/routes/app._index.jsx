@@ -4,7 +4,7 @@ import { useLoaderData, Form } from "@remix-run/react";
 import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
-import packageJson from "../../package.json" assert { type: "json" };
+import packageJson from "../../package.json" with { type: "json" };
 
 import {
   Page,
