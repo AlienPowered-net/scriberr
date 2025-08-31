@@ -12,8 +12,20 @@ function ClientQuill({ value, onChange, placeholder }) {
       // Import both the component and CSS
       Promise.all([
         import('react-quill'),
-        import('react-quill/dist/quill.snow.css')
-      ]).then(([module]) => {
+        import('react-quill/dist/quill.snow.css'),
+        import('quill-better-table'),
+        import('quill-better-table/dist/quill-better-table.css')
+      ]).then(([module, quillCSS, tableModule, tableCSS]) => {
+        // Register better table module with Quill
+        const Quill = module.default.Quill;
+        const BetterTable = tableModule.default;
+        Quill.register({
+          'modules/better-table': BetterTable,
+          'formats/table': BetterTable.Table,
+          'formats/table-row': BetterTable.TableRow,
+          'formats/table-cell': BetterTable.TableCell
+        });
+        
         setReactQuill(() => module.default);
         setIsLoaded(true);
         
@@ -34,13 +46,18 @@ function ClientQuill({ value, onChange, placeholder }) {
           .ql-tooltip[data-mode="link"] {
             z-index: 9999 !important;
           }
+          
+          /* Ensure table picker appears above other elements */
+          .ql-better-table-picker {
+            z-index: 9999 !important;
+          }
         `;
         document.head.appendChild(style);
       });
     }
   }, []);
 
-  // Quill modules to attach to editor - comprehensive toolbar without font size
+  // Quill modules to attach to editor - comprehensive toolbar with better table
   const modules = {
     toolbar: [
       [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
@@ -53,14 +70,25 @@ function ClientQuill({ value, onChange, placeholder }) {
       [{ 'indent': '-1'}, { 'indent': '+1' }],
       [{ 'direction': 'rtl' }, { 'align': [] }],
       ['link', 'image', 'video'],
+      ['table'],
       ['clean']
     ],
     clipboard: {
       matchVisual: false,
+    },
+    table: false, // Disable default table module
+    'better-table': {
+      operationMenu: {
+        items: {
+          unmergeCells: {
+            text: 'Another unmerge cells name'
+          }
+        }
+      }
     }
   };
 
-  // Quill editor formats - all available formats except size
+  // Quill editor formats - all available formats including table
   const formats = [
     'header',
     'font',
@@ -72,6 +100,9 @@ function ClientQuill({ value, onChange, placeholder }) {
     'indent',
     'direction', 'align',
     'link', 'image', 'video',
+    'table',
+    'table-row',
+    'table-cell',
     'clean'
   ];
 
