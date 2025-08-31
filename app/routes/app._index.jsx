@@ -1180,7 +1180,7 @@ export default function Index() {
                     boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
                   }}
                   value={globalSearchQuery}
-                  onChange={(e) => setGlobalSearchQuery(e.target.value)}
+                  onChange={(e) => setGlobalSearchQuery(removeEmojis(e.target.value))}
                   placeholder="Search all notes..."
                   onFocus={(e) => {
                     e.target.style.boxShadow = "0 0 0 2px #16A34A, 0 1px 2px rgba(0,0,0,0.05)";
@@ -1447,8 +1447,10 @@ export default function Index() {
                       value={folderName}
                       onChange={(e) => {
                         const newValue = e.target.value;
-                        if (newValue.length <= 30) {
-                          setFolderName(newValue);
+                        // Remove emojis from folder name input
+                        const cleanValue = removeEmojis(newValue);
+                        if (cleanValue.length <= 30) {
+                          setFolderName(cleanValue);
                         }
                       }}
                       placeholder="Enter folder name..."
@@ -2998,8 +3000,10 @@ export default function Index() {
                     value={editingFolderName}
                     onChange={(e) => {
                       const newValue = e.target.value;
-                      if (newValue.length <= 30) {
-                        setEditingFolderName(newValue);
+                      // Remove emojis from folder name input
+                      const cleanValue = removeEmojis(newValue);
+                      if (cleanValue.length <= 30) {
+                        setEditingFolderName(cleanValue);
                       }
                     }}
                     maxLength={30}
