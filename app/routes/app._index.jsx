@@ -1027,7 +1027,7 @@ export default function Index() {
   };
 
       return (
-      <Page title="scriberr" style={{ paddingBottom: "40px" }}>
+              <Page title="Scriberr" style={{ paddingBottom: "40px" }}>
         {/* Material Symbols Rounded CDN */}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
@@ -1242,7 +1242,7 @@ export default function Index() {
               backgroundColor: "white",
               flexShrink: 0
             }}>
-              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px" }}>
+              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
                 <span className="material-symbols-rounded">home_storage</span>
                 Folders & Tags
               </Text>
@@ -1796,52 +1796,60 @@ export default function Index() {
 
         {/* NOTES */}
         <div className="col-notes" style={{ width: "25%" }}>
-          <Card>
-            <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-               <div>
-                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                   <span className="material-symbols-rounded">note_stack</span>
-                   Notes
-                 </Text>
-                 {selectedFolder && (
-                   <Text as="h2" style={{ fontSize: "18px", fontWeight: "bold", color: "#202223", marginTop: "4px" }}>
-                     {folders.find(f => f.id === selectedFolder)?.name}
-                   </Text>
-                 )}
-               </div>
-               <button 
-                 onClick={handleNewNote}
-                 style={{
-                   backgroundColor: "#f57c00",
-                   border: "0",
-                   color: "white",
-                   padding: "7px 20px",
-                   borderRadius: "8px",
-                   cursor: "pointer",
-                   fontSize: "14px",
-                   fontWeight: "500",
-                   textAlign: "center",
-                   textDecoration: "none",
-                   transition: "all 250ms",
-                   userSelect: "none",
-                   WebkitUserSelect: "none",
-                   touchAction: "manipulation",
-                   boxShadow: "rgba(245, 124, 0, .2) 0 -25px 18px -14px inset, rgba(245, 124, 0, .15) 0 1px 2px, rgba(245, 124, 0, .15) 0 2px 4px, rgba(245, 124, 0, .15) 0 4px 8px, rgba(245, 124, 0, .15) 0 8px 16px, rgba(245, 124, 0, .15) 0 16px 32px"
-                 }}
-                 onMouseEnter={(e) => {
-                   e.target.style.boxShadow = "rgba(245, 124, 0, .35) 0 -25px 18px -14px inset, rgba(245, 124, 0, .25) 0 1px 2px, rgba(245, 124, 0, .25) 0 2px 4px, rgba(245, 124, 0, .25) 0 4px 8px, rgba(245, 124, 0, .25) 0 8px 16px, rgba(245, 124, 0, .25) 0 16px 32px";
-                   e.target.style.transform = "scale(1.05) rotate(-1deg)";
-                 }}
-                 onMouseLeave={(e) => {
-                   e.target.style.boxShadow = "rgba(245, 124, 0, .2) 0 -25px 18px -14px inset, rgba(245, 124, 0, .15) 0 1px 2px, rgba(245, 124, 0, .15) 0 2px 4px, rgba(245, 124, 0, .15) 0 4px 8px, rgba(245, 124, 0, .15) 0 8px 16px, rgba(245, 124, 0, .15) 0 16px 32px";
-                   e.target.style.transform = "scale(1) rotate(0deg)";
-                 }}
-               >
-                 New Note
-               </button>
-            </div>
-           <div style={{ padding: "16px" }}>
-              <div style={{ marginBottom: "24px", position: "relative" }}>
+          <Card style={{ height: "calc(100vh - 240px)", display: "flex", flexDirection: "column" }}>
+            {/* Fixed Header Section */}
+            <div style={{ 
+              padding: "16px", 
+              borderBottom: "1px solid #e1e3e5",
+              backgroundColor: "white",
+              flexShrink: 0
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
+                <div>
+                  <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                    <span className="material-symbols-rounded">note_stack</span>
+                    Notes
+                  </Text>
+                  {selectedFolder && (
+                    <Text as="h2" style={{ fontSize: "18px", fontWeight: "bold", color: "#202223", marginTop: "4px" }}>
+                      {folders.find(f => f.id === selectedFolder)?.name}
+                    </Text>
+                  )}
+                </div>
+                <button 
+                  onClick={handleNewNote}
+                  style={{
+                    backgroundColor: "#f57c00",
+                    border: "0",
+                    color: "white",
+                    padding: "7px 20px",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    textAlign: "center",
+                    textDecoration: "none",
+                    transition: "all 250ms",
+                    userSelect: "none",
+                    WebkitUserSelect: "none",
+                    touchAction: "manipulation",
+                    boxShadow: "rgba(245, 124, 0, .2) 0 -25px 18px -14px inset, rgba(245, 124, 0, .15) 0 1px 2px, rgba(245, 124, 0, .15) 0 2px 4px, rgba(245, 124, 0, .15) 0 4px 8px, rgba(245, 124, 0, .15) 0 8px 16px, rgba(245, 124, 0, .15) 0 16px 32px"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.boxShadow = "rgba(245, 124, 0, .35) 0 -25px 18px -14px inset, rgba(245, 124, 0, .25) 0 1px 2px, rgba(245, 124, 0, .25) 0 2px 4px, rgba(245, 124, 0, .25) 0 4px 8px, rgba(245, 124, 0, .25) 0 8px 16px, rgba(245, 124, 0, .25) 0 16px 32px";
+                    e.target.style.transform = "scale(1.05) rotate(-1deg)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.boxShadow = "rgba(245, 124, 0, .2) 0 -25px 18px -14px inset, rgba(245, 124, 0, .15) 0 1px 2px, rgba(245, 124, 0, .15) 0 2px 4px, rgba(245, 124, 0, .15) 0 4px 8px, rgba(245, 124, 0, .15) 0 8px 16px, rgba(245, 124, 0, .15) 0 16px 32px";
+                    e.target.style.transform = "scale(1) rotate(0deg)";
+                  }}
+                >
+                  New Note
+                </button>
+              </div>
+              
+              {/* Search Notes Input */}
+              <div style={{ position: "relative" }}>
                 <input
                   type="text"
                   style={{
@@ -1886,6 +1894,15 @@ export default function Index() {
                   search
                 </span>
               </div>
+            </div>
+
+            {/* Scrollable Notes Section */}
+            <div style={{ 
+              height: "calc(3 * 120px + 32px)", // Height for 3 notes + padding
+              overflowY: "auto", 
+              padding: "16px",
+              paddingBottom: "0"
+            }}>
               
               {/* Multi-select action buttons */}
               {selectedNotes.length > 0 && (
@@ -3438,6 +3455,42 @@ export default function Index() {
             </div>
           </div>
         )}
+
+        {/* Copyright Footer */}
+        <div style={{
+          position: "fixed",
+          bottom: "0",
+          left: "0",
+          right: "0",
+          backgroundColor: "#f8f9fa",
+          borderTop: "1px solid #e1e3e5",
+          padding: "12px 24px",
+          textAlign: "center",
+          fontSize: "14px",
+          color: "#6d7175",
+          zIndex: 100
+        }}>
+          © 2025, Scriberr Powered by{" "}
+          <a 
+            href="https://www.alienpowered.net" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              color: "#0a0",
+              textDecoration: "none",
+              fontWeight: "600",
+              transition: "color 0.2s ease"
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.color = "#008000";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.color = "#0a0";
+            }}
+          >
+            Aliens
+          </a>
+        </div>
       </Page>
     );
   }
