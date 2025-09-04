@@ -17,6 +17,8 @@ import {
 } from "@shopify/polaris";
 import { useState, useEffect } from "react";
 import QuillEditor from "../components/LexicalEditor";
+import AdvancedRTE from "../components/AdvancedRTE";
+import "../styles/tiptap.css";
 
 /* ------------------ Loader ------------------ */
 export async function loader({ request }) {
@@ -203,6 +205,19 @@ export default function Index() {
   const [showTagsSection, setShowTagsSection] = useState(false);
   const [showDeleteTagConfirm, setShowDeleteTagConfirm] = useState(null);
   const [selectedTags, setSelectedTags] = useState([]);
+  
+  // Column collapse states
+  const [collapsedColumns, setCollapsedColumns] = useState({
+    folders: false,
+    notes: false
+  });
+  
+  const toggleColumnCollapse = (column) => {
+    setCollapsedColumns(prev => ({
+      ...prev,
+      [column]: !prev[column]
+    }));
+  };
   
 
 
@@ -1144,7 +1159,66 @@ export default function Index() {
         )}
         
         <div className="app-layout" style={{ display: "flex", gap: "16px", minHeight: "calc(100vh - 240px)", paddingBottom: "40px" }}>
+          {/* Side Navigation for Collapsed Columns */}
+          {(collapsedColumns.folders || collapsedColumns.notes) && (
+            <div style={{ 
+              width: "60px", 
+              backgroundColor: "#f6f6f7", 
+              borderRadius: "8px", 
+              padding: "16px 8px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+              alignItems: "center"
+            }}>
+              {collapsedColumns.folders && (
+                <button
+                  onClick={() => toggleColumnCollapse('folders')}
+                  style={{
+                    width: "44px",
+                    height: "44px",
+                    borderRadius: "8px",
+                    border: "none",
+                    backgroundColor: "white",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "20px",
+                    transition: "all 0.2s ease"
+                  }}
+                  title="Expand Folders & Tags"
+                >
+                  📁
+                </button>
+              )}
+              {collapsedColumns.notes && (
+                <button
+                  onClick={() => toggleColumnCollapse('notes')}
+                  style={{
+                    width: "44px",
+                    height: "44px",
+                    borderRadius: "8px",
+                    border: "none",
+                    backgroundColor: "white",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "20px",
+                    transition: "all 0.2s ease"
+                  }}
+                  title="Expand Notes"
+                >
+                  📝
+                </button>
+              )}
+            </div>
+          )}
                 {/* FOLDERS */}
+        {!collapsedColumns.folders && (
         <div className="col-folders" style={{ width: "25%" }}>
           <Card
             style={{
@@ -1167,10 +1241,31 @@ export default function Index() {
               backgroundColor: "white",
               flexShrink: 0
             }}>
-              <Text as="h2" variant="headingMd" style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
-                <span className="material-symbols-rounded">home_storage</span>
-                Folders & Tags
-              </Text>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+                <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                  <span className="material-symbols-rounded">home_storage</span>
+                  Folders & Tags
+                </Text>
+                <button
+                  onClick={() => toggleColumnCollapse('folders')}
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "6px",
+                    border: "1px solid #e1e3e5",
+                    backgroundColor: "white",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "14px",
+                    transition: "all 0.2s ease"
+                  }}
+                  title="Collapse Folders & Tags"
+                >
+                  ⬅️
+                </button>
+              </div>
               
               {/* Global Search */}
               <div style={{ marginBottom: "16px", position: "relative" }}>
@@ -1716,10 +1811,12 @@ export default function Index() {
             </div>
           </Card>
         </div>
+        )}
 
 
 
         {/* NOTES */}
+        {!collapsedColumns.notes && (
         <div className="col-notes" style={{ width: "25%" }}>
           <Card style={{ height: "calc(100vh - 240px)", display: "flex", flexDirection: "column" }}>
             {/* Fixed Header Section */}
@@ -1731,12 +1828,33 @@ export default function Index() {
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
                 <div>
-                  <Text as="h2" variant="headingMd" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                    <span className="material-symbols-rounded">note_stack</span>
-                    Notes
-                  </Text>
+                  <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "4px" }}>
+                    <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                      <span className="material-symbols-rounded">note_stack</span>
+                      Notes
+                    </Text>
+                    <button
+                      onClick={() => toggleColumnCollapse('notes')}
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "6px",
+                        border: "1px solid #e1e3e5",
+                        backgroundColor: "white",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "14px",
+                        transition: "all 0.2s ease"
+                      }}
+                      title="Collapse Notes"
+                    >
+                      ⬅️
+                    </button>
+                  </div>
                   {selectedFolder && (
-                    <Text as="h2" style={{ fontSize: "18px", fontWeight: "bold", color: "#202223", marginTop: "4px" }}>
+                    <Text as="h2" style={{ fontSize: "24px", fontWeight: "bold", color: "#202223", marginTop: "4px" }}>
                       {folders.find(f => f.id === selectedFolder)?.name}
                     </Text>
                   )}
@@ -2313,13 +2431,18 @@ export default function Index() {
             </div>
           </Card>
         </div>
+        )}
 
         {/* NOTE EDITOR */}
-        <div className="col-editor" style={{ width: "50%" }}>
+        <div className="col-editor" style={{ 
+          width: collapsedColumns.folders && collapsedColumns.notes ? "calc(100% - 76px)" :
+                 collapsedColumns.folders || collapsedColumns.notes ? "calc(75% - 16px)" : "50%",
+          transition: "all 0.3s ease"
+        }}>
           <Card>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <Text as="h2" variant="headingMd" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                   <span className="material-symbols-rounded">edit_note</span>
                   Note Editor
                 </Text>
@@ -2615,7 +2738,7 @@ export default function Index() {
                   <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
                     Body
                   </label>
-                  <QuillEditor
+                  <AdvancedRTE
                     value={body}
                     onChange={setBody}
                     placeholder="Type your note here..."

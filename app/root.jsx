@@ -6,9 +6,11 @@ import "@shopify/polaris/build/esm/styles.css"; // Polaris (bundled)
 
 // ✅ Import your local CSS and pass its URL to <Links/>
 import notepadCssUrl from "./styles/notepad.css?url";
+import tiptapCssUrl from "./styles/tiptap.css?url";
 
 export const links = () => [
   { rel: "stylesheet", href: notepadCssUrl },
+  { rel: "stylesheet", href: tiptapCssUrl },
 ];
 
 export default function App() {
