@@ -1167,7 +1167,7 @@ export default function Index() {
               backgroundColor: "white",
               flexShrink: 0
             }}>
-              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
+              <Text as="h2" variant="headingMd" style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
                 <span className="material-symbols-rounded">home_storage</span>
                 Folders & Tags
               </Text>
@@ -1731,7 +1731,7 @@ export default function Index() {
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
                 <div>
-                  <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                  <Text as="h2" variant="headingMd" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                     <span className="material-symbols-rounded">note_stack</span>
                     Notes
                   </Text>
@@ -2319,7 +2319,7 @@ export default function Index() {
           <Card>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <Text as="h2" variant="headingMd" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                   <span className="material-symbols-rounded">edit_note</span>
                   Note Editor
                 </Text>
