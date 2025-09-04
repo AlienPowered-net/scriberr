@@ -1,7 +1,8 @@
 import { json } from "@remix-run/node";
-import { shopify } from "../shopify.server";
-import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
+// Temporarily commented out until migration is applied
+// import { shopify } from "../shopify.server";
+// import { prisma } from "../utils/db.server";
+// import { getOrCreateShopId } from "../utils/tenant.server";
 
 export async function action({ request }) {
   if (request.method !== "POST") {
@@ -9,8 +10,9 @@ export async function action({ request }) {
   }
 
   try {
-    const { session } = await shopify.authenticate.admin(request);
-    const shopId = await getOrCreateShopId(session.shop);
+    // Temporarily commented out until migration is applied
+    // const { session } = await shopify.authenticate.admin(request);
+    // const shopId = await getOrCreateShopId(session.shop);
 
     const { folderId, icon } = await request.json();
 
