@@ -18,7 +18,23 @@ import {
 import { useState, useEffect } from "react";
 import QuillEditor from "../components/LexicalEditor";
 import AdvancedRTE from "../components/AdvancedRTE";
+import FolderIconPicker from "../components/FolderIconPicker";
+import DraggableFolder from "../components/DraggableFolder";
 import "../styles/tiptap.css";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 /* ------------------ Loader ------------------ */
 export async function loader({ request }) {
@@ -31,6 +47,7 @@ export async function loader({ request }) {
     select: {
       id: true,
       name: true,
+      icon: true,
       createdAt: true,
     },
   });
@@ -219,7 +236,100 @@ export default function Index() {
     }));
   };
   
+  // Folder icon picker states
+  const [showIconPicker, setShowIconPicker] = useState(null);
+  const [localFolders, setLocalFolders] = useState(folders);
+  
+  // Update local folders when loader data changes
+  useEffect(() => {
+    setLocalFolders(folders);
+  }, [folders]);
+  
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+  
 
+
+  // Handle drag end for folders
+  const handleDragEnd = async (event) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      const oldIndex = localFolders.findIndex((folder) => folder.id === active.id);
+      const newIndex = localFolders.findIndex((folder) => folder.id === over.id);
+
+      const reorderedFolders = arrayMove(localFolders, oldIndex, newIndex);
+      setLocalFolders(reorderedFolders);
+
+      // Send the new order to the server
+      try {
+        const response = await fetch('/api/reorder-folders-drag', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            folderIds: reorderedFolders.map(f => f.id)
+          }),
+        });
+
+        if (!response.ok) {
+          // Revert on error
+          setLocalFolders(folders);
+          setAlertMessage("Failed to reorder folders");
+          setAlertType("error");
+        }
+      } catch (error) {
+        console.error('Error reordering folders:', error);
+        // Revert on error
+        setLocalFolders(folders);
+        setAlertMessage("Failed to reorder folders");
+        setAlertType("error");
+      }
+    }
+  };
+
+  // Handle folder icon change
+  const handleIconChange = async (folderId, newIcon) => {
+    // Update local state immediately
+    setLocalFolders(prev => prev.map(folder => 
+      folder.id === folderId ? { ...folder, icon: newIcon } : folder
+    ));
+
+    try {
+      const response = await fetch('/api/update-folder-icon', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          folderId,
+          icon: newIcon
+        }),
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        setLocalFolders(folders);
+        setAlertMessage("Failed to update folder icon");
+        setAlertType("error");
+      } else {
+        setAlertMessage("Folder icon updated successfully");
+        setAlertType("success");
+      }
+    } catch (error) {
+      console.error('Error updating folder icon:', error);
+      // Revert on error
+      setLocalFolders(folders);
+      setAlertMessage("Failed to update folder icon");
+      setAlertType("error");
+    }
+  };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -328,10 +438,10 @@ export default function Index() {
 
   const folderOptions = [
     { label: "No folder", value: "" },
-    ...folders.map((f) => ({ label: f.name, value: String(f.id) })),
+    ...localFolders.map((f) => ({ label: f.name, value: String(f.id) })),
   ];
 
-  const moveFolderOptions = folders.map((f) => ({ label: f.name, value: String(f.id) }));
+  const moveFolderOptions = localFolders.map((f) => ({ label: f.name, value: String(f.id) }));
 
   // Filter notes based on selected folder and search queries
   const filteredNotes = notes.filter(note => {
@@ -1519,11 +1629,21 @@ export default function Index() {
               padding: "16px",
               paddingBottom: "0"
             }}>
-              {folders.length === 0 ? (
+              {localFolders.length === 0 ? (
                 <Text as="p">No folders yet</Text>
               ) : (
-                <div>
-                {folders.map((folder) => (
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={localFolders.map(f => f.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div>
+                    {localFolders.map((folder) => (
+                      <DraggableFolder key={folder.id} folder={folder}>
                   <div key={folder.id} style={{ 
                     padding: "12px 16px", 
                     marginBottom: "8px",
@@ -1561,7 +1681,7 @@ export default function Index() {
                       gap: "8px",
                       color: selectedFolder === folder.id ? "#0a0" : "#374151"
                     }}>
-                      <span className="material-symbols-rounded" style={{ fontSize: "20px" }}>folder</span>
+                      <span style={{ fontSize: "20px" }}>{folder.icon || "📁"}</span>
                       {folder.name}
                     </Text>
                     <div className="folder-menu-container" style={{ position: "relative", paddingRight: "8px" }}>
@@ -1613,22 +1733,8 @@ export default function Index() {
                           </button>
                           <button
                             type="button"
-                            onClick={async () => {
-                              const formData = new FormData();
-                              formData.append('folderId', folder.id);
-                              formData.append('direction', 'up');
-                              
-                              try {
-                                const response = await fetch('/api/reorder-folders', {
-                                  method: 'POST',
-                                  body: formData
-                                });
-                                if (response.ok) {
-                                  window.location.reload();
-                                }
-                              } catch (error) {
-                                console.error('Error moving folder:', error);
-                              }
+                            onClick={() => {
+                              setShowIconPicker(folder.id);
                               setOpenFolderMenu(null);
                             }}
                             style={{
@@ -1641,39 +1747,7 @@ export default function Index() {
                               cursor: "pointer"
                             }}
                           >
-                            Move Folder Up
-                          </button>
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              const formData = new FormData();
-                              formData.append('folderId', folder.id);
-                              formData.append('direction', 'down');
-                              
-                              try {
-                                const response = await fetch('/api/reorder-folders', {
-                                  method: 'POST',
-                                  body: formData
-                                });
-                                if (response.ok) {
-                                  window.location.reload();
-                                }
-                              } catch (error) {
-                                console.error('Error moving folder:', error);
-                              }
-                              setOpenFolderMenu(null);
-                            }}
-                            style={{
-                              display: "block",
-                              width: "100%",
-                              padding: "8px 12px",
-                              border: "none",
-                              background: "none",
-                              textAlign: "left",
-                              cursor: "pointer"
-                            }}
-                          >
-                            Move Folder Down
+                            Change Folder Icon
                           </button>
                           <button
                             type="button"
@@ -1698,9 +1772,12 @@ export default function Index() {
                       )}
                     </div>
                   </div>
+                      </DraggableFolder>
                 ))}
-              </div>
-            )}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+              )}
             </div>
 
             {/* Sticky Bottom - New Folder Input */}
@@ -3552,6 +3629,17 @@ export default function Index() {
             {version}
           </div>
         </div>
+
+        {/* Folder Icon Picker Modal */}
+        {showIconPicker && (
+          <FolderIconPicker
+            isOpen={true}
+            onClose={() => setShowIconPicker(null)}
+            onSelectIcon={(newIcon) => handleIconChange(showIconPicker, newIcon)}
+            currentIcon={localFolders.find(f => f.id === showIconPicker)?.icon || "📁"}
+            folderName={localFolders.find(f => f.id === showIconPicker)?.name || "Folder"}
+          />
+        )}
       </Page>
     );
   }
