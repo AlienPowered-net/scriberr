@@ -47,7 +47,7 @@ export async function loader({ request }) {
     select: {
       id: true,
       name: true,
-      icon: true,
+      // icon: true, // Temporarily commented out until migration is applied
       createdAt: true,
     },
   });
