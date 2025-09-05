@@ -1003,7 +1003,21 @@ export default function Index() {
     }
   };
 
-  // Handle creating a new folder
+  // Handle new folder button click - launches icon picker first
+  const handleNewFolderClick = () => {
+    const trimmedName = folderName.trim();
+    if (!trimmedName) {
+      setAlertMessage('Please enter a folder name first');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+    
+    // Launch icon picker for new folder
+    setShowIconPicker('new-folder');
+  };
+
+  // Handle creating a new folder (called after icon selection)
   const handleCreateFolder = async () => {
     const trimmedName = folderName.trim();
     if (!trimmedName) {
@@ -1810,34 +1824,7 @@ export default function Index() {
               backgroundColor: "white",
               flexShrink: 0
             }}>
-              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                {/* Icon Selector */}
-                <div 
-                  style={{ 
-                    position: "relative",
-                    backgroundColor: "#FAFAF8",
-                    borderRadius: "24px",
-                    padding: "12px 16px",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
-                  }}
-                  onClick={() => setShowIconPicker('new-folder')}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = "#FFFFFF";
-                    e.target.style.boxShadow = "0 0 0 2px #16A34A, 0 1px 2px rgba(0,0,0,0.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "#FAFAF8";
-                    e.target.style.boxShadow = "0 1px 2px rgba(0,0,0,0.05)";
-                  }}
-                  title="Click to choose folder icon"
-                >
-                  <i className={`far fa-${newFolderIcon}`} style={{ fontSize: "16px", color: newFolderIconColor }}></i>
-                </div>
-                
-                {/* Folder Name Input */}
-                <div style={{ position: "relative", flex: 1 }}>
+              <div style={{ position: "relative" }}>
                   <input
                     type="text"
                     style={{
@@ -1868,7 +1855,7 @@ export default function Index() {
                     maxLength={30}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        handleCreateFolder();
+                        handleNewFolderClick();
                       }
                     }}
                     onFocus={(e) => {
@@ -1881,7 +1868,7 @@ export default function Index() {
                     }}
                   />
                 <button 
-                  onClick={handleCreateFolder}
+                  onClick={handleNewFolderClick}
                   style={{
                     position: "absolute",
                     right: "8px",
@@ -1934,7 +1921,6 @@ export default function Index() {
                     Maximum 30 characters reached
                   </div>
                 )}
-                </div>
               </div>
             </div>
           </Card>
@@ -3745,6 +3731,9 @@ export default function Index() {
               if (showIconPicker === 'new-folder') {
                 setNewFolderIcon(iconData.icon);
                 setNewFolderIconColor(iconData.color);
+                setShowIconPicker(null);
+                // Create the folder after icon selection
+                handleCreateFolder();
               } else {
                 handleIconChange(showIconPicker, iconData);
               }
