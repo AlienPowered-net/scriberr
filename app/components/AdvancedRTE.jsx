@@ -11,6 +11,13 @@ import Underline from '@tiptap/extension-underline';
 import { TextStyle } from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';
+import Blockquote from '@tiptap/extension-blockquote';
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import { Emoji } from '@tiptap/extension-emoji';
+import HorizontalRule from '@tiptap/extension-horizontal-rule';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
+import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack } from '@shopify/polaris';
 
 const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
@@ -24,19 +31,67 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const editorRef = useRef(null);
 
+  // Create lowlight instance for syntax highlighting
+  const lowlight = createLowlight();
+  
+  // Register common languages (you can add more as needed)
+  useEffect(() => {
+    const registerLanguages = async () => {
+      try {
+        // Import and register common languages
+        const { default: javascript } = await import('highlight.js/lib/languages/javascript');
+        const { default: typescript } = await import('highlight.js/lib/languages/typescript');
+        const { default: python } = await import('highlight.js/lib/languages/python');
+        const { default: css } = await import('highlight.js/lib/languages/css');
+        const { default: html } = await import('highlight.js/lib/languages/xml');
+        const { default: json } = await import('highlight.js/lib/languages/json');
+        
+        lowlight.register('javascript', javascript);
+        lowlight.register('typescript', typescript);
+        lowlight.register('python', python);
+        lowlight.register('css', css);
+        lowlight.register('html', html);
+        lowlight.register('json', json);
+      } catch (error) {
+        console.log('Some languages could not be loaded:', error);
+      }
+    };
+    
+    registerLanguages();
+  }, []);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3, 4, 5, 6],
         },
+        // Disable default blockquote since we're using the dedicated extension
+        blockquote: false,
+        // Disable default codeBlock since we're using CodeBlockLowlight
+        codeBlock: false,
+        // Disable default horizontalRule since we're using the dedicated extension
+        horizontalRule: false,
       }),
+      Blockquote,
+      CodeBlockLowlight.configure({
+        lowlight,
+        defaultLanguage: 'javascript',
+      }),
+      Emoji.configure({
+        enableEmoticons: true,
+      }),
+      HorizontalRule,
       Table.configure({
         resizable: true,
       }),
       TableRow,
       TableHeader,
       TableCell,
+      TaskList,
+      TaskItem.configure({
+        nested: true,
+      }),
       Image.configure({
         inline: true,
         allowBase64: true,
@@ -358,6 +413,78 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               title="Insert Video"
             >
               <i className="fas fa-video"></i>
+            </button>
+          </div>
+
+          {/* Advanced Formatting */}
+          <div style={{ display: "flex", gap: "4px", borderRight: "1px solid #e1e3e5", paddingRight: "8px" }}>
+            <button
+              onClick={() => editor.chain().focus().toggleBlockquote().run()}
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: editor.isActive('blockquote') ? '#e3f2fd' : 'white',
+                color: editor.isActive('blockquote') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
+              title="Blockquote"
+            >
+              <i className="fas fa-quote-left"></i>
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: editor.isActive('codeBlock') ? '#e3f2fd' : 'white',
+                color: editor.isActive('codeBlock') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
+              title="Code Block"
+            >
+              <i className="fas fa-code"></i>
+            </button>
+            <button
+              onClick={() => editor.chain().focus().setHorizontalRule().run()}
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: "white",
+                color: "#374151",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
+              title="Horizontal Rule"
+            >
+              <i className="fas fa-minus"></i>
+            </button>
+          </div>
+
+          {/* Task Lists */}
+          <div style={{ display: "flex", gap: "4px", borderRight: "1px solid #e1e3e5", paddingRight: "8px" }}>
+            <button
+              onClick={() => editor.chain().focus().toggleTaskList().run()}
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: editor.isActive('taskList') ? '#e3f2fd' : 'white',
+                color: editor.isActive('taskList') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
+              title="Task List"
+            >
+              <i className="fas fa-tasks"></i>
             </button>
           </div>
 
