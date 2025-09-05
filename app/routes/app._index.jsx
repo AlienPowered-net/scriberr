@@ -48,7 +48,8 @@ export async function loader({ request }) {
     select: {
       id: true,
       name: true,
-      // icon: true, // Temporarily commented out until migration is applied
+      icon: true,
+      iconColor: true,
       createdAt: true,
     },
   });
@@ -263,53 +264,62 @@ export default function Index() {
   const handleDragEnd = async (event) => {
     const { active, over } = event;
 
-    if (active.id !== over.id) {
-      const oldIndex = localFolders.findIndex((folder) => folder.id === active.id);
-      const newIndex = localFolders.findIndex((folder) => folder.id === over.id);
+    if (!over || active.id === over.id) {
+      return;
+    }
 
-      const reorderedFolders = arrayMove(localFolders, oldIndex, newIndex);
-      setLocalFolders(reorderedFolders);
+    const oldIndex = localFolders.findIndex((folder) => folder.id === active.id);
+    const newIndex = localFolders.findIndex((folder) => folder.id === over.id);
 
-      // Send the new order to the server
-      try {
-        const response = await fetch('/api/reorder-folders-drag', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            folderIds: reorderedFolders.map(f => f.id)
-          }),
-        });
+    if (oldIndex === -1 || newIndex === -1) {
+      console.error('Could not find folder indices:', { oldIndex, newIndex, activeId: active.id, overId: over.id });
+      return;
+    }
 
-        const result = await response.json();
-        
-        if (!response.ok) {
-          console.error('Reorder API error:', result);
-          // Revert on error
-          setLocalFolders(folders);
-          setAlertMessage("Failed to reorder folders: " + (result.error || 'Unknown error'));
-          setAlertType("error");
-        } else {
-          // Success - update with server response if available
-          if (result.folders) {
-            setLocalFolders(result.folders);
-          }
-          console.log('Folders reordered successfully');
-        }
-      } catch (error) {
-        console.error('Error reordering folders:', error);
+    const reorderedFolders = arrayMove(localFolders, oldIndex, newIndex);
+    setLocalFolders(reorderedFolders);
+
+    // Send the new order to the server
+    try {
+      const response = await fetch('/api/reorder-folders-drag', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          folderIds: reorderedFolders.map(f => f.id)
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        console.error('Reorder API error:', result);
         // Revert on error
-        setLocalFolders(folders);
-        setAlertMessage("Failed to reorder folders: Network error");
+        setLocalFolders(localFolders); // Revert to pre-drag state
+        setAlertMessage("Failed to reorder folders: " + (result.error || 'Unknown error'));
         setAlertType("error");
+        setTimeout(() => setAlertMessage(''), 3000);
+      } else {
+        // Success - keep the reordered state
+        console.log('Folders reordered successfully');
+        setAlertMessage("Folders reordered successfully");
+        setAlertType("success");
+        setTimeout(() => setAlertMessage(''), 2000);
       }
+    } catch (error) {
+      console.error('Error reordering folders:', error);
+      // Revert on error
+      setLocalFolders(localFolders); // Revert to pre-drag state
+      setAlertMessage("Failed to reorder folders: Network error");
+      setAlertType("error");
+      setTimeout(() => setAlertMessage(''), 3000);
     }
   };
 
   // Handle folder icon change
   const handleIconChange = async (folderId, iconData) => {
-    // Update local state immediately (since database doesn't have icon field yet)
+    // Update local state immediately for instant feedback
     setLocalFolders(prev => prev.map(folder => 
       folder.id === folderId ? { 
         ...folder, 
@@ -318,11 +328,41 @@ export default function Index() {
       } : folder
     ));
 
-    // For now, just show success since we're storing locally
-    // TODO: When database migration is applied, this will save to database
-    setAlertMessage("Folder icon updated successfully (stored locally)");
-    setAlertType("success");
-    setTimeout(() => setAlertMessage(''), 3000);
+    try {
+      const response = await fetch('/api/update-folder-icon', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          folderId: folderId,
+          icon: iconData.icon,
+          color: iconData.color
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setAlertMessage("Folder icon updated successfully");
+          setAlertType("success");
+          setTimeout(() => setAlertMessage(''), 3000);
+        }
+      } else {
+        // Revert on error
+        setLocalFolders(folders);
+        setAlertMessage("Failed to update folder icon");
+        setAlertType("error");
+        setTimeout(() => setAlertMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error updating folder icon:', error);
+      // Revert on error
+      setLocalFolders(folders);
+      setAlertMessage("Failed to update folder icon");
+      setAlertType("error");
+      setTimeout(() => setAlertMessage(''), 3000);
+    }
     
     setShowIconPicker(null);
   };
@@ -1004,26 +1044,24 @@ export default function Index() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('name', trimmedName);
-    // Note: Icon data will be stored locally for now since DB doesn't have icon field yet
-    
     try {
       const response = await fetch('/api/create-folder', {
         method: 'POST',
-        body: formData
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: trimmedName,
+          icon: folderData.icon,
+          iconColor: folderData.color
+        })
       });
       
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.folder) {
-          // Add new folder to local state immediately with icon data
-          const newFolder = {
-            ...result.folder,
-            icon: folderData.icon,
-            iconColor: folderData.color
-          };
-          setLocalFolders(prev => [newFolder, ...prev]);
+          // Add new folder to local state immediately
+          setLocalFolders(prev => [result.folder, ...prev]);
           setFolderName(''); // Clear the input
           setAlertMessage('Folder created successfully!');
           setAlertType('success');
@@ -1341,7 +1379,8 @@ export default function Index() {
               display: "flex",
               flexDirection: "column",
               gap: "12px",
-              alignItems: "center"
+              alignItems: "center",
+              height: "calc(100vh - 240px)"
             }}>
               {collapsedColumns.folders && (
                 <button
@@ -2567,7 +2606,7 @@ export default function Index() {
         {/* NOTE EDITOR */}
         <div className="col-editor" style={{ 
           width: collapsedColumns.folders && collapsedColumns.notes ? "calc(100% - 76px)" :
-                 collapsedColumns.folders || collapsedColumns.notes ? "calc(75% - 16px)" : "50%",
+                 collapsedColumns.folders || collapsedColumns.notes ? "calc(75% - 8px)" : "50%",
           transition: "all 0.3s ease"
         }}>
           <Card>

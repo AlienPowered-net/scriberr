@@ -145,14 +145,38 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           bottom: '20px',
           zIndex: 9999,
           maxHeight: 'calc(100vh - 40px)',
-          maxWidth: 'calc(100vw - 40px)'
+          maxWidth: 'calc(100vw - 40px)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 10px 20px -5px rgba(0, 0, 0, 0.3)',
+          borderRadius: '12px'
         })
       }}
       ref={editorRef}
     >
       {/* Toolbar */}
-      <div style={{ borderBottom: "1px solid #e1e3e5", padding: "12px", backgroundColor: "#f8f9fa", borderRadius: "8px 8px 0 0" }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
+      <div style={{ borderBottom: "1px solid #e1e3e5", padding: "12px", backgroundColor: "#f8f9fa", borderRadius: "8px 8px 0 0", position: "relative" }}>
+        {/* Fullscreen Button - Top Right */}
+        <button
+          onClick={toggleExpanded}
+          style={{
+            position: "absolute",
+            top: "8px",
+            right: "8px",
+            padding: "8px 12px",
+            border: "1px solid #e1e3e5",
+            borderRadius: "6px",
+            backgroundColor: "white",
+            color: "#374151",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            fontSize: "14px",
+            zIndex: 10
+          }}
+          title={isExpanded ? "Exit Fullscreen" : "Enter Fullscreen"}
+        >
+          <i className={`fas ${isExpanded ? 'fa-compress' : 'fa-expand'}`}></i>
+        </button>
+        
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center", paddingRight: "60px" }}>
           {/* Text Formatting */}
           <div style={{ display: "flex", gap: "4px", borderRight: "1px solid #e1e3e5", paddingRight: "8px" }}>
             <button
@@ -357,25 +381,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             </button>
           </div>
 
-          {/* Expand */}
-          <div style={{ display: "flex", gap: "4px", marginLeft: "auto" }}>
-            <button
-              onClick={toggleExpanded}
-              style={{
-                padding: "8px 12px",
-                border: "1px solid #e1e3e5",
-                borderRadius: "6px",
-                backgroundColor: "white",
-                color: "#374151",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                fontSize: "14px"
-              }}
-              title={isExpanded ? "Exit Fullscreen" : "Enter Fullscreen"}
-            >
-              <i className={`fas ${isExpanded ? 'fa-compress' : 'fa-expand'}`}></i>
-            </button>
-          </div>
         </div>
       </div>
 
@@ -488,7 +493,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       {/* Overlay for expanded mode */}
       {isExpanded && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 z-40"
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.75)",
+            backdropFilter: "blur(4px)"
+          }}
           onClick={toggleExpanded}
         />
       )}

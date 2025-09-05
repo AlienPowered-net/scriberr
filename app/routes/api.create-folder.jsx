@@ -7,8 +7,8 @@ export async function action({ request }) {
   const { session } = await shopify.authenticate.admin(request);
   const shopId = await getOrCreateShopId(session.shop);
 
-  const form = await request.formData();
-  const name = form.get("name");
+  const data = await request.json();
+  const { name, icon = "folder", iconColor = "#f57c00" } = data;
 
   if (!name) {
     return json({ error: "Missing folder name" });
@@ -38,10 +38,17 @@ export async function action({ request }) {
 
     // Create the folder
     const newFolder = await prisma.folder.create({ 
-      data: { name: trimmedName, shopId },
+      data: { 
+        name: trimmedName, 
+        shopId,
+        icon: icon,
+        iconColor: iconColor
+      },
       select: {
         id: true,
         name: true,
+        icon: true,
+        iconColor: true,
         createdAt: true,
       }
     });
