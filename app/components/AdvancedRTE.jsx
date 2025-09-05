@@ -136,6 +136,18 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       className={`relative border rounded-lg bg-white transition-all duration-300 ${
         isExpanded ? 'fixed inset-4 z-50 shadow-2xl' : 'w-full'
       }`}
+      style={{
+        ...(isExpanded && {
+          position: 'fixed',
+          top: '20px',
+          left: '20px',
+          right: '20px',
+          bottom: '20px',
+          zIndex: 9999,
+          maxHeight: 'calc(100vh - 40px)',
+          maxWidth: 'calc(100vw - 40px)'
+        })
+      }}
       ref={editorRef}
     >
       {/* Toolbar */}
@@ -346,7 +358,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           </div>
 
           {/* Expand */}
-          <div style={{ marginLeft: "auto" }}>
+          <div style={{ display: "flex", gap: "4px", marginLeft: "auto" }}>
             <button
               onClick={toggleExpanded}
               style={{

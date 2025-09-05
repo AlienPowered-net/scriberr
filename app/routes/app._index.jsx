@@ -1304,12 +1304,22 @@ export default function Index() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: "20px",
+                    fontSize: "18px",
                     transition: "all 0.2s ease"
                   }}
                   title="Expand Folders & Tags"
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = "#E8F5E8";
+                    e.target.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
+                    e.target.style.transform = "scale(1.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = "white";
+                    e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
+                    e.target.style.transform = "scale(1)";
+                  }}
                 >
-                  📁
+                  <i className="far fa-folder" style={{ color: "#f57c00" }}></i>
                 </button>
               )}
               {collapsedColumns.notes && (
@@ -1326,12 +1336,22 @@ export default function Index() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: "20px",
+                    fontSize: "18px",
                     transition: "all 0.2s ease"
                   }}
                   title="Expand Notes"
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = "#E8F5E8";
+                    e.target.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
+                    e.target.style.transform = "scale(1.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = "white";
+                    e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
+                    e.target.style.transform = "scale(1)";
+                  }}
                 >
-                  📝
+                  <i className="far fa-sticky-note" style={{ color: "#f57c00" }}></i>
                 </button>
               )}
             </div>
@@ -1362,7 +1382,7 @@ export default function Index() {
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <i className="fas fa-folder" style={{ fontSize: "20px" }}></i>
+                  <i className="far fa-folder" style={{ fontSize: "20px" }}></i>
                   Folders & Tags
                 </Text>
                 <button
@@ -1863,7 +1883,7 @@ export default function Index() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                 <div>
                   <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                    <i className="fas fa-sticky-note" style={{ fontSize: "20px" }}></i>
+                    <i className="far fa-sticky-note" style={{ fontSize: "20px" }}></i>
                     Notes
                   </Text>
                   {selectedFolder && (
@@ -2480,7 +2500,7 @@ export default function Index() {
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <i className="fas fa-edit" style={{ fontSize: "20px" }}></i>
+                  <i className="far fa-edit" style={{ fontSize: "20px" }}></i>
                   Note Editor
                 </Text>
                 {hasUnsavedChanges && (
