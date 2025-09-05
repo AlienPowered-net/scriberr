@@ -2651,7 +2651,7 @@ export default function Index() {
         {/* NOTE EDITOR */}
         <div className="col-editor" style={{ 
           width: collapsedColumns.folders && collapsedColumns.notes ? "calc(100% - 76px)" :
-                 collapsedColumns.folders || collapsedColumns.notes ? "calc(75% - 8px)" : "50%",
+                 collapsedColumns.folders || collapsedColumns.notes ? "75%" : "50%",
           transition: "all 0.3s ease"
         }}>
           <Card>
