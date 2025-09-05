@@ -990,15 +990,7 @@ export default function Index() {
 
   // Handle new folder button click - launches new folder modal
   const handleNewFolderClick = () => {
-    const trimmedName = folderName.trim();
-    if (!trimmedName) {
-      setAlertMessage('Please enter a folder name first');
-      setAlertType('error');
-      setTimeout(() => setAlertMessage(''), 3000);
-      return;
-    }
-    
-    // Launch new folder modal
+    // Launch new folder modal directly
     setShowNewFolderModal(true);
   };
 
@@ -1853,111 +1845,47 @@ export default function Index() {
               )}
             </div>
 
-            {/* Sticky Bottom - New Folder Input */}
+            {/* Sticky Bottom - New Folder Button */}
             <div style={{ 
               padding: "20px", 
               borderTop: "1px solid #e1e3e5",
               backgroundColor: "white",
               flexShrink: 0
             }}>
-              <div style={{ position: "relative" }}>
-                  <input
-                    type="text"
-                    style={{
-                      border: "none",
-                      outline: "none",
-                      fontSize: "14px",
-                      color: "#1E1E1E",
-                      padding: "12px 16px",
-                      paddingRight: "120px",
-                      borderRadius: "24px",
-                      cursor: "text",
-                      width: "100%",
-                      backgroundColor: "#FAFAF8",
-                      fontFamily: "inherit",
-                      transition: "all 0.2s ease",
-                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
-                    }}
-                    value={folderName}
-                    onChange={(e) => {
-                      const newValue = e.target.value;
-                      // Remove emojis from folder name input
-                      const cleanValue = removeEmojis(newValue);
-                      if (cleanValue.length <= 30) {
-                        setFolderName(cleanValue);
-                      }
-                    }}
-                    placeholder="Enter folder name..."
-                    maxLength={30}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleNewFolderClick();
-                      }
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.boxShadow = "0 0 0 2px #16A34A, 0 1px 2px rgba(0,0,0,0.05)";
-                      e.target.style.backgroundColor = "#FFFFFF";
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.boxShadow = "0 1px 2px rgba(0,0,0,0.05)";
-                      e.target.style.backgroundColor = "#FAFAF8";
-                    }}
-                  />
-                <button 
-                  onClick={handleNewFolderClick}
-                  style={{
-                    position: "absolute",
-                    right: "8px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    backgroundColor: "#0a0",
-                    border: "0",
-                    color: "white",
-                    padding: "8px 16px",
-                    borderRadius: "20px",
-                    cursor: "pointer",
-                    fontSize: "13px",
-                    fontWeight: "600",
-                    textAlign: "center",
-                    textDecoration: "none",
-                    transition: "all 0.2s ease",
-                    userSelect: "none",
-                    WebkitUserSelect: "none",
-                    touchAction: "manipulation",
-                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = "#008000";
-                    e.target.style.transform = "translateY(-50%) scale(1.05)";
-                    e.target.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.2)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "#0a0";
-                    e.target.style.transform = "translateY(-50%) scale(1)";
-                    e.target.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.1)";
-                  }}
-                >
-                  New Folder
-                </button>
-                {folderName.length >= 30 && (
-                  <div style={{
-                    position: "absolute",
-                    top: "-30px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    backgroundColor: "#374151",
-                    color: "white",
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    fontSize: "12px",
-                    whiteSpace: "nowrap",
-                    zIndex: 1000,
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.2)"
-                  }}>
-                    Maximum 30 characters reached
-                  </div>
-                )}
-              </div>
+              <button 
+                onClick={handleNewFolderClick}
+                style={{
+                  width: "100%",
+                  backgroundColor: "#16a34a",
+                  border: "0",
+                  color: "white",
+                  padding: "12px 16px",
+                  borderRadius: "24px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  textAlign: "center",
+                  textDecoration: "none",
+                  transition: "all 0.2s ease",
+                  userSelect: "none",
+                  WebkitUserSelect: "none",
+                  touchAction: "manipulation",
+                  boxShadow: "rgba(22, 163, 74, .2) 0 -25px 18px -14px inset, rgba(22, 163, 74, .15) 0 1px 2px, rgba(22, 163, 74, .15) 0 2px 4px, rgba(22, 163, 74, .15) 0 4px 8px, rgba(22, 163, 74, .15) 0 8px 16px, rgba(22, 163, 74, .15) 0 16px 32px"
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = "#15803d";
+                  e.target.style.transform = "scale(1.02)";
+                  e.target.style.boxShadow = "rgba(22, 163, 74, .35) 0 -25px 18px -14px inset, rgba(22, 163, 74, .25) 0 1px 2px, rgba(22, 163, 74, .25) 0 2px 4px, rgba(22, 163, 74, .25) 0 4px 8px, rgba(22, 163, 74, .25) 0 8px 16px, rgba(22, 163, 74, .25) 0 16px 32px";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = "#16a34a";
+                  e.target.style.transform = "scale(1)";
+                  e.target.style.boxShadow = "rgba(22, 163, 74, .2) 0 -25px 18px -14px inset, rgba(22, 163, 74, .15) 0 1px 2px, rgba(22, 163, 74, .15) 0 2px 4px, rgba(22, 163, 74, .15) 0 4px 8px, rgba(22, 163, 74, .15) 0 8px 16px, rgba(22, 163, 74, .15) 0 16px 32px";
+                }}
+              >
+                <i className="fas fa-plus" style={{ marginRight: "8px" }}></i>
+                New Folder
+              </button>
             </div>
           </Card>
         </div>
@@ -3763,7 +3691,7 @@ export default function Index() {
           isOpen={showNewFolderModal}
           onClose={() => setShowNewFolderModal(false)}
           onCreateFolder={handleCreateFolderFromModal}
-          initialName={folderName}
+          initialName=""
         />
 
         {/* Folder Icon Picker Modal */}
