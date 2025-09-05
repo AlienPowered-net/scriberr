@@ -1866,21 +1866,19 @@ export default function Index() {
                   fontWeight: "600",
                   textAlign: "center",
                   textDecoration: "none",
-                  transition: "all 0.2s ease",
+                  transition: "all 250ms",
                   userSelect: "none",
                   WebkitUserSelect: "none",
                   touchAction: "manipulation",
                   boxShadow: "rgba(22, 163, 74, .2) 0 -25px 18px -14px inset, rgba(22, 163, 74, .15) 0 1px 2px, rgba(22, 163, 74, .15) 0 2px 4px, rgba(22, 163, 74, .15) 0 4px 8px, rgba(22, 163, 74, .15) 0 8px 16px, rgba(22, 163, 74, .15) 0 16px 32px"
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = "#15803d";
-                  e.target.style.transform = "scale(1.02)";
                   e.target.style.boxShadow = "rgba(22, 163, 74, .35) 0 -25px 18px -14px inset, rgba(22, 163, 74, .25) 0 1px 2px, rgba(22, 163, 74, .25) 0 2px 4px, rgba(22, 163, 74, .25) 0 4px 8px, rgba(22, 163, 74, .25) 0 8px 16px, rgba(22, 163, 74, .25) 0 16px 32px";
+                  e.target.style.transform = "scale(1.05) rotate(-1deg)";
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = "#16a34a";
-                  e.target.style.transform = "scale(1)";
                   e.target.style.boxShadow = "rgba(22, 163, 74, .2) 0 -25px 18px -14px inset, rgba(22, 163, 74, .15) 0 1px 2px, rgba(22, 163, 74, .15) 0 2px 4px, rgba(22, 163, 74, .15) 0 4px 8px, rgba(22, 163, 74, .15) 0 8px 16px, rgba(22, 163, 74, .15) 0 16px 32px";
+                  e.target.style.transform = "scale(1) rotate(0deg)";
                 }}
               >
                 <i className="fas fa-plus" style={{ marginRight: "8px" }}></i>
