@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-// import { BubbleMenu } from '@tiptap/extension-bubble-menu';
+// BubbleMenu temporarily disabled - will implement custom solution
 import StarterKit from '@tiptap/starter-kit';
-import { Table } from '@tiptap/extension-table';
-import { TableRow } from '@tiptap/extension-table-row';
-import { TableCell } from '@tiptap/extension-table-cell';
-import { TableHeader } from '@tiptap/extension-table-header';
+import { TableKit } from '@tiptap/extension-table';
 import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
 import Underline from '@tiptap/extension-underline';
@@ -88,12 +85,10 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         enableEmoticons: true,
       }),
       HorizontalRule,
-      Table.configure({
+      TableKit.configure({
         resizable: true,
+        allowTableNodeSelection: true,
       }),
-      TableRow,
-      TableHeader,
-      TableCell,
       TaskList,
       TaskItem.configure({
         nested: true,
@@ -410,6 +405,106 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             >
               <i className="fas fa-table"></i>
             </button>
+            {editor?.isActive('table') && (
+              <>
+                <button
+                  onClick={() => editor.chain().focus().addRowBefore().run()}
+                  style={{
+                    padding: "6px 8px",
+                    border: "1px solid #16a34a",
+                    borderRadius: "4px",
+                    backgroundColor: "#dcfce7",
+                    color: "#15803d",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    fontSize: "12px"
+                  }}
+                  title="Add Row Above"
+                >
+                  <i className="fas fa-plus"></i>↑
+                </button>
+                <button
+                  onClick={() => editor.chain().focus().addRowAfter().run()}
+                  style={{
+                    padding: "6px 8px",
+                    border: "1px solid #16a34a",
+                    borderRadius: "4px",
+                    backgroundColor: "#dcfce7",
+                    color: "#15803d",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    fontSize: "12px"
+                  }}
+                  title="Add Row Below"
+                >
+                  <i className="fas fa-plus"></i>↓
+                </button>
+                <button
+                  onClick={() => editor.chain().focus().addColumnBefore().run()}
+                  style={{
+                    padding: "6px 8px",
+                    border: "1px solid #16a34a",
+                    borderRadius: "4px",
+                    backgroundColor: "#dcfce7",
+                    color: "#15803d",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    fontSize: "12px"
+                  }}
+                  title="Add Column Left"
+                >
+                  <i className="fas fa-plus"></i>←
+                </button>
+                <button
+                  onClick={() => editor.chain().focus().addColumnAfter().run()}
+                  style={{
+                    padding: "6px 8px",
+                    border: "1px solid #16a34a",
+                    borderRadius: "4px",
+                    backgroundColor: "#dcfce7",
+                    color: "#15803d",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    fontSize: "12px"
+                  }}
+                  title="Add Column Right"
+                >
+                  <i className="fas fa-plus"></i>→
+                </button>
+                <button
+                  onClick={() => editor.chain().focus().deleteRow().run()}
+                  style={{
+                    padding: "6px 8px",
+                    border: "1px solid #dc2626",
+                    borderRadius: "4px",
+                    backgroundColor: "#fef2f2",
+                    color: "#dc2626",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    fontSize: "12px"
+                  }}
+                  title="Delete Row"
+                >
+                  <i className="fas fa-trash"></i>Row
+                </button>
+                <button
+                  onClick={() => editor.chain().focus().deleteColumn().run()}
+                  style={{
+                    padding: "6px 8px",
+                    border: "1px solid #dc2626",
+                    borderRadius: "4px",
+                    backgroundColor: "#fef2f2",
+                    color: "#dc2626",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    fontSize: "12px"
+                  }}
+                  title="Delete Column"
+                >
+                  <i className="fas fa-trash"></i>Col
+                </button>
+              </>
+            )}
             <button
               onClick={() => editor.chain().focus().insertTableOfContents().run()}
               style={{
@@ -599,7 +694,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           }}
         />
         
-        {/* Bubble Menu for text selection - temporarily disabled */}
+        {/* Bubble Menu temporarily disabled - implementing custom solution */}
         {false && editor && (
           <div>
             <button
