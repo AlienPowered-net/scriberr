@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import { BubbleMenu } from '@tiptap/extension-bubble-menu';
+// import { BubbleMenu } from '@tiptap/extension-bubble-menu';
 import StarterKit from '@tiptap/starter-kit';
 import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
@@ -124,7 +124,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       Highlight.configure({
         multicolor: true,
       }),
-      BubbleMenu,
+      // BubbleMenu,
     ],
     content: value || '',
     onUpdate: ({ editor }) => {
@@ -599,25 +599,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           }}
         />
         
-        {/* Bubble Menu for text selection */}
-        {editor && (
-          <BubbleMenu 
-            editor={editor} 
-            tippyOptions={{ duration: 100 }}
-            shouldShow={({ editor, from, to }) => {
-              // Show bubble menu when text is selected but not in table
-              return from !== to && !editor.isActive('table');
-            }}
-            style={{
-              backgroundColor: "white",
-              border: "1px solid #e1e3e5",
-              borderRadius: "8px",
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-              padding: "4px",
-              display: "flex",
-              gap: "2px"
-            }}
-          >
+        {/* Bubble Menu for text selection - temporarily disabled */}
+        {false && editor && (
+          <div>
             <button
               onClick={() => editor.chain().focus().toggleBold().run()}
               style={{
@@ -708,27 +692,12 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             >
               <i className="fas fa-quote-left"></i>
             </button>
-          </BubbleMenu>
+          </div>
         )}
         
-        {/* Table Bubble Menu for table manipulation */}
-        {editor && (
-          <BubbleMenu 
-            editor={editor} 
-            tippyOptions={{ duration: 100 }}
-            shouldShow={({ editor }) => {
-              return editor.isActive('table');
-            }}
-            style={{
-              backgroundColor: "white",
-              border: "1px solid #e1e3e5",
-              borderRadius: "8px",
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-              padding: "4px",
-              display: "flex",
-              gap: "2px"
-            }}
-          >
+        {/* Table Bubble Menu for table manipulation - temporarily disabled */}
+        {false && editor && (
+          <div>
             <button
               onClick={() => editor.chain().focus().addRowBefore().run()}
               style={{
@@ -819,7 +788,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             >
               <i className="fas fa-trash"></i> Col
             </button>
-          </BubbleMenu>
+          </div>
         )}
       </div>
 
