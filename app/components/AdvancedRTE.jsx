@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import { FloatingMenu as FloatingMenuExtension } from '@tiptap/extension-floating-menu';
 import StarterKit from '@tiptap/starter-kit';
 import { TableKit } from '@tiptap/extension-table';
 import Image from '@tiptap/extension-image';
@@ -36,8 +35,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   const [bubbleMenuPosition, setBubbleMenuPosition] = useState({ x: 0, y: 0 });
   const [showTableMenu, setShowTableMenu] = useState(false);
   const [tableMenuPosition, setTableMenuPosition] = useState({ x: 0, y: 0 });
-  const [showFloatingMenu, setShowFloatingMenu] = useState(false);
-  const [floatingMenuPosition, setFloatingMenuPosition] = useState({ x: 0, y: 0 });
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [headerColor, setHeaderColor] = useState('#f3f4f6');
   const [tempHeaderColor, setTempHeaderColor] = useState('#f3f4f6');
@@ -129,20 +126,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       Highlight.configure({
         multicolor: true,
       }),
-      FloatingMenuExtension.configure({
-        shouldShow: ({ editor, view, state }) => {
-          const { selection } = state;
-          const { $anchor, empty } = selection;
-          const isRootDepth = $anchor.depth === 1;
-          const isEmptyTextBlock = $anchor.parent.isTextblock && !$anchor.parent.type.spec.code && !$anchor.parent.textContent;
-          
-          if (!view.hasFocus() || !empty || !isRootDepth || !isEmptyTextBlock || !editor.isEditable) {
-            return false;
-          }
-          
-          return true;
-        },
-      }),
     ],
     content: value || '',
     onUpdate: ({ editor }) => {
@@ -170,7 +153,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       const { from, to } = editor.state.selection;
       const hasSelection = from !== to;
       const isInTable = editor.isActive('table');
-      const isEmpty = editor.isEmpty;
       
       if (hasSelection && !isInTable) {
         // Text selection bubble menu
@@ -181,7 +163,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         });
         setShowBubbleMenu(true);
         setShowTableMenu(false);
-        setShowFloatingMenu(false);
       } else if (isInTable && hasSelection) {
         // Text selection bubble menu in table (only when text is selected)
         const coords = editor.view.coordsAtPos(from);
@@ -191,21 +172,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         });
         setShowBubbleMenu(true);
         setShowTableMenu(false);
-        setShowFloatingMenu(false);
-      } else if (isEmpty && editor.isFocused) {
-        // Floating menu for empty editor
-        const coords = editor.view.coordsAtPos(from);
-        setFloatingMenuPosition({
-          x: coords.left,
-          y: coords.top - 60 // Move up to avoid covering typing indicator
-        });
-        setShowFloatingMenu(true);
-        setShowBubbleMenu(false);
-        setShowTableMenu(false);
       } else {
         setShowBubbleMenu(false);
         setShowTableMenu(false);
-        setShowFloatingMenu(false);
       }
     };
 
@@ -803,99 +772,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           }}
         />
         
-        {/* Custom Floating Menu for empty editor */}
-        {showFloatingMenu && editor && (
-          <div
-            style={{
-              position: 'fixed',
-              left: floatingMenuPosition.x,
-              top: floatingMenuPosition.y,
-              background: "linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)",
-              border: "1px solid #d1d5db",
-              borderRadius: "8px",
-              padding: "8px 12px",
-              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-              display: "flex",
-              gap: "8px",
-              alignItems: "center",
-              zIndex: 1000
-            }}
-          >
-            <button
-              onClick={() => {
-                editor.chain().focus().toggleBold().run();
-                setShowFloatingMenu(false);
-              }}
-              style={{
-                padding: "6px 8px",
-                border: "1px solid #d1d5db",
-                borderRadius: "4px",
-                backgroundColor: editor?.isActive('bold') ? '#e3f2fd' : 'white',
-                color: editor?.isActive('bold') ? '#1976d2' : '#374151',
-                cursor: "pointer",
-                fontSize: "12px"
-              }}
-              title="Bold"
-            >
-              <i className="fas fa-bold"></i>
-            </button>
-            <button
-              onClick={() => {
-                editor.chain().focus().toggleItalic().run();
-                setShowFloatingMenu(false);
-              }}
-              style={{
-                padding: "6px 8px",
-                border: "1px solid #d1d5db",
-                borderRadius: "4px",
-                backgroundColor: editor?.isActive('italic') ? '#e3f2fd' : 'white',
-                color: editor?.isActive('italic') ? '#1976d2' : '#374151',
-                cursor: "pointer",
-                fontSize: "12px"
-              }}
-              title="Italic"
-            >
-              <i className="fas fa-italic"></i>
-            </button>
-            <button
-              onClick={() => {
-                editor.chain().focus().toggleUnderline().run();
-                setShowFloatingMenu(false);
-              }}
-              style={{
-                padding: "6px 8px",
-                border: "1px solid #d1d5db",
-                borderRadius: "4px",
-                backgroundColor: editor?.isActive('underline') ? '#e3f2fd' : 'white',
-                color: editor?.isActive('underline') ? '#1976d2' : '#374151',
-                cursor: "pointer",
-                fontSize: "12px"
-              }}
-              title="Underline"
-            >
-              <i className="fas fa-underline"></i>
-            </button>
-            <button
-              onClick={() => {
-                editor.chain().focus().toggleHeading({ level: 1 }).run();
-                setShowFloatingMenu(false);
-              }}
-              style={{
-                padding: "6px 8px",
-                border: "1px solid #d1d5db",
-                borderRadius: "4px",
-                backgroundColor: editor?.isActive('heading', { level: 1 }) ? '#e3f2fd' : 'white',
-                color: editor?.isActive('heading', { level: 1 }) ? '#1976d2' : '#374151',
-                cursor: "pointer",
-                fontSize: "12px"
-              }}
-              title="Heading 1"
-            >
-              <i className="fas fa-heading"></i>
-            </button>
-          </div>
-        )}
-        
         {/* Custom Bubble Menu for text selection */}
         {showBubbleMenu && editor && (
           <div
@@ -1205,12 +1081,19 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                         <button
                           onClick={() => {
                             setHeaderColor(tempHeaderColor);
-                            // Apply color to table headers
-                            const tableHeaders = editor.view.dom.querySelectorAll('th');
-                            tableHeaders.forEach(th => {
-                              th.style.backgroundColor = tempHeaderColor;
-                              th.style.color = tempHeaderColor === '#f3f4f6' ? '#374151' : 'white';
-                            });
+                            // Apply color to table headers using TipTap commands
+                            if (editor) {
+                              editor.chain().focus().updateAttributes('tableHeader', {
+                                style: `background-color: ${tempHeaderColor}; color: ${tempHeaderColor === '#f3f4f6' ? '#374151' : 'white'};`
+                              }).run();
+                              
+                              // Also apply directly to DOM for immediate visual feedback
+                              const tableHeaders = editor.view.dom.querySelectorAll('th');
+                              tableHeaders.forEach(th => {
+                                th.style.backgroundColor = tempHeaderColor;
+                                th.style.color = tempHeaderColor === '#f3f4f6' ? '#374151' : 'white';
+                              });
+                            }
                             setShowColorPicker(false);
                           }}
                           style={{
@@ -1252,6 +1135,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                 </div>
               </>
             )}
+            {/* Row Operations */}
             <button
               onClick={() => editor.chain().focus().addRowBefore().run()}
               style={{
@@ -1282,6 +1166,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             >
               <i className="far fa-square-caret-down"></i>
             </button>
+            
+            {/* Column Operations */}
             <button
               onClick={() => editor.chain().focus().addColumnBefore().run()}
               style={{
@@ -1311,6 +1197,83 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               title="Add Column Right"
             >
               <i className="far fa-square-caret-right"></i>
+            </button>
+
+            {/* Single Cell Operations */}
+            <div style={{ width: "1px", height: "20px", backgroundColor: "#e5e7eb", margin: "0 4px" }} />
+            <button
+              onClick={() => {
+                // Merge cells vertically to create single cell above
+                if (editor.can().mergeCells()) {
+                  editor.chain().focus().mergeCells().run();
+                } else {
+                  // If can't merge, add row and merge with current cell
+                  editor.chain().focus().addRowBefore().run();
+                  setTimeout(() => {
+                    if (editor.can().mergeCells()) {
+                      editor.chain().focus().mergeCells().run();
+                    }
+                  }, 100);
+                }
+              }}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: "#e0f2fe",
+                color: "#0369a1",
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Merge Cell Above"
+            >
+              <i className="fas fa-compress-arrows-alt"></i>↑
+            </button>
+            <button
+              onClick={() => {
+                // Merge cells vertically to create single cell below
+                if (editor.can().mergeCells()) {
+                  editor.chain().focus().mergeCells().run();
+                } else {
+                  // If can't merge, add row and merge with current cell
+                  editor.chain().focus().addRowAfter().run();
+                  setTimeout(() => {
+                    if (editor.can().mergeCells()) {
+                      editor.chain().focus().mergeCells().run();
+                    }
+                  }, 100);
+                }
+              }}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: "#e0f2fe",
+                color: "#0369a1",
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Merge Cell Below"
+            >
+              <i className="fas fa-compress-arrows-alt"></i>↓
+            </button>
+            <button
+              onClick={() => {
+                // Split merged cell
+                editor.chain().focus().splitCell().run();
+              }}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: "#fef3c7",
+                color: "#92400e",
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Split Cell"
+            >
+              <i className="fas fa-expand-arrows-alt"></i>
             </button>
             <button
               onClick={() => editor.chain().focus().deleteRow().run()}
