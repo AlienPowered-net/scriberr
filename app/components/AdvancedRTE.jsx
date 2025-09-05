@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-// BubbleMenu temporarily disabled - will implement custom solution
+// BubbleMenu will be implemented as custom solution
 import StarterKit from '@tiptap/starter-kit';
 import { TableKit } from '@tiptap/extension-table';
 import Image from '@tiptap/extension-image';
@@ -32,6 +32,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   const [linkText, setLinkText] = useState('');
   const [aiPrompt, setAIPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showBubbleMenu, setShowBubbleMenu] = useState(false);
+  const [bubbleMenuPosition, setBubbleMenuPosition] = useState({ x: 0, y: 0 });
   const editorRef = useRef(null);
 
   // Create lowlight instance for syntax highlighting
@@ -119,7 +121,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       Highlight.configure({
         multicolor: true,
       }),
-      // BubbleMenu,
+      // BubbleMenu will be added as custom component
     ],
     content: value || '',
     onUpdate: ({ editor }) => {
@@ -138,6 +140,34 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       editor.commands.setContent(value || '');
     }
   }, [value, editor]);
+
+  // Handle text selection for custom bubble menu
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleSelectionUpdate = () => {
+      const { from, to } = editor.state.selection;
+      const hasSelection = from !== to;
+      
+      if (hasSelection && !editor.isActive('table')) {
+        // Get selection coordinates
+        const coords = editor.view.coordsAtPos(from);
+        setBubbleMenuPosition({
+          x: coords.left,
+          y: coords.top - 50 // Position above selection
+        });
+        setShowBubbleMenu(true);
+      } else {
+        setShowBubbleMenu(false);
+      }
+    };
+
+    editor.on('selectionUpdate', handleSelectionUpdate);
+    
+    return () => {
+      editor.off('selectionUpdate', handleSelectionUpdate);
+    };
+  }, [editor]);
 
   const insertImage = () => {
     if (imageUrl && editor) {
@@ -694,9 +724,23 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           }}
         />
         
-        {/* Bubble Menu temporarily disabled - implementing custom solution */}
-        {false && editor && (
-          <div>
+        {/* Custom Bubble Menu for text selection */}
+        {showBubbleMenu && editor && (
+          <div
+            style={{
+              position: 'fixed',
+              left: bubbleMenuPosition.x,
+              top: bubbleMenuPosition.y,
+              backgroundColor: "white",
+              border: "1px solid #e1e3e5",
+              borderRadius: "8px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+              padding: "4px",
+              display: "flex",
+              gap: "2px",
+              zIndex: 1000
+            }}
+          >
             <button
               onClick={() => editor.chain().focus().toggleBold().run()}
               style={{
