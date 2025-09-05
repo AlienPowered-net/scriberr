@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-import { FloatingMenu } from '@tiptap/extension-floating-menu';
+import { FloatingMenu as FloatingMenuExtension } from '@tiptap/extension-floating-menu';
 import StarterKit from '@tiptap/starter-kit';
 import { TableKit } from '@tiptap/extension-table';
 import Image from '@tiptap/extension-image';
@@ -36,6 +36,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   const [bubbleMenuPosition, setBubbleMenuPosition] = useState({ x: 0, y: 0 });
   const [showTableMenu, setShowTableMenu] = useState(false);
   const [tableMenuPosition, setTableMenuPosition] = useState({ x: 0, y: 0 });
+  const [showFloatingMenu, setShowFloatingMenu] = useState(false);
+  const [floatingMenuPosition, setFloatingMenuPosition] = useState({ x: 0, y: 0 });
   const editorRef = useRef(null);
 
   // Create lowlight instance for syntax highlighting
@@ -123,9 +125,18 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       Highlight.configure({
         multicolor: true,
       }),
-      FloatingMenu.configure({
-        shouldShow: ({ editor }) => {
-          return editor.isEmpty;
+      FloatingMenuExtension.configure({
+        shouldShow: ({ editor, view, state }) => {
+          const { selection } = state;
+          const { $anchor, empty } = selection;
+          const isRootDepth = $anchor.depth === 1;
+          const isEmptyTextBlock = $anchor.parent.isTextblock && !$anchor.parent.type.spec.code && !$anchor.parent.textContent;
+          
+          if (!view.hasFocus() || !empty || !isRootDepth || !isEmptyTextBlock || !editor.isEditable) {
+            return false;
+          }
+          
+          return true;
         },
       }),
     ],
@@ -155,16 +166,18 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       const { from, to } = editor.state.selection;
       const hasSelection = from !== to;
       const isInTable = editor.isActive('table');
+      const isEmpty = editor.isEmpty;
       
       if (hasSelection && !isInTable) {
         // Text selection bubble menu
         const coords = editor.view.coordsAtPos(from);
         setBubbleMenuPosition({
           x: coords.left,
-          y: coords.top - 50 // Position above selection
+          y: coords.top - 50
         });
         setShowBubbleMenu(true);
         setShowTableMenu(false);
+        setShowFloatingMenu(false);
       } else if (isInTable) {
         // Table cell bubble menu
         const coords = editor.view.coordsAtPos(from);
@@ -174,9 +187,21 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         });
         setShowTableMenu(true);
         setShowBubbleMenu(false);
+        setShowFloatingMenu(false);
+      } else if (isEmpty && editor.isFocused) {
+        // Floating menu for empty editor
+        const coords = editor.view.coordsAtPos(from);
+        setFloatingMenuPosition({
+          x: coords.left,
+          y: coords.top
+        });
+        setShowFloatingMenu(true);
+        setShowBubbleMenu(false);
+        setShowTableMenu(false);
       } else {
         setShowBubbleMenu(false);
         setShowTableMenu(false);
+        setShowFloatingMenu(false);
       }
     };
 
@@ -437,22 +462,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
 
           {/* Table & TOC */}
           <div style={{ display: "flex", gap: "4px", borderRight: "1px solid #e1e3e5", paddingRight: "8px" }}>
-            <button
-              onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
-              style={{
-                padding: "8px 12px",
-                border: "1px solid #e1e3e5",
-                borderRadius: "6px",
-                backgroundColor: "white",
-                color: "#374151",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                fontSize: "14px"
-              }}
-              title="Insert Table"
-            >
-              <i className="fas fa-table"></i>
-            </button>
             {editor?.isActive('table') && (
               <>
                 <button
@@ -554,7 +563,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               </>
             )}
             <button
-              onClick={() => editor.chain().focus().insertTableOfContents().run()}
+              onClick={() => {
+                if (editor) {
+                  editor.chain().focus().insertContent('<div class="table-of-contents"><h3>Table of Contents</h3><ul><li><a href="#heading-1">Heading 1</a></li><li><a href="#heading-2">Heading 2</a></li></ul></div>').run();
+                }
+              }}
               style={{
                 padding: "8px 12px",
                 border: "1px solid #e1e3e5",
@@ -567,7 +580,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               }}
               title="Table of Contents"
             >
-              <i className="fas fa-list"></i>
+              <i className="far fa-newspaper"></i>
             </button>
           </div>
 
@@ -742,6 +755,66 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           }}
         />
         
+        {/* Custom Floating Menu for empty editor */}
+        {showFloatingMenu && editor && (
+          <div
+            style={{
+              position: 'fixed',
+              left: floatingMenuPosition.x,
+              top: floatingMenuPosition.y,
+              background: "linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)",
+              border: "1px solid #d1d5db",
+              borderRadius: "8px",
+              padding: "8px 12px",
+              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+              display: "flex",
+              gap: "8px",
+              alignItems: "center",
+              zIndex: 1000
+            }}
+          >
+            <span style={{ color: "#6b7280", fontSize: "14px", fontWeight: "500" }}>
+              Start typing or click
+            </span>
+            <button
+              onClick={() => {
+                editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+                setShowFloatingMenu(false);
+              }}
+              style={{
+                padding: "4px 8px",
+                border: "1px solid #d1d5db",
+                borderRadius: "4px",
+                backgroundColor: "white",
+                color: "#374151",
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Insert Table"
+            >
+              <i className="fas fa-table"></i>
+            </button>
+            <button
+              onClick={() => {
+                editor.chain().focus().toggleHeading({ level: 1 }).run();
+                setShowFloatingMenu(false);
+              }}
+              style={{
+                padding: "4px 8px",
+                border: "1px solid #d1d5db",
+                borderRadius: "4px",
+                backgroundColor: "white",
+                color: "#374151",
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Heading 1"
+            >
+              <i className="fas fa-heading"></i>
+            </button>
+          </div>
+        )}
+        
         {/* Custom Bubble Menu for text selection */}
         {showBubbleMenu && editor && (
           <div
@@ -884,6 +957,79 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             >
               <i className="fas fa-heading"></i>
             </button>
+            {editor.isActive('tableHeader') && (
+              <>
+                <div style={{ width: "1px", height: "20px", backgroundColor: "#e5e7eb", margin: "0 4px" }} />
+                <button
+                  onClick={() => {
+                    // Add light gray class (default)
+                    editor.commands.updateAttributes('tableHeader', { class: '' });
+                  }}
+                  style={{
+                    padding: "4px 6px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "3px",
+                    backgroundColor: "#f3f4f6",
+                    cursor: "pointer",
+                    fontSize: "10px"
+                  }}
+                  title="Light Gray Header"
+                >
+                  Gray
+                </button>
+                <button
+                  onClick={() => {
+                    editor.commands.updateAttributes('tableHeader', { class: 'header-blue' });
+                  }}
+                  style={{
+                    padding: "4px 6px",
+                    border: "1px solid #1e40af",
+                    borderRadius: "3px",
+                    backgroundColor: "#1e40af",
+                    color: "white",
+                    cursor: "pointer",
+                    fontSize: "10px"
+                  }}
+                  title="Blue Header"
+                >
+                  Blue
+                </button>
+                <button
+                  onClick={() => {
+                    editor.commands.updateAttributes('tableHeader', { class: 'header-green' });
+                  }}
+                  style={{
+                    padding: "4px 6px",
+                    border: "1px solid #059669",
+                    borderRadius: "3px",
+                    backgroundColor: "#059669",
+                    color: "white",
+                    cursor: "pointer",
+                    fontSize: "10px"
+                  }}
+                  title="Green Header"
+                >
+                  Green
+                </button>
+                <button
+                  onClick={() => {
+                    editor.commands.updateAttributes('tableHeader', { class: 'header-red' });
+                  }}
+                  style={{
+                    padding: "4px 6px",
+                    border: "1px solid #dc2626",
+                    borderRadius: "3px",
+                    backgroundColor: "#dc2626",
+                    color: "white",
+                    cursor: "pointer",
+                    fontSize: "10px"
+                  }}
+                  title="Red Header"
+                >
+                  Red
+                </button>
+              </>
+            )}
             <button
               onClick={() => editor.chain().focus().addRowBefore().run()}
               style={{
@@ -897,7 +1043,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               }}
               title="Add Row Above"
             >
-              <i className="fas fa-plus"></i>↑
+              <i className="far fa-square-caret-up"></i>
             </button>
             <button
               onClick={() => editor.chain().focus().addRowAfter().run()}
@@ -912,7 +1058,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               }}
               title="Add Row Below"
             >
-              <i className="fas fa-plus"></i>↓
+              <i className="far fa-square-caret-down"></i>
             </button>
             <button
               onClick={() => editor.chain().focus().addColumnBefore().run()}
@@ -927,7 +1073,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               }}
               title="Add Column Left"
             >
-              <i className="fas fa-plus"></i>←
+              <i className="far fa-square-caret-left"></i>
             </button>
             <button
               onClick={() => editor.chain().focus().addColumnAfter().run()}
@@ -942,7 +1088,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               }}
               title="Add Column Right"
             >
-              <i className="fas fa-plus"></i>→
+              <i className="far fa-square-caret-right"></i>
             </button>
             <button
               onClick={() => editor.chain().focus().deleteRow().run()}

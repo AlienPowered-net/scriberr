@@ -413,15 +413,42 @@
 
 /* Enhanced Table Header Styles */
 .ProseMirror table th {
-  background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
-  color: white;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  color: #374151;
   font-weight: 600;
   text-align: center;
-  border: 1px solid #1e40af;
+  border: 1px solid #d1d5db;
+  position: relative;
+  cursor: pointer;
 }
 
 .ProseMirror table th:hover {
-  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+}
+
+/* Add color picker functionality */
+.ProseMirror table th.header-blue {
+  background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+  color: white;
+  border: 1px solid #1e40af;
+}
+
+.ProseMirror table th.header-green {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+  border: 1px solid #059669;
+}
+
+.ProseMirror table th.header-red {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  border: 1px solid #dc2626;
+}
+
+.ProseMirror table th.header-purple {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: white;
+  border: 1px solid #7c3aed;
 }
 
 /* Bubble Menu Styles */
