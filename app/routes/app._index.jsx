@@ -278,17 +278,26 @@ export default function Index() {
           }),
         });
 
+        const result = await response.json();
+        
         if (!response.ok) {
+          console.error('Reorder API error:', result);
           // Revert on error
           setLocalFolders(folders);
-          setAlertMessage("Failed to reorder folders");
+          setAlertMessage("Failed to reorder folders: " + (result.error || 'Unknown error'));
           setAlertType("error");
+        } else {
+          // Success - update with server response if available
+          if (result.folders) {
+            setLocalFolders(result.folders);
+          }
+          console.log('Folders reordered successfully');
         }
       } catch (error) {
         console.error('Error reordering folders:', error);
         // Revert on error
         setLocalFolders(folders);
-        setAlertMessage("Failed to reorder folders");
+        setAlertMessage("Failed to reorder folders: Network error");
         setAlertType("error");
       }
     }
@@ -1353,7 +1362,7 @@ export default function Index() {
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <span className="material-symbols-rounded">home_storage</span>
+                  <i className="fas fa-folder" style={{ fontSize: "20px" }}></i>
                   Folders & Tags
                 </Text>
                 <button
@@ -1373,7 +1382,7 @@ export default function Index() {
                   }}
                   title="Collapse Folders & Tags"
                 >
-                  ⬅️
+                  <i className="fas fa-chevron-left"></i>
                 </button>
               </div>
               
@@ -1409,7 +1418,6 @@ export default function Index() {
                   }}
                 />
                 <span 
-                  className="material-symbols-rounded"
                   style={{
                     position: "absolute",
                     right: "16px",
@@ -1420,7 +1428,7 @@ export default function Index() {
                     pointerEvents: "none"
                   }}
                 >
-                  search
+                  <i className="fas fa-search"></i>
                 </span>
               </div>
 
@@ -1643,135 +1651,84 @@ export default function Index() {
                   >
                     <div>
                     {localFolders.map((folder) => (
-                      <DraggableFolder key={folder.id} folder={folder}>
-                  <div key={folder.id} style={{ 
-                    padding: "12px 16px", 
-                    marginBottom: "8px",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    cursor: "pointer",
-                    backgroundColor: selectedFolder === folder.id ? "#E8F5E8" : "#F8F9FA",
-                    border: selectedFolder === folder.id ? "2px solid #0a0" : "2px solid #E1E3E5",
-                    borderRadius: "12px",
-                    position: "relative",
-                    transition: "all 0.2s ease",
-                    boxShadow: selectedFolder === folder.id ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
-                  }}
-                  onClick={() => setSelectedFolder(selectedFolder === folder.id ? null : folder.id)}
-                  onMouseEnter={(e) => {
-                    if (selectedFolder !== folder.id) {
-                      e.currentTarget.style.backgroundColor = "#E8F5E8";
-                      e.currentTarget.style.borderColor = "#0a0";
-                      e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedFolder !== folder.id) {
-                      e.currentTarget.style.backgroundColor = "#F8F9FA";
-                      e.currentTarget.style.borderColor = "#E1E3E5";
-                      e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
-                    }
-                  }}
-                  >
-                    <Text as="span" variant="headingSm" style={{ 
-                      fontWeight: "700", 
-                      display: "flex", 
-                      alignItems: "center", 
-                      gap: "8px",
-                      color: selectedFolder === folder.id ? "#0a0" : "#374151"
-                    }}>
-                      <span style={{ fontSize: "20px" }}>{folder.icon || "📁"}</span>
-                      {folder.name}
-                    </Text>
-                    <div className="folder-menu-container" style={{ position: "relative", paddingRight: "8px" }}>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenFolderMenu(openFolderMenu === folder.id ? null : folder.id);
-                        }}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          padding: "4px",
-                          fontSize: "16px"
-                        }}
+                      <DraggableFolder 
+                        key={folder.id} 
+                        folder={folder}
+                        selectedFolder={selectedFolder}
+                        openFolderMenu={openFolderMenu}
+                        setOpenFolderMenu={setOpenFolderMenu}
+                        onFolderClick={(folderId) => setSelectedFolder(selectedFolder === folderId ? null : folderId)}
                       >
-                        ⋯
-                      </button>
-                      {openFolderMenu === folder.id && (
-                        <div style={{
-                          position: "absolute",
-                          right: "0",
-                          top: "100%",
-                          backgroundColor: "white",
-                          border: "1px solid #c9cccf",
-                          borderRadius: "4px",
-                          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                          zIndex: 1000,
-                          minWidth: "150px"
-                        }}>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setShowRenameFolderModal(folder.id);
-                              setEditingFolderName(folder.name);
-                              setOpenFolderMenu(null);
-                            }}
-                            style={{
-                              display: "block",
-                              width: "100%",
-                              padding: "8px 12px",
-                              border: "none",
-                              background: "none",
-                              textAlign: "left",
-                              cursor: "pointer"
-                            }}
-                          >
-                            Rename Folder
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setShowIconPicker(folder.id);
-                              setOpenFolderMenu(null);
-                            }}
-                            style={{
-                              display: "block",
-                              width: "100%",
-                              padding: "8px 12px",
-                              border: "none",
-                              background: "none",
-                              textAlign: "left",
-                              cursor: "pointer"
-                            }}
-                          >
-                            Change Folder Icon
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setShowDeleteConfirm(folder.id);
-                              setOpenFolderMenu(null);
-                            }}
-                            style={{
-                              display: "block",
-                              width: "100%",
-                              padding: "8px 12px",
-                              border: "none",
-                              background: "none",
-                              textAlign: "left",
-                              cursor: "pointer",
-                              color: "#d82c0d"
-                            }}
-                          >
-                            Delete Folder
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                        {openFolderMenu === folder.id && (
+                          <div style={{
+                            position: "absolute",
+                            right: "0",
+                            top: "100%",
+                            backgroundColor: "white",
+                            border: "1px solid #c9cccf",
+                            borderRadius: "4px",
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                            zIndex: 1000,
+                            minWidth: "150px"
+                          }}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowRenameFolderModal(folder.id);
+                                setEditingFolderName(folder.name);
+                                setOpenFolderMenu(null);
+                              }}
+                              style={{
+                                display: "block",
+                                width: "100%",
+                                padding: "8px 12px",
+                                border: "none",
+                                background: "none",
+                                textAlign: "left",
+                                cursor: "pointer"
+                              }}
+                            >
+                              Rename Folder
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowIconPicker(folder.id);
+                                setOpenFolderMenu(null);
+                              }}
+                              style={{
+                                display: "block",
+                                width: "100%",
+                                padding: "8px 12px",
+                                border: "none",
+                                background: "none",
+                                textAlign: "left",
+                                cursor: "pointer"
+                              }}
+                            >
+                              Change Folder Icon
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowDeleteConfirm(folder.id);
+                                setOpenFolderMenu(null);
+                              }}
+                              style={{
+                                display: "block",
+                                width: "100%",
+                                padding: "8px 12px",
+                                border: "none",
+                                background: "none",
+                                textAlign: "left",
+                                cursor: "pointer",
+                                color: "#d82c0d"
+                              }}
+                            >
+                              Delete Folder
+                            </button>
+                          </div>
+                        )}
                       </DraggableFolder>
                 ))}
                     </div>
@@ -1903,68 +1860,36 @@ export default function Index() {
               backgroundColor: "white",
               flexShrink: 0
             }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                 <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "4px" }}>
-                    <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                      <span className="material-symbols-rounded">note_stack</span>
-                      Notes
-                    </Text>
-                    <button
-                      onClick={() => toggleColumnCollapse('notes')}
-                      style={{
-                        width: "32px",
-                        height: "32px",
-                        borderRadius: "6px",
-                        border: "1px solid #e1e3e5",
-                        backgroundColor: "white",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "14px",
-                        transition: "all 0.2s ease"
-                      }}
-                      title="Collapse Notes"
-                    >
-                      ⬅️
-                    </button>
-                  </div>
+                  <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                    <i className="fas fa-sticky-note" style={{ fontSize: "20px" }}></i>
+                    Notes
+                  </Text>
                   {selectedFolder && (
-                    <Text as="h2" style={{ fontSize: "24px", fontWeight: "bold", color: "#202223", marginTop: "4px" }}>
-                      {folders.find(f => f.id === selectedFolder)?.name}
+                    <Text as="h1" style={{ fontSize: "32px", fontWeight: "900", color: "#202223", marginTop: "8px" }}>
+                      {localFolders.find(f => f.id === selectedFolder)?.name}
                     </Text>
                   )}
                 </div>
-                <button 
-                  onClick={handleNewNote}
+                <button
+                  onClick={() => toggleColumnCollapse('notes')}
                   style={{
-                    backgroundColor: "#f57c00",
-                    border: "0",
-                    color: "white",
-                    padding: "7px 20px",
-                    borderRadius: "8px",
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "6px",
+                    border: "1px solid #e1e3e5",
+                    backgroundColor: "white",
                     cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     fontSize: "14px",
-                    fontWeight: "500",
-                    textAlign: "center",
-                    textDecoration: "none",
-                    transition: "all 250ms",
-                    userSelect: "none",
-                    WebkitUserSelect: "none",
-                    touchAction: "manipulation",
-                    boxShadow: "rgba(245, 124, 0, .2) 0 -25px 18px -14px inset, rgba(245, 124, 0, .15) 0 1px 2px, rgba(245, 124, 0, .15) 0 2px 4px, rgba(245, 124, 0, .15) 0 4px 8px, rgba(245, 124, 0, .15) 0 8px 16px, rgba(245, 124, 0, .15) 0 16px 32px"
+                    transition: "all 0.2s ease"
                   }}
-                  onMouseEnter={(e) => {
-                    e.target.style.boxShadow = "rgba(245, 124, 0, .35) 0 -25px 18px -14px inset, rgba(245, 124, 0, .25) 0 1px 2px, rgba(245, 124, 0, .25) 0 2px 4px, rgba(245, 124, 0, .25) 0 4px 8px, rgba(245, 124, 0, .25) 0 8px 16px, rgba(245, 124, 0, .25) 0 16px 32px";
-                    e.target.style.transform = "scale(1.05) rotate(-1deg)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.boxShadow = "rgba(245, 124, 0, .2) 0 -25px 18px -14px inset, rgba(245, 124, 0, .15) 0 1px 2px, rgba(245, 124, 0, .15) 0 2px 4px, rgba(245, 124, 0, .15) 0 4px 8px, rgba(245, 124, 0, .15) 0 8px 16px, rgba(245, 124, 0, .15) 0 16px 32px";
-                    e.target.style.transform = "scale(1) rotate(0deg)";
-                  }}
+                  title="Collapse Notes"
                 >
-                  New Note
+                  <i className="fas fa-chevron-left"></i>
                 </button>
               </div>
               
@@ -2000,7 +1925,6 @@ export default function Index() {
                   }}
                 />
                 <span 
-                  className="material-symbols-rounded"
                   style={{
                     position: "absolute",
                     right: "16px",
@@ -2011,8 +1935,44 @@ export default function Index() {
                     pointerEvents: "none"
                   }}
                 >
-                  search
+                  <i className="fas fa-search"></i>
                 </span>
+              </div>
+              
+              {/* New Note Button */}
+              <div style={{ marginTop: "16px" }}>
+                <button 
+                  onClick={handleNewNote}
+                  style={{
+                    backgroundColor: "#f57c00",
+                    border: "0",
+                    color: "white",
+                    padding: "12px 16px",
+                    borderRadius: "24px",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    textAlign: "center",
+                    textDecoration: "none",
+                    transition: "all 250ms",
+                    userSelect: "none",
+                    WebkitUserSelect: "none",
+                    touchAction: "manipulation",
+                    width: "100%",
+                    boxShadow: "rgba(245, 124, 0, .2) 0 -25px 18px -14px inset, rgba(245, 124, 0, .15) 0 1px 2px, rgba(245, 124, 0, .15) 0 2px 4px, rgba(245, 124, 0, .15) 0 4px 8px, rgba(245, 124, 0, .15) 0 8px 16px, rgba(245, 124, 0, .15) 0 16px 32px"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.boxShadow = "rgba(245, 124, 0, .35) 0 -25px 18px -14px inset, rgba(245, 124, 0, .25) 0 1px 2px, rgba(245, 124, 0, .25) 0 2px 4px, rgba(245, 124, 0, .25) 0 4px 8px, rgba(245, 124, 0, .25) 0 8px 16px, rgba(245, 124, 0, .25) 0 16px 32px";
+                    e.target.style.transform = "scale(1.05) rotate(-1deg)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.boxShadow = "rgba(245, 124, 0, .2) 0 -25px 18px -14px inset, rgba(245, 124, 0, .15) 0 1px 2px, rgba(245, 124, 0, .15) 0 2px 4px, rgba(245, 124, 0, .15) 0 4px 8px, rgba(245, 124, 0, .15) 0 8px 16px, rgba(245, 124, 0, .15) 0 16px 32px";
+                    e.target.style.transform = "scale(1) rotate(0deg)";
+                  }}
+                >
+                  <i className="fas fa-plus" style={{ marginRight: "8px" }}></i>
+                  New Note
+                </button>
               </div>
             </div>
 
@@ -2520,7 +2480,7 @@ export default function Index() {
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <span className="material-symbols-rounded">edit_note</span>
+                  <i className="fas fa-edit" style={{ fontSize: "20px" }}></i>
                   Note Editor
                 </Text>
                 {hasUnsavedChanges && (

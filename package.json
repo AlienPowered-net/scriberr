@@ -1,6 +1,6 @@
 {
   "name": "scriberr",
-  "version": "v.a247",
+  "version": "v.a248",
   "private": true,
   "scripts": {
     "vercel-build": "prisma generate && npm run build",
@@ -30,6 +30,7 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@fortawesome/fontawesome-free": "^7.0.1",
     "@prisma/client": "^6.14.0",
     "@remix-run/fs-routes": "2.16.7",
     "@remix-run/node": "2.16.7",

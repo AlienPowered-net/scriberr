@@ -139,57 +139,93 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       ref={editorRef}
     >
       {/* Toolbar */}
-      <div className="border-b p-3 bg-gray-50 rounded-t-lg">
-        <div className="flex flex-wrap gap-2 items-center">
+      <div style={{ borderBottom: "1px solid #e1e3e5", padding: "12px", backgroundColor: "#f8f9fa", borderRadius: "8px 8px 0 0" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
           {/* Text Formatting */}
-          <div className="flex gap-1 border-r pr-2">
+          <div style={{ display: "flex", gap: "4px", borderRight: "1px solid #e1e3e5", paddingRight: "8px" }}>
             <button
               onClick={() => editor.chain().focus().toggleBold().run()}
-              className={`p-2 rounded hover:bg-gray-200 ${
-                editor.isActive('bold') ? 'bg-blue-100 text-blue-600' : ''
-              }`}
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: editor.isActive('bold') ? '#e3f2fd' : 'white',
+                color: editor.isActive('bold') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
               title="Bold"
             >
-              <strong>B</strong>
+              <i className="fas fa-bold"></i>
             </button>
             <button
               onClick={() => editor.chain().focus().toggleItalic().run()}
-              className={`p-2 rounded hover:bg-gray-200 ${
-                editor.isActive('italic') ? 'bg-blue-100 text-blue-600' : ''
-              }`}
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: editor.isActive('italic') ? '#e3f2fd' : 'white',
+                color: editor.isActive('italic') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
               title="Italic"
             >
-              <em>I</em>
+              <i className="fas fa-italic"></i>
             </button>
             <button
               onClick={() => editor.chain().focus().toggleUnderline().run()}
-              className={`p-2 rounded hover:bg-gray-200 ${
-                editor.isActive('underline') ? 'bg-blue-100 text-blue-600' : ''
-              }`}
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: editor.isActive('underline') ? '#e3f2fd' : 'white',
+                color: editor.isActive('underline') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
               title="Underline"
             >
-              <u>U</u>
+              <i className="fas fa-underline"></i>
             </button>
             <button
               onClick={() => editor.chain().focus().toggleStrike().run()}
-              className={`p-2 rounded hover:bg-gray-200 ${
-                editor.isActive('strike') ? 'bg-blue-100 text-blue-600' : ''
-              }`}
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: editor.isActive('strike') ? '#e3f2fd' : 'white',
+                color: editor.isActive('strike') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
               title="Strikethrough"
             >
-              <s>S</s>
+              <i className="fas fa-strikethrough"></i>
             </button>
           </div>
 
           {/* Headings */}
-          <div className="flex gap-1 border-r pr-2">
+          <div style={{ display: "flex", gap: "4px", borderRight: "1px solid #e1e3e5", paddingRight: "8px" }}>
             {[1, 2, 3, 4].map((level) => (
               <button
                 key={level}
                 onClick={() => editor.chain().focus().toggleHeading({ level }).run()}
-                className={`px-2 py-1 rounded text-sm hover:bg-gray-200 ${
-                  editor.isActive('heading', { level }) ? 'bg-blue-100 text-blue-600' : ''
-                }`}
+                style={{
+                  padding: "8px 12px",
+                  border: "1px solid #e1e3e5",
+                  borderRadius: "6px",
+                  backgroundColor: editor.isActive('heading', { level }) ? '#e3f2fd' : 'white',
+                  color: editor.isActive('heading', { level }) ? '#1976d2' : '#374151',
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  fontSize: "12px",
+                  fontWeight: "600"
+                }}
                 title={`Heading ${level}`}
               >
                 H{level}
@@ -198,85 +234,161 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           </div>
 
           {/* Lists */}
-          <div className="flex gap-1 border-r pr-2">
+          <div style={{ display: "flex", gap: "4px", borderRight: "1px solid #e1e3e5", paddingRight: "8px" }}>
             <button
               onClick={() => editor.chain().focus().toggleBulletList().run()}
-              className={`p-2 rounded hover:bg-gray-200 ${
-                editor.isActive('bulletList') ? 'bg-blue-100 text-blue-600' : ''
-              }`}
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: editor.isActive('bulletList') ? '#e3f2fd' : 'white',
+                color: editor.isActive('bulletList') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
               title="Bullet List"
             >
-              •
+              <i className="fas fa-list-ul"></i>
             </button>
             <button
               onClick={() => editor.chain().focus().toggleOrderedList().run()}
-              className={`p-2 rounded hover:bg-gray-200 ${
-                editor.isActive('orderedList') ? 'bg-blue-100 text-blue-600' : ''
-              }`}
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: editor.isActive('orderedList') ? '#e3f2fd' : 'white',
+                color: editor.isActive('orderedList') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
               title="Numbered List"
             >
-              1.
+              <i className="fas fa-list-ol"></i>
             </button>
           </div>
 
           {/* Table */}
-          <div className="flex gap-1 border-r pr-2">
+          <div style={{ display: "flex", gap: "4px", borderRight: "1px solid #e1e3e5", paddingRight: "8px" }}>
             <button
               onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
-              className="p-2 rounded hover:bg-gray-200"
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: "white",
+                color: "#374151",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
               title="Insert Table"
             >
-              ⊞
+              <i className="fas fa-table"></i>
             </button>
           </div>
 
           {/* Media */}
-          <div className="flex gap-1 border-r pr-2">
+          <div style={{ display: "flex", gap: "4px", borderRight: "1px solid #e1e3e5", paddingRight: "8px" }}>
             <button
               onClick={() => setShowImageModal(true)}
-              className="p-2 rounded hover:bg-gray-200"
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: "white",
+                color: "#374151",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
               title="Insert Image"
             >
-              🖼️
+              <i className="fas fa-image"></i>
             </button>
             <button
               onClick={() => setShowVideoModal(true)}
-              className="p-2 rounded hover:bg-gray-200"
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: "white",
+                color: "#374151",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
               title="Insert Video"
             >
-              🎥
+              <i className="fas fa-video"></i>
             </button>
           </div>
 
           {/* AI */}
-          <div className="flex gap-1 border-r pr-2">
+          <div style={{ display: "flex", gap: "4px", borderRight: "1px solid #e1e3e5", paddingRight: "8px" }}>
             <button
               onClick={() => setShowAIModal(true)}
-              className="p-2 rounded hover:bg-gray-200 bg-gradient-to-r from-purple-100 to-blue-100"
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                background: "linear-gradient(45deg, #e8f5e8, #e3f2fd)",
+                color: "#1976d2",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
               title="AI Assistant"
             >
-              🤖
+              <i className="fas fa-robot"></i>
             </button>
           </div>
 
           {/* Expand */}
-          <div className="flex gap-1 ml-auto">
+          <div style={{ marginLeft: "auto" }}>
             <button
               onClick={toggleExpanded}
-              className="p-2 rounded hover:bg-gray-200"
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: "white",
+                color: "#374151",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
               title={isExpanded ? "Exit Fullscreen" : "Enter Fullscreen"}
             >
-              {isExpanded ? "⤴️" : "⤢"}
+              <i className={`fas ${isExpanded ? 'fa-compress' : 'fa-expand'}`}></i>
             </button>
           </div>
         </div>
       </div>
 
       {/* Editor Content */}
-      <div className={`${isExpanded ? 'h-full overflow-auto' : 'min-h-[400px]'}`}>
+      <div 
+        className={`${isExpanded ? 'h-full overflow-auto' : 'min-h-[400px]'}`}
+        style={{
+          backgroundColor: "#fefefe",
+          border: "2px solid #e1e3e5",
+          borderTop: "none",
+          borderRadius: "0 0 8px 8px",
+          margin: "0",
+          padding: "0"
+        }}
+      >
         <EditorContent 
           editor={editor} 
-          className="prose max-w-none p-4 focus-within:outline-none"
+          style={{
+            backgroundColor: "#fefefe",
+            minHeight: "400px",
+            padding: "16px",
+            border: "none",
+            outline: "none",
+            borderRadius: "0 0 8px 8px"
+          }}
         />
       </div>
 
