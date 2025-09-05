@@ -40,6 +40,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   const [floatingMenuPosition, setFloatingMenuPosition] = useState({ x: 0, y: 0 });
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [headerColor, setHeaderColor] = useState('#f3f4f6');
+  const [tempHeaderColor, setTempHeaderColor] = useState('#f3f4f6');
   const [tocItems, setTocItems] = useState([]);
   const editorRef = useRef(null);
 
@@ -196,7 +197,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         const coords = editor.view.coordsAtPos(from);
         setFloatingMenuPosition({
           x: coords.left,
-          y: coords.top
+          y: coords.top - 60 // Move up to avoid covering typing indicator
         });
         setShowFloatingMenu(true);
         setShowBubbleMenu(false);
@@ -261,6 +262,22 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     };
   }, [editor, tocItems]);
 
+  // Handle clicking outside to close color picker
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showColorPicker && !event.target.closest('.table-menu')) {
+        setShowColorPicker(false);
+        setTempHeaderColor(headerColor);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showColorPicker, headerColor]);
+
   const insertImage = () => {
     if (imageUrl && editor) {
       editor.chain().focus().setImage({ src: imageUrl }).run();
@@ -291,6 +308,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   };
 
   const updateTOCInEditor = () => {
+    console.log('updateTOCInEditor called with items:', tocItems);
     if (tocItems.length === 0) return;
     
     const tocHTML = `
@@ -299,17 +317,29 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         <ul>
           ${tocItems.map(item => `
             <li class="toc-level-${item.level}">
-              <a href="#${item.id}" onclick="scrollToAnchor('${item.id}')">${item.text}</a>
+              <a href="#${item.id}">${item.text}</a>
             </li>
           `).join('')}
         </ul>
       </div>
     `;
     
+    console.log('Generated TOC HTML:', tocHTML);
+    
     // Find and replace existing TOC or insert new one
     const existingTOC = editor.view.dom.querySelector('.table-of-contents');
+    console.log('Existing TOC found:', existingTOC);
+    
     if (existingTOC) {
-      existingTOC.outerHTML = tocHTML;
+      // Use editor commands to update content
+      const tocPos = editor.view.posAtDOM(existingTOC, 0);
+      const tocEndPos = editor.view.posAtDOM(existingTOC, existingTOC.childNodes.length);
+      
+      editor.chain()
+        .focus()
+        .setTextSelection({ from: tocPos, to: tocEndPos })
+        .insertContent(tocHTML)
+        .run();
     }
   };
 
@@ -975,17 +1005,21 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             </button>
             <button
               onClick={() => {
+                console.log('TOC button clicked');
                 const selectedText = editor.state.doc.textBetween(
                   editor.state.selection.from,
                   editor.state.selection.to
                 );
+                console.log('Selected text:', selectedText);
+                
                 if (selectedText.trim()) {
                   const anchorId = `toc-${Date.now()}`;
-                  // Add anchor to selected text
-                  editor.chain().focus().setMark('textStyle', { 
-                    id: anchorId,
-                    'data-toc-anchor': anchorId 
-                  }).run();
+                  console.log('Creating anchor:', anchorId);
+                  
+                  // Wrap selected text with anchor span
+                  editor.chain().focus().insertContent(
+                    `<span id="${anchorId}" data-toc-anchor="${anchorId}" style="background-color: rgba(255, 235, 59, 0.3);">${selectedText.trim()}</span>`
+                  ).run();
                   
                   // Add to TOC items
                   const newTocItem = {
@@ -993,10 +1027,17 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                     text: selectedText.trim(),
                     level: 1
                   };
-                  setTocItems(prev => [...prev, newTocItem]);
+                  console.log('Adding TOC item:', newTocItem);
+                  setTocItems(prev => {
+                    const updated = [...prev, newTocItem];
+                    console.log('Updated TOC items:', updated);
+                    return updated;
+                  });
                   
                   // Update existing TOC in editor if it exists
-                  updateTOCInEditor();
+                  setTimeout(() => {
+                    updateTOCInEditor();
+                  }, 100);
                 }
                 setShowBubbleMenu(false);
               }}
@@ -1019,6 +1060,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         {/* Table Cell Bubble Menu for table manipulation */}
         {showTableMenu && editor && (
           <div
+            className="table-menu"
             style={{
               position: 'fixed',
               left: tableMenuPosition.x,
@@ -1052,7 +1094,12 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               <>
                 <div style={{ width: "1px", height: "20px", backgroundColor: "#e5e7eb", margin: "0 4px" }} />
                 <button
-                  onClick={() => setShowColorPicker(!showColorPicker)}
+                  onClick={() => {
+                    if (!showColorPicker) {
+                      setTempHeaderColor(headerColor);
+                    }
+                    setShowColorPicker(!showColorPicker);
+                  }}
                   style={{
                     padding: "4px 8px",
                     border: "1px solid #d1d5db",
@@ -1067,30 +1114,27 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                   <i className="fas fa-palette"></i>
                 </button>
                 {showColorPicker && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '30px',
-                    left: '0px',
-                    backgroundColor: 'white',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '8px',
-                    padding: '12px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    zIndex: 1001,
-                    minWidth: '200px'
-                  }}>
+                  <div 
+                    style={{
+                      position: 'absolute',
+                      top: '30px',
+                      left: '0px',
+                      backgroundColor: 'white',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      zIndex: 1001,
+                      minWidth: '200px'
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <div style={{ marginBottom: '8px', fontSize: '12px', fontWeight: '500' }}>Header Color</div>
                     <input
                       type="color"
-                      value={headerColor}
+                      value={tempHeaderColor}
                       onChange={(e) => {
-                        setHeaderColor(e.target.value);
-                        // Apply color to table headers
-                        const tableHeaders = editor.view.dom.querySelectorAll('th');
-                        tableHeaders.forEach(th => {
-                          th.style.backgroundColor = e.target.value;
-                          th.style.color = e.target.value === '#f3f4f6' ? '#374151' : 'white';
-                        });
+                        setTempHeaderColor(e.target.value);
                       }}
                       style={{
                         width: '100%',
@@ -1102,15 +1146,10 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                     />
                     <input
                       type="text"
-                      value={headerColor}
+                      value={tempHeaderColor}
                       onChange={(e) => {
-                        if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
-                          setHeaderColor(e.target.value);
-                          const tableHeaders = editor.view.dom.querySelectorAll('th');
-                          tableHeaders.forEach(th => {
-                            th.style.backgroundColor = e.target.value;
-                            th.style.color = e.target.value === '#f3f4f6' ? '#374151' : 'white';
-                          });
+                        if (/^#[0-9A-F]{6}$/i.test(e.target.value) || e.target.value.length <= 7) {
+                          setTempHeaderColor(e.target.value);
                         }
                       }}
                       placeholder="#ffffff"
@@ -1123,6 +1162,50 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                         fontSize: '12px'
                       }}
                     />
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                      <button
+                        onClick={() => {
+                          setHeaderColor(tempHeaderColor);
+                          // Apply color to table headers
+                          const tableHeaders = editor.view.dom.querySelectorAll('th');
+                          tableHeaders.forEach(th => {
+                            th.style.backgroundColor = tempHeaderColor;
+                            th.style.color = tempHeaderColor === '#f3f4f6' ? '#374151' : 'white';
+                          });
+                          setShowColorPicker(false);
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '6px 12px',
+                          backgroundColor: '#059669',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        Apply
+                      </button>
+                      <button
+                        onClick={() => {
+                          setTempHeaderColor(headerColor);
+                          setShowColorPicker(false);
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '6px 12px',
+                          backgroundColor: '#6b7280',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 )}
               </>
