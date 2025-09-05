@@ -42,17 +42,40 @@ export async function loader({ request }) {
   const { session } = await shopify.authenticate.admin(request);
   const shopId = await getOrCreateShopId(session.shop);
 
-  const folders = await prisma.folder.findMany({
-    where: { shopId },
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      name: true,
-      // icon: true, // Will be enabled after migration
-      // iconColor: true, // Will be enabled after migration
-      createdAt: true,
-    },
-  });
+  // Try to load folders with icon fields, fallback if not available
+  let folders;
+  try {
+    folders = await prisma.folder.findMany({
+      where: { shopId },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        icon: true,
+        iconColor: true,
+        createdAt: true,
+      },
+    });
+  } catch (iconError) {
+    // Fallback: load without icon fields if migration not applied yet
+    console.log('Icon fields not available, loading folders without icons:', iconError.message);
+    folders = await prisma.folder.findMany({
+      where: { shopId },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+      },
+    });
+    
+    // Add default icon data for local state
+    folders = folders.map(folder => ({
+      ...folder,
+      icon: 'folder',
+      iconColor: '#f57c00'
+    }));
+  }
 
   const notes = await prisma.note.findMany({
     where: { shopId },
@@ -319,7 +342,7 @@ export default function Index() {
 
   // Handle folder icon change
   const handleIconChange = async (folderId, iconData) => {
-    // Update local state immediately (stored locally until migration applied)
+    // Update local state immediately for instant feedback
     setLocalFolders(prev => prev.map(folder => 
       folder.id === folderId ? { 
         ...folder, 
@@ -328,10 +351,38 @@ export default function Index() {
       } : folder
     ));
 
-    // Show success message (storing locally until database migration)
-    setAlertMessage("Folder icon updated successfully (stored locally until migration)");
-    setAlertType("success");
-    setTimeout(() => setAlertMessage(''), 3000);
+    try {
+      const response = await fetch('/api/update-folder-icon', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          folderId: folderId,
+          icon: iconData.icon,
+          color: iconData.color
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setAlertMessage("Folder icon updated successfully");
+          setAlertType("success");
+          setTimeout(() => setAlertMessage(''), 3000);
+        }
+      } else {
+        const result = await response.json();
+        setAlertMessage("Icon updated locally: " + (result.error || 'Database not ready'));
+        setAlertType("success");
+        setTimeout(() => setAlertMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error updating folder icon:', error);
+      setAlertMessage("Icon updated locally (database not available)");
+      setAlertType("success");
+      setTimeout(() => setAlertMessage(''), 3000);
+    }
     
     setShowIconPicker(null);
   };

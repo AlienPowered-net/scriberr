@@ -36,18 +36,40 @@ export async function action({ request }) {
     const updateResults = await Promise.all(updatePromises);
     console.log('Folder reorder results:', updateResults.length, 'folders updated');
 
-    // Return updated folders
-    const updatedFolders = await prisma.folder.findMany({
-      where: { shopId },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        // icon: true, // Will be enabled after migration
-        // iconColor: true, // Will be enabled after migration
-        createdAt: true,
-      },
-    });
+    // Return updated folders with icon fields if available
+    let updatedFolders;
+    try {
+      updatedFolders = await prisma.folder.findMany({
+        where: { shopId },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          icon: true,
+          iconColor: true,
+          createdAt: true,
+        },
+      });
+    } catch (iconError) {
+      // Fallback: load without icon fields
+      console.log('Icon fields not available, loading folders without icons:', iconError.message);
+      updatedFolders = await prisma.folder.findMany({
+        where: { shopId },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          createdAt: true,
+        },
+      });
+      
+      // Add default icon data
+      updatedFolders = updatedFolders.map(folder => ({
+        ...folder,
+        icon: 'folder',
+        iconColor: '#f57c00'
+      }));
+    }
 
     return json({ 
       success: true, 

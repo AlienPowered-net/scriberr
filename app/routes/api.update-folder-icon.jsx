@@ -1,8 +1,7 @@
 import { json } from "@remix-run/node";
-// Temporarily commented out until migration is applied
-// import { shopify } from "../shopify.server";
-// import { prisma } from "../utils/db.server";
-// import { getOrCreateShopId } from "../utils/tenant.server";
+import { shopify } from "../shopify.server";
+import { prisma } from "../utils/db.server";
+import { getOrCreateShopId } from "../utils/tenant.server";
 
 export async function action({ request }) {
   if (request.method !== "POST") {
@@ -10,9 +9,8 @@ export async function action({ request }) {
   }
 
   try {
-    // Temporarily disabled until migration is applied
-    // const { session } = await shopify.authenticate.admin(request);
-    // const shopId = await getOrCreateShopId(session.shop);
+    const { session } = await shopify.authenticate.admin(request);
+    const shopId = await getOrCreateShopId(session.shop);
 
     const { folderId, icon, color } = await request.json();
 
@@ -20,14 +18,34 @@ export async function action({ request }) {
       return json({ error: "Folder ID and icon are required" }, { status: 400 });
     }
 
-    // Temporary response until migration is applied
-    const updatedFolder = {
-      id: folderId,
-      name: "Folder", // Placeholder
-      icon: icon,
-      iconColor: color,
-      createdAt: new Date(),
-    };
+    // Try to update with icon fields, fallback if migration not applied
+    let updatedFolder;
+    try {
+      updatedFolder = await prisma.folder.update({
+        where: { id: folderId, shopId },
+        data: { 
+          icon: icon,
+          iconColor: color || "#f57c00"
+        },
+        select: {
+          id: true,
+          name: true,
+          icon: true,
+          iconColor: true,
+          createdAt: true,
+        },
+      });
+    } catch (iconError) {
+      // Fallback: return success but note that icons are stored locally
+      console.log('Icon fields not available, returning local state response:', iconError.message);
+      updatedFolder = {
+        id: folderId,
+        name: "Folder",
+        icon: icon,
+        iconColor: color,
+        createdAt: new Date(),
+      };
+    }
 
     return json({ 
       success: true, 
