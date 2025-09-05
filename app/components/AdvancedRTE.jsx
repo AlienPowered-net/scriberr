@@ -1081,18 +1081,44 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                         <button
                           onClick={() => {
                             setHeaderColor(tempHeaderColor);
-                            // Apply color to table headers using TipTap commands
+                            // Apply color to table headers
                             if (editor) {
-                              editor.chain().focus().updateAttributes('tableHeader', {
-                                style: `background-color: ${tempHeaderColor}; color: ${tempHeaderColor === '#f3f4f6' ? '#374151' : 'white'};`
-                              }).run();
+                              console.log('Applying header color:', tempHeaderColor);
                               
-                              // Also apply directly to DOM for immediate visual feedback
+                              // Method 1: Direct DOM manipulation with !important
                               const tableHeaders = editor.view.dom.querySelectorAll('th');
-                              tableHeaders.forEach(th => {
-                                th.style.backgroundColor = tempHeaderColor;
-                                th.style.color = tempHeaderColor === '#f3f4f6' ? '#374151' : 'white';
+                              console.log('Found table headers:', tableHeaders.length);
+                              
+                              tableHeaders.forEach((th, index) => {
+                                console.log(`Styling header ${index}:`, th);
+                                th.style.setProperty('background-color', tempHeaderColor, 'important');
+                                th.style.setProperty('color', tempHeaderColor === '#f3f4f6' ? '#374151' : 'white', 'important');
+                                th.style.setProperty('border-color', tempHeaderColor, 'important');
+                                
+                                // Also set the style attribute directly
+                                const existingStyle = th.getAttribute('style') || '';
+                                const newStyle = `background-color: ${tempHeaderColor} !important; color: ${tempHeaderColor === '#f3f4f6' ? '#374151' : 'white'} !important; border-color: ${tempHeaderColor} !important;`;
+                                th.setAttribute('style', newStyle);
                               });
+                              
+                              // Method 2: Add CSS class dynamically
+                              const styleId = 'dynamic-table-header-style';
+                              let styleElement = document.getElementById(styleId);
+                              if (!styleElement) {
+                                styleElement = document.createElement('style');
+                                styleElement.id = styleId;
+                                document.head.appendChild(styleElement);
+                              }
+                              
+                              styleElement.textContent = `
+                                .ProseMirror table th {
+                                  background-color: ${tempHeaderColor} !important;
+                                  color: ${tempHeaderColor === '#f3f4f6' ? '#374151' : 'white'} !important;
+                                  border-color: ${tempHeaderColor} !important;
+                                }
+                              `;
+                              
+                              console.log('Applied styles and CSS');
                             }
                             setShowColorPicker(false);
                           }}
