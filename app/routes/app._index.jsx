@@ -238,6 +238,8 @@ export default function Index() {
   
   // Folder icon picker states
   const [showIconPicker, setShowIconPicker] = useState(null);
+  const [newFolderIcon, setNewFolderIcon] = useState('folder');
+  const [newFolderIconColor, setNewFolderIconColor] = useState('#f57c00');
   const [localFolders, setLocalFolders] = useState(folders);
   
   // Update local folders when loader data changes
@@ -664,12 +666,16 @@ export default function Index() {
       
       if (response.ok) {
         const result = await response.json();
-        if (result.success) {
-          // Store the new note and folder IDs in localStorage before reload
-          localStorage.setItem('selectedNoteId', result.noteId);
-          localStorage.setItem('selectedFolderId', currentFolderId);
-          // Reload to get the updated note list
-          window.location.reload();
+        if (result.success && result.note) {
+          // Add new note to the notes list immediately
+          const newNote = result.note;
+          
+          // Update notes state to include new note (add to beginning of array)
+          window.location.reload(); // Temporary - will implement proper state update
+          
+          setAlertMessage('New note created successfully!');
+          setAlertType('success');
+          setTimeout(() => setAlertMessage(''), 3000);
         } else {
           setAlertMessage(result.error || 'Failed to create new note');
           setAlertType('error');
@@ -1018,9 +1024,13 @@ export default function Index() {
       
       if (response.ok) {
         const result = await response.json();
-        if (result.success) {
+        if (result.success && result.folder) {
           setFolderName(''); // Clear the input
-          window.location.reload();
+          // Add new folder to local state immediately
+          setLocalFolders(prev => [result.folder, ...prev]);
+          setAlertMessage('Folder created successfully!');
+          setAlertType('success');
+          setTimeout(() => setAlertMessage(''), 3000);
         } else {
           setAlertMessage(result.error || 'Failed to create folder');
           setAlertType('error');
@@ -1658,7 +1668,43 @@ export default function Index() {
               paddingBottom: "0"
             }}>
               {localFolders.length === 0 ? (
-                <Text as="p">No folders yet</Text>
+                <div style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "40px 20px",
+                  textAlign: "center",
+                  minHeight: "200px",
+                  cursor: "pointer",
+                  backgroundColor: "#f8fffe",
+                  border: "2px dashed #16a34a",
+                  borderRadius: "12px",
+                  transition: "all 0.3s ease"
+                }}
+                onClick={() => {
+                  setShowRenameFolderModal('create-new');
+                  setEditingFolderName('');
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#ecfdf5";
+                  e.currentTarget.style.borderColor = "#15803d";
+                  e.currentTarget.style.transform = "scale(1.02)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#f8fffe";
+                  e.currentTarget.style.borderColor = "#16a34a";
+                  e.currentTarget.style.transform = "scale(1)";
+                }}
+                >
+                  <i className="far fa-folder" style={{ fontSize: "48px", color: "#16a34a", marginBottom: "16px" }}></i>
+                  <Text as="h3" variant="headingMd" style={{ color: "#16a34a", marginBottom: "8px", fontWeight: "700" }}>
+                    STEP 1 - CREATE A FOLDER
+                  </Text>
+                  <Text as="p" style={{ color: "#16a34a", fontSize: "14px" }}>
+                    Click here to create your first folder to organize your notes
+                  </Text>
+                </div>
               ) : (
                 <DndContext
                   sensors={sensors}
@@ -1764,49 +1810,76 @@ export default function Index() {
               backgroundColor: "white",
               flexShrink: 0
             }}>
-              <div style={{ position: "relative" }}>
-                <input
-                  type="text"
-                  style={{
-                    border: "none",
-                    outline: "none",
-                    fontSize: "14px",
-                    color: "#1E1E1E",
-                    padding: "12px 16px",
-                    paddingRight: "120px",
-                    borderRadius: "24px",
-                    cursor: "text",
-                    width: "100%",
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                {/* Icon Selector */}
+                <div 
+                  style={{ 
+                    position: "relative",
                     backgroundColor: "#FAFAF8",
-                    fontFamily: "inherit",
+                    borderRadius: "24px",
+                    padding: "12px 16px",
+                    cursor: "pointer",
                     transition: "all 0.2s ease",
                     boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
                   }}
-                  value={folderName}
-                  onChange={(e) => {
-                    const newValue = e.target.value;
-                    // Remove emojis from folder name input
-                    const cleanValue = removeEmojis(newValue);
-                    if (cleanValue.length <= 30) {
-                      setFolderName(cleanValue);
-                    }
-                  }}
-                  placeholder="Enter folder name..."
-                  maxLength={30}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleCreateFolder();
-                    }
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.boxShadow = "0 0 0 2px #16A34A, 0 1px 2px rgba(0,0,0,0.05)";
+                  onClick={() => setShowIconPicker('new-folder')}
+                  onMouseEnter={(e) => {
                     e.target.style.backgroundColor = "#FFFFFF";
+                    e.target.style.boxShadow = "0 0 0 2px #16A34A, 0 1px 2px rgba(0,0,0,0.05)";
                   }}
-                  onBlur={(e) => {
-                    e.target.style.boxShadow = "0 1px 2px rgba(0,0,0,0.05)";
+                  onMouseLeave={(e) => {
                     e.target.style.backgroundColor = "#FAFAF8";
+                    e.target.style.boxShadow = "0 1px 2px rgba(0,0,0,0.05)";
                   }}
-                />
+                  title="Click to choose folder icon"
+                >
+                  <i className={`far fa-${newFolderIcon}`} style={{ fontSize: "16px", color: newFolderIconColor }}></i>
+                </div>
+                
+                {/* Folder Name Input */}
+                <div style={{ position: "relative", flex: 1 }}>
+                  <input
+                    type="text"
+                    style={{
+                      border: "none",
+                      outline: "none",
+                      fontSize: "14px",
+                      color: "#1E1E1E",
+                      padding: "12px 16px",
+                      paddingRight: "120px",
+                      borderRadius: "24px",
+                      cursor: "text",
+                      width: "100%",
+                      backgroundColor: "#FAFAF8",
+                      fontFamily: "inherit",
+                      transition: "all 0.2s ease",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+                    }}
+                    value={folderName}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      // Remove emojis from folder name input
+                      const cleanValue = removeEmojis(newValue);
+                      if (cleanValue.length <= 30) {
+                        setFolderName(cleanValue);
+                      }
+                    }}
+                    placeholder="Enter folder name..."
+                    maxLength={30}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleCreateFolder();
+                      }
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.boxShadow = "0 0 0 2px #16A34A, 0 1px 2px rgba(0,0,0,0.05)";
+                      e.target.style.backgroundColor = "#FFFFFF";
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.boxShadow = "0 1px 2px rgba(0,0,0,0.05)";
+                      e.target.style.backgroundColor = "#FAFAF8";
+                    }}
+                  />
                 <button 
                   onClick={handleCreateFolder}
                   style={{
@@ -1861,6 +1934,7 @@ export default function Index() {
                     Maximum 30 characters reached
                   </div>
                 )}
+                </div>
               </div>
             </div>
           </Card>
@@ -2070,9 +2144,61 @@ export default function Index() {
               )}
               
               {filteredNotes.length === 0 ? (
-                <Text as="p" style={{ color: "#6B7280", fontSize: "14px", textAlign: "center", padding: "32px 0" }}>
-                  {selectedFolder ? "No notes in this folder" : "No notes yet"}
-                </Text>
+                <div style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "40px 20px",
+                  textAlign: "center",
+                  minHeight: "200px",
+                  cursor: "pointer",
+                  backgroundColor: selectedFolder ? "#fef7ff" : "#fff7ed",
+                  border: selectedFolder ? "2px dashed #9333ea" : "2px dashed #f57c00",
+                  borderRadius: "12px",
+                  transition: "all 0.3s ease"
+                }}
+                onClick={handleNewNote}
+                onMouseEnter={(e) => {
+                  if (selectedFolder) {
+                    e.currentTarget.style.backgroundColor = "#faf5ff";
+                    e.currentTarget.style.borderColor = "#7c3aed";
+                  } else {
+                    e.currentTarget.style.backgroundColor = "#fff7ed";
+                    e.currentTarget.style.borderColor = "#ea580c";
+                  }
+                  e.currentTarget.style.transform = "scale(1.02)";
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedFolder) {
+                    e.currentTarget.style.backgroundColor = "#fef7ff";
+                    e.currentTarget.style.borderColor = "#9333ea";
+                  } else {
+                    e.currentTarget.style.backgroundColor = "#fff7ed";
+                    e.currentTarget.style.borderColor = "#f57c00";
+                  }
+                  e.currentTarget.style.transform = "scale(1)";
+                }}
+                >
+                  <i className="far fa-sticky-note" style={{ 
+                    fontSize: "48px", 
+                    color: selectedFolder ? "#9333ea" : "#f57c00", 
+                    marginBottom: "16px" 
+                  }}></i>
+                  <Text as="h3" variant="headingMd" style={{ 
+                    color: selectedFolder ? "#9333ea" : "#f57c00", 
+                    marginBottom: "8px", 
+                    fontWeight: "700" 
+                  }}>
+                    {selectedFolder ? "ADD YOUR FIRST NOTE IN THIS FOLDER" : "STEP 2 - SELECT YOUR FOLDER AND CREATE A NOTE"}
+                  </Text>
+                  <Text as="p" style={{ 
+                    color: selectedFolder ? "#9333ea" : "#f57c00", 
+                    fontSize: "14px" 
+                  }}>
+                    {selectedFolder ? "Click here to create your first note in this folder" : "Select a folder first, then click here to create your first note"}
+                  </Text>
+                </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                   {filteredNotes.map((note) => {
@@ -3615,9 +3741,29 @@ export default function Index() {
           <FolderIconPicker
             isOpen={true}
             onClose={() => setShowIconPicker(null)}
-            onSelectIcon={(newIcon) => handleIconChange(showIconPicker, newIcon)}
-            currentIcon={localFolders.find(f => f.id === showIconPicker)?.icon || "📁"}
-            folderName={localFolders.find(f => f.id === showIconPicker)?.name || "Folder"}
+            onSelectIcon={(iconData) => {
+              if (showIconPicker === 'new-folder') {
+                setNewFolderIcon(iconData.icon);
+                setNewFolderIconColor(iconData.color);
+              } else {
+                handleIconChange(showIconPicker, iconData);
+              }
+            }}
+            currentIcon={
+              showIconPicker === 'new-folder' 
+                ? newFolderIcon 
+                : "folder"
+            }
+            currentColor={
+              showIconPicker === 'new-folder' 
+                ? newFolderIconColor 
+                : "#f57c00"
+            }
+            folderName={
+              showIconPicker === 'new-folder' 
+                ? "New Folder" 
+                : localFolders.find(f => f.id === showIconPicker)?.name || "Folder"
+            }
           />
         )}
       </Page>

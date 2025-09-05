@@ -37,11 +37,16 @@ export async function action({ request }) {
     }
 
     // Create the folder
-    await prisma.folder.create({ 
-      data: { name: trimmedName, shopId } 
+    const newFolder = await prisma.folder.create({ 
+      data: { name: trimmedName, shopId },
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+      }
     });
     
-    return json({ success: true, message: "Folder created successfully" });
+    return json({ success: true, message: "Folder created successfully", folder: newFolder });
   } catch (error) {
     console.error("Error creating folder:", error);
     return json({ error: "Failed to create folder" });

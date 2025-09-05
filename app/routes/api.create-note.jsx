@@ -66,9 +66,24 @@ export async function action({ request }) {
         shopId, 
         folderId: trimmedFolderId 
       },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        tags: true,
+        folderId: true,
+        createdAt: true,
+        updatedAt: true,
+        folder: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
     
-    return json({ success: true, message: "Note created successfully", noteId: newNote.id }, {
+    return json({ success: true, message: "Note created successfully", noteId: newNote.id, note: newNote }, {
       headers: {
         "Content-Type": "application/json; charset=utf-8"
       }
