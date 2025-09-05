@@ -326,3 +326,65 @@
 .ProseMirror .hljs-variable {
   color: #ef4444;
 }
+
+/* Link Styles */
+.ProseMirror a.custom-link {
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ProseMirror a.custom-link:hover {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+/* Table of Contents Styles */
+.ProseMirror .table-of-contents {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.ProseMirror .table-of-contents h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.ProseMirror .table-of-contents ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ProseMirror .table-of-contents li {
+  margin: 0.25rem 0;
+  padding-left: 1rem;
+}
+
+.ProseMirror .table-of-contents li a {
+  color: #6b7280;
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.ProseMirror .table-of-contents li a:hover {
+  color: #374151;
+  text-decoration: underline;
+}
+
+/* Bubble Menu Styles */
+.tippy-box[data-theme~='light'] {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.tippy-box[data-theme~='light'] .tippy-arrow {
+  color: white;
+}

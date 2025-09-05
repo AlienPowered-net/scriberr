@@ -1,6 +1,6 @@
 {
   "name": "scriberr",
-  "version": "v.a264",
+  "version": "v.a265",
   "private": true,
   "scripts": {
     "vercel-build": "prisma generate && npm run build",
@@ -42,6 +42,7 @@
     "@shopify/shopify-app-remix": "^3.7.0",
     "@shopify/shopify-app-session-storage-prisma": "^6.0.0",
     "@tiptap/extension-blockquote": "^3.4.1",
+    "@tiptap/extension-bubble-menu": "^3.4.1",
     "@tiptap/extension-code-block-lowlight": "^3.4.1",
     "@tiptap/extension-color": "^3.4.1",
     "@tiptap/extension-emoji": "^3.4.1",
@@ -49,9 +50,11 @@
     "@tiptap/extension-highlight": "^3.4.1",
     "@tiptap/extension-horizontal-rule": "^3.4.1",
     "@tiptap/extension-image": "^3.4.1",
+    "@tiptap/extension-link": "^3.4.1",
     "@tiptap/extension-table": "^3.4.1",
     "@tiptap/extension-table-cell": "^3.4.1",
     "@tiptap/extension-table-header": "^3.4.1",
+    "@tiptap/extension-table-of-contents": "^3.4.1",
     "@tiptap/extension-table-row": "^3.4.1",
     "@tiptap/extension-task-item": "^3.4.1",
     "@tiptap/extension-task-list": "^3.4.1",

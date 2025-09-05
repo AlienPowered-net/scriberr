@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
+import { BubbleMenu } from '@tiptap/extension-bubble-menu';
 import StarterKit from '@tiptap/starter-kit';
 import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
@@ -17,6 +18,8 @@ import { Emoji } from '@tiptap/extension-emoji';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
+import Link from '@tiptap/extension-link';
+import TableOfContents from '@tiptap/extension-table-of-contents';
 import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack } from '@shopify/polaris';
 
@@ -25,8 +28,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   const [showImageModal, setShowImageModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
+  const [showLinkModal, setShowLinkModal] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
+  const [linkUrl, setLinkUrl] = useState('');
+  const [linkText, setLinkText] = useState('');
   const [aiPrompt, setAIPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const editorRef = useRef(null);
@@ -92,6 +98,18 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       TaskItem.configure({
         nested: true,
       }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'custom-link',
+        },
+      }),
+      TableOfContents.configure({
+        getIndex: (item, range) => range.from,
+        onUpdate: (content) => {
+          // Optional: handle table of contents updates
+        },
+      }),
       Image.configure({
         inline: true,
         allowBase64: true,
@@ -106,6 +124,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       Highlight.configure({
         multicolor: true,
       }),
+      BubbleMenu,
     ],
     content: value || '',
     onUpdate: ({ editor }) => {
@@ -138,6 +157,19 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       editor.chain().focus().setYoutubeVideo({ src: videoUrl }).run();
       setVideoUrl('');
       setShowVideoModal(false);
+    }
+  };
+
+  const insertLink = () => {
+    if (linkUrl && editor) {
+      if (linkText) {
+        editor.chain().focus().insertContent(`<a href="${linkUrl}">${linkText}</a>`).run();
+      } else {
+        editor.chain().focus().setLink({ href: linkUrl }).run();
+      }
+      setLinkUrl('');
+      setLinkText('');
+      setShowLinkModal(false);
     }
   };
 
@@ -360,7 +392,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             </button>
           </div>
 
-          {/* Table */}
+          {/* Table & TOC */}
           <div style={{ display: "flex", gap: "4px", borderRight: "1px solid #e1e3e5", paddingRight: "8px" }}>
             <button
               onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
@@ -378,10 +410,42 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             >
               <i className="fas fa-table"></i>
             </button>
+            <button
+              onClick={() => editor.chain().focus().insertTableOfContents().run()}
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: "white",
+                color: "#374151",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
+              title="Table of Contents"
+            >
+              <i className="fas fa-list"></i>
+            </button>
           </div>
 
-          {/* Media */}
+          {/* Media & Links */}
           <div style={{ display: "flex", gap: "4px", borderRight: "1px solid #e1e3e5", paddingRight: "8px" }}>
+            <button
+              onClick={() => setShowLinkModal(true)}
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: editor.isActive('link') ? '#e3f2fd' : 'white',
+                color: editor.isActive('link') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
+              title="Insert Link"
+            >
+              <i className="fas fa-link"></i>
+            </button>
             <button
               onClick={() => setShowImageModal(true)}
               style={{
@@ -534,6 +598,229 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             borderRadius: "0 0 8px 8px"
           }}
         />
+        
+        {/* Bubble Menu for text selection */}
+        {editor && (
+          <BubbleMenu 
+            editor={editor} 
+            tippyOptions={{ duration: 100 }}
+            shouldShow={({ editor, from, to }) => {
+              // Show bubble menu when text is selected but not in table
+              return from !== to && !editor.isActive('table');
+            }}
+            style={{
+              backgroundColor: "white",
+              border: "1px solid #e1e3e5",
+              borderRadius: "8px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+              padding: "4px",
+              display: "flex",
+              gap: "2px"
+            }}
+          >
+            <button
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: editor.isActive('bold') ? '#e3f2fd' : 'transparent',
+                color: editor.isActive('bold') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Bold"
+            >
+              <i className="fas fa-bold"></i>
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: editor.isActive('italic') ? '#e3f2fd' : 'transparent',
+                color: editor.isActive('italic') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Italic"
+            >
+              <i className="fas fa-italic"></i>
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleStrike().run()}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: editor.isActive('strike') ? '#e3f2fd' : 'transparent',
+                color: editor.isActive('strike') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Strikethrough"
+            >
+              <i className="fas fa-strikethrough"></i>
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleUnderline().run()}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: editor.isActive('underline') ? '#e3f2fd' : 'transparent',
+                color: editor.isActive('underline') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Underline"
+            >
+              <i className="fas fa-underline"></i>
+            </button>
+            <button
+              onClick={() => setShowLinkModal(true)}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: editor.isActive('link') ? '#e3f2fd' : 'transparent',
+                color: editor.isActive('link') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Link"
+            >
+              <i className="fas fa-link"></i>
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleBlockquote().run()}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: editor.isActive('blockquote') ? '#e3f2fd' : 'transparent',
+                color: editor.isActive('blockquote') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Quote"
+            >
+              <i className="fas fa-quote-left"></i>
+            </button>
+          </BubbleMenu>
+        )}
+        
+        {/* Table Bubble Menu for table manipulation */}
+        {editor && (
+          <BubbleMenu 
+            editor={editor} 
+            tippyOptions={{ duration: 100 }}
+            shouldShow={({ editor }) => {
+              return editor.isActive('table');
+            }}
+            style={{
+              backgroundColor: "white",
+              border: "1px solid #e1e3e5",
+              borderRadius: "8px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+              padding: "4px",
+              display: "flex",
+              gap: "2px"
+            }}
+          >
+            <button
+              onClick={() => editor.chain().focus().addRowBefore().run()}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: "transparent",
+                color: "#374151",
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Add Row Above"
+            >
+              <i className="fas fa-plus"></i> Row ↑
+            </button>
+            <button
+              onClick={() => editor.chain().focus().addRowAfter().run()}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: "transparent",
+                color: "#374151",
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Add Row Below"
+            >
+              <i className="fas fa-plus"></i> Row ↓
+            </button>
+            <button
+              onClick={() => editor.chain().focus().addColumnBefore().run()}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: "transparent",
+                color: "#374151",
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Add Column Left"
+            >
+              <i className="fas fa-plus"></i> Col ←
+            </button>
+            <button
+              onClick={() => editor.chain().focus().addColumnAfter().run()}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: "transparent",
+                color: "#374151",
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Add Column Right"
+            >
+              <i className="fas fa-plus"></i> Col →
+            </button>
+            <button
+              onClick={() => editor.chain().focus().deleteRow().run()}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: "transparent",
+                color: "#dc2626",
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Delete Row"
+            >
+              <i className="fas fa-trash"></i> Row
+            </button>
+            <button
+              onClick={() => editor.chain().focus().deleteColumn().run()}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: "transparent",
+                color: "#dc2626",
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Delete Column"
+            >
+              <i className="fas fa-trash"></i> Col
+            </button>
+          </BubbleMenu>
+        )}
       </div>
 
       {/* Modals */}
@@ -586,6 +873,42 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             placeholder="https://www.youtube.com/watch?v=..."
             autoComplete="off"
           />
+        </Modal.Section>
+      </Modal>
+
+      <Modal
+        open={showLinkModal}
+        onClose={() => setShowLinkModal(false)}
+        title="Insert Link"
+        primaryAction={{
+          content: 'Insert',
+          onAction: insertLink,
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: () => setShowLinkModal(false),
+          },
+        ]}
+      >
+        <Modal.Section>
+          <TextField
+            label="Link URL"
+            value={linkUrl}
+            onChange={setLinkUrl}
+            placeholder="https://example.com"
+            autoComplete="off"
+          />
+          <div style={{ marginTop: '12px' }}>
+            <TextField
+              label="Link Text (optional)"
+              value={linkText}
+              onChange={setLinkText}
+              placeholder="Click here"
+              autoComplete="off"
+              helpText="Leave empty to use selected text"
+            />
+          </div>
         </Modal.Section>
       </Modal>
 
