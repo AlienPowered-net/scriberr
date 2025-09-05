@@ -24,8 +24,8 @@ model Folder {
   id        String   @id @default(cuid())
   shopId    String
   name      String
-  icon      String   @default("folder")
-  iconColor String   @default("#f57c00")
+  // icon      String   @default("folder") // Will be enabled after migration
+  // iconColor String   @default("#f57c00") // Will be enabled after migration
   notes     Note[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

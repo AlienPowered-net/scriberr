@@ -48,8 +48,8 @@ export async function loader({ request }) {
     select: {
       id: true,
       name: true,
-      icon: true,
-      iconColor: true,
+      // icon: true, // Will be enabled after migration
+      // iconColor: true, // Will be enabled after migration
       createdAt: true,
     },
   });
@@ -319,7 +319,7 @@ export default function Index() {
 
   // Handle folder icon change
   const handleIconChange = async (folderId, iconData) => {
-    // Update local state immediately for instant feedback
+    // Update local state immediately (stored locally until migration applied)
     setLocalFolders(prev => prev.map(folder => 
       folder.id === folderId ? { 
         ...folder, 
@@ -328,41 +328,10 @@ export default function Index() {
       } : folder
     ));
 
-    try {
-      const response = await fetch('/api/update-folder-icon', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          folderId: folderId,
-          icon: iconData.icon,
-          color: iconData.color
-        }),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          setAlertMessage("Folder icon updated successfully");
-          setAlertType("success");
-          setTimeout(() => setAlertMessage(''), 3000);
-        }
-      } else {
-        // Revert on error
-        setLocalFolders(folders);
-        setAlertMessage("Failed to update folder icon");
-        setAlertType("error");
-        setTimeout(() => setAlertMessage(''), 3000);
-      }
-    } catch (error) {
-      console.error('Error updating folder icon:', error);
-      // Revert on error
-      setLocalFolders(folders);
-      setAlertMessage("Failed to update folder icon");
-      setAlertType("error");
-      setTimeout(() => setAlertMessage(''), 3000);
-    }
+    // Show success message (storing locally until database migration)
+    setAlertMessage("Folder icon updated successfully (stored locally until migration)");
+    setAlertType("success");
+    setTimeout(() => setAlertMessage(''), 3000);
     
     setShowIconPicker(null);
   };

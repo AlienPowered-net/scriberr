@@ -43,8 +43,8 @@ export async function action({ request }) {
       select: {
         id: true,
         name: true,
-        icon: true,
-        iconColor: true,
+        // icon: true, // Will be enabled after migration
+        // iconColor: true, // Will be enabled after migration
         createdAt: true,
       },
     });

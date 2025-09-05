@@ -40,18 +40,18 @@ export async function action({ request }) {
     const newFolder = await prisma.folder.create({ 
       data: { 
         name: trimmedName, 
-        shopId,
-        icon: icon,
-        iconColor: iconColor
+        shopId
       },
       select: {
         id: true,
         name: true,
-        icon: true,
-        iconColor: true,
         createdAt: true,
       }
     });
+    
+    // Add icon data to response for local state (until migration applied)
+    newFolder.icon = icon;
+    newFolder.iconColor = iconColor;
     
     return json({ success: true, message: "Folder created successfully", folder: newFolder });
   } catch (error) {
