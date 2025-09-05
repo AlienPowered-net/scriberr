@@ -42,39 +42,64 @@ export async function loader({ request }) {
   const { session } = await shopify.authenticate.admin(request);
   const shopId = await getOrCreateShopId(session.shop);
 
-  // Try to load folders with icon fields, fallback if not available
+  // Try to load folders with all fields, fallback if migration not applied
   let folders;
   try {
     folders = await prisma.folder.findMany({
       where: { shopId },
-      orderBy: { createdAt: "desc" },
+      orderBy: { position: "asc" },
       select: {
         id: true,
         name: true,
         icon: true,
         iconColor: true,
+        position: true,
         createdAt: true,
       },
     });
-  } catch (iconError) {
-    // Fallback: load without icon fields if migration not applied yet
-    console.log('Icon fields not available, loading folders without icons:', iconError.message);
-    folders = await prisma.folder.findMany({
-      where: { shopId },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        createdAt: true,
-      },
-    });
-    
-    // Add default icon data for local state
-    folders = folders.map(folder => ({
-      ...folder,
-      icon: 'folder',
-      iconColor: '#f57c00'
-    }));
+  } catch (error) {
+    // Fallback: load without new fields if migration not applied yet
+    console.log('New fields not available, loading folders with fallback:', error.message);
+    try {
+      // Try with just position field
+      folders = await prisma.folder.findMany({
+        where: { shopId },
+        orderBy: { position: "asc" },
+        select: {
+          id: true,
+          name: true,
+          position: true,
+          createdAt: true,
+        },
+      });
+      
+      // Add default icon data
+      folders = folders.map(folder => ({
+        ...folder,
+        icon: 'folder',
+        iconColor: '#f57c00'
+      }));
+    } catch (positionError) {
+      // Final fallback: use createdAt ordering
+      console.log('Position field not available, using createdAt ordering:', positionError.message);
+      folders = await prisma.folder.findMany({
+        where: { shopId },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          createdAt: true,
+        },
+      });
+      
+      // Add default data
+      folders = folders.map((folder, index) => ({
+        ...folder,
+        icon: 'folder',
+        iconColor: '#f57c00',
+        position: index
+      }));
+    }
   }
 
   const notes = await prisma.note.findMany({

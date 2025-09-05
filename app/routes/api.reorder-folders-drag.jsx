@@ -18,35 +18,32 @@ export async function action({ request }) {
       return json({ error: "Invalid folder IDs array" }, { status: 400 });
     }
 
-    // Update folder order by setting createdAt based on the new order
-    // We'll use the current timestamp with incremental milliseconds to maintain order
-    const baseTime = new Date();
-    
+    // Update folder order using position numbers (0, 1, 2, etc.)
     const updatePromises = folderIds.map((folderId, index) => {
-      const newCreatedAt = new Date(baseTime.getTime() - (folderIds.length - index) * 1000);
       return prisma.folder.update({
         where: { 
           id: folderId,
           shopId: shopId 
         },
-        data: { createdAt: newCreatedAt }
+        data: { position: index }
       });
     });
 
     const updateResults = await Promise.all(updatePromises);
-    console.log('Folder reorder results:', updateResults.length, 'folders updated');
+    console.log('Folder reorder results:', updateResults.length, 'folders updated with new positions');
 
     // Return updated folders with icon fields if available
     let updatedFolders;
     try {
       updatedFolders = await prisma.folder.findMany({
         where: { shopId },
-        orderBy: { createdAt: "desc" },
+        orderBy: { position: "asc" },
         select: {
           id: true,
           name: true,
           icon: true,
           iconColor: true,
+          position: true,
           createdAt: true,
         },
       });
@@ -55,10 +52,11 @@ export async function action({ request }) {
       console.log('Icon fields not available, loading folders without icons:', iconError.message);
       updatedFolders = await prisma.folder.findMany({
         where: { shopId },
-        orderBy: { createdAt: "desc" },
+        orderBy: { position: "asc" },
         select: {
           id: true,
           name: true,
+          position: true,
           createdAt: true,
         },
       });
