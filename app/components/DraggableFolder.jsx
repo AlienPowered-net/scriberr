@@ -96,7 +96,10 @@ const DraggableFolder = ({
             color: selectedFolder === folder.id ? "#0a0" : "#374151",
             fontSize: "14px"
           }}>
-            <i className="far fa-folder" style={{ fontSize: "18px", color: selectedFolder === folder.id ? "#0a0" : "#f57c00" }}></i>
+            <i className={`far fa-${folder.icon || 'folder'}`} style={{ 
+              fontSize: "18px", 
+              color: selectedFolder === folder.id ? "#0a0" : (folder.iconColor || "#f57c00") 
+            }}></i>
             {folder.name}
           </span>
           

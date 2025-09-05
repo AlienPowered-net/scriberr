@@ -19,6 +19,7 @@ import { useState, useEffect } from "react";
 import QuillEditor from "../components/LexicalEditor";
 import AdvancedRTE from "../components/AdvancedRTE";
 import FolderIconPicker from "../components/FolderIconPicker";
+import NewFolderModal from "../components/NewFolderModal";
 import DraggableFolder from "../components/DraggableFolder";
 import "../styles/tiptap.css";
 import {
@@ -238,6 +239,7 @@ export default function Index() {
   
   // Folder icon picker states
   const [showIconPicker, setShowIconPicker] = useState(null);
+  const [showNewFolderModal, setShowNewFolderModal] = useState(false);
   const [newFolderIcon, setNewFolderIcon] = useState('folder');
   const [newFolderIconColor, setNewFolderIconColor] = useState('#f57c00');
   const [localFolders, setLocalFolders] = useState(folders);
@@ -306,40 +308,23 @@ export default function Index() {
   };
 
   // Handle folder icon change
-  const handleIconChange = async (folderId, newIcon) => {
-    // Update local state immediately
+  const handleIconChange = async (folderId, iconData) => {
+    // Update local state immediately (since database doesn't have icon field yet)
     setLocalFolders(prev => prev.map(folder => 
-      folder.id === folderId ? { ...folder, icon: newIcon } : folder
+      folder.id === folderId ? { 
+        ...folder, 
+        icon: iconData.icon, 
+        iconColor: iconData.color 
+      } : folder
     ));
 
-    try {
-      const response = await fetch('/api/update-folder-icon', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          folderId,
-          icon: newIcon
-        }),
-      });
-
-      if (!response.ok) {
-        // Revert on error
-        setLocalFolders(folders);
-        setAlertMessage("Failed to update folder icon");
-        setAlertType("error");
-      } else {
-        setAlertMessage("Folder icon updated successfully");
-        setAlertType("success");
-      }
-    } catch (error) {
-      console.error('Error updating folder icon:', error);
-      // Revert on error
-      setLocalFolders(folders);
-      setAlertMessage("Failed to update folder icon");
-      setAlertType("error");
-    }
+    // For now, just show success since we're storing locally
+    // TODO: When database migration is applied, this will save to database
+    setAlertMessage("Folder icon updated successfully (stored locally)");
+    setAlertType("success");
+    setTimeout(() => setAlertMessage(''), 3000);
+    
+    setShowIconPicker(null);
   };
 
   // Close dropdowns when clicking outside
@@ -1003,7 +988,7 @@ export default function Index() {
     }
   };
 
-  // Handle new folder button click - launches icon picker first
+  // Handle new folder button click - launches new folder modal
   const handleNewFolderClick = () => {
     const trimmedName = folderName.trim();
     if (!trimmedName) {
@@ -1013,11 +998,63 @@ export default function Index() {
       return;
     }
     
-    // Launch icon picker for new folder
-    setShowIconPicker('new-folder');
+    // Launch new folder modal
+    setShowNewFolderModal(true);
   };
 
-  // Handle creating a new folder (called after icon selection)
+  // Handle creating a new folder from modal
+  const handleCreateFolderFromModal = async (folderData) => {
+    const trimmedName = folderData.name.trim();
+    if (!trimmedName) {
+      setAlertMessage('Folder name cannot be empty');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('name', trimmedName);
+    // Note: Icon data will be stored locally for now since DB doesn't have icon field yet
+    
+    try {
+      const response = await fetch('/api/create-folder', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.folder) {
+          // Add new folder to local state immediately with icon data
+          const newFolder = {
+            ...result.folder,
+            icon: folderData.icon,
+            iconColor: folderData.color
+          };
+          setLocalFolders(prev => [newFolder, ...prev]);
+          setFolderName(''); // Clear the input
+          setAlertMessage('Folder created successfully!');
+          setAlertType('success');
+          setTimeout(() => setAlertMessage(''), 3000);
+        } else {
+          setAlertMessage(result.error || 'Failed to create folder');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
+        }
+      } else {
+        setAlertMessage('Failed to create folder');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error creating folder:', error);
+      setAlertMessage('Failed to create folder');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+    }
+  };
+
+  // Handle creating a new folder (legacy - for existing input)
   const handleCreateFolder = async () => {
     const trimmedName = folderName.trim();
     if (!trimmedName) {
@@ -1697,8 +1734,7 @@ export default function Index() {
                   transition: "all 0.3s ease"
                 }}
                 onClick={() => {
-                  setShowRenameFolderModal('create-new');
-                  setEditingFolderName('');
+                  setShowNewFolderModal(true);
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = "#ecfdf5";
@@ -3722,37 +3758,25 @@ export default function Index() {
           </div>
         </div>
 
+        {/* New Folder Modal */}
+        <NewFolderModal
+          isOpen={showNewFolderModal}
+          onClose={() => setShowNewFolderModal(false)}
+          onCreateFolder={handleCreateFolderFromModal}
+          initialName={folderName}
+        />
+
         {/* Folder Icon Picker Modal */}
         {showIconPicker && (
           <FolderIconPicker
             isOpen={true}
             onClose={() => setShowIconPicker(null)}
             onSelectIcon={(iconData) => {
-              if (showIconPicker === 'new-folder') {
-                setNewFolderIcon(iconData.icon);
-                setNewFolderIconColor(iconData.color);
-                setShowIconPicker(null);
-                // Create the folder after icon selection
-                handleCreateFolder();
-              } else {
-                handleIconChange(showIconPicker, iconData);
-              }
+              handleIconChange(showIconPicker, iconData);
             }}
-            currentIcon={
-              showIconPicker === 'new-folder' 
-                ? newFolderIcon 
-                : "folder"
-            }
-            currentColor={
-              showIconPicker === 'new-folder' 
-                ? newFolderIconColor 
-                : "#f57c00"
-            }
-            folderName={
-              showIconPicker === 'new-folder' 
-                ? "New Folder" 
-                : localFolders.find(f => f.id === showIconPicker)?.name || "Folder"
-            }
+            currentIcon="folder"
+            currentColor="#f57c00"
+            folderName={localFolders.find(f => f.id === showIconPicker)?.name || "Folder"}
           />
         )}
       </Page>

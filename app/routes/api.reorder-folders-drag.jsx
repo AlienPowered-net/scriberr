@@ -25,12 +25,16 @@ export async function action({ request }) {
     const updatePromises = folderIds.map((folderId, index) => {
       const newCreatedAt = new Date(baseTime.getTime() - (folderIds.length - index) * 1000);
       return prisma.folder.update({
-        where: { id: folderId, shopId },
+        where: { 
+          id: folderId,
+          shopId: shopId 
+        },
         data: { createdAt: newCreatedAt }
       });
     });
 
-    await Promise.all(updatePromises);
+    const updateResults = await Promise.all(updatePromises);
+    console.log('Folder reorder results:', updateResults.length, 'folders updated');
 
     // Return updated folders
     const updatedFolders = await prisma.folder.findMany({
