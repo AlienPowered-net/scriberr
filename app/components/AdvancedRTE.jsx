@@ -38,6 +38,12 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [headerColor, setHeaderColor] = useState('#f3f4f6');
   const [tempHeaderColor, setTempHeaderColor] = useState('#f3f4f6');
+  const [showTextColorPicker, setShowTextColorPicker] = useState(false);
+  const [textColor, setTextColor] = useState('#000000');
+  const [tempTextColor, setTempTextColor] = useState('#000000');
+  const [showHeaderTextColorPicker, setShowHeaderTextColorPicker] = useState(false);
+  const [headerTextColor, setHeaderTextColor] = useState('#000000');
+  const [tempHeaderTextColor, setTempHeaderTextColor] = useState('#000000');
   const [tocItems, setTocItems] = useState([]);
   const editorRef = useRef(null);
 
@@ -231,12 +237,16 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     };
   }, [editor, tocItems]);
 
-  // Handle clicking outside to close color picker
+  // Handle clicking outside to close color pickers
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showColorPicker && !event.target.closest('.table-menu')) {
         setShowColorPicker(false);
         setTempHeaderColor(headerColor);
+      }
+      if (showTextColorPicker && !event.target.closest('.bubble-menu')) {
+        setShowTextColorPicker(false);
+        setTempTextColor(textColor);
       }
     };
 
@@ -245,7 +255,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     return () => {
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [showColorPicker, headerColor]);
+  }, [showColorPicker, headerColor, showTextColorPicker, textColor]);
 
   const insertImage = () => {
     if (imageUrl && editor) {
@@ -775,6 +785,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         {/* Custom Bubble Menu for text selection */}
         {showBubbleMenu && editor && (
           <div
+            className="bubble-menu"
             style={{
               position: 'fixed',
               left: bubbleMenuPosition.x,
@@ -930,6 +941,162 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             >
               <i className="fas fa-bookmark"></i>
             </button>
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => {
+                  if (!showTextColorPicker) {
+                    setTempTextColor(textColor);
+                  }
+                  setShowTextColorPicker(!showTextColorPicker);
+                }}
+                style={{
+                  padding: "6px 8px",
+                  border: "none",
+                  borderRadius: "4px",
+                  backgroundColor: "transparent",
+                  color: "#374151",
+                  cursor: "pointer",
+                  fontSize: "12px"
+                }}
+                title="Text Color"
+              >
+                <i className="fas fa-palette"></i>
+              </button>
+              {showTextColorPicker && (
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: '30px',
+                    left: '-80px',
+                    backgroundColor: 'white',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    zIndex: 1001,
+                    minWidth: '240px'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div style={{ marginBottom: '12px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>
+                    Text Color
+                  </div>
+                  
+                  {/* Color Preview */}
+                  <div style={{
+                    width: '100%',
+                    height: '32px',
+                    backgroundColor: 'white',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    marginBottom: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    color: tempTextColor,
+                    fontWeight: '500'
+                  }}>
+                    Preview Text
+                  </div>
+
+                  {/* Color Wheel */}
+                  <input
+                    type="color"
+                    value={tempTextColor}
+                    onChange={(e) => {
+                      setTempTextColor(e.target.value);
+                    }}
+                    style={{
+                      width: '100%',
+                      height: '48px',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      marginBottom: '12px'
+                    }}
+                  />
+
+                  {/* Hex Input */}
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ 
+                      display: 'block', 
+                      marginBottom: '4px', 
+                      fontSize: '12px', 
+                      fontWeight: '500',
+                      color: '#6b7280'
+                    }}>
+                      Hex Code
+                    </label>
+                    <input
+                      type="text"
+                      value={tempTextColor}
+                      onChange={(e) => {
+                        if (/^#[0-9A-F]{6}$/i.test(e.target.value) || e.target.value.length <= 7) {
+                          setTempTextColor(e.target.value);
+                        }
+                      }}
+                      placeholder="#000000"
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        fontFamily: 'monospace'
+                      }}
+                    />
+                  </div>
+
+                  {/* Apply/Cancel Buttons */}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => {
+                        setTextColor(tempTextColor);
+                        // Apply color to selected text
+                        if (editor) {
+                          editor.chain().focus().setColor(tempTextColor).run();
+                        }
+                        setShowTextColorPicker(false);
+                        setShowBubbleMenu(false);
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '8px 16px',
+                        backgroundColor: '#059669',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      Apply
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTempTextColor(textColor);
+                        setShowTextColorPicker(false);
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '8px 16px',
+                        backgroundColor: '#6b7280',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
         
@@ -1188,6 +1355,164 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                 </div>
               </>
             )}
+            
+            {/* Text Color Picker for Table Headers */}
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => {
+                  if (!showHeaderTextColorPicker) {
+                    setTempHeaderTextColor(headerTextColor);
+                  }
+                  setShowHeaderTextColorPicker(!showHeaderTextColorPicker);
+                }}
+                style={{
+                  padding: "4px 8px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "3px",
+                  backgroundColor: "white",
+                  cursor: "pointer",
+                  fontSize: "10px",
+                  color: "#374151"
+                }}
+                title="Text Color"
+              >
+                <i className="fas fa-font"></i>
+              </button>
+              {showHeaderTextColorPicker && (
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: '30px',
+                    left: '-80px',
+                    backgroundColor: 'white',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    zIndex: 1001,
+                    minWidth: '240px'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div style={{ marginBottom: '12px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>
+                    Header Text Color
+                  </div>
+                  
+                  {/* Color Preview */}
+                  <div style={{
+                    width: '100%',
+                    height: '32px',
+                    backgroundColor: headerColor,
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    marginBottom: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    color: tempHeaderTextColor,
+                    fontWeight: '500'
+                  }}>
+                    Header Text
+                  </div>
+
+                  {/* Color Wheel */}
+                  <input
+                    type="color"
+                    value={tempHeaderTextColor}
+                    onChange={(e) => {
+                      setTempHeaderTextColor(e.target.value);
+                    }}
+                    style={{
+                      width: '100%',
+                      height: '48px',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      marginBottom: '12px'
+                    }}
+                  />
+
+                  {/* Hex Input */}
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ 
+                      display: 'block', 
+                      marginBottom: '4px', 
+                      fontSize: '12px', 
+                      fontWeight: '500',
+                      color: '#6b7280'
+                    }}>
+                      Hex Code
+                    </label>
+                    <input
+                      type="text"
+                      value={tempHeaderTextColor}
+                      onChange={(e) => {
+                        if (/^#[0-9A-F]{6}$/i.test(e.target.value) || e.target.value.length <= 7) {
+                          setTempHeaderTextColor(e.target.value);
+                        }
+                      }}
+                      placeholder="#000000"
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        fontFamily: 'monospace'
+                      }}
+                    />
+                  </div>
+
+                  {/* Apply/Cancel Buttons */}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => {
+                        setHeaderTextColor(tempHeaderTextColor);
+                        // Apply color to selected text in table headers
+                        if (editor) {
+                          editor.chain().focus().setColor(tempHeaderTextColor).run();
+                        }
+                        setShowHeaderTextColorPicker(false);
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '8px 16px',
+                        backgroundColor: '#059669',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      Apply
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTempHeaderTextColor(headerTextColor);
+                        setShowHeaderTextColorPicker(false);
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '8px 16px',
+                        backgroundColor: '#6b7280',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            
             {/* Row Operations */}
             <button
               onClick={() => editor.chain().focus().addRowBefore().run()}
