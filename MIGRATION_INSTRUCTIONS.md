@@ -1,7 +1,7 @@
-# Folder Icon Migration Instructions
+# Folder Icon & Position Migration Instructions
 
 ## 🎯 Current Status
-The app is fully functional with folder icons working via local state. To enable **multi-user icon syncing** and **database persistence**, the following migration needs to be applied:
+The app is fully functional with smart fallback system. To enable **multi-user icon syncing**, **database persistence**, and **reliable folder reordering**, apply the following migrations:
 
 ## 🚀 Apply Migration (Choose One Method)
 
@@ -10,30 +10,42 @@ The app is fully functional with folder icons working via local state. To enable
 npm run apply-icon-migration
 ```
 
-### Method 2: Using Prisma CLI
+### Method 2: Using Prisma CLI (In Production Environment)
 ```bash
 npx prisma migrate deploy
 ```
 
 ### Method 3: Direct SQL (Advanced)
-Execute in your database:
+Execute these commands in your database:
 ```sql
+-- Add icon and color fields
 ALTER TABLE "Folder" ADD COLUMN IF NOT EXISTS "icon" TEXT NOT NULL DEFAULT 'folder';
 ALTER TABLE "Folder" ADD COLUMN IF NOT EXISTS "iconColor" TEXT NOT NULL DEFAULT '#f57c00';
+
+-- Add position field for reliable ordering
+ALTER TABLE "Folder" ADD COLUMN IF NOT EXISTS "position" INTEGER NOT NULL DEFAULT 0;
+
+-- Update existing folders with proper positions
+UPDATE "Folder" SET "position" = (
+  SELECT ROW_NUMBER() OVER (PARTITION BY "shopId" ORDER BY "createdAt" DESC) - 1
+  FROM (SELECT "id", "shopId", "createdAt" FROM "Folder" f2 WHERE f2."id" = "Folder"."id") AS sub
+) WHERE "position" = 0;
 ```
 
 ## ✅ After Migration Applied
 
 The app will automatically:
-1. **Detect icon fields** are available in database
-2. **Switch from local to database storage** for icons
-3. **Enable multi-user sync** - all team members see same icons
-4. **Persist icons across sessions** - no more local-only storage
+1. **Detect all fields** are available in database
+2. **Switch from local to database storage** for icons and positions
+3. **Enable multi-user sync** - all team members see same icons and folder order
+4. **Persist everything across sessions** - no more local-only storage
+5. **Fix folder reordering** - positions save permanently, no more snapping back
 
 ## 🔧 Migration Files Created
 
 - `prisma/migrations/20250904234933_add_folder_icon/migration.sql`
 - `prisma/migrations/20250905041056_add_folder_icon_color/migration.sql`
+- `prisma/migrations/20250905050203_add_folder_position/migration.sql`
 
 ## 🎪 Current Functionality (Before Migration)
 

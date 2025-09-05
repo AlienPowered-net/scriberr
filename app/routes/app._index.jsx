@@ -3736,27 +3736,73 @@ export default function Index() {
           justifyContent: "space-between",
           alignItems: "center"
         }}>
-          <div style={{ textAlign: "center", flex: "1" }}>
-            © 2025, Scriberr Powered by{" "}
-            <a 
-              href="https://www.alienpowered.net" 
-              target="_blank" 
-              rel="noopener noreferrer"
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <span>© 2025, Scriberr Powered by{" "}
+              <a 
+                href="https://www.alienpowered.net" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{
+                  color: "#0a0",
+                  textDecoration: "none",
+                  fontWeight: "600",
+                  transition: "color 0.2s ease"
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.color = "#008000";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.color = "#0a0";
+                }}
+              >
+                Aliens
+              </a>
+            </span>
+            <button
+              onClick={async () => {
+                setAlertMessage("Applying database migration...");
+                setAlertType("success");
+                
+                try {
+                  const response = await fetch('/api/apply-migration', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                  });
+                  
+                  const result = await response.json();
+                  
+                  if (result.success) {
+                    setAlertMessage(result.message);
+                    setAlertType("success");
+                    if (!result.alreadyApplied) {
+                      setTimeout(() => {
+                        window.location.reload(); // Reload to get updated data
+                      }, 2000);
+                    }
+                  } else {
+                    setAlertMessage("Migration failed: " + result.error);
+                    setAlertType("error");
+                  }
+                } catch (error) {
+                  setAlertMessage("Migration failed: " + error.message);
+                  setAlertType("error");
+                }
+                
+                setTimeout(() => setAlertMessage(''), 5000);
+              }}
               style={{
-                color: "#0a0",
-                textDecoration: "none",
-                fontWeight: "600",
-                transition: "color 0.2s ease"
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.color = "#008000";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.color = "#0a0";
+                backgroundColor: "#2563eb",
+                color: "white",
+                border: "none",
+                padding: "6px 12px",
+                borderRadius: "6px",
+                fontSize: "12px",
+                cursor: "pointer",
+                fontWeight: "500"
               }}
             >
-              Aliens
-            </a>
+              Apply DB Migration
+            </button>
           </div>
           <div style={{ 
             fontStyle: "italic", 

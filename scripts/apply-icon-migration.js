@@ -5,7 +5,7 @@
  * Run this script after deployment to enable folder icon functionality
  */
 
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
 
 async function applyIconMigration() {
   const prisma = new PrismaClient();
@@ -50,16 +50,15 @@ async function applyIconMigration() {
   }
 }
 
-if (require.main === module) {
-  applyIconMigration()
-    .then(() => {
-      console.log('🎯 Migration completed successfully');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('💥 Migration failed:', error);
-      process.exit(1);
-    });
-}
+// Run the migration
+applyIconMigration()
+  .then(() => {
+    console.log('🎯 Migration completed successfully');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error('💥 Migration failed:', error);
+    process.exit(1);
+  });
 
-module.exports = { applyIconMigration };
+export { applyIconMigration };
