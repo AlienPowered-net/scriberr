@@ -2650,10 +2650,19 @@ export default function Index() {
 
         {/* NOTE EDITOR */}
         <div className="col-editor" style={{ 
-          width: collapsedColumns.folders && collapsedColumns.notes ? "calc(100vw - 140px)" :
-                 collapsedColumns.folders || collapsedColumns.notes ? "calc(100vw - 25% - 120px)" : "50%",
+          ...(collapsedColumns.folders && collapsedColumns.notes ? {
+            flex: "1",
+            width: "auto",
+            maxWidth: "none"
+          } : collapsedColumns.folders || collapsedColumns.notes ? {
+            width: "75%",
+            flex: "none"
+          } : {
+            width: "50%", 
+            flex: "none"
+          }),
           transition: "all 0.3s ease",
-          maxWidth: collapsedColumns.folders && collapsedColumns.notes ? "none" : "50%"
+          minWidth: "300px"
         }}>
           <Card>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
