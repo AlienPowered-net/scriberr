@@ -1,6 +1,6 @@
 {
   "name": "scriberr",
-  "version": "v.a267",
+  "version": "v.a268",
   "private": true,
   "scripts": {
     "vercel-build": "prisma generate && npm run build",
@@ -46,6 +46,7 @@
     "@tiptap/extension-code-block-lowlight": "^3.4.1",
     "@tiptap/extension-color": "^3.4.1",
     "@tiptap/extension-emoji": "^3.4.1",
+    "@tiptap/extension-floating-menu": "^3.4.1",
     "@tiptap/extension-font-family": "^3.4.1",
     "@tiptap/extension-highlight": "^3.4.1",
     "@tiptap/extension-horizontal-rule": "^3.4.1",

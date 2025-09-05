@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
-// BubbleMenu will be implemented as custom solution
+import { FloatingMenu } from '@tiptap/extension-floating-menu';
 import StarterKit from '@tiptap/starter-kit';
 import { TableKit } from '@tiptap/extension-table';
 import Image from '@tiptap/extension-image';
@@ -34,6 +34,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showBubbleMenu, setShowBubbleMenu] = useState(false);
   const [bubbleMenuPosition, setBubbleMenuPosition] = useState({ x: 0, y: 0 });
+  const [showTableMenu, setShowTableMenu] = useState(false);
+  const [tableMenuPosition, setTableMenuPosition] = useState({ x: 0, y: 0 });
   const editorRef = useRef(null);
 
   // Create lowlight instance for syntax highlighting
@@ -121,7 +123,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       Highlight.configure({
         multicolor: true,
       }),
-      // BubbleMenu will be added as custom component
+      FloatingMenu.configure({
+        shouldShow: ({ editor }) => {
+          return editor.isEmpty;
+        },
+      }),
     ],
     content: value || '',
     onUpdate: ({ editor }) => {
@@ -148,17 +154,29 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     const handleSelectionUpdate = () => {
       const { from, to } = editor.state.selection;
       const hasSelection = from !== to;
+      const isInTable = editor.isActive('table');
       
-      if (hasSelection && !editor.isActive('table')) {
-        // Get selection coordinates
+      if (hasSelection && !isInTable) {
+        // Text selection bubble menu
         const coords = editor.view.coordsAtPos(from);
         setBubbleMenuPosition({
           x: coords.left,
           y: coords.top - 50 // Position above selection
         });
         setShowBubbleMenu(true);
+        setShowTableMenu(false);
+      } else if (isInTable) {
+        // Table cell bubble menu
+        const coords = editor.view.coordsAtPos(from);
+        setTableMenuPosition({
+          x: coords.left,
+          y: coords.top - 50
+        });
+        setShowTableMenu(true);
+        setShowBubbleMenu(false);
       } else {
         setShowBubbleMenu(false);
+        setShowTableMenu(false);
       }
     };
 
@@ -834,23 +852,52 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           </div>
         )}
         
-        {/* Table Bubble Menu for table manipulation - temporarily disabled */}
-        {false && editor && (
-          <div>
+        {/* Table Cell Bubble Menu for table manipulation */}
+        {showTableMenu && editor && (
+          <div
+            style={{
+              position: 'fixed',
+              left: tableMenuPosition.x,
+              top: tableMenuPosition.y,
+              backgroundColor: "white",
+              border: "1px solid #e1e3e5",
+              borderRadius: "8px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+              padding: "4px",
+              display: "flex",
+              gap: "2px",
+              zIndex: 1000
+            }}
+          >
+            <button
+              onClick={() => editor.chain().focus().toggleHeaderRow().run()}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: editor.isActive('tableHeader') ? '#e3f2fd' : 'transparent',
+                color: editor.isActive('tableHeader') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Toggle Header Row"
+            >
+              <i className="fas fa-heading"></i>
+            </button>
             <button
               onClick={() => editor.chain().focus().addRowBefore().run()}
               style={{
                 padding: "6px 8px",
                 border: "none",
                 borderRadius: "4px",
-                backgroundColor: "transparent",
-                color: "#374151",
+                backgroundColor: "#dcfce7",
+                color: "#15803d",
                 cursor: "pointer",
                 fontSize: "12px"
               }}
               title="Add Row Above"
             >
-              <i className="fas fa-plus"></i> Row ↑
+              <i className="fas fa-plus"></i>↑
             </button>
             <button
               onClick={() => editor.chain().focus().addRowAfter().run()}
@@ -858,14 +905,14 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                 padding: "6px 8px",
                 border: "none",
                 borderRadius: "4px",
-                backgroundColor: "transparent",
-                color: "#374151",
+                backgroundColor: "#dcfce7",
+                color: "#15803d",
                 cursor: "pointer",
                 fontSize: "12px"
               }}
               title="Add Row Below"
             >
-              <i className="fas fa-plus"></i> Row ↓
+              <i className="fas fa-plus"></i>↓
             </button>
             <button
               onClick={() => editor.chain().focus().addColumnBefore().run()}
@@ -873,14 +920,14 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                 padding: "6px 8px",
                 border: "none",
                 borderRadius: "4px",
-                backgroundColor: "transparent",
-                color: "#374151",
+                backgroundColor: "#dcfce7",
+                color: "#15803d",
                 cursor: "pointer",
                 fontSize: "12px"
               }}
               title="Add Column Left"
             >
-              <i className="fas fa-plus"></i> Col ←
+              <i className="fas fa-plus"></i>←
             </button>
             <button
               onClick={() => editor.chain().focus().addColumnAfter().run()}
@@ -888,14 +935,14 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                 padding: "6px 8px",
                 border: "none",
                 borderRadius: "4px",
-                backgroundColor: "transparent",
-                color: "#374151",
+                backgroundColor: "#dcfce7",
+                color: "#15803d",
                 cursor: "pointer",
                 fontSize: "12px"
               }}
               title="Add Column Right"
             >
-              <i className="fas fa-plus"></i> Col →
+              <i className="fas fa-plus"></i>→
             </button>
             <button
               onClick={() => editor.chain().focus().deleteRow().run()}
@@ -903,14 +950,14 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                 padding: "6px 8px",
                 border: "none",
                 borderRadius: "4px",
-                backgroundColor: "transparent",
+                backgroundColor: "#fef2f2",
                 color: "#dc2626",
                 cursor: "pointer",
                 fontSize: "12px"
               }}
               title="Delete Row"
             >
-              <i className="fas fa-trash"></i> Row
+              <i className="fas fa-trash"></i>Row
             </button>
             <button
               onClick={() => editor.chain().focus().deleteColumn().run()}
@@ -918,14 +965,14 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                 padding: "6px 8px",
                 border: "none",
                 borderRadius: "4px",
-                backgroundColor: "transparent",
+                backgroundColor: "#fef2f2",
                 color: "#dc2626",
                 cursor: "pointer",
                 fontSize: "12px"
               }}
               title="Delete Column"
             >
-              <i className="fas fa-trash"></i> Col
+              <i className="fas fa-trash"></i>Col
             </button>
           </div>
         )}
