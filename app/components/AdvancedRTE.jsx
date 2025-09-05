@@ -15,7 +15,6 @@ import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import Link from '@tiptap/extension-link';
-import TableOfContents from '@tiptap/extension-table-of-contents';
 import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack } from '@shopify/polaris';
 
@@ -44,7 +43,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   const [showHeaderTextColorPicker, setShowHeaderTextColorPicker] = useState(false);
   const [headerTextColor, setHeaderTextColor] = useState('#000000');
   const [tempHeaderTextColor, setTempHeaderTextColor] = useState('#000000');
-  const [tocItems, setTocItems] = useState([]);
+  const [showBorderColorPicker, setShowBorderColorPicker] = useState(false);
+  const [borderColor, setBorderColor] = useState('#d1d5db');
+  const [tempBorderColor, setTempBorderColor] = useState('#d1d5db');
   const editorRef = useRef(null);
 
   // Create lowlight instance for syntax highlighting
@@ -110,12 +111,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         openOnClick: false,
         HTMLAttributes: {
           class: 'custom-link',
-        },
-      }),
-      TableOfContents.configure({
-        getIndex: (item, range) => range.from,
-        onUpdate: (content) => {
-          // Optional: handle table of contents updates
         },
       }),
       Image.configure({
@@ -216,26 +211,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     };
   }, [editor]);
 
-  // Handle TOC link clicks
-  useEffect(() => {
-    if (!editor) return;
-
-    const handleTOCClick = (event) => {
-      if (event.target.closest('.table-of-contents a')) {
-        event.preventDefault();
-        const link = event.target.closest('a');
-        const anchorId = link.getAttribute('href').substring(1);
-        scrollToAnchor(anchorId);
-      }
-    };
-
-    const editorElement = editor.view.dom;
-    editorElement.addEventListener('click', handleTOCClick);
-    
-    return () => {
-      editorElement.removeEventListener('click', handleTOCClick);
-    };
-  }, [editor, tocItems]);
 
   // Handle clicking outside to close color pickers
   useEffect(() => {
@@ -248,6 +223,10 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         setShowTextColorPicker(false);
         setTempTextColor(textColor);
       }
+      if (showBorderColorPicker && !event.target.closest('.table-menu')) {
+        setShowBorderColorPicker(false);
+        setTempBorderColor(borderColor);
+      }
     };
 
     document.addEventListener('click', handleClickOutside);
@@ -255,7 +234,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     return () => {
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [showColorPicker, headerColor, showTextColorPicker, textColor]);
+  }, [showColorPicker, headerColor, showTextColorPicker, textColor, showBorderColorPicker, borderColor]);
 
   const insertImage = () => {
     if (imageUrl && editor) {
@@ -286,53 +265,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     }
   };
 
-  const updateTOCInEditor = () => {
-    console.log('updateTOCInEditor called with items:', tocItems);
-    if (tocItems.length === 0) return;
-    
-    const tocHTML = `
-      <div class="table-of-contents">
-        <h3>Table of Contents</h3>
-        <ul>
-          ${tocItems.map(item => `
-            <li class="toc-level-${item.level}">
-              <a href="#${item.id}">${item.text}</a>
-            </li>
-          `).join('')}
-        </ul>
-      </div>
-    `;
-    
-    console.log('Generated TOC HTML:', tocHTML);
-    
-    // Find and replace existing TOC or insert new one
-    const existingTOC = editor.view.dom.querySelector('.table-of-contents');
-    console.log('Existing TOC found:', existingTOC);
-    
-    if (existingTOC) {
-      // Use editor commands to update content
-      const tocPos = editor.view.posAtDOM(existingTOC, 0);
-      const tocEndPos = editor.view.posAtDOM(existingTOC, existingTOC.childNodes.length);
-      
-      editor.chain()
-        .focus()
-        .setTextSelection({ from: tocPos, to: tocEndPos })
-        .insertContent(tocHTML)
-        .run();
-    }
-  };
-
-  const scrollToAnchor = (anchorId) => {
-    const element = editor.view.dom.querySelector(`[data-toc-anchor="${anchorId}"]`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      // Highlight the target briefly
-      element.style.backgroundColor = '#fff3cd';
-      setTimeout(() => {
-        element.style.backgroundColor = '';
-      }, 2000);
-    }
-  };
 
   const generateAIContent = async () => {
     if (!aiPrompt.trim()) return;
@@ -570,44 +502,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               title="Insert Table"
             >
               <i className="fas fa-table"></i>
-            </button>
-            <button
-              onClick={() => {
-                if (editor) {
-                  const tocHTML = tocItems.length > 0 
-                    ? `<div class="table-of-contents">
-                         <h3>Table of Contents</h3>
-                         <ul>
-                           ${tocItems.map(item => `
-                             <li class="toc-level-${item.level}">
-                               <a href="#${item.id}" onclick="scrollToAnchor('${item.id}')">${item.text}</a>
-                             </li>
-                           `).join('')}
-                         </ul>
-                       </div>`
-                    : `<div class="table-of-contents">
-                         <h3>Table of Contents</h3>
-                         <ul>
-                           <li><em>No items yet. Highlight text and click the bookmark icon to add items.</em></li>
-                         </ul>
-                       </div>`;
-                  
-                  editor.chain().focus().insertContent(tocHTML).run();
-                }
-              }}
-              style={{
-                padding: "8px 12px",
-                border: "1px solid #e1e3e5",
-                borderRadius: "6px",
-                backgroundColor: "white",
-                color: "#374151",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                fontSize: "14px"
-              }}
-              title="Table of Contents"
-            >
-              <i className="far fa-newspaper"></i>
             </button>
           </div>
 
@@ -889,57 +783,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               title="Quote"
             >
               <i className="fas fa-quote-left"></i>
-            </button>
-            <button
-              onClick={() => {
-                console.log('TOC button clicked');
-                const selectedText = editor.state.doc.textBetween(
-                  editor.state.selection.from,
-                  editor.state.selection.to
-                );
-                console.log('Selected text:', selectedText);
-                
-                if (selectedText.trim()) {
-                  const anchorId = `toc-${Date.now()}`;
-                  console.log('Creating anchor:', anchorId);
-                  
-                  // Wrap selected text with anchor span
-                  editor.chain().focus().insertContent(
-                    `<span id="${anchorId}" data-toc-anchor="${anchorId}" style="background-color: rgba(255, 235, 59, 0.3);">${selectedText.trim()}</span>`
-                  ).run();
-                  
-                  // Add to TOC items
-                  const newTocItem = {
-                    id: anchorId,
-                    text: selectedText.trim(),
-                    level: 1
-                  };
-                  console.log('Adding TOC item:', newTocItem);
-                  setTocItems(prev => {
-                    const updated = [...prev, newTocItem];
-                    console.log('Updated TOC items:', updated);
-                    return updated;
-                  });
-                  
-                  // Update existing TOC in editor if it exists
-                  setTimeout(() => {
-                    updateTOCInEditor();
-                  }, 100);
-                }
-                setShowBubbleMenu(false);
-              }}
-              style={{
-                padding: "6px 8px",
-                border: "none",
-                borderRadius: "4px",
-                backgroundColor: "transparent",
-                color: "#374151",
-                cursor: "pointer",
-                fontSize: "12px"
-              }}
-              title="Add to Table of Contents"
-            >
-              <i className="fas fa-bookmark"></i>
             </button>
             <div style={{ position: 'relative' }}>
               <button
@@ -1493,6 +1336,185 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                       onClick={() => {
                         setTempHeaderTextColor(headerTextColor);
                         setShowHeaderTextColorPicker(false);
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '8px 16px',
+                        backgroundColor: '#6b7280',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Table Border Color Picker */}
+            <div style={{ width: "1px", height: "20px", backgroundColor: "#e5e7eb", margin: "0 4px" }} />
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => {
+                  if (!showBorderColorPicker) {
+                    setTempBorderColor(borderColor);
+                  }
+                  setShowBorderColorPicker(!showBorderColorPicker);
+                }}
+                style={{
+                  padding: "4px 8px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "3px",
+                  backgroundColor: "white",
+                  cursor: "pointer",
+                  fontSize: "10px",
+                  color: "#374151"
+                }}
+                title="Table Border Color"
+              >
+                <i className="fas fa-border-all"></i>
+              </button>
+              {showBorderColorPicker && (
+                <div 
+                  style={{
+                    position: 'absolute',
+                    top: '30px',
+                    left: '-80px',
+                    backgroundColor: 'white',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    zIndex: 1001,
+                    minWidth: '240px'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div style={{ marginBottom: '12px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>
+                    Table Border Color
+                  </div>
+                  
+                  {/* Color Preview */}
+                  <div style={{
+                    width: '100%',
+                    height: '32px',
+                    backgroundColor: 'white',
+                    border: `2px solid ${tempBorderColor}`,
+                    borderRadius: '6px',
+                    marginBottom: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    color: '#374151',
+                    fontWeight: '500'
+                  }}>
+                    Border Preview
+                  </div>
+
+                  {/* Color Wheel */}
+                  <input
+                    type="color"
+                    value={tempBorderColor}
+                    onChange={(e) => {
+                      setTempBorderColor(e.target.value);
+                    }}
+                    style={{
+                      width: '100%',
+                      height: '48px',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      marginBottom: '12px'
+                    }}
+                  />
+
+                  {/* Hex Input */}
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ 
+                      display: 'block', 
+                      marginBottom: '4px', 
+                      fontSize: '12px', 
+                      fontWeight: '500',
+                      color: '#6b7280'
+                    }}>
+                      Hex Code
+                    </label>
+                    <input
+                      type="text"
+                      value={tempBorderColor}
+                      onChange={(e) => {
+                        if (/^#[0-9A-F]{6}$/i.test(e.target.value) || e.target.value.length <= 7) {
+                          setTempBorderColor(e.target.value);
+                        }
+                      }}
+                      placeholder="#d1d5db"
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        fontFamily: 'monospace'
+                      }}
+                    />
+                  </div>
+
+                  {/* Apply/Cancel Buttons */}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => {
+                        setBorderColor(tempBorderColor);
+                        // Apply border color to entire table
+                        if (editor) {
+                          const tableElements = editor.view.dom.querySelectorAll('table, th, td');
+                          
+                          tableElements.forEach(element => {
+                            element.style.setProperty('border-color', tempBorderColor, 'important');
+                            element.style.setProperty('border', `1px solid ${tempBorderColor}`, 'important');
+                          });
+                          
+                          // Also add CSS rule for persistence
+                          const styleId = 'dynamic-table-border-style';
+                          let styleElement = document.getElementById(styleId);
+                          if (!styleElement) {
+                            styleElement = document.createElement('style');
+                            styleElement.id = styleId;
+                            document.head.appendChild(styleElement);
+                          }
+                          
+                          styleElement.textContent = `
+                            .ProseMirror table, .ProseMirror table th, .ProseMirror table td {
+                              border-color: ${tempBorderColor} !important;
+                              border: 1px solid ${tempBorderColor} !important;
+                            }
+                          `;
+                        }
+                        setShowBorderColorPicker(false);
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '8px 16px',
+                        backgroundColor: '#059669',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      Apply
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTempBorderColor(borderColor);
+                        setShowBorderColorPicker(false);
                       }}
                       style={{
                         flex: 1,
