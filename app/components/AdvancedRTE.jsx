@@ -38,6 +38,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   const [tableMenuPosition, setTableMenuPosition] = useState({ x: 0, y: 0 });
   const [showFloatingMenu, setShowFloatingMenu] = useState(false);
   const [floatingMenuPosition, setFloatingMenuPosition] = useState({ x: 0, y: 0 });
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [headerColor, setHeaderColor] = useState('#f3f4f6');
+  const [tocItems, setTocItems] = useState([]);
   const editorRef = useRef(null);
 
   // Create lowlight instance for syntax highlighting
@@ -178,15 +181,15 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         setShowBubbleMenu(true);
         setShowTableMenu(false);
         setShowFloatingMenu(false);
-      } else if (isInTable) {
-        // Table cell bubble menu
+      } else if (isInTable && hasSelection) {
+        // Text selection bubble menu in table (only when text is selected)
         const coords = editor.view.coordsAtPos(from);
-        setTableMenuPosition({
+        setBubbleMenuPosition({
           x: coords.left,
           y: coords.top - 50
         });
-        setShowTableMenu(true);
-        setShowBubbleMenu(false);
+        setShowBubbleMenu(true);
+        setShowTableMenu(false);
         setShowFloatingMenu(false);
       } else if (isEmpty && editor.isFocused) {
         // Floating menu for empty editor
@@ -211,6 +214,52 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       editor.off('selectionUpdate', handleSelectionUpdate);
     };
   }, [editor]);
+
+  // Handle right-click for table cell menu
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleContextMenu = (event) => {
+      if (!editor.isActive('table')) return;
+      
+      event.preventDefault();
+      setTableMenuPosition({
+        x: event.clientX,
+        y: event.clientY
+      });
+      setShowTableMenu(true);
+      setShowBubbleMenu(false);
+      setShowFloatingMenu(false);
+    };
+
+    const editorElement = editor.view.dom;
+    editorElement.addEventListener('contextmenu', handleContextMenu);
+    
+    return () => {
+      editorElement.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, [editor]);
+
+  // Handle TOC link clicks
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleTOCClick = (event) => {
+      if (event.target.closest('.table-of-contents a')) {
+        event.preventDefault();
+        const link = event.target.closest('a');
+        const anchorId = link.getAttribute('href').substring(1);
+        scrollToAnchor(anchorId);
+      }
+    };
+
+    const editorElement = editor.view.dom;
+    editorElement.addEventListener('click', handleTOCClick);
+    
+    return () => {
+      editorElement.removeEventListener('click', handleTOCClick);
+    };
+  }, [editor, tocItems]);
 
   const insertImage = () => {
     if (imageUrl && editor) {
@@ -238,6 +287,41 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       setLinkUrl('');
       setLinkText('');
       setShowLinkModal(false);
+    }
+  };
+
+  const updateTOCInEditor = () => {
+    if (tocItems.length === 0) return;
+    
+    const tocHTML = `
+      <div class="table-of-contents">
+        <h3>Table of Contents</h3>
+        <ul>
+          ${tocItems.map(item => `
+            <li class="toc-level-${item.level}">
+              <a href="#${item.id}" onclick="scrollToAnchor('${item.id}')">${item.text}</a>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    `;
+    
+    // Find and replace existing TOC or insert new one
+    const existingTOC = editor.view.dom.querySelector('.table-of-contents');
+    if (existingTOC) {
+      existingTOC.outerHTML = tocHTML;
+    }
+  };
+
+  const scrollToAnchor = (anchorId) => {
+    const element = editor.view.dom.querySelector(`[data-toc-anchor="${anchorId}"]`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Highlight the target briefly
+      element.style.backgroundColor = '#fff3cd';
+      setTimeout(() => {
+        element.style.backgroundColor = '';
+      }, 2000);
     }
   };
 
@@ -462,110 +546,44 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
 
           {/* Table & TOC */}
           <div style={{ display: "flex", gap: "4px", borderRight: "1px solid #e1e3e5", paddingRight: "8px" }}>
-            {editor?.isActive('table') && (
-              <>
-                <button
-                  onClick={() => editor.chain().focus().addRowBefore().run()}
-                  style={{
-                    padding: "6px 8px",
-                    border: "1px solid #16a34a",
-                    borderRadius: "4px",
-                    backgroundColor: "#dcfce7",
-                    color: "#15803d",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                    fontSize: "12px"
-                  }}
-                  title="Add Row Above"
-                >
-                  <i className="fas fa-plus"></i>↑
-                </button>
-                <button
-                  onClick={() => editor.chain().focus().addRowAfter().run()}
-                  style={{
-                    padding: "6px 8px",
-                    border: "1px solid #16a34a",
-                    borderRadius: "4px",
-                    backgroundColor: "#dcfce7",
-                    color: "#15803d",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                    fontSize: "12px"
-                  }}
-                  title="Add Row Below"
-                >
-                  <i className="fas fa-plus"></i>↓
-                </button>
-                <button
-                  onClick={() => editor.chain().focus().addColumnBefore().run()}
-                  style={{
-                    padding: "6px 8px",
-                    border: "1px solid #16a34a",
-                    borderRadius: "4px",
-                    backgroundColor: "#dcfce7",
-                    color: "#15803d",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                    fontSize: "12px"
-                  }}
-                  title="Add Column Left"
-                >
-                  <i className="fas fa-plus"></i>←
-                </button>
-                <button
-                  onClick={() => editor.chain().focus().addColumnAfter().run()}
-                  style={{
-                    padding: "6px 8px",
-                    border: "1px solid #16a34a",
-                    borderRadius: "4px",
-                    backgroundColor: "#dcfce7",
-                    color: "#15803d",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                    fontSize: "12px"
-                  }}
-                  title="Add Column Right"
-                >
-                  <i className="fas fa-plus"></i>→
-                </button>
-                <button
-                  onClick={() => editor.chain().focus().deleteRow().run()}
-                  style={{
-                    padding: "6px 8px",
-                    border: "1px solid #dc2626",
-                    borderRadius: "4px",
-                    backgroundColor: "#fef2f2",
-                    color: "#dc2626",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                    fontSize: "12px"
-                  }}
-                  title="Delete Row"
-                >
-                  <i className="fas fa-trash"></i>Row
-                </button>
-                <button
-                  onClick={() => editor.chain().focus().deleteColumn().run()}
-                  style={{
-                    padding: "6px 8px",
-                    border: "1px solid #dc2626",
-                    borderRadius: "4px",
-                    backgroundColor: "#fef2f2",
-                    color: "#dc2626",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                    fontSize: "12px"
-                  }}
-                  title="Delete Column"
-                >
-                  <i className="fas fa-trash"></i>Col
-                </button>
-              </>
-            )}
+            <button
+              onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+              style={{
+                padding: "8px 12px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                backgroundColor: "white",
+                color: "#374151",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "14px"
+              }}
+              title="Insert Table"
+            >
+              <i className="fas fa-table"></i>
+            </button>
             <button
               onClick={() => {
                 if (editor) {
-                  editor.chain().focus().insertContent('<div class="table-of-contents"><h3>Table of Contents</h3><ul><li><a href="#heading-1">Heading 1</a></li><li><a href="#heading-2">Heading 2</a></li></ul></div>').run();
+                  const tocHTML = tocItems.length > 0 
+                    ? `<div class="table-of-contents">
+                         <h3>Table of Contents</h3>
+                         <ul>
+                           ${tocItems.map(item => `
+                             <li class="toc-level-${item.level}">
+                               <a href="#${item.id}" onclick="scrollToAnchor('${item.id}')">${item.text}</a>
+                             </li>
+                           `).join('')}
+                         </ul>
+                       </div>`
+                    : `<div class="table-of-contents">
+                         <h3>Table of Contents</h3>
+                         <ul>
+                           <li><em>No items yet. Highlight text and click the bookmark icon to add items.</em></li>
+                         </ul>
+                       </div>`;
+                  
+                  editor.chain().focus().insertContent(tocHTML).run();
                 }
               }}
               style={{
@@ -773,26 +791,59 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               zIndex: 1000
             }}
           >
-            <span style={{ color: "#6b7280", fontSize: "14px", fontWeight: "500" }}>
-              Start typing or click
-            </span>
             <button
               onClick={() => {
-                editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+                editor.chain().focus().toggleBold().run();
                 setShowFloatingMenu(false);
               }}
               style={{
-                padding: "4px 8px",
+                padding: "6px 8px",
                 border: "1px solid #d1d5db",
                 borderRadius: "4px",
-                backgroundColor: "white",
-                color: "#374151",
+                backgroundColor: editor?.isActive('bold') ? '#e3f2fd' : 'white',
+                color: editor?.isActive('bold') ? '#1976d2' : '#374151',
                 cursor: "pointer",
                 fontSize: "12px"
               }}
-              title="Insert Table"
+              title="Bold"
             >
-              <i className="fas fa-table"></i>
+              <i className="fas fa-bold"></i>
+            </button>
+            <button
+              onClick={() => {
+                editor.chain().focus().toggleItalic().run();
+                setShowFloatingMenu(false);
+              }}
+              style={{
+                padding: "6px 8px",
+                border: "1px solid #d1d5db",
+                borderRadius: "4px",
+                backgroundColor: editor?.isActive('italic') ? '#e3f2fd' : 'white',
+                color: editor?.isActive('italic') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Italic"
+            >
+              <i className="fas fa-italic"></i>
+            </button>
+            <button
+              onClick={() => {
+                editor.chain().focus().toggleUnderline().run();
+                setShowFloatingMenu(false);
+              }}
+              style={{
+                padding: "6px 8px",
+                border: "1px solid #d1d5db",
+                borderRadius: "4px",
+                backgroundColor: editor?.isActive('underline') ? '#e3f2fd' : 'white',
+                color: editor?.isActive('underline') ? '#1976d2' : '#374151',
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Underline"
+            >
+              <i className="fas fa-underline"></i>
             </button>
             <button
               onClick={() => {
@@ -800,11 +851,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                 setShowFloatingMenu(false);
               }}
               style={{
-                padding: "4px 8px",
+                padding: "6px 8px",
                 border: "1px solid #d1d5db",
                 borderRadius: "4px",
-                backgroundColor: "white",
-                color: "#374151",
+                backgroundColor: editor?.isActive('heading', { level: 1 }) ? '#e3f2fd' : 'white',
+                color: editor?.isActive('heading', { level: 1 }) ? '#1976d2' : '#374151',
                 cursor: "pointer",
                 fontSize: "12px"
               }}
@@ -922,6 +973,46 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             >
               <i className="fas fa-quote-left"></i>
             </button>
+            <button
+              onClick={() => {
+                const selectedText = editor.state.doc.textBetween(
+                  editor.state.selection.from,
+                  editor.state.selection.to
+                );
+                if (selectedText.trim()) {
+                  const anchorId = `toc-${Date.now()}`;
+                  // Add anchor to selected text
+                  editor.chain().focus().setMark('textStyle', { 
+                    id: anchorId,
+                    'data-toc-anchor': anchorId 
+                  }).run();
+                  
+                  // Add to TOC items
+                  const newTocItem = {
+                    id: anchorId,
+                    text: selectedText.trim(),
+                    level: 1
+                  };
+                  setTocItems(prev => [...prev, newTocItem]);
+                  
+                  // Update existing TOC in editor if it exists
+                  updateTOCInEditor();
+                }
+                setShowBubbleMenu(false);
+              }}
+              style={{
+                padding: "6px 8px",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: "transparent",
+                color: "#374151",
+                cursor: "pointer",
+                fontSize: "12px"
+              }}
+              title="Add to Table of Contents"
+            >
+              <i className="fas fa-bookmark"></i>
+            </button>
           </div>
         )}
         
@@ -961,73 +1052,79 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               <>
                 <div style={{ width: "1px", height: "20px", backgroundColor: "#e5e7eb", margin: "0 4px" }} />
                 <button
-                  onClick={() => {
-                    // Add light gray class (default)
-                    editor.commands.updateAttributes('tableHeader', { class: '' });
-                  }}
+                  onClick={() => setShowColorPicker(!showColorPicker)}
                   style={{
-                    padding: "4px 6px",
+                    padding: "4px 8px",
                     border: "1px solid #d1d5db",
                     borderRadius: "3px",
-                    backgroundColor: "#f3f4f6",
+                    backgroundColor: headerColor,
                     cursor: "pointer",
-                    fontSize: "10px"
+                    fontSize: "10px",
+                    color: headerColor === '#f3f4f6' ? '#374151' : 'white'
                   }}
-                  title="Light Gray Header"
+                  title="Header Color"
                 >
-                  Gray
+                  <i className="fas fa-palette"></i>
                 </button>
-                <button
-                  onClick={() => {
-                    editor.commands.updateAttributes('tableHeader', { class: 'header-blue' });
-                  }}
-                  style={{
-                    padding: "4px 6px",
-                    border: "1px solid #1e40af",
-                    borderRadius: "3px",
-                    backgroundColor: "#1e40af",
-                    color: "white",
-                    cursor: "pointer",
-                    fontSize: "10px"
-                  }}
-                  title="Blue Header"
-                >
-                  Blue
-                </button>
-                <button
-                  onClick={() => {
-                    editor.commands.updateAttributes('tableHeader', { class: 'header-green' });
-                  }}
-                  style={{
-                    padding: "4px 6px",
-                    border: "1px solid #059669",
-                    borderRadius: "3px",
-                    backgroundColor: "#059669",
-                    color: "white",
-                    cursor: "pointer",
-                    fontSize: "10px"
-                  }}
-                  title="Green Header"
-                >
-                  Green
-                </button>
-                <button
-                  onClick={() => {
-                    editor.commands.updateAttributes('tableHeader', { class: 'header-red' });
-                  }}
-                  style={{
-                    padding: "4px 6px",
-                    border: "1px solid #dc2626",
-                    borderRadius: "3px",
-                    backgroundColor: "#dc2626",
-                    color: "white",
-                    cursor: "pointer",
-                    fontSize: "10px"
-                  }}
-                  title="Red Header"
-                >
-                  Red
-                </button>
+                {showColorPicker && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '30px',
+                    left: '0px',
+                    backgroundColor: 'white',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    zIndex: 1001,
+                    minWidth: '200px'
+                  }}>
+                    <div style={{ marginBottom: '8px', fontSize: '12px', fontWeight: '500' }}>Header Color</div>
+                    <input
+                      type="color"
+                      value={headerColor}
+                      onChange={(e) => {
+                        setHeaderColor(e.target.value);
+                        // Apply color to table headers
+                        const tableHeaders = editor.view.dom.querySelectorAll('th');
+                        tableHeaders.forEach(th => {
+                          th.style.backgroundColor = e.target.value;
+                          th.style.color = e.target.value === '#f3f4f6' ? '#374151' : 'white';
+                        });
+                      }}
+                      style={{
+                        width: '100%',
+                        height: '40px',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer'
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={headerColor}
+                      onChange={(e) => {
+                        if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
+                          setHeaderColor(e.target.value);
+                          const tableHeaders = editor.view.dom.querySelectorAll('th');
+                          tableHeaders.forEach(th => {
+                            th.style.backgroundColor = e.target.value;
+                            th.style.color = e.target.value === '#f3f4f6' ? '#374151' : 'white';
+                          });
+                        }
+                      }}
+                      placeholder="#ffffff"
+                      style={{
+                        width: '100%',
+                        marginTop: '8px',
+                        padding: '4px 8px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '4px',
+                        fontSize: '12px'
+                      }}
+                    />
+                  </div>
+                )}
               </>
             )}
             <button
