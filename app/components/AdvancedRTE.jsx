@@ -1091,17 +1091,32 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                               
                               tableHeaders.forEach((th, index) => {
                                 console.log(`Styling header ${index}:`, th);
+                                const textColor = tempHeaderColor === '#f3f4f6' ? '#374151' : 'white';
+                                
+                                // Remove any existing background properties
+                                th.style.setProperty('background', tempHeaderColor, 'important');
                                 th.style.setProperty('background-color', tempHeaderColor, 'important');
-                                th.style.setProperty('color', tempHeaderColor === '#f3f4f6' ? '#374151' : 'white', 'important');
+                                th.style.setProperty('background-image', 'none', 'important');
+                                th.style.setProperty('background-gradient', 'none', 'important');
+                                th.style.setProperty('color', textColor, 'important');
+                                th.style.setProperty('border', `1px solid ${tempHeaderColor}`, 'important');
                                 th.style.setProperty('border-color', tempHeaderColor, 'important');
                                 
-                                // Also set the style attribute directly
-                                const existingStyle = th.getAttribute('style') || '';
-                                const newStyle = `background-color: ${tempHeaderColor} !important; color: ${tempHeaderColor === '#f3f4f6' ? '#374151' : 'white'} !important; border-color: ${tempHeaderColor} !important;`;
+                                // Also set the style attribute directly with comprehensive override
+                                const newStyle = `
+                                  background: ${tempHeaderColor} !important;
+                                  background-color: ${tempHeaderColor} !important;
+                                  background-image: none !important;
+                                  background-gradient: none !important;
+                                  color: ${textColor} !important;
+                                  border: 1px solid ${tempHeaderColor} !important;
+                                  border-color: ${tempHeaderColor} !important;
+                                `.replace(/\s+/g, ' ').trim();
+                                
                                 th.setAttribute('style', newStyle);
                               });
                               
-                              // Method 2: Add CSS class dynamically
+                              // Method 2: Add CSS class dynamically with comprehensive background override
                               const styleId = 'dynamic-table-header-style';
                               let styleElement = document.getElementById(styleId);
                               if (!styleElement) {
@@ -1110,11 +1125,23 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                                 document.head.appendChild(styleElement);
                               }
                               
+                              const textColor = tempHeaderColor === '#f3f4f6' ? '#374151' : 'white';
+                              
                               styleElement.textContent = `
                                 .ProseMirror table th {
+                                  background: ${tempHeaderColor} !important;
                                   background-color: ${tempHeaderColor} !important;
-                                  color: ${tempHeaderColor === '#f3f4f6' ? '#374151' : 'white'} !important;
+                                  background-image: none !important;
+                                  background-gradient: none !important;
+                                  color: ${textColor} !important;
+                                  border: 1px solid ${tempHeaderColor} !important;
                                   border-color: ${tempHeaderColor} !important;
+                                }
+                                
+                                .ProseMirror table th:hover {
+                                  background: ${tempHeaderColor} !important;
+                                  background-color: ${tempHeaderColor} !important;
+                                  background-image: none !important;
                                 }
                               `;
                               
