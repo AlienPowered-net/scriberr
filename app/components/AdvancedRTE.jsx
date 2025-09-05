@@ -494,17 +494,17 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               onClick={() => setShowAIModal(true)}
               style={{
                 padding: "8px 12px",
-                border: "1px solid #e1e3e5",
+                border: "1px solid #16a34a",
                 borderRadius: "6px",
-                background: "linear-gradient(45deg, #e8f5e8, #e3f2fd)",
-                color: "#1976d2",
+                background: "linear-gradient(45deg, #dcfce7, #bbf7d0)",
+                color: "#15803d",
                 cursor: "pointer",
                 transition: "all 0.2s ease",
                 fontSize: "14px"
               }}
               title="AI Assistant"
             >
-              <i className="fas fa-robot"></i>
+              <i className="fas fa-wand-magic-sparkles"></i>
             </button>
           </div>
 
