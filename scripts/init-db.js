@@ -83,7 +83,16 @@ try {
       for (const migration of knownFailedMigrations) {
         try {
           console.log(`🔧 Resolving known failed migration: ${migration}`);
-          execSync(`npx prisma migrate resolve --rolled-back ${migration}`, { stdio: 'inherit' });
+          
+          // For migrations that add columns that already exist, mark as applied
+          if (migration === '20250826021507_add_content_to_notes') {
+            console.log(`⚠ Migration ${migration} adds existing columns, marking as applied`);
+            execSync(`npx prisma migrate resolve --applied ${migration}`, { stdio: 'inherit' });
+          } else {
+            // For other migrations, roll back
+            execSync(`npx prisma migrate resolve --rolled-back ${migration}`, { stdio: 'inherit' });
+          }
+          
           console.log(`✅ Migration ${migration} resolved`);
         } catch (resolveErr) {
           console.log(`⚠ Migration ${migration} could not be resolved (might not exist or already resolved)`);
