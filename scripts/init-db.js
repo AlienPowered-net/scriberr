@@ -8,26 +8,55 @@ import { execSync } from 'child_process';
 
 console.log('🔧 Initializing database...');
 
+// Determine which database URLs to use based on environment
+function getDatabaseUrls() {
+  const isDevEnvironment = process.env.VERCEL_ENV === 'development' || 
+                           process.env.VERCEL_GIT_COMMIT_REF === 'dev' ||
+                           process.env.VERCEL_URL?.includes('scriberrdev');
+  
+  if (isDevEnvironment && process.env.SCRIBERRNOTE_DEV_DATABASE_URL) {
+    console.log('🔧 Detected dev environment, using dev database');
+    return {
+      databaseUrl: process.env.SCRIBERRNOTE_DEV_DATABASE_URL,
+      directUrl: process.env.SCRIBERRNOTE_DEV_DIRECT_URL || process.env.SCRIBERRNOTE_DEV_DATABASE_URL
+    };
+  }
+  
+  return {
+    databaseUrl: process.env.SCRIBERRNOTE_DATABASE_URL,
+    directUrl: process.env.SCRIBERRNOTE_DIRECT_URL || process.env.SCRIBERRNOTE_DATABASE_URL
+  };
+}
+
 try {
+  const { databaseUrl, directUrl } = getDatabaseUrls();
+  
   // Check if required environment variables are set
-  if (!process.env.SCRIBERRNOTE_DATABASE_URL) {
-    throw new Error('SCRIBERRNOTE_DATABASE_URL environment variable is not set');
+  if (!databaseUrl) {
+    throw new Error('Database URL environment variable is not set');
   }
 
   console.log('📊 Environment check...');
-  console.log('- DATABASE_URL:', process.env.SCRIBERRNOTE_DATABASE_URL ? '✓ SET' : '✗ NOT SET');
-  console.log('- DIRECT_URL:', process.env.SCRIBERRNOTE_DIRECT_URL ? '✓ SET' : '⚠ NOT SET (will use main URL)');
+  console.log('- VERCEL_ENV:', process.env.VERCEL_ENV || 'not set');
+  console.log('- VERCEL_GIT_COMMIT_REF:', process.env.VERCEL_GIT_COMMIT_REF || 'not set');
+  console.log('- VERCEL_URL:', process.env.VERCEL_URL || 'not set');
+  console.log('- DATABASE_URL:', databaseUrl ? '✓ SET' : '✗ NOT SET');
+  console.log('- DIRECT_URL:', directUrl ? '✓ SET' : '⚠ NOT SET (will use main URL)');
 
   console.log('📊 Generating Prisma client...');
   execSync('prisma generate', { stdio: 'inherit' });
 
   console.log('🚀 Running database migrations...');
   
-  // If DIRECT_URL is not set, temporarily set it to the main URL for migrations
+  // Set the database URLs for Prisma to use
+  const originalDatabaseUrl = process.env.SCRIBERRNOTE_DATABASE_URL;
   const originalDirectUrl = process.env.SCRIBERRNOTE_DIRECT_URL;
-  if (!process.env.SCRIBERRNOTE_DIRECT_URL) {
-    process.env.SCRIBERRNOTE_DIRECT_URL = process.env.SCRIBERRNOTE_DATABASE_URL;
-    console.log('⚠ Using main database URL for migrations (DIRECT_URL not set)');
+  
+  process.env.SCRIBERRNOTE_DATABASE_URL = databaseUrl;
+  process.env.SCRIBERRNOTE_DIRECT_URL = directUrl;
+  
+  if (!directUrl || directUrl === databaseUrl) {
+    console.log('⚠ Using main database URL for migrations (DIRECT_URL not set or same as main)');
   }
   
   try {
@@ -62,8 +91,13 @@ try {
     }
   }
   
-  // Restore original value
-  if (!originalDirectUrl) {
+  // Restore original values
+  if (originalDatabaseUrl) {
+    process.env.SCRIBERRNOTE_DATABASE_URL = originalDatabaseUrl;
+  }
+  if (originalDirectUrl) {
+    process.env.SCRIBERRNOTE_DIRECT_URL = originalDirectUrl;
+  } else {
     delete process.env.SCRIBERRNOTE_DIRECT_URL;
   }
 

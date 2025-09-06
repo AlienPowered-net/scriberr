@@ -8,16 +8,33 @@ declare global {
   var __prisma: PrismaClient | undefined;
 }
 
+// Determine which database URL to use based on environment
+function getDatabaseUrl() {
+  // Check if we're in Vercel dev environment (you can set VERCEL_ENV in your dev environment)
+  const isDevEnvironment = process.env.VERCEL_ENV === 'development' || 
+                           process.env.VERCEL_GIT_COMMIT_REF === 'dev' ||
+                           process.env.VERCEL_URL?.includes('scriberrdev');
+  
+  if (isDevEnvironment && process.env.SCRIBERRNOTE_DEV_DATABASE_URL) {
+    console.log('🔧 Using dev database URL');
+    return process.env.SCRIBERRNOTE_DEV_DATABASE_URL;
+  }
+  
+  return process.env.SCRIBERRNOTE_DATABASE_URL;
+}
+
 if (process.env.NODE_ENV === "production") {
+  const databaseUrl = getDatabaseUrl();
+  
   // Ensure database URL is available in production
-  if (!process.env.SCRIBERRNOTE_DATABASE_URL) {
-    throw new Error("SCRIBERRNOTE_DATABASE_URL environment variable is required in production");
+  if (!databaseUrl) {
+    throw new Error("Database URL environment variable is required in production");
   }
   
   prisma = new PrismaClient({
     datasources: {
       db: {
-        url: process.env.SCRIBERRNOTE_DATABASE_URL,
+        url: databaseUrl,
       },
     },
     // Add connection pool configuration for Vercel
