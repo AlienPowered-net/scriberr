@@ -3,7 +3,7 @@
 client_id = "6bce6b128d5d19d33686b60d41c92824"
 name = "scriberr"
 handle = "scriberr"
-application_url = "https://convention-fit-surprise-mechanical.trycloudflare.com"
+application_url = "https://scriberrdev.vercel.app"
 embedded = true
 
 [build]
@@ -26,7 +26,7 @@ api_version = "2025-07"
 scopes = "write_products"
 
 [auth]
-redirect_urls = ["https://convention-fit-surprise-mechanical.trycloudflare.com/auth/callback", "https://convention-fit-surprise-mechanical.trycloudflare.com/auth/shopify/callback", "https://convention-fit-surprise-mechanical.trycloudflare.com/api/auth/callback"]
+redirect_urls = ["https://scriberrdev.vercel.app/auth/callback", "https://scriberrdev.vercel.app/auth/shopify/callback", "https://scriberrdev.vercel.app/api/auth/callback"]
 
 [pos]
 embedded = false
