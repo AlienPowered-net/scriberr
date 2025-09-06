@@ -2,7 +2,7 @@
 
 client_id = "4444a58754e272c8a2aeba645e247b56"
 name = "ScriberrDEV"
-application_url = "https://example.com"
+application_url = "https://scriberrdev.vercel.app"
 embedded = true
 
 [webhooks]
@@ -15,7 +15,11 @@ optional_scopes = [ ]
 use_legacy_install_flow = false
 
 [auth]
-redirect_urls = [ ]
+redirect_urls = [
+  "https://scriberrdev.vercel.app/auth/callback",
+  "https://scriberrdev.vercel.app/auth/shopify/callback", 
+  "https://scriberrdev.vercel.app/api/auth/callback"
+]
 
 [build]
 automatically_update_urls_on_dev = true
