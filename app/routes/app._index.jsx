@@ -39,8 +39,9 @@ import {
 
 /* ------------------ Loader ------------------ */
 export async function loader({ request }) {
-  const { session } = await shopify.authenticate.admin(request);
-  const shopId = await getOrCreateShopId(session.shop);
+  try {
+    const { session } = await shopify.authenticate.admin(request);
+    const shopId = await getOrCreateShopId(session.shop);
 
   // Try to load folders with all fields, fallback if migration not applied
   let folders;
@@ -129,6 +130,17 @@ export async function loader({ request }) {
       "Content-Type": "application/json; charset=utf-8"
     }
   });
+  } catch (error) {
+    console.error("Authentication error in app._index loader:", error);
+    
+    // If it's a Response (redirect), let it through
+    if (error instanceof Response) {
+      return error;
+    }
+    
+    // For other errors, re-throw
+    throw error;
+  }
 }
 
 /* ------------------ Action ------------------ */

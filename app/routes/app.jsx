@@ -10,9 +10,21 @@ import "@shopify/polaris/build/esm/styles.css";
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }) => {
-  await authenticate.admin(request);
-
-  return { apiKey: process.env.SHOPIFY_API_KEY || "" };
+  try {
+    await authenticate.admin(request);
+    return { apiKey: process.env.SHOPIFY_API_KEY || "" };
+  } catch (error) {
+    // Log the authentication error for debugging
+    console.error("Authentication error in app loader:", error);
+    
+    // If it's a Response (redirect), let it through
+    if (error instanceof Response) {
+      return error;
+    }
+    
+    // For other errors, re-throw
+    throw error;
+  }
 };
 
 export default function App() {

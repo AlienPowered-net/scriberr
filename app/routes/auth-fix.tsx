@@ -1,6 +1,6 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
+import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { shopify } from "../shopify.server";
+import { login } from "../shopify.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
@@ -9,19 +9,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const shop = url.searchParams.get("shop") || "dev-alienpowered.myshopify.com";
   
   try {
-    // Create a proper Shopify auth URL
-    const authUrl = await shopify.auth.begin({
-      shop,
-      callbackPath: "/auth/callback",
-      isOnline: false,
-      rawRequest: request,
-    });
+    // Use the proper Shopify login method
+    const loginResponse = await login(request);
     
     return {
-      status: "auth_url_created",
-      message: "Authentication URL created successfully",
-      authUrl: authUrl,
+      status: "login_attempted",
+      message: "Shopify login method called",
       shop: shop,
+      loginResponse: loginResponse ? "Response received" : "No response",
       config: {
         apiKey: process.env.SHOPIFY_API_KEY?.substring(0, 10) + "...",
         appUrl: process.env.SHOPIFY_APP_URL,
@@ -30,6 +25,19 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       timestamp: new Date().toISOString()
     };
   } catch (error) {
+    // Handle redirect responses from Shopify login
+    if (error instanceof Response) {
+      const location = error.headers.get("Location");
+      return {
+        status: "login_redirect",
+        message: "Shopify login is redirecting for authentication",
+        redirectUrl: location,
+        statusCode: error.status,
+        shop: shop,
+        timestamp: new Date().toISOString()
+      };
+    }
+    
     return {
       status: "error",
       message: error.message,
@@ -59,13 +67,16 @@ export default function AuthFix() {
         <p><strong>Shop:</strong> {data.shop}</p>
       </div>
       
-      {data.authUrl && (
+      {data.redirectUrl && (
         <div style={{ marginBottom: "20px", padding: "15px", background: "#d1ecf1", border: "1px solid #bee5eb", borderRadius: "5px" }}>
           <h3>🔗 Authentication URL</h3>
-          <p>Click this link to authenticate:</p>
-          <a href={data.authUrl} style={{ color: "#0066cc", textDecoration: "underline" }}>
-            {data.authUrl}
-          </a>
+          <p>Shopify wants to redirect to: <strong>{data.redirectUrl}</strong></p>
+          <p>Status: <strong>{data.statusCode}</strong></p>
+          {data.redirectUrl.startsWith('http') && (
+            <a href={data.redirectUrl} style={{ color: "#0066cc", textDecoration: "underline" }}>
+              Click here to authenticate
+            </a>
+          )}
         </div>
       )}
       
