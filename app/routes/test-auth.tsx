@@ -17,9 +17,24 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       timestamp: new Date().toISOString()
     };
   } catch (error) {
+    // Handle Shopify redirect responses
+    if (error instanceof Response) {
+      const location = error.headers.get("Location");
+      const statusText = error.statusText;
+      
+      return {
+        status: "redirect_error",
+        message: `Shopify authentication redirect: ${statusText}`,
+        redirectUrl: location,
+        statusCode: error.status,
+        errorType: "Response",
+        timestamp: new Date().toISOString()
+      };
+    }
+    
     return {
       status: "error",
-      message: error.message,
+      message: error.message || "Unknown error",
       errorType: error.constructor.name,
       stack: error.stack,
       timestamp: new Date().toISOString()
