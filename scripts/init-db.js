@@ -14,14 +14,22 @@ function getDatabaseUrls() {
                            process.env.VERCEL_GIT_COMMIT_REF === 'dev' ||
                            process.env.VERCEL_URL?.includes('scriberrdev');
   
+  console.log('🔍 Environment detection:');
+  console.log('- VERCEL_ENV:', process.env.VERCEL_ENV);
+  console.log('- VERCEL_GIT_COMMIT_REF:', process.env.VERCEL_GIT_COMMIT_REF);
+  console.log('- VERCEL_URL:', process.env.VERCEL_URL);
+  console.log('- isDevEnvironment:', isDevEnvironment);
+  console.log('- DEV_DATABASE_URL available:', !!process.env.SCRIBERRNOTE_DEV_DATABASE_URL);
+  
   if (isDevEnvironment && process.env.SCRIBERRNOTE_DEV_DATABASE_URL) {
-    console.log('🔧 Detected dev environment, using dev database');
+    console.log('🔧 Using dev database configuration');
     return {
       databaseUrl: process.env.SCRIBERRNOTE_DEV_DATABASE_URL,
       directUrl: process.env.SCRIBERRNOTE_DEV_DIRECT_URL || process.env.SCRIBERRNOTE_DEV_DATABASE_URL
     };
   }
   
+  console.log('🔧 Using production database configuration');
   return {
     databaseUrl: process.env.SCRIBERRNOTE_DATABASE_URL,
     directUrl: process.env.SCRIBERRNOTE_DIRECT_URL || process.env.SCRIBERRNOTE_DATABASE_URL
@@ -65,9 +73,21 @@ try {
     console.log('⚠ Migration deploy failed, attempting to resolve known failed migration...');
     
     try {
-      // Always try to resolve the known failed migration first
-      console.log('🔧 Resolving known failed migration: 20250830000000_fix_utf8_encoding');
-      execSync('npx prisma migrate resolve --rolled-back 20250830000000_fix_utf8_encoding', { stdio: 'inherit' });
+      // Try to resolve known failed migrations
+      const knownFailedMigrations = [
+        '20250830000000_fix_utf8_encoding',
+        '20250904234933_add_folder_icon'
+      ];
+      
+      for (const migration of knownFailedMigrations) {
+        try {
+          console.log(`🔧 Resolving known failed migration: ${migration}`);
+          execSync(`npx prisma migrate resolve --rolled-back ${migration}`, { stdio: 'inherit' });
+          console.log(`✅ Migration ${migration} resolved`);
+        } catch (resolveErr) {
+          console.log(`⚠ Migration ${migration} could not be resolved (might not exist or already resolved)`);
+        }
+      }
       console.log('✅ Failed migration resolved, retrying deploy...');
       
       // Retry migration deploy
