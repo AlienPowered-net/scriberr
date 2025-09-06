@@ -12,7 +12,7 @@ if (process.env.NODE_ENV === "production") {
   prisma = new PrismaClient({
     datasources: {
       db: {
-        url: process.env.DATABASE_URL,
+        url: process.env.SCRIBERRNOTE_DATABASE_URL,
       },
     },
     // Add connection pool configuration for Vercel
