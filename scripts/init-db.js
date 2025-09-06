@@ -30,7 +30,30 @@ try {
     console.log('⚠ Using main database URL for migrations (DIRECT_URL not set)');
   }
   
-  execSync('prisma migrate deploy', { stdio: 'inherit' });
+  try {
+    execSync('prisma migrate deploy', { stdio: 'inherit' });
+  } catch (migrateError) {
+    console.log('⚠ Migration deploy failed, checking for failed migrations...');
+    
+    // Check if this is the known failed migration issue
+    if (migrateError.message.includes('P3009') || migrateError.message.includes('failed migrations')) {
+      console.log('🔧 Resolving known failed migration: 20250830000000_fix_utf8_encoding');
+      
+      try {
+        // Resolve the known failed migration
+        execSync('npx prisma migrate resolve --rolled-back 20250830000000_fix_utf8_encoding', { stdio: 'inherit' });
+        console.log('✅ Failed migration resolved, retrying deploy...');
+        
+        // Retry migration deploy
+        execSync('prisma migrate deploy', { stdio: 'inherit' });
+      } catch (resolveError) {
+        console.log('⚠ Could not resolve failed migration automatically');
+        throw resolveError;
+      }
+    } else {
+      throw migrateError;
+    }
+  }
   
   // Restore original value
   if (!originalDirectUrl) {
