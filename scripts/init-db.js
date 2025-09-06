@@ -77,7 +77,9 @@ try {
       const knownFailedMigrations = [
         '20250830000000_fix_utf8_encoding',
         '20250904234933_add_folder_icon',
-        '20250826021507_add_content_to_notes'
+        '20250826021507_add_content_to_notes',
+        '20250905041056_add_folder_icon_color',
+        '20250905050203_add_folder_position'
       ];
       
       for (const migration of knownFailedMigrations) {
@@ -85,7 +87,14 @@ try {
           console.log(`🔧 Resolving known failed migration: ${migration}`);
           
           // For migrations that add columns that already exist, mark as applied
-          if (migration === '20250826021507_add_content_to_notes') {
+          const migrationsWithExistingColumns = [
+            '20250826021507_add_content_to_notes',    // content column exists
+            '20250904234933_add_folder_icon',         // icon column exists  
+            '20250905041056_add_folder_icon_color',   // icon column exists
+            '20250905050203_add_folder_position'      // position column might exist
+          ];
+          
+          if (migrationsWithExistingColumns.includes(migration)) {
             console.log(`⚠ Migration ${migration} adds existing columns, marking as applied`);
             execSync(`npx prisma migrate resolve --applied ${migration}`, { stdio: 'inherit' });
           } else {
