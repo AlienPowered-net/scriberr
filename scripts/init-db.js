@@ -8,6 +8,14 @@ import { execSync } from 'child_process';
 
 console.log('🔧 Initializing database...');
 
+// Run environment check first
+console.log('🔍 Running environment check...');
+try {
+  execSync('node scripts/check-env.js', { stdio: 'inherit' });
+} catch (checkError) {
+  console.log('⚠️ Environment check failed, continuing with database setup...');
+}
+
 // Determine which database URLs to use based on environment
 function getDatabaseUrls() {
   const isDevEnvironment = process.env.VERCEL_ENV === 'development' || 
