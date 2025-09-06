@@ -3,10 +3,11 @@
   "version": "v.a277",
   "private": true,
   "scripts": {
-    "vercel-build": "prisma generate && npm run build",
+    "vercel-build": "node scripts/init-db.js && npm run build",
     "build": "remix vite:build",
     "increment-version": "node scripts/increment-version.js",
     "apply-icon-migration": "node scripts/apply-icon-migration.js",
+    "debug-env": "node -e \"console.log('DATABASE_URL:', !!process.env.SCRIBERRNOTE_DATABASE_URL ? 'SET' : 'NOT SET'); console.log('DIRECT_URL:', !!process.env.SCRIBERRNOTE_DIRECT_URL ? 'SET' : 'NOT SET')\"",
     "dev": "shopify app dev",
     "config:link": "shopify app config link",
     "generate": "shopify app generate",
