@@ -33,25 +33,32 @@ try {
   try {
     execSync('prisma migrate deploy', { stdio: 'inherit' });
   } catch (migrateError) {
-    console.log('⚠ Migration deploy failed, checking for failed migrations...');
+    console.log('⚠ Migration deploy failed, attempting to resolve known failed migration...');
     
-    // Check if this is the known failed migration issue
-    if (migrateError.message.includes('P3009') || migrateError.message.includes('failed migrations')) {
+    try {
+      // Always try to resolve the known failed migration first
       console.log('🔧 Resolving known failed migration: 20250830000000_fix_utf8_encoding');
+      execSync('npx prisma migrate resolve --rolled-back 20250830000000_fix_utf8_encoding', { stdio: 'inherit' });
+      console.log('✅ Failed migration resolved, retrying deploy...');
       
+      // Retry migration deploy
+      execSync('prisma migrate deploy', { stdio: 'inherit' });
+      console.log('✅ Migration deploy successful after resolving failed migration!');
+    } catch (resolveError) {
+      console.log('⚠ Could not resolve failed migration or retry failed');
+      console.log('Original error:', migrateError.message);
+      console.log('Resolve error:', resolveError.message);
+      
+      // If resolve fails, it might mean the migration doesn't exist or is already resolved
+      // Try one more time to deploy
       try {
-        // Resolve the known failed migration
-        execSync('npx prisma migrate resolve --rolled-back 20250830000000_fix_utf8_encoding', { stdio: 'inherit' });
-        console.log('✅ Failed migration resolved, retrying deploy...');
-        
-        // Retry migration deploy
+        console.log('🔄 Final attempt at migration deploy...');
         execSync('prisma migrate deploy', { stdio: 'inherit' });
-      } catch (resolveError) {
-        console.log('⚠ Could not resolve failed migration automatically');
-        throw resolveError;
+        console.log('✅ Migration deploy successful on final attempt!');
+      } catch (finalError) {
+        console.log('❌ All migration attempts failed');
+        throw finalError;
       }
-    } else {
-      throw migrateError;
     }
   }
   
