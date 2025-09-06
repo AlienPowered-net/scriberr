@@ -37,7 +37,7 @@ if (process.env.NODE_ENV === "production") {
         url: databaseUrl,
       },
     },
-    // Add connection pool configuration for Vercel
+    // Optimized configuration for Vercel serverless
     log: ['error', 'warn'],
   });
 } else {
