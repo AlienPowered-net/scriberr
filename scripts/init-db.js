@@ -14,14 +14,38 @@ try {
     throw new Error('SCRIBERRNOTE_DATABASE_URL environment variable is not set');
   }
 
+  console.log('📊 Environment check...');
+  console.log('- DATABASE_URL:', process.env.SCRIBERRNOTE_DATABASE_URL ? '✓ SET' : '✗ NOT SET');
+  console.log('- DIRECT_URL:', process.env.SCRIBERRNOTE_DIRECT_URL ? '✓ SET' : '⚠ NOT SET (will use main URL)');
+
   console.log('📊 Generating Prisma client...');
   execSync('prisma generate', { stdio: 'inherit' });
 
   console.log('🚀 Running database migrations...');
+  
+  // If DIRECT_URL is not set, temporarily set it to the main URL for migrations
+  const originalDirectUrl = process.env.SCRIBERRNOTE_DIRECT_URL;
+  if (!process.env.SCRIBERRNOTE_DIRECT_URL) {
+    process.env.SCRIBERRNOTE_DIRECT_URL = process.env.SCRIBERRNOTE_DATABASE_URL;
+    console.log('⚠ Using main database URL for migrations (DIRECT_URL not set)');
+  }
+  
   execSync('prisma migrate deploy', { stdio: 'inherit' });
+  
+  // Restore original value
+  if (!originalDirectUrl) {
+    delete process.env.SCRIBERRNOTE_DIRECT_URL;
+  }
 
   console.log('✅ Database initialization complete!');
 } catch (error) {
   console.error('❌ Database initialization failed:', error.message);
+  
+  // Provide helpful debugging information
+  console.error('\n🔍 Debug Information:');
+  console.error('- NODE_ENV:', process.env.NODE_ENV || 'not set');
+  console.error('- DATABASE_URL set:', !!process.env.SCRIBERRNOTE_DATABASE_URL);
+  console.error('- DIRECT_URL set:', !!process.env.SCRIBERRNOTE_DIRECT_URL);
+  
   process.exit(1);
 }
