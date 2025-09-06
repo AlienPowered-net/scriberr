@@ -5,7 +5,17 @@ import {
   shopifyApp,
 } from "@shopify/shopify-app-remix/server";
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
-import { prisma } from "./utils/db.server";
+import { PrismaClient } from "@prisma/client";
+
+// Create a dedicated Prisma client for session storage with optimized settings
+const sessionPrisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.SCRIBERRNOTE_DEV_DATABASE_URL || process.env.SCRIBERRNOTE_DATABASE_URL,
+    },
+  },
+  log: ['error'],
+});
 
 export const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
@@ -14,7 +24,7 @@ export const shopify = shopifyApp({
   scopes: (process.env.SCOPES || "").split(",").map(s => s.trim()).filter(Boolean),
   appUrl: process.env.SHOPIFY_APP_URL || process.env.APP_URL,
   authPathPrefix: "/auth",
-  sessionStorage: new PrismaSessionStorage(prisma),
+  sessionStorage: new PrismaSessionStorage(sessionPrisma),
   distribution: AppDistribution.AppStore,
   future: {
     unstable_newEmbeddedAuthStrategy: true,

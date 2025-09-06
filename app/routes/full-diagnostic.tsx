@@ -31,11 +31,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       SCOPES: process.env.SCOPES,
     },
     shopifyConfig: {
-      apiKey: shopify.config.apiKey?.substring(0, 15) + "...",
-      apiVersion: shopify.config.apiVersion,
-      appUrl: shopify.config.appUrl,
-      scopes: shopify.config.scopes,
-      authPathPrefix: shopify.config.auth?.path,
+      apiKey: shopify?.config?.apiKey?.substring(0, 15) + "..." || "NOT AVAILABLE",
+      apiVersion: shopify?.config?.apiVersion || "NOT AVAILABLE",
+      appUrl: shopify?.config?.appUrl || "NOT AVAILABLE", 
+      scopes: shopify?.config?.scopes || "NOT AVAILABLE",
+      authPathPrefix: shopify?.config?.auth?.path || "NOT AVAILABLE",
+      configExists: !!shopify?.config,
     },
   };
   
