@@ -3,7 +3,7 @@
 client_id = "6bce6b128d5d19d33686b60d41c92824"
 name = "scriberr"
 handle = "scriberr"
-application_url = "https://scriberrdev.vercel.app"
+application_url = "https://scriberr.vercel.app"
 embedded = true
 
 [build]
@@ -26,7 +26,7 @@ api_version = "2025-07"
 scopes = "write_products"
 
 [auth]
-redirect_urls = ["https://scriberrdev.vercel.app/auth/callback", "https://scriberrdev.vercel.app/auth/shopify/callback", "https://scriberrdev.vercel.app/api/auth/callback"]
+redirect_urls = ["https://scriberr.vercel.app/auth/callback", "https://scriberr.vercel.app/auth/shopify/callback", "https://scriberr.vercel.app/api/auth/callback"]
 
 [pos]
 embedded = false
