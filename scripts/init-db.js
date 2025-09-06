@@ -76,7 +76,8 @@ try {
       // Try to resolve known failed migrations
       const knownFailedMigrations = [
         '20250830000000_fix_utf8_encoding',
-        '20250904234933_add_folder_icon'
+        '20250904234933_add_folder_icon',
+        '20250826021507_add_content_to_notes'
       ];
       
       for (const migration of knownFailedMigrations) {
