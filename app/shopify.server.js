@@ -25,8 +25,21 @@ console.log("- SHOPIFY_APP_URL:", process.env.SHOPIFY_APP_URL);
 console.log("- APP_URL:", process.env.APP_URL);
 console.log("- SCOPES:", process.env.SCOPES);
 
-// Ensure appUrl is properly set
-const appUrl = process.env.SHOPIFY_APP_URL || process.env.APP_URL || "https://scriberrdev.vercel.app";
+// Force the correct app URL for dev environment
+let appUrl = "https://scriberrdev.vercel.app";
+
+// Check if environment variables are set and log them
+if (process.env.SHOPIFY_APP_URL) {
+  console.log("- SHOPIFY_APP_URL from env:", process.env.SHOPIFY_APP_URL);
+  appUrl = process.env.SHOPIFY_APP_URL;
+} else if (process.env.APP_URL) {
+  console.log("- APP_URL from env:", process.env.APP_URL);
+  appUrl = process.env.APP_URL;
+} else {
+  console.log("- No app URL in environment, using hardcoded dev URL");
+}
+
+console.log("- VERCEL_URL:", process.env.VERCEL_URL);
 console.log("- Final appUrl:", appUrl);
 
 if (!appUrl || appUrl === "undefined") {
