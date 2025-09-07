@@ -5,5 +5,14 @@
   "installCommand": "npm install",
   "env": {
     "PRISMA_GENERATE_DATAPROXY": "true"
+  },
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "dev": true
+    }
+  },
+  "github": {
+    "autoAlias": false
   }
 }   
