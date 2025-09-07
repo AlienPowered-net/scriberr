@@ -25,7 +25,7 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[300px] p-4',
+        class: 'tiptap',
       },
     },
   });
@@ -45,44 +45,36 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   }
 
   return (
-    <div className="border border-gray-300 rounded-lg bg-white">
+    <div className="tiptap-editor">
       {/* Toolbar */}
-      <div className="border-b border-gray-300 p-2 bg-gray-50">
+      <div className="tiptap-toolbar">
         <div className="flex flex-wrap gap-1">
           {/* Text Formatting */}
-          <div className="flex border border-gray-300 rounded">
+          <div className="tiptap-button-group">
             <button
               onClick={() => editor.chain().focus().toggleBold().run()}
-              className={`px-2 py-1 text-sm ${
-                editor.isActive('bold') ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
-              } border-r border-gray-300 first:rounded-l last:rounded-r last:border-r-0`}
+              className={`tiptap-button ${editor.isActive('bold') ? 'active' : ''}`}
               title="Bold"
             >
               <strong>B</strong>
             </button>
             <button
               onClick={() => editor.chain().focus().toggleItalic().run()}
-              className={`px-2 py-1 text-sm ${
-                editor.isActive('italic') ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
-              } border-r border-gray-300 first:rounded-l last:rounded-r last:border-r-0`}
+              className={`tiptap-button ${editor.isActive('italic') ? 'active' : ''}`}
               title="Italic"
             >
               <em>I</em>
             </button>
             <button
               onClick={() => editor.chain().focus().toggleUnderline().run()}
-              className={`px-2 py-1 text-sm ${
-                editor.isActive('underline') ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
-              } border-r border-gray-300 first:rounded-l last:rounded-r last:border-r-0`}
+              className={`tiptap-button ${editor.isActive('underline') ? 'active' : ''}`}
               title="Underline"
             >
               <u>U</u>
             </button>
             <button
               onClick={() => editor.chain().focus().toggleStrike().run()}
-              className={`px-2 py-1 text-sm ${
-                editor.isActive('strike') ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
-              } first:rounded-l last:rounded-r last:border-r-0`}
+              className={`tiptap-button ${editor.isActive('strike') ? 'active' : ''}`}
               title="Strikethrough"
             >
               <s>S</s>
@@ -90,14 +82,12 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           </div>
 
           {/* Headings */}
-          <div className="flex border border-gray-300 rounded">
+          <div className="tiptap-button-group">
             {[1, 2, 3].map((level) => (
               <button
                 key={level}
                 onClick={() => editor.chain().focus().toggleHeading({ level }).run()}
-                className={`px-2 py-1 text-sm font-bold ${
-                  editor.isActive('heading', { level }) ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
-                } border-r border-gray-300 first:rounded-l last:rounded-r last:border-r-0`}
+                className={`tiptap-button ${editor.isActive('heading', { level }) ? 'active' : ''}`}
                 title={`Heading ${level}`}
               >
                 H{level}
@@ -106,21 +96,17 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           </div>
 
           {/* Lists */}
-          <div className="flex border border-gray-300 rounded">
+          <div className="tiptap-button-group">
             <button
               onClick={() => editor.chain().focus().toggleBulletList().run()}
-              className={`px-2 py-1 text-sm ${
-                editor.isActive('bulletList') ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
-              } border-r border-gray-300 first:rounded-l last:rounded-r last:border-r-0`}
+              className={`tiptap-button ${editor.isActive('bulletList') ? 'active' : ''}`}
               title="Bullet List"
             >
               •
             </button>
             <button
               onClick={() => editor.chain().focus().toggleOrderedList().run()}
-              className={`px-2 py-1 text-sm ${
-                editor.isActive('orderedList') ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
-              } first:rounded-l last:rounded-r last:border-r-0`}
+              className={`tiptap-button ${editor.isActive('orderedList') ? 'active' : ''}`}
               title="Numbered List"
             >
               1.
@@ -128,30 +114,24 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           </div>
 
           {/* Text Alignment */}
-          <div className="flex border border-gray-300 rounded">
+          <div className="tiptap-button-group">
             <button
               onClick={() => editor.chain().focus().setTextAlign('left').run()}
-              className={`px-2 py-1 text-sm ${
-                editor.isActive({ textAlign: 'left' }) ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
-              } border-r border-gray-300 first:rounded-l last:rounded-r last:border-r-0`}
+              className={`tiptap-button ${editor.isActive({ textAlign: 'left' }) ? 'active' : ''}`}
               title="Align Left"
             >
               ⫷
             </button>
             <button
               onClick={() => editor.chain().focus().setTextAlign('center').run()}
-              className={`px-2 py-1 text-sm ${
-                editor.isActive({ textAlign: 'center' }) ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
-              } border-r border-gray-300 first:rounded-l last:rounded-r last:border-r-0`}
+              className={`tiptap-button ${editor.isActive({ textAlign: 'center' }) ? 'active' : ''}`}
               title="Align Center"
             >
               ≡
             </button>
             <button
               onClick={() => editor.chain().focus().setTextAlign('right').run()}
-              className={`px-2 py-1 text-sm ${
-                editor.isActive({ textAlign: 'right' }) ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
-              } first:rounded-l last:rounded-r last:border-r-0`}
+              className={`tiptap-button ${editor.isActive({ textAlign: 'right' }) ? 'active' : ''}`}
               title="Align Right"
             >
               ⫸
@@ -163,7 +143,7 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             type="color"
             onInput={(event) => editor.chain().focus().setColor(event.target.value).run()}
             value={editor.getAttributes('textStyle').color || '#000000'}
-            className="w-8 h-8 border border-gray-300 rounded cursor-pointer"
+            className="tiptap-color-picker"
             title="Text Color"
           />
 
@@ -177,7 +157,7 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               }
             }}
             value={editor.getAttributes('textStyle').fontFamily || ''}
-            className="px-2 py-1 text-sm border border-gray-300 rounded bg-white text-gray-700"
+            className="tiptap-select"
           >
             <option value="">Default</option>
             <option value="Inter">Inter</option>
@@ -190,11 +170,9 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       </div>
 
       {/* Editor Content */}
-      <EditorContent 
-        editor={editor} 
-        className="min-h-[400px] p-4 focus-within:outline-none"
-        style={{ fontSize: '16px', lineHeight: '1.6' }}
-      />
+      <div className="tiptap-content">
+        <EditorContent editor={editor} />
+      </div>
     </div>
   );
 };
