@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle } from '@tiptap/extension-text-style';
@@ -11,12 +11,16 @@ import {
   Button, 
   Select, 
   InlineStack,
-  Text,
-  Divider,
-  Icon
+  Text
 } from '@shopify/polaris';
 
 const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -64,7 +68,7 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     }
   }, [value, editor]);
 
-  if (!editor) {
+  if (!isMounted) {
     return (
       <Card>
         <Card.Section>
@@ -75,6 +79,23 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             height: '200px' 
           }}>
             <Text variant="bodyMd" tone="subdued">Loading editor...</Text>
+          </div>
+        </Card.Section>
+      </Card>
+    );
+  }
+
+  if (!editor) {
+    return (
+      <Card>
+        <Card.Section>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            height: '200px' 
+          }}>
+            <Text variant="bodyMd" tone="subdued">Initializing editor...</Text>
           </div>
         </Card.Section>
       </Card>
@@ -93,28 +114,28 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           {/* Text Formatting */}
           <InlineStack gap="200">
             <Button
-              pressed={editor.isActive('bold')}
+              variant={editor.isActive('bold') ? 'primary' : undefined}
               onClick={() => editor.chain().focus().toggleBold().run()}
               accessibilityLabel="Bold"
             >
               B
             </Button>
             <Button
-              pressed={editor.isActive('italic')}
+              variant={editor.isActive('italic') ? 'primary' : undefined}
               onClick={() => editor.chain().focus().toggleItalic().run()}
               accessibilityLabel="Italic"
             >
               I
             </Button>
             <Button
-              pressed={editor.isActive('underline')}
+              variant={editor.isActive('underline') ? 'primary' : undefined}
               onClick={() => editor.chain().focus().toggleUnderline().run()}
               accessibilityLabel="Underline"
             >
               U
             </Button>
             <Button
-              pressed={editor.isActive('strike')}
+              variant={editor.isActive('strike') ? 'primary' : undefined}
               onClick={() => editor.chain().focus().toggleStrike().run()}
               accessibilityLabel="Strikethrough"
             >
@@ -127,7 +148,7 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             {[1, 2, 3].map((level) => (
               <Button
                 key={level}
-                pressed={editor.isActive('heading', { level })}
+                variant={editor.isActive('heading', { level }) ? 'primary' : undefined}
                 onClick={() => editor.chain().focus().toggleHeading({ level }).run()}
                 accessibilityLabel={`Heading ${level}`}
               >
@@ -139,14 +160,14 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           {/* Lists */}
           <InlineStack gap="200">
             <Button
-              pressed={editor.isActive('bulletList')}
+              variant={editor.isActive('bulletList') ? 'primary' : undefined}
               onClick={() => editor.chain().focus().toggleBulletList().run()}
               accessibilityLabel="Bullet List"
             >
               •
             </Button>
             <Button
-              pressed={editor.isActive('orderedList')}
+              variant={editor.isActive('orderedList') ? 'primary' : undefined}
               onClick={() => editor.chain().focus().toggleOrderedList().run()}
               accessibilityLabel="Numbered List"
             >
@@ -157,21 +178,21 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           {/* Text Alignment */}
           <InlineStack gap="200">
             <Button
-              pressed={editor.isActive({ textAlign: 'left' })}
+              variant={editor.isActive({ textAlign: 'left' }) ? 'primary' : undefined}
               onClick={() => editor.chain().focus().setTextAlign('left').run()}
               accessibilityLabel="Align Left"
             >
               ⬅
             </Button>
             <Button
-              pressed={editor.isActive({ textAlign: 'center' })}
+              variant={editor.isActive({ textAlign: 'center' }) ? 'primary' : undefined}
               onClick={() => editor.chain().focus().setTextAlign('center').run()}
               accessibilityLabel="Align Center"
             >
               ⬌
             </Button>
             <Button
-              pressed={editor.isActive({ textAlign: 'right' })}
+              variant={editor.isActive({ textAlign: 'right' }) ? 'primary' : undefined}
               onClick={() => editor.chain().focus().setTextAlign('right').run()}
               accessibilityLabel="Align Right"
             >
