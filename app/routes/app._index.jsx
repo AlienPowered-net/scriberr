@@ -1633,92 +1633,97 @@ export default function Index() {
                 </span>
               </div>
 
-              {/* All Notes Button */}
-              <div 
-                style={{ 
-                  padding: "12px 16px", 
-                  marginBottom: "12px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  cursor: "pointer",
-                  backgroundColor: selectedFolder === null ? "#E8F5E8" : "#F8F9FA",
-                  border: selectedFolder === null ? "2px solid #0a0" : "2px solid #E1E3E5",
-                  borderRadius: "12px",
-                  position: "relative",
-                  transition: "all 0.2s ease",
-                  boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
-                }}
-                onClick={() => setSelectedFolder(null)}
-                onMouseEnter={(e) => {
-                  if (selectedFolder !== null) {
-                    e.currentTarget.style.backgroundColor = "#E8F5E8";
-                    e.currentTarget.style.borderColor = "#0a0";
-                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (selectedFolder !== null) {
-                    e.currentTarget.style.backgroundColor = "#F8F9FA";
-                    e.currentTarget.style.borderColor = "#E1E3E5";
-                    e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
-                  }
-                }}
-              >
-                <Text as="span" variant="headingSm" style={{ 
-                  fontWeight: "700", 
-                  display: "flex", 
-                  alignItems: "center", 
-                  gap: "8px",
-                  color: selectedFolder === null ? "#0a0" : "#374151"
-                }}>
-                  <span className="material-symbols-rounded" style={{ fontSize: "20px" }}>note_stack</span>
-                  All Notes
-                </Text>
-              </div>
+              {/* All Notes and All Tags Buttons - Side by Side */}
+              <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+                {/* All Notes Button */}
+                <div 
+                  style={{ 
+                    padding: "8px 12px", 
+                    flex: "1",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    cursor: "pointer",
+                    backgroundColor: selectedFolder === null ? "#E8F5E8" : "#F8F9FA",
+                    border: selectedFolder === null ? "2px solid #0a0" : "2px solid #E1E3E5",
+                    borderRadius: "8px",
+                    position: "relative",
+                    transition: "all 0.2s ease",
+                    boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                  }}
+                  onClick={() => setSelectedFolder(null)}
+                  onMouseEnter={(e) => {
+                    if (selectedFolder !== null) {
+                      e.currentTarget.style.backgroundColor = "#E8F5E8";
+                      e.currentTarget.style.borderColor = "#0a0";
+                      e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedFolder !== null) {
+                      e.currentTarget.style.backgroundColor = "#F8F9FA";
+                      e.currentTarget.style.borderColor = "#E1E3E5";
+                      e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
+                    }
+                  }}
+                >
+                  <Text as="span" variant="bodyMd" style={{ 
+                    fontWeight: "600", 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "6px",
+                    color: selectedFolder === null ? "#0a0" : "#374151",
+                    fontSize: "14px"
+                  }}>
+                    <i className="far fa-note-sticky" style={{ fontSize: "16px" }}></i>
+                    All Notes
+                  </Text>
+                </div>
 
-              {/* All Tags Button */}
-              <div 
-                style={{ 
-                  padding: "12px 16px", 
-                  marginBottom: "12px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  cursor: "pointer",
-                  backgroundColor: showTagsSection ? "#E8F5E8" : "#F8F9FA",
-                  border: showTagsSection ? "2px solid #0a0" : "2px solid #E1E3E5",
-                  borderRadius: "12px",
-                  position: "relative",
-                  transition: "all 0.2s ease",
-                  boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
-                }}
-                onClick={() => setShowTagsSection(!showTagsSection)}
-                onMouseEnter={(e) => {
-                  if (!showTagsSection) {
-                    e.currentTarget.style.backgroundColor = "#E8F5E8";
-                    e.currentTarget.style.borderColor = "#0a0";
-                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!showTagsSection) {
-                    e.currentTarget.style.backgroundColor = "#F8F9FA";
-                    e.currentTarget.style.borderColor = "#E1E3E5";
-                    e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
-                  }
-                }}
-              >
-                <Text as="span" variant="headingSm" style={{ 
-                  fontWeight: "700", 
-                  display: "flex", 
-                  alignItems: "center", 
-                  gap: "8px",
-                  color: showTagsSection ? "#0a0" : "#374151"
-                }}>
-                  <span className="material-symbols-rounded" style={{ fontSize: "20px" }}>label</span>
-                  All Tags
-                </Text>
+                {/* All Tags Button */}
+                <div 
+                  style={{ 
+                    padding: "8px 12px", 
+                    flex: "1",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    cursor: "pointer",
+                    backgroundColor: showTagsSection ? "#E8F5E8" : "#F8F9FA",
+                    border: showTagsSection ? "2px solid #0a0" : "2px solid #E1E3E5",
+                    borderRadius: "8px",
+                    position: "relative",
+                    transition: "all 0.2s ease",
+                    boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                  }}
+                  onClick={() => setShowTagsSection(!showTagsSection)}
+                  onMouseEnter={(e) => {
+                    if (!showTagsSection) {
+                      e.currentTarget.style.backgroundColor = "#E8F5E8";
+                      e.currentTarget.style.borderColor = "#0a0";
+                      e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!showTagsSection) {
+                      e.currentTarget.style.backgroundColor = "#F8F9FA";
+                      e.currentTarget.style.borderColor = "#E1E3E5";
+                      e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
+                    }
+                  }}
+                >
+                  <Text as="span" variant="bodyMd" style={{ 
+                    fontWeight: "600", 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "6px",
+                    color: showTagsSection ? "#0a0" : "#374151",
+                    fontSize: "14px"
+                  }}>
+                    <i className="far fa-bookmark" style={{ fontSize: "16px" }}></i>
+                    All Tags
+                  </Text>
+                </div>
               </div>
 
               {/* Tags List */}
