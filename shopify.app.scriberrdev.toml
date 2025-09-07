@@ -2,7 +2,7 @@
 
 client_id = "4444a58754e272c8a2aeba645e247b56"
 name = "ScriberrDEV"
-application_url = "https://scriberrdev.vercel.app"
+application_url = "https://scriberr-n7ledbxyo-alienpowered.vercel.app"
 embedded = true
 
 [webhooks]
@@ -24,9 +24,9 @@ use_legacy_install_flow = false
 
 [auth]
 redirect_urls = [
-  "https://scriberrdev.vercel.app/auth/callback",
-  "https://scriberrdev.vercel.app/auth/shopify/callback", 
-  "https://scriberrdev.vercel.app/api/auth/callback"
+  "https://scriberr-n7ledbxyo-alienpowered.vercel.app/auth/callback",
+  "https://scriberr-n7ledbxyo-alienpowered.vercel.app/auth/shopify/callback", 
+  "https://scriberr-n7ledbxyo-alienpowered.vercel.app/api/auth/callback"
 ]
 
 [build]
