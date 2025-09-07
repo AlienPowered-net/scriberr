@@ -18,7 +18,7 @@ import {
 // Temporarily removed Polaris icons to fix server error
 import { useState, useEffect } from "react";
 import QuillEditor from "../components/LexicalEditor";
-import SimpleRTE from "../components/SimpleRTE";
+import AdvancedRTE from "../components/AdvancedRTE";
 import FolderIconPicker from "../components/FolderIconPicker";
 import NewFolderModal from "../components/NewFolderModal";
 import DraggableFolder from "../components/DraggableFolder";
@@ -2964,7 +2964,7 @@ export default function Index() {
                   <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
                     Body
                   </label>
-                  <SimpleRTE
+                  <AdvancedRTE
                     value={body}
                     onChange={setBody}
                     placeholder="Type your note here..."
