@@ -67,9 +67,18 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
 
   if (!editor) {
     return (
-      <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
-        <div>Loading editor...</div>
-      </div>
+      <Card>
+        <Card.Section>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            height: '200px' 
+          }}>
+            <Text variant="bodyMd" tone="subdued">Loading editor...</Text>
+          </div>
+        </Card.Section>
+      </Card>
     );
   }
 
@@ -89,28 +98,28 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               onClick={() => editor.chain().focus().toggleBold().run()}
               accessibilityLabel="Bold"
             >
-              <strong>B</strong>
+              B
             </Button>
             <Button
               pressed={editor.isActive('italic')}
               onClick={() => editor.chain().focus().toggleItalic().run()}
               accessibilityLabel="Italic"
             >
-              <em>I</em>
+              I
             </Button>
             <Button
               pressed={editor.isActive('underline')}
               onClick={() => editor.chain().focus().toggleUnderline().run()}
               accessibilityLabel="Underline"
             >
-              <u>U</u>
+              U
             </Button>
             <Button
               pressed={editor.isActive('strike')}
               onClick={() => editor.chain().focus().toggleStrike().run()}
               accessibilityLabel="Strikethrough"
             >
-              <s>S</s>
+              S
             </Button>
           </ButtonGroup>
 
