@@ -1500,7 +1500,7 @@ export default function Index() {
                     e.target.style.transform = "scale(1)";
                   }}
                 >
-                  <i className="fas fa-folder" style={{ color: "#f57c00" }}></i>
+                  <i className="far fa-folder-open" style={{ color: "#f57c00" }}></i>
                 </button>
               )}
               {collapsedColumns.notes && (
@@ -1532,7 +1532,7 @@ export default function Index() {
                     e.target.style.transform = "scale(1)";
                   }}
                 >
-                  <i className="fas fa-sticky-note" style={{ color: "#f57c00" }}></i>
+                  <i className="far fa-note-sticky" style={{ color: "#f57c00" }}></i>
                 </button>
               )}
             </div>
@@ -1563,7 +1563,7 @@ export default function Index() {
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <i className="fas fa-folder"></i>
+                  <i className="far fa-folder-open"></i>
                   Folders & Tags
                 </Text>
                 <button
@@ -1867,7 +1867,7 @@ export default function Index() {
                   e.currentTarget.style.transform = "scale(1)";
                 }}
                 >
-                  <i className="fas fa-folder" style={{ fontSize: "48px", color: "#16a34a", marginBottom: "16px" }}></i>
+                  <i className="far fa-folder-open" style={{ fontSize: "48px", color: "#16a34a", marginBottom: "16px" }}></i>
                   <Text as="h3" variant="headingMd" style={{ color: "#16a34a", marginBottom: "8px", fontWeight: "700" }}>
                     STEP 1 - CREATE A FOLDER
                   </Text>
@@ -2033,7 +2033,7 @@ export default function Index() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                 <div>
                   <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                    <i className="fas fa-sticky-note" style={{ fontSize: "20px" }}></i>
+                    <i className="far fa-note-sticky" style={{ fontSize: "20px" }}></i>
                     Notes
                   </Text>
                   {selectedFolder && (
@@ -2718,14 +2718,14 @@ export default function Index() {
                 {hasUnsavedChanges && (
                   <Text as="p" style={{ 
                     fontSize: "14px", 
-                    color: "#d82c0d", 
-                    fontWeight: "500", 
+                    color: "#dc2626", 
+                    fontWeight: "600", 
                     marginTop: "4px",
                     display: "flex",
                     alignItems: "center",
                     gap: "6px"
                   }}>
-                    <span className="material-symbols-rounded" style={{ fontSize: "16px" }}>warning</span>
+                    <i className="fas fa-exclamation-triangle" style={{ fontSize: "16px", color: "#dc2626" }}></i>
                     You have unsaved changes
                   </Text>
                 )}
