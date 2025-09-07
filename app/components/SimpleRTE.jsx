@@ -9,7 +9,6 @@ import Underline from '@tiptap/extension-underline';
 import { 
   Card, 
   Button, 
-  ButtonGroup, 
   Select, 
   InlineStack,
   Text,
@@ -92,7 +91,7 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       }}>
         <InlineStack gap="300" wrap={true} align="start">
           {/* Text Formatting */}
-          <ButtonGroup segmented>
+          <InlineStack gap="200">
             <Button
               pressed={editor.isActive('bold')}
               onClick={() => editor.chain().focus().toggleBold().run()}
@@ -121,10 +120,10 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             >
               S
             </Button>
-          </ButtonGroup>
+          </InlineStack>
 
           {/* Headings */}
-          <ButtonGroup segmented>
+          <InlineStack gap="200">
             {[1, 2, 3].map((level) => (
               <Button
                 key={level}
@@ -135,10 +134,10 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
                 H{level}
               </Button>
             ))}
-          </ButtonGroup>
+          </InlineStack>
 
           {/* Lists */}
-          <ButtonGroup segmented>
+          <InlineStack gap="200">
             <Button
               pressed={editor.isActive('bulletList')}
               onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -153,10 +152,10 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             >
               1.
             </Button>
-          </ButtonGroup>
+          </InlineStack>
 
           {/* Text Alignment */}
-          <ButtonGroup segmented>
+          <InlineStack gap="200">
             <Button
               pressed={editor.isActive({ textAlign: 'left' })}
               onClick={() => editor.chain().focus().setTextAlign('left').run()}
@@ -178,7 +177,7 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             >
               ➡
             </Button>
-          </ButtonGroup>
+          </InlineStack>
 
           {/* Color Picker */}
           <Button
@@ -217,7 +216,7 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           />
 
           {/* Undo/Redo */}
-          <ButtonGroup segmented>
+          <InlineStack gap="200">
             <Button
               disabled={!editor.can().undo()}
               onClick={() => editor.chain().focus().undo().run()}
@@ -232,7 +231,7 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             >
               ↷
             </Button>
-          </ButtonGroup>
+          </InlineStack>
         </InlineStack>
       </div>
 

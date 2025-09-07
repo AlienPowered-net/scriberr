@@ -14,8 +14,7 @@ import {
   Text,
   BlockStack,
   InlineStack,
-  Icon,
-  ButtonGroup
+  Icon
 } from "@shopify/polaris";
 import {
   FolderIcon,
