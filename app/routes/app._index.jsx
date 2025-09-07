@@ -14,7 +14,16 @@ import {
   Text,
   BlockStack,
   InlineStack,
+  Icon,
+  ButtonGroup
 } from "@shopify/polaris";
+import {
+  FolderIcon,
+  NoteIcon,
+  ChevronLeftIcon,
+  SearchIcon,
+  PlusIcon
+} from "@shopify/polaris-icons";
 import { useState, useEffect } from "react";
 import QuillEditor from "../components/LexicalEditor";
 import SimpleRTE from "../components/SimpleRTE";
@@ -1456,7 +1465,7 @@ export default function Index() {
                     e.target.style.transform = "scale(1)";
                   }}
                 >
-                  <i className="far fa-folder" style={{ color: "#f57c00" }}></i>
+                  <Icon source={FolderIcon} tone="warning" />
                 </button>
               )}
               {collapsedColumns.notes && (
@@ -1488,7 +1497,7 @@ export default function Index() {
                     e.target.style.transform = "scale(1)";
                   }}
                 >
-                  <i className="far fa-sticky-note" style={{ color: "#f57c00" }}></i>
+                  <Icon source={NoteIcon} tone="warning" />
                 </button>
               )}
             </div>
@@ -1519,7 +1528,7 @@ export default function Index() {
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <i className="far fa-folder" style={{ fontSize: "20px" }}></i>
+                  <Icon source={FolderIcon} />
                   Folders & Tags
                 </Text>
                 <button
@@ -1539,7 +1548,7 @@ export default function Index() {
                   }}
                   title="Collapse Folders & Tags"
                 >
-                  <i className="fas fa-chevron-left"></i>
+                  <Icon source={ChevronLeftIcon} />
                 </button>
               </div>
               
@@ -1585,7 +1594,7 @@ export default function Index() {
                     pointerEvents: "none"
                   }}
                 >
-                  <i className="fas fa-search"></i>
+                  <Icon source={SearchIcon} />
                 </span>
               </div>
 
@@ -1823,7 +1832,7 @@ export default function Index() {
                   e.currentTarget.style.transform = "scale(1)";
                 }}
                 >
-                  <i className="far fa-folder" style={{ fontSize: "48px", color: "#16a34a", marginBottom: "16px" }}></i>
+                  <Icon source={FolderIcon} tone="success" />
                   <Text as="h3" variant="headingMd" style={{ color: "#16a34a", marginBottom: "8px", fontWeight: "700" }}>
                     STEP 1 - CREATE A FOLDER
                   </Text>
@@ -1965,7 +1974,7 @@ export default function Index() {
                   e.target.style.transform = "scale(1) rotate(0deg)";
                 }}
               >
-                <i className="fas fa-plus" style={{ marginRight: "8px" }}></i>
+                <Icon source={PlusIcon} />
                 New Folder
               </button>
             </div>
@@ -1989,7 +1998,7 @@ export default function Index() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                 <div>
                   <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                    <i className="far fa-sticky-note" style={{ fontSize: "20px" }}></i>
+                    <Icon source={NoteIcon} />
                     Notes
                   </Text>
                   {selectedFolder && (
@@ -2015,7 +2024,7 @@ export default function Index() {
                   }}
                   title="Collapse Notes"
                 >
-                  <i className="fas fa-chevron-left"></i>
+                  <Icon source={ChevronLeftIcon} />
                 </button>
               </div>
               
@@ -2061,7 +2070,7 @@ export default function Index() {
                     pointerEvents: "none"
                   }}
                 >
-                  <i className="fas fa-search"></i>
+                  <Icon source={SearchIcon} />
                 </span>
               </div>
               
@@ -2096,7 +2105,7 @@ export default function Index() {
                     e.target.style.transform = "scale(1) rotate(0deg)";
                   }}
                 >
-                  <i className="fas fa-plus" style={{ marginRight: "8px" }}></i>
+                  <Icon source={PlusIcon} />
                   New Note
                 </button>
               </div>
