@@ -1482,20 +1482,20 @@ export default function Index() {
                 <Button
                   onClick={() => toggleColumnCollapse('folders')}
                   variant="secondary"
-                  size="medium"
+                  size="large"
                   accessibilityLabel="Expand Folders & Tags"
                 >
-                  <i className="far fa-folder-open" style={{ color: "#f57c00" }}></i>
+                  <i className="far fa-folder-open" style={{ color: "#f57c00", fontSize: "20px" }}></i>
                 </Button>
               )}
               {collapsedColumns.notes && (
                 <Button
                   onClick={() => toggleColumnCollapse('notes')}
                   variant="secondary"
-                  size="medium"
+                  size="large"
                   accessibilityLabel="Expand Notes"
                 >
-                  <i className="far fa-note-sticky" style={{ color: "#f57c00" }}></i>
+                  <i className="far fa-note-sticky" style={{ color: "#f57c00", fontSize: "20px" }}></i>
                 </Button>
               )}
             </div>
@@ -1562,7 +1562,7 @@ export default function Index() {
                   onChange={(e) => setGlobalSearchQuery(removeEmojis(e.target.value))}
                   placeholder="Search all notes..."
                   onFocus={(e) => {
-                    e.target.style.boxShadow = "0 0 0 2px #16A34A, 0 1px 2px rgba(0,0,0,0.05)";
+                    e.target.style.boxShadow = "0 0 0 2px #008060, 0 1px 2px rgba(0,0,0,0.05)";
                     e.target.style.backgroundColor = "#FFFFFF";
                   }}
                   onBlur={(e) => {

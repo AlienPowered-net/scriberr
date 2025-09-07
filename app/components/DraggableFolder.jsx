@@ -39,8 +39,8 @@ const DraggableFolder = ({
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        backgroundColor: selectedFolder === folder.id ? "#E8F5E8" : "#F8F9FA",
-        border: selectedFolder === folder.id ? "2px solid #0a0" : "2px solid #E1E3E5",
+        backgroundColor: selectedFolder === folder.id ? "#f6fff8" : "#F8F9FA",
+        border: selectedFolder === folder.id ? "2px solid #008060" : "2px solid #E1E3E5",
         borderRadius: "12px",
         position: "relative",
         transition: "all 0.2s ease",
@@ -75,8 +75,8 @@ const DraggableFolder = ({
           onClick={() => onFolderClick(folder.id)}
           onMouseEnter={(e) => {
             if (selectedFolder !== folder.id) {
-              e.currentTarget.parentElement.style.backgroundColor = "#E8F5E8";
-              e.currentTarget.parentElement.style.borderColor = "#0a0";
+              e.currentTarget.parentElement.style.backgroundColor = "#f6fff8";
+              e.currentTarget.parentElement.style.borderColor = "#008060";
               e.currentTarget.parentElement.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
             }
           }}
@@ -93,12 +93,12 @@ const DraggableFolder = ({
             display: "flex", 
             alignItems: "center", 
             gap: "8px",
-            color: selectedFolder === folder.id ? "#0a0" : "#374151",
+            color: selectedFolder === folder.id ? "#008060" : "#374151",
             fontSize: "14px"
           }}>
             <i className={`far fa-${folder.icon || 'folder'}`} style={{ 
               fontSize: "18px", 
-              color: selectedFolder === folder.id ? "#0a0" : (folder.iconColor || "#f57c00") 
+              color: selectedFolder === folder.id ? "#008060" : (folder.iconColor || "#f57c00") 
             }}></i>
             {folder.name}
           </span>
