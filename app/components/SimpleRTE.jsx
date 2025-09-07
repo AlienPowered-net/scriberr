@@ -45,133 +45,227 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   }
 
   return (
-    <div className="tiptap-editor">
+    <div style={{
+      border: '1px solid #d1d5db',
+      borderRadius: '0.5rem',
+      backgroundColor: 'white',
+      overflow: 'hidden'
+    }}>
       {/* Toolbar */}
-      <div className="tiptap-toolbar">
-        <div className="flex flex-wrap gap-1">
-          {/* Text Formatting */}
-          <div className="tiptap-button-group">
-            <button
-              onClick={() => editor.chain().focus().toggleBold().run()}
-              className={`tiptap-button ${editor.isActive('bold') ? 'active' : ''}`}
-              title="Bold"
-            >
-              <strong>B</strong>
-            </button>
-            <button
-              onClick={() => editor.chain().focus().toggleItalic().run()}
-              className={`tiptap-button ${editor.isActive('italic') ? 'active' : ''}`}
-              title="Italic"
-            >
-              <em>I</em>
-            </button>
-            <button
-              onClick={() => editor.chain().focus().toggleUnderline().run()}
-              className={`tiptap-button ${editor.isActive('underline') ? 'active' : ''}`}
-              title="Underline"
-            >
-              <u>U</u>
-            </button>
-            <button
-              onClick={() => editor.chain().focus().toggleStrike().run()}
-              className={`tiptap-button ${editor.isActive('strike') ? 'active' : ''}`}
-              title="Strikethrough"
-            >
-              <s>S</s>
-            </button>
-          </div>
-
-          {/* Headings */}
-          <div className="tiptap-button-group">
-            {[1, 2, 3].map((level) => (
-              <button
-                key={level}
-                onClick={() => editor.chain().focus().toggleHeading({ level }).run()}
-                className={`tiptap-button ${editor.isActive('heading', { level }) ? 'active' : ''}`}
-                title={`Heading ${level}`}
-              >
-                H{level}
-              </button>
-            ))}
-          </div>
-
-          {/* Lists */}
-          <div className="tiptap-button-group">
-            <button
-              onClick={() => editor.chain().focus().toggleBulletList().run()}
-              className={`tiptap-button ${editor.isActive('bulletList') ? 'active' : ''}`}
-              title="Bullet List"
-            >
-              •
-            </button>
-            <button
-              onClick={() => editor.chain().focus().toggleOrderedList().run()}
-              className={`tiptap-button ${editor.isActive('orderedList') ? 'active' : ''}`}
-              title="Numbered List"
-            >
-              1.
-            </button>
-          </div>
-
-          {/* Text Alignment */}
-          <div className="tiptap-button-group">
-            <button
-              onClick={() => editor.chain().focus().setTextAlign('left').run()}
-              className={`tiptap-button ${editor.isActive({ textAlign: 'left' }) ? 'active' : ''}`}
-              title="Align Left"
-            >
-              ⫷
-            </button>
-            <button
-              onClick={() => editor.chain().focus().setTextAlign('center').run()}
-              className={`tiptap-button ${editor.isActive({ textAlign: 'center' }) ? 'active' : ''}`}
-              title="Align Center"
-            >
-              ≡
-            </button>
-            <button
-              onClick={() => editor.chain().focus().setTextAlign('right').run()}
-              className={`tiptap-button ${editor.isActive({ textAlign: 'right' }) ? 'active' : ''}`}
-              title="Align Right"
-            >
-              ⫸
-            </button>
-          </div>
-
-          {/* Color Picker */}
-          <input
-            type="color"
-            onInput={(event) => editor.chain().focus().setColor(event.target.value).run()}
-            value={editor.getAttributes('textStyle').color || '#000000'}
-            className="tiptap-color-picker"
-            title="Text Color"
-          />
-
-          {/* Font Family */}
-          <select
-            onChange={(event) => {
-              if (event.target.value === 'unset') {
-                editor.chain().focus().unsetFontFamily().run();
-              } else {
-                editor.chain().focus().setFontFamily(event.target.value).run();
-              }
+      <div style={{
+        borderBottom: '1px solid #d1d5db',
+        padding: '0.75rem',
+        backgroundColor: '#f9fafb',
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '0.5rem',
+        alignItems: 'center'
+      }}>
+        {/* Text Formatting */}
+        <div style={{
+          display: 'flex',
+          border: '1px solid #d1d5db',
+          borderRadius: '0.375rem',
+          overflow: 'hidden'
+        }}>
+          <button
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            style={{
+              padding: '0.5rem 0.75rem',
+              border: 'none',
+              backgroundColor: editor.isActive('bold') ? '#3b82f6' : 'white',
+              color: editor.isActive('bold') ? 'white' : '#374151',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              borderRight: '1px solid #d1d5db',
+              transition: 'all 0.15s ease-in-out'
             }}
-            value={editor.getAttributes('textStyle').fontFamily || ''}
-            className="tiptap-select"
+            title="Bold"
+            onMouseEnter={(e) => !editor.isActive('bold') && (e.target.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !editor.isActive('bold') && (e.target.style.backgroundColor = 'white')}
           >
-            <option value="">Default</option>
-            <option value="Inter">Inter</option>
-            <option value="Comic Sans MS, Comic Sans">Comic Sans</option>
-            <option value="serif">Serif</option>
-            <option value="monospace">Monospace</option>
-            <option value="cursive">Cursive</option>
-          </select>
+            B
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            style={{
+              padding: '0.5rem 0.75rem',
+              border: 'none',
+              backgroundColor: editor.isActive('italic') ? '#3b82f6' : 'white',
+              color: editor.isActive('italic') ? 'white' : '#374151',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              fontStyle: 'italic',
+              borderRight: '1px solid #d1d5db',
+              transition: 'all 0.15s ease-in-out'
+            }}
+            title="Italic"
+            onMouseEnter={(e) => !editor.isActive('italic') && (e.target.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !editor.isActive('italic') && (e.target.style.backgroundColor = 'white')}
+          >
+            I
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
+            style={{
+              padding: '0.5rem 0.75rem',
+              border: 'none',
+              backgroundColor: editor.isActive('underline') ? '#3b82f6' : 'white',
+              color: editor.isActive('underline') ? 'white' : '#374151',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              textDecoration: 'underline',
+              borderRight: '1px solid #d1d5db',
+              transition: 'all 0.15s ease-in-out'
+            }}
+            title="Underline"
+            onMouseEnter={(e) => !editor.isActive('underline') && (e.target.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !editor.isActive('underline') && (e.target.style.backgroundColor = 'white')}
+          >
+            U
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+            style={{
+              padding: '0.5rem 0.75rem',
+              border: 'none',
+              backgroundColor: editor.isActive('strike') ? '#3b82f6' : 'white',
+              color: editor.isActive('strike') ? 'white' : '#374151',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              textDecoration: 'line-through',
+              transition: 'all 0.15s ease-in-out'
+            }}
+            title="Strikethrough"
+            onMouseEnter={(e) => !editor.isActive('strike') && (e.target.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !editor.isActive('strike') && (e.target.style.backgroundColor = 'white')}
+          >
+            S
+          </button>
         </div>
+
+
+        {/* Text Alignment */}
+        <div style={{
+          display: 'flex',
+          border: '1px solid #d1d5db',
+          borderRadius: '0.375rem',
+          overflow: 'hidden'
+        }}>
+          <button
+            onClick={() => editor.chain().focus().setTextAlign('left').run()}
+            style={{
+              padding: '0.5rem 0.75rem',
+              border: 'none',
+              backgroundColor: editor.isActive({ textAlign: 'left' }) ? '#3b82f6' : 'white',
+              color: editor.isActive({ textAlign: 'left' }) ? 'white' : '#374151',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              borderRight: '1px solid #d1d5db',
+              transition: 'all 0.15s ease-in-out'
+            }}
+            title="Align Left"
+            onMouseEnter={(e) => !editor.isActive({ textAlign: 'left' }) && (e.target.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !editor.isActive({ textAlign: 'left' }) && (e.target.style.backgroundColor = 'white')}
+          >
+            ⬅
+          </button>
+          <button
+            onClick={() => editor.chain().focus().setTextAlign('center').run()}
+            style={{
+              padding: '0.5rem 0.75rem',
+              border: 'none',
+              backgroundColor: editor.isActive({ textAlign: 'center' }) ? '#3b82f6' : 'white',
+              color: editor.isActive({ textAlign: 'center' }) ? 'white' : '#374151',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              borderRight: '1px solid #d1d5db',
+              transition: 'all 0.15s ease-in-out'
+            }}
+            title="Align Center"
+            onMouseEnter={(e) => !editor.isActive({ textAlign: 'center' }) && (e.target.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !editor.isActive({ textAlign: 'center' }) && (e.target.style.backgroundColor = 'white')}
+          >
+            ⬌
+          </button>
+          <button
+            onClick={() => editor.chain().focus().setTextAlign('right').run()}
+            style={{
+              padding: '0.5rem 0.75rem',
+              border: 'none',
+              backgroundColor: editor.isActive({ textAlign: 'right' }) ? '#3b82f6' : 'white',
+              color: editor.isActive({ textAlign: 'right' }) ? 'white' : '#374151',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              transition: 'all 0.15s ease-in-out'
+            }}
+            title="Align Right"
+            onMouseEnter={(e) => !editor.isActive({ textAlign: 'right' }) && (e.target.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !editor.isActive({ textAlign: 'right' }) && (e.target.style.backgroundColor = 'white')}
+          >
+            ➡
+          </button>
+        </div>
+
+        {/* Color Picker */}
+        <input
+          type="color"
+          onInput={(event) => editor.chain().focus().setColor(event.target.value).run()}
+          value={editor.getAttributes('textStyle').color || '#000000'}
+          style={{
+            width: '2rem',
+            height: '2rem',
+            border: '1px solid #d1d5db',
+            borderRadius: '0.375rem',
+            cursor: 'pointer',
+            padding: '0'
+          }}
+          title="Text Color"
+        />
+
+        {/* Font Family */}
+        <select
+          onChange={(event) => {
+            if (event.target.value === 'unset') {
+              editor.chain().focus().unsetFontFamily().run();
+            } else {
+              editor.chain().focus().setFontFamily(event.target.value).run();
+            }
+          }}
+          value={editor.getAttributes('textStyle').fontFamily || ''}
+          style={{
+            padding: '0.5rem 0.75rem',
+            border: '1px solid #d1d5db',
+            borderRadius: '0.375rem',
+            backgroundColor: 'white',
+            color: '#374151',
+            fontSize: '0.875rem',
+            cursor: 'pointer',
+            minWidth: '120px'
+          }}
+        >
+          <option value="">Default</option>
+          <option value="Inter">Inter</option>
+          <option value="Comic Sans MS, Comic Sans">Comic Sans</option>
+          <option value="serif">Serif</option>
+          <option value="monospace">Monospace</option>
+          <option value="cursive">Cursive</option>
+        </select>
       </div>
 
       {/* Editor Content */}
-      <div className="tiptap-content">
-        <EditorContent editor={editor} />
+      <div style={{
+        padding: '1rem',
+        minHeight: '400px',
+        backgroundColor: 'white'
+      }}>
+        <EditorContent 
+          editor={editor}
+          style={{
+            outline: 'none'
+          }}
+        />
       </div>
     </div>
   );
