@@ -1529,25 +1529,14 @@ export default function Index() {
                   <i className="far fa-folder-open"></i>
                   Folders & Tags
                 </Text>
-                <button
+                <Button
                   onClick={() => toggleColumnCollapse('folders')}
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "6px",
-                    border: "1px solid #e1e3e5",
-                    backgroundColor: "white",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "14px",
-                    transition: "all 0.2s ease"
-                  }}
-                  title="Collapse Folders & Tags"
+                  variant="tertiary"
+                  size="slim"
+                  accessibilityLabel="Collapse Folders & Tags"
                 >
                   <i className="fas fa-chevron-left"></i>
-                </button>
+                </Button>
               </div>
               
               {/* Global Search */}
@@ -1948,38 +1937,15 @@ export default function Index() {
               backgroundColor: "white",
               flexShrink: 0
             }}>
-              <button 
+              <Button
                 onClick={handleNewFolderClick}
-                style={{
-                  width: "100%",
-                  backgroundColor: "#008060",
-                  border: "0",
-                  color: "white",
-                  padding: "12px 16px",
-                  borderRadius: "24px",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  textAlign: "center",
-                  textDecoration: "none",
-                  transition: "all 250ms",
-                  userSelect: "none",
-                  WebkitUserSelect: "none",
-                  touchAction: "manipulation",
-                  boxShadow: "rgba(22, 163, 74, .2) 0 -25px 18px -14px inset, rgba(22, 163, 74, .15) 0 1px 2px, rgba(22, 163, 74, .15) 0 2px 4px, rgba(22, 163, 74, .15) 0 4px 8px, rgba(22, 163, 74, .15) 0 8px 16px, rgba(22, 163, 74, .15) 0 16px 32px"
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.boxShadow = "rgba(22, 163, 74, .35) 0 -25px 18px -14px inset, rgba(22, 163, 74, .25) 0 1px 2px, rgba(22, 163, 74, .25) 0 2px 4px, rgba(22, 163, 74, .25) 0 4px 8px, rgba(22, 163, 74, .25) 0 8px 16px, rgba(22, 163, 74, .25) 0 16px 32px";
-                  e.target.style.transform = "scale(1.05) rotate(-1deg)";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.boxShadow = "rgba(22, 163, 74, .2) 0 -25px 18px -14px inset, rgba(22, 163, 74, .15) 0 1px 2px, rgba(22, 163, 74, .15) 0 2px 4px, rgba(22, 163, 74, .15) 0 4px 8px, rgba(22, 163, 74, .15) 0 8px 16px, rgba(22, 163, 74, .15) 0 16px 32px";
-                  e.target.style.transform = "scale(1) rotate(0deg)";
-                }}
+                variant="primary"
+                size="large"
+                fullWidth
               >
                 <i className="fas fa-plus" style={{ marginRight: "8px" }}></i>
                 New Folder
-              </button>
+              </Button>
             </div>
           </Card>
         </div>
@@ -2010,25 +1976,14 @@ export default function Index() {
                     </Text>
                   )}
                 </div>
-                <button
+                <Button
                   onClick={() => toggleColumnCollapse('notes')}
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "6px",
-                    border: "1px solid #e1e3e5",
-                    backgroundColor: "white",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "14px",
-                    transition: "all 0.2s ease"
-                  }}
-                  title="Collapse Notes"
+                  variant="tertiary"
+                  size="slim"
+                  accessibilityLabel="Collapse Notes"
                 >
                   <i className="fas fa-chevron-left"></i>
-                </button>
+                </Button>
               </div>
               
               {/* Search Notes Input */}
