@@ -8,12 +8,19 @@ import packageJson from "../../package.json" with { type: "json" };
 
 import {
   Page,
+  Layout,
   Card,
   TextField,
   Button,
   Text,
   BlockStack,
   InlineStack,
+  Badge,
+  ResourceList,
+  ResourceItem,
+  Avatar,
+  EmptyState,
+  ButtonGroup,
 } from "@shopify/polaris";
 // Temporarily removed Polaris icons to fix server error
 import { useState, useEffect } from "react";
@@ -1472,68 +1479,24 @@ export default function Index() {
               height: "calc(100vh - 240px)"
             }}>
               {collapsedColumns.folders && (
-                <button
+                <Button
                   onClick={() => toggleColumnCollapse('folders')}
-                  style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "8px",
-                    border: "none",
-                    backgroundColor: "white",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "18px",
-                    transition: "all 0.2s ease"
-                  }}
-                  title="Expand Folders & Tags"
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = "#f6fff8";
-                    e.target.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
-                    e.target.style.transform = "scale(1.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "white";
-                    e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
-                    e.target.style.transform = "scale(1)";
-                  }}
+                  variant="secondary"
+                  size="medium"
+                  accessibilityLabel="Expand Folders & Tags"
                 >
                   <i className="far fa-folder-open" style={{ color: "#f57c00" }}></i>
-                </button>
+                </Button>
               )}
               {collapsedColumns.notes && (
-                <button
+                <Button
                   onClick={() => toggleColumnCollapse('notes')}
-                  style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "8px",
-                    border: "none",
-                    backgroundColor: "white",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "18px",
-                    transition: "all 0.2s ease"
-                  }}
-                  title="Expand Notes"
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = "#f6fff8";
-                    e.target.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
-                    e.target.style.transform = "scale(1.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "white";
-                    e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
-                    e.target.style.transform = "scale(1)";
-                  }}
+                  variant="secondary"
+                  size="medium"
+                  accessibilityLabel="Expand Notes"
                 >
                   <i className="far fa-note-sticky" style={{ color: "#f57c00" }}></i>
-                </button>
+                </Button>
               )}
             </div>
           )}
@@ -1566,25 +1529,14 @@ export default function Index() {
                   <i className="far fa-folder-open"></i>
                   Folders & Tags
                 </Text>
-                <button
+                <Button
                   onClick={() => toggleColumnCollapse('folders')}
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "6px",
-                    border: "1px solid #e1e3e5",
-                    backgroundColor: "white",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "14px",
-                    transition: "all 0.2s ease"
-                  }}
-                  title="Collapse Folders & Tags"
+                  variant="tertiary"
+                  size="slim"
+                  accessibilityLabel="Collapse Folders & Tags"
                 >
                   <i className="fas fa-chevron-left"></i>
-                </button>
+                </Button>
               </div>
               
               {/* Global Search */}
@@ -1844,42 +1796,16 @@ export default function Index() {
               paddingBottom: "0"
             }}>
               {localFolders.length === 0 ? (
-                <div style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "40px 20px",
-                  textAlign: "center",
-                  minHeight: "200px",
-                  cursor: "pointer",
-                  backgroundColor: "#f8fffe",
-                  border: "2px dashed #008060",
-                  borderRadius: "12px",
-                  transition: "all 0.3s ease"
-                }}
-                onClick={() => {
-                  setShowNewFolderModal(true);
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#ecfdf5";
-                  e.currentTarget.style.borderColor = "#15803d";
-                  e.currentTarget.style.transform = "scale(1.02)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "#f8fffe";
-                  e.currentTarget.style.borderColor = "#008060";
-                  e.currentTarget.style.transform = "scale(1)";
-                }}
+                <EmptyState
+                  heading="Create your first folder"
+                  action={{
+                    content: 'Create folder',
+                    onAction: () => setShowNewFolderModal(true),
+                  }}
+                  image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
                 >
-                  <i className="far fa-folder-open" style={{ fontSize: "48px", color: "#008060", marginBottom: "16px" }}></i>
-                  <Text as="h3" variant="headingMd" style={{ color: "#008060", marginBottom: "8px", fontWeight: "700" }}>
-                    STEP 1 - CREATE A FOLDER
-                  </Text>
-                  <Text as="p" style={{ color: "#008060", fontSize: "14px" }}>
-                    Click here to create your first folder to organize your notes
-                  </Text>
-                </div>
+                  <p>Get organized by creating folders to group your notes by topic, project, or category.</p>
+                </EmptyState>
               ) : (
                 <DndContext
                   sensors={sensors}
@@ -1985,38 +1911,15 @@ export default function Index() {
               backgroundColor: "white",
               flexShrink: 0
             }}>
-              <button 
+              <Button
                 onClick={handleNewFolderClick}
-                style={{
-                  width: "100%",
-                  backgroundColor: "#008060",
-                  border: "0",
-                  color: "white",
-                  padding: "12px 16px",
-                  borderRadius: "24px",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  textAlign: "center",
-                  textDecoration: "none",
-                  transition: "all 250ms",
-                  userSelect: "none",
-                  WebkitUserSelect: "none",
-                  touchAction: "manipulation",
-                  boxShadow: "rgba(22, 163, 74, .2) 0 -25px 18px -14px inset, rgba(22, 163, 74, .15) 0 1px 2px, rgba(22, 163, 74, .15) 0 2px 4px, rgba(22, 163, 74, .15) 0 4px 8px, rgba(22, 163, 74, .15) 0 8px 16px, rgba(22, 163, 74, .15) 0 16px 32px"
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.boxShadow = "rgba(22, 163, 74, .35) 0 -25px 18px -14px inset, rgba(22, 163, 74, .25) 0 1px 2px, rgba(22, 163, 74, .25) 0 2px 4px, rgba(22, 163, 74, .25) 0 4px 8px, rgba(22, 163, 74, .25) 0 8px 16px, rgba(22, 163, 74, .25) 0 16px 32px";
-                  e.target.style.transform = "scale(1.05) rotate(-1deg)";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.boxShadow = "rgba(22, 163, 74, .2) 0 -25px 18px -14px inset, rgba(22, 163, 74, .15) 0 1px 2px, rgba(22, 163, 74, .15) 0 2px 4px, rgba(22, 163, 74, .15) 0 4px 8px, rgba(22, 163, 74, .15) 0 8px 16px, rgba(22, 163, 74, .15) 0 16px 32px";
-                  e.target.style.transform = "scale(1) rotate(0deg)";
-                }}
+                variant="primary"
+                size="large"
+                fullWidth
               >
                 <i className="fas fa-plus" style={{ marginRight: "8px" }}></i>
                 New Folder
-              </button>
+              </Button>
             </div>
           </Card>
         </div>
@@ -2047,25 +1950,14 @@ export default function Index() {
                     </Text>
                   )}
                 </div>
-                <button
+                <Button
                   onClick={() => toggleColumnCollapse('notes')}
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "6px",
-                    border: "1px solid #e1e3e5",
-                    backgroundColor: "white",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "14px",
-                    transition: "all 0.2s ease"
-                  }}
-                  title="Collapse Notes"
+                  variant="tertiary"
+                  size="slim"
+                  accessibilityLabel="Collapse Notes"
                 >
                   <i className="fas fa-chevron-left"></i>
-                </button>
+                </Button>
               </div>
               
               {/* Search Notes Input */}
@@ -2225,61 +2117,21 @@ export default function Index() {
               )}
               
               {filteredNotes.length === 0 ? (
-                <div style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "40px 20px",
-                  textAlign: "center",
-                  minHeight: "200px",
-                  cursor: "pointer",
-                  backgroundColor: selectedFolder ? "#fef7ff" : "#fff7ed",
-                  border: selectedFolder ? "2px dashed #9333ea" : "2px dashed #f57c00",
-                  borderRadius: "12px",
-                  transition: "all 0.3s ease"
-                }}
-                onClick={handleNewNote}
-                onMouseEnter={(e) => {
-                  if (selectedFolder) {
-                    e.currentTarget.style.backgroundColor = "#faf5ff";
-                    e.currentTarget.style.borderColor = "#7c3aed";
-                  } else {
-                    e.currentTarget.style.backgroundColor = "#fff7ed";
-                    e.currentTarget.style.borderColor = "#ea580c";
-                  }
-                  e.currentTarget.style.transform = "scale(1.02)";
-                }}
-                onMouseLeave={(e) => {
-                  if (selectedFolder) {
-                    e.currentTarget.style.backgroundColor = "#fef7ff";
-                    e.currentTarget.style.borderColor = "#9333ea";
-                  } else {
-                    e.currentTarget.style.backgroundColor = "#fff7ed";
-                    e.currentTarget.style.borderColor = "#f57c00";
-                  }
-                  e.currentTarget.style.transform = "scale(1)";
-                }}
+                <EmptyState
+                  heading={selectedFolder ? "Create your first note" : "Select a folder to create notes"}
+                  action={{
+                    content: selectedFolder ? 'Create note' : 'Create folder first',
+                    onAction: selectedFolder ? handleNewNote : () => setShowNewFolderModal(true),
+                  }}
+                  image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
                 >
-                  <i className="far fa-sticky-note" style={{ 
-                    fontSize: "48px", 
-                    color: selectedFolder ? "#9333ea" : "#f57c00", 
-                    marginBottom: "16px" 
-                  }}></i>
-                  <Text as="h3" variant="headingMd" style={{ 
-                    color: selectedFolder ? "#9333ea" : "#f57c00", 
-                    marginBottom: "8px", 
-                    fontWeight: "700" 
-                  }}>
-                    {selectedFolder ? "ADD YOUR FIRST NOTE IN THIS FOLDER" : "STEP 2 - SELECT YOUR FOLDER AND CREATE A NOTE"}
-                  </Text>
-                  <Text as="p" style={{ 
-                    color: selectedFolder ? "#9333ea" : "#f57c00", 
-                    fontSize: "14px" 
-                  }}>
-                    {selectedFolder ? "Click here to create your first note in this folder" : "Select a folder first, then click here to create your first note"}
-                  </Text>
-                </div>
+                  <p>
+                    {selectedFolder 
+                      ? "Start writing your thoughts, ideas, and important information in this folder."
+                      : "Select a folder from the left sidebar to organize your notes, or create your first folder to get started."
+                    }
+                  </p>
+                </EmptyState>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                   {filteredNotes.map((note) => {
