@@ -10,10 +10,29 @@ import Underline from '@tiptap/extension-underline';
 const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        // Configure built-in extensions
+        heading: {
+          levels: [1, 2, 3, 4, 5, 6],
+        },
+        bulletList: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
+        orderedList: {
+          keepMarks: true,
+          keepAttributes: false,
+        },
+        // Enable history for undo/redo
+        history: {
+          depth: 100,
+        },
+      }),
       TextStyle,
       Color,
-      FontFamily,
+      FontFamily.configure({
+        types: ['textStyle'],
+      }),
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
@@ -145,6 +164,80 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           </button>
         </div>
 
+        {/* Headings */}
+        <div style={{
+          display: 'flex',
+          border: '1px solid #d1d5db',
+          borderRadius: '0.375rem',
+          overflow: 'hidden'
+        }}>
+          {[1, 2, 3].map((level) => (
+            <button
+              key={level}
+              onClick={() => editor.chain().focus().toggleHeading({ level }).run()}
+              style={{
+                padding: '0.5rem 0.75rem',
+                border: 'none',
+                backgroundColor: editor.isActive('heading', { level }) ? '#3b82f6' : 'white',
+                color: editor.isActive('heading', { level }) ? 'white' : '#374151',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                borderRight: level !== 3 ? '1px solid #d1d5db' : 'none',
+                transition: 'all 0.15s ease-in-out'
+              }}
+              title={`Heading ${level}`}
+              onMouseEnter={(e) => !editor.isActive('heading', { level }) && (e.target.style.backgroundColor = '#f3f4f6')}
+              onMouseLeave={(e) => !editor.isActive('heading', { level }) && (e.target.style.backgroundColor = 'white')}
+            >
+              H{level}
+            </button>
+          ))}
+        </div>
+
+        {/* Lists */}
+        <div style={{
+          display: 'flex',
+          border: '1px solid #d1d5db',
+          borderRadius: '0.375rem',
+          overflow: 'hidden'
+        }}>
+          <button
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            style={{
+              padding: '0.5rem 0.75rem',
+              border: 'none',
+              backgroundColor: editor.isActive('bulletList') ? '#3b82f6' : 'white',
+              color: editor.isActive('bulletList') ? 'white' : '#374151',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              borderRight: '1px solid #d1d5db',
+              transition: 'all 0.15s ease-in-out'
+            }}
+            title="Bullet List"
+            onMouseEnter={(e) => !editor.isActive('bulletList') && (e.target.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !editor.isActive('bulletList') && (e.target.style.backgroundColor = 'white')}
+          >
+            •
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            style={{
+              padding: '0.5rem 0.75rem',
+              border: 'none',
+              backgroundColor: editor.isActive('orderedList') ? '#3b82f6' : 'white',
+              color: editor.isActive('orderedList') ? 'white' : '#374151',
+              cursor: 'pointer',
+              fontSize: '0.875rem',
+              transition: 'all 0.15s ease-in-out'
+            }}
+            title="Numbered List"
+            onMouseEnter={(e) => !editor.isActive('orderedList') && (e.target.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => !editor.isActive('orderedList') && (e.target.style.backgroundColor = 'white')}
+          >
+            1.
+          </button>
+        </div>
 
         {/* Text Alignment */}
         <div style={{
@@ -252,6 +345,52 @@ const SimpleRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           <option value="monospace">Monospace</option>
           <option value="cursive">Cursive</option>
         </select>
+
+        {/* Undo/Redo */}
+        <div style={{
+          display: 'flex',
+          border: '1px solid #d1d5db',
+          borderRadius: '0.375rem',
+          overflow: 'hidden'
+        }}>
+          <button
+            onClick={() => editor.chain().focus().undo().run()}
+            disabled={!editor.can().undo()}
+            style={{
+              padding: '0.5rem 0.75rem',
+              border: 'none',
+              backgroundColor: 'white',
+              color: editor.can().undo() ? '#374151' : '#9ca3af',
+              cursor: editor.can().undo() ? 'pointer' : 'not-allowed',
+              fontSize: '0.875rem',
+              borderRight: '1px solid #d1d5db',
+              transition: 'all 0.15s ease-in-out'
+            }}
+            title="Undo"
+            onMouseEnter={(e) => editor.can().undo() && (e.target.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => editor.can().undo() && (e.target.style.backgroundColor = 'white')}
+          >
+            ↶
+          </button>
+          <button
+            onClick={() => editor.chain().focus().redo().run()}
+            disabled={!editor.can().redo()}
+            style={{
+              padding: '0.5rem 0.75rem',
+              border: 'none',
+              backgroundColor: 'white',
+              color: editor.can().redo() ? '#374151' : '#9ca3af',
+              cursor: editor.can().redo() ? 'pointer' : 'not-allowed',
+              fontSize: '0.875rem',
+              transition: 'all 0.15s ease-in-out'
+            }}
+            title="Redo"
+            onMouseEnter={(e) => editor.can().redo() && (e.target.style.backgroundColor = '#f3f4f6')}
+            onMouseLeave={(e) => editor.can().redo() && (e.target.style.backgroundColor = 'white')}
+          >
+            ↷
+          </button>
+        </div>
       </div>
 
       {/* Editor Content */}
