@@ -13,7 +13,11 @@ import {
   Button,
   Text,
   BlockStack,
-  InlineStack
+  InlineStack,
+  SkeletonPage,
+  SkeletonBodyText,
+  SkeletonDisplayText,
+  Layout
 } from "@shopify/polaris";
 // Temporarily removed Polaris icons to fix server error
 import { useState, useEffect } from "react";
@@ -229,6 +233,16 @@ export default function Index() {
   const [folderId, setFolderId] = useState("");
   const [folderName, setFolderName] = useState("");
   const [selectedFolder, setSelectedFolder] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Handle initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 800); // Show skeleton for 0.8 seconds
+    
+    return () => clearTimeout(timer);
+  }, []);
   
   // Update folderId when selectedFolder changes
   useEffect(() => {
@@ -1217,6 +1231,40 @@ export default function Index() {
       setTimeout(() => setAlertMessage(''), 3000);
     }
   };
+
+  // Show skeleton page while loading
+  if (isLoading) {
+    return (
+      <SkeletonPage title="Loading Scriberr...">
+        <Layout>
+          <Layout.Section oneThird>
+            <Card>
+              <Card.Section>
+                <SkeletonDisplayText size="small" />
+                <SkeletonBodyText lines={3} />
+              </Card.Section>
+            </Card>
+          </Layout.Section>
+          <Layout.Section oneThird>
+            <Card>
+              <Card.Section>
+                <SkeletonDisplayText size="small" />
+                <SkeletonBodyText lines={5} />
+              </Card.Section>
+            </Card>
+          </Layout.Section>
+          <Layout.Section oneThird>
+            <Card>
+              <Card.Section>
+                <SkeletonDisplayText size="medium" />
+                <SkeletonBodyText lines={8} />
+              </Card.Section>
+            </Card>
+          </Layout.Section>
+        </Layout>
+      </SkeletonPage>
+    );
+  }
 
       return (
               <Page title="Scriberr" style={{ paddingBottom: "160px", marginBottom: "10%" }}>
