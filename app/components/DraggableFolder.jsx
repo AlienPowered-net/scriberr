@@ -41,7 +41,7 @@ const DraggableFolder = ({
         alignItems: "center",
         backgroundColor: selectedFolder === folder.id ? "#f6fff8" : "#F8F9FA",
         border: selectedFolder === folder.id ? "2px solid #008060" : "2px solid #E1E3E5",
-        borderRadius: "12px",
+        borderRadius: "8px",
         position: "relative",
         transition: "all 0.2s ease",
         boxShadow: selectedFolder === folder.id ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
