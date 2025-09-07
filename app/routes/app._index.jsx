@@ -15,6 +15,12 @@ import {
   Text,
   BlockStack,
   InlineStack,
+  Badge,
+  ResourceList,
+  ResourceItem,
+  Avatar,
+  EmptyState,
+  ButtonGroup,
 } from "@shopify/polaris";
 // Temporarily removed Polaris icons to fix server error
 import { useState, useEffect } from "react";
@@ -1473,68 +1479,24 @@ export default function Index() {
               height: "calc(100vh - 240px)"
             }}>
               {collapsedColumns.folders && (
-                <button
+                <Button
                   onClick={() => toggleColumnCollapse('folders')}
-                  style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "8px",
-                    border: "none",
-                    backgroundColor: "white",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "18px",
-                    transition: "all 0.2s ease"
-                  }}
-                  title="Expand Folders & Tags"
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = "#f6fff8";
-                    e.target.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
-                    e.target.style.transform = "scale(1.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "white";
-                    e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
-                    e.target.style.transform = "scale(1)";
-                  }}
+                  variant="secondary"
+                  size="medium"
+                  accessibilityLabel="Expand Folders & Tags"
                 >
                   <i className="far fa-folder-open" style={{ color: "#f57c00" }}></i>
-                </button>
+                </Button>
               )}
               {collapsedColumns.notes && (
-                <button
+                <Button
                   onClick={() => toggleColumnCollapse('notes')}
-                  style={{
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "8px",
-                    border: "none",
-                    backgroundColor: "white",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "18px",
-                    transition: "all 0.2s ease"
-                  }}
-                  title="Expand Notes"
-                  onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = "#f6fff8";
-                    e.target.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
-                    e.target.style.transform = "scale(1.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = "white";
-                    e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
-                    e.target.style.transform = "scale(1)";
-                  }}
+                  variant="secondary"
+                  size="medium"
+                  accessibilityLabel="Expand Notes"
                 >
                   <i className="far fa-note-sticky" style={{ color: "#f57c00" }}></i>
-                </button>
+                </Button>
               )}
             </div>
           )}
