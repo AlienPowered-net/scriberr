@@ -1482,20 +1482,20 @@ export default function Index() {
                 <Button
                   onClick={() => toggleColumnCollapse('folders')}
                   variant="secondary"
-                  size="medium"
+                  size="large"
                   accessibilityLabel="Expand Folders & Tags"
                 >
-                  <i className="far fa-folder-open" style={{ color: "#f57c00" }}></i>
+                  <i className="far fa-folder-open" style={{ color: "#f57c00", fontSize: "20px" }}></i>
                 </Button>
               )}
               {collapsedColumns.notes && (
                 <Button
                   onClick={() => toggleColumnCollapse('notes')}
                   variant="secondary"
-                  size="medium"
+                  size="large"
                   accessibilityLabel="Expand Notes"
                 >
-                  <i className="far fa-note-sticky" style={{ color: "#f57c00" }}></i>
+                  <i className="far fa-note-sticky" style={{ color: "#f57c00", fontSize: "20px" }}></i>
                 </Button>
               )}
             </div>
@@ -1562,7 +1562,7 @@ export default function Index() {
                   onChange={(e) => setGlobalSearchQuery(removeEmojis(e.target.value))}
                   placeholder="Search all notes..."
                   onFocus={(e) => {
-                    e.target.style.boxShadow = "0 0 0 2px #16A34A, 0 1px 2px rgba(0,0,0,0.05)";
+                    e.target.style.boxShadow = "0 0 0 2px #008060, 0 1px 2px rgba(0,0,0,0.05)";
                     e.target.style.backgroundColor = "#FFFFFF";
                   }}
                   onBlur={(e) => {
@@ -1702,48 +1702,45 @@ export default function Index() {
                           style={{
                             display: "inline-flex",
                             alignItems: "center",
-                            gap: "4px",
-                            padding: "6px 10px",
-                            backgroundColor: selectedTags.includes(tag) ? "#008060" : "#f6fff8",
-                            borderRadius: "16px",
-                            border: "1px solid #008060",
+                            gap: "6px",
+                            padding: "4px 8px",
+                            backgroundColor: selectedTags.includes(tag) ? "#008060" : "#f6f6f7",
+                            borderRadius: "4px",
+                            border: "1px solid #d1d3d4",
                             cursor: "pointer",
-                            transition: "all 0.2s ease",
+                            transition: "all 0.15s ease",
                             position: "relative",
-                            fontSize: "12px",
-                            fontWeight: "600",
-                            color: selectedTags.includes(tag) ? "white" : "#008060",
-                            minWidth: "60px",
-                            justifyContent: "center"
+                            fontSize: "13px",
+                            fontWeight: "400",
+                            color: selectedTags.includes(tag) ? "white" : "#202223",
+                            minHeight: "24px",
+                            justifyContent: "center",
+                            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
                           }}
                           onClick={() => handleTagClick(tag)}
                           onMouseEnter={(e) => {
                             if (!selectedTags.includes(tag)) {
-                              e.currentTarget.style.backgroundColor = "#008060";
-                              e.currentTarget.style.color = "white";
+                              e.currentTarget.style.backgroundColor = "#e1e3e5";
+                              e.currentTarget.style.borderColor = "#aeb4b9";
                             }
-                            e.currentTarget.style.transform = "scale(1.05)";
-                            e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.2)";
                           }}
                           onMouseLeave={(e) => {
                             if (!selectedTags.includes(tag)) {
-                              e.currentTarget.style.backgroundColor = "#f6fff8";
-                              e.currentTarget.style.color = "#008060";
+                              e.currentTarget.style.backgroundColor = "#f6f6f7";
+                              e.currentTarget.style.borderColor = "#d1d3d4";
                             }
-                            e.currentTarget.style.transform = "scale(1)";
-                            e.currentTarget.style.boxShadow = "none";
                           }}
                         >
                           <span>{tag}</span>
                           <span style={{ 
-                            fontSize: "10px", 
-                            color: selectedTags.includes(tag) ? "#008060" : "inherit", 
-                            backgroundColor: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "rgba(255, 255, 255, 0.3)", 
+                            fontSize: "11px", 
+                            color: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175", 
+                            backgroundColor: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)", 
                             padding: "1px 4px", 
-                            borderRadius: "8px",
-                            fontWeight: "700"
+                            borderRadius: "2px",
+                            fontWeight: "500"
                           }}>
-                            x{count}
+                            {count}
                           </span>
                           <button
                             onClick={(e) => {
@@ -1754,28 +1751,26 @@ export default function Index() {
                               background: "none",
                               border: "none",
                               cursor: "pointer",
-                              fontSize: "10px",
-                              color: "#d82c0d",
-                              padding: "1px",
-                              borderRadius: "50%",
+                              fontSize: "12px",
+                              color: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175",
+                              padding: "2px",
+                              borderRadius: "2px",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              transition: "all 0.2s ease",
+                              transition: "all 0.15s ease",
                               marginLeft: "2px",
-                              width: "14px",
-                              height: "14px",
-                              opacity: "0.7"
+                              width: "16px",
+                              height: "16px",
+                              opacity: "0.8"
                             }}
                             onMouseEnter={(e) => {
-                              e.target.style.backgroundColor = "#d82c0d";
-                              e.target.style.color = "white";
+                              e.target.style.backgroundColor = selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)";
                               e.target.style.opacity = "1";
                             }}
                             onMouseLeave={(e) => {
                               e.target.style.backgroundColor = "transparent";
-                              e.target.style.color = "#d82c0d";
-                              e.target.style.opacity = "0.7";
+                              e.target.style.opacity = "0.8";
                             }}
                           >
                             ×
@@ -1790,7 +1785,7 @@ export default function Index() {
 
             {/* Scrollable Folders Section */}
             <div style={{ 
-              height: "calc(5 * 60px + 32px)", // Height for 5 folders + padding
+              flex: "1",
               overflowY: "auto", 
               padding: "16px",
               paddingBottom: "0"
@@ -2045,7 +2040,7 @@ export default function Index() {
 
             {/* Scrollable Notes Section */}
             <div style={{ 
-              height: "calc(3 * 200px)", // Fixed height for exactly 3 notes (200px per note including padding/margin)
+              flex: "1",
               overflowY: "auto", 
               padding: "16px",
               paddingBottom: "0"
@@ -2246,13 +2241,15 @@ export default function Index() {
                                   {note.tags.slice(0, 3).map((tag, index) => (
                                     <span key={index} style={{
                                       display: "inline-block",
-                                      background: "#008060",
-                                      color: "white",
+                                      background: "#f6f6f7",
+                                      color: "#202223",
                                       fontSize: "11px",
-                                      fontWeight: "600",
-                                      padding: "3px 8px",
-                                      borderRadius: "10px",
-                                      lineHeight: "1.2"
+                                      fontWeight: "400",
+                                      padding: "2px 6px",
+                                      borderRadius: "4px",
+                                      lineHeight: "1.2",
+                                      border: "1px solid #d1d3d4",
+                                      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
                                     }}>
                                       {tag}
                                     </span>
