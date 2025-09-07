@@ -629,9 +629,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             onClick={() => setShowAIModal(true)}
             style={{
               padding: "6px 12px",
-              border: "1px solid #28a745",
+              border: "1px solid #6b5b95",
               borderRadius: "4px",
-              backgroundColor: "#28a745",
+              backgroundColor: "#6b5b95",
               color: "white",
               cursor: "pointer",
               transition: "all 0.2s ease",
@@ -643,6 +643,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               gap: "4px"
             }}
             title="AI Assistant"
+            onMouseEnter={(e) => e.target.style.backgroundColor = "#5a4d7a"}
+            onMouseLeave={(e) => e.target.style.backgroundColor = "#6b5b95"}
           >
             <i className="fas fa-wand-magic-sparkles"></i>
             AI

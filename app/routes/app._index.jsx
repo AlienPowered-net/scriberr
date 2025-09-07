@@ -1490,7 +1490,7 @@ export default function Index() {
                   }}
                   title="Expand Folders & Tags"
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = "#E8F5E8";
+                    e.target.style.backgroundColor = "#f6fff8";
                     e.target.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
                     e.target.style.transform = "scale(1.05)";
                   }}
@@ -1522,7 +1522,7 @@ export default function Index() {
                   }}
                   title="Expand Notes"
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = "#E8F5E8";
+                    e.target.style.backgroundColor = "#f6fff8";
                     e.target.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
                     e.target.style.transform = "scale(1.05)";
                   }}
@@ -1644,8 +1644,8 @@ export default function Index() {
                     justifyContent: "center",
                     alignItems: "center",
                     cursor: "pointer",
-                    backgroundColor: selectedFolder === null ? "#E8F5E8" : "#F8F9FA",
-                    border: selectedFolder === null ? "2px solid #0a0" : "2px solid #E1E3E5",
+                    backgroundColor: selectedFolder === null ? "#f6fff8" : "#F8F9FA",
+                    border: selectedFolder === null ? "2px solid #008060" : "2px solid #E1E3E5",
                     borderRadius: "8px",
                     position: "relative",
                     transition: "all 0.2s ease",
@@ -1654,8 +1654,8 @@ export default function Index() {
                   onClick={() => setSelectedFolder(null)}
                   onMouseEnter={(e) => {
                     if (selectedFolder !== null) {
-                      e.currentTarget.style.backgroundColor = "#E8F5E8";
-                      e.currentTarget.style.borderColor = "#0a0";
+                      e.currentTarget.style.backgroundColor = "#f6fff8";
+                      e.currentTarget.style.borderColor = "#008060";
                       e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
                     }
                   }}
@@ -1672,7 +1672,7 @@ export default function Index() {
                     display: "flex", 
                     alignItems: "center", 
                     gap: "6px",
-                    color: selectedFolder === null ? "#0a0" : "#374151",
+                    color: selectedFolder === null ? "#008060" : "#374151",
                     fontSize: "14px"
                   }}>
                     <i className="far fa-note-sticky" style={{ fontSize: "16px" }}></i>
@@ -1689,8 +1689,8 @@ export default function Index() {
                     justifyContent: "center",
                     alignItems: "center",
                     cursor: "pointer",
-                    backgroundColor: showTagsSection ? "#E8F5E8" : "#F8F9FA",
-                    border: showTagsSection ? "2px solid #0a0" : "2px solid #E1E3E5",
+                    backgroundColor: showTagsSection ? "#f6fff8" : "#F8F9FA",
+                    border: showTagsSection ? "2px solid #008060" : "2px solid #E1E3E5",
                     borderRadius: "8px",
                     position: "relative",
                     transition: "all 0.2s ease",
@@ -1699,8 +1699,8 @@ export default function Index() {
                   onClick={() => setShowTagsSection(!showTagsSection)}
                   onMouseEnter={(e) => {
                     if (!showTagsSection) {
-                      e.currentTarget.style.backgroundColor = "#E8F5E8";
-                      e.currentTarget.style.borderColor = "#0a0";
+                      e.currentTarget.style.backgroundColor = "#f6fff8";
+                      e.currentTarget.style.borderColor = "#008060";
                       e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
                     }
                   }}
@@ -1717,7 +1717,7 @@ export default function Index() {
                     display: "flex", 
                     alignItems: "center", 
                     gap: "6px",
-                    color: showTagsSection ? "#0a0" : "#374151",
+                    color: showTagsSection ? "#008060" : "#374151",
                     fontSize: "14px"
                   }}>
                     <i className="far fa-bookmark" style={{ fontSize: "16px" }}></i>
@@ -1752,22 +1752,22 @@ export default function Index() {
                             alignItems: "center",
                             gap: "4px",
                             padding: "6px 10px",
-                            backgroundColor: selectedTags.includes(tag) ? "#0a0" : "#E8F5E8",
+                            backgroundColor: selectedTags.includes(tag) ? "#008060" : "#f6fff8",
                             borderRadius: "16px",
-                            border: "1px solid #0a0",
+                            border: "1px solid #008060",
                             cursor: "pointer",
                             transition: "all 0.2s ease",
                             position: "relative",
                             fontSize: "12px",
                             fontWeight: "600",
-                            color: selectedTags.includes(tag) ? "white" : "#0a0",
+                            color: selectedTags.includes(tag) ? "white" : "#008060",
                             minWidth: "60px",
                             justifyContent: "center"
                           }}
                           onClick={() => handleTagClick(tag)}
                           onMouseEnter={(e) => {
                             if (!selectedTags.includes(tag)) {
-                              e.currentTarget.style.backgroundColor = "#0a0";
+                              e.currentTarget.style.backgroundColor = "#008060";
                               e.currentTarget.style.color = "white";
                             }
                             e.currentTarget.style.transform = "scale(1.05)";
@@ -1775,8 +1775,8 @@ export default function Index() {
                           }}
                           onMouseLeave={(e) => {
                             if (!selectedTags.includes(tag)) {
-                              e.currentTarget.style.backgroundColor = "#E8F5E8";
-                              e.currentTarget.style.color = "#0a0";
+                              e.currentTarget.style.backgroundColor = "#f6fff8";
+                              e.currentTarget.style.color = "#008060";
                             }
                             e.currentTarget.style.transform = "scale(1)";
                             e.currentTarget.style.boxShadow = "none";
@@ -1785,7 +1785,7 @@ export default function Index() {
                           <span>{tag}</span>
                           <span style={{ 
                             fontSize: "10px", 
-                            color: selectedTags.includes(tag) ? "#0a0" : "inherit", 
+                            color: selectedTags.includes(tag) ? "#008060" : "inherit", 
                             backgroundColor: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "rgba(255, 255, 255, 0.3)", 
                             padding: "1px 4px", 
                             borderRadius: "8px",
@@ -1854,7 +1854,7 @@ export default function Index() {
                   minHeight: "200px",
                   cursor: "pointer",
                   backgroundColor: "#f8fffe",
-                  border: "2px dashed #16a34a",
+                  border: "2px dashed #008060",
                   borderRadius: "12px",
                   transition: "all 0.3s ease"
                 }}
@@ -1868,15 +1868,15 @@ export default function Index() {
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = "#f8fffe";
-                  e.currentTarget.style.borderColor = "#16a34a";
+                  e.currentTarget.style.borderColor = "#008060";
                   e.currentTarget.style.transform = "scale(1)";
                 }}
                 >
-                  <i className="far fa-folder-open" style={{ fontSize: "48px", color: "#16a34a", marginBottom: "16px" }}></i>
-                  <Text as="h3" variant="headingMd" style={{ color: "#16a34a", marginBottom: "8px", fontWeight: "700" }}>
+                  <i className="far fa-folder-open" style={{ fontSize: "48px", color: "#008060", marginBottom: "16px" }}></i>
+                  <Text as="h3" variant="headingMd" style={{ color: "#008060", marginBottom: "8px", fontWeight: "700" }}>
                     STEP 1 - CREATE A FOLDER
                   </Text>
-                  <Text as="p" style={{ color: "#16a34a", fontSize: "14px" }}>
+                  <Text as="p" style={{ color: "#008060", fontSize: "14px" }}>
                     Click here to create your first folder to organize your notes
                   </Text>
                 </div>
@@ -1989,7 +1989,7 @@ export default function Index() {
                 onClick={handleNewFolderClick}
                 style={{
                   width: "100%",
-                  backgroundColor: "#16a34a",
+                  backgroundColor: "#008060",
                   border: "0",
                   color: "white",
                   padding: "12px 16px",
@@ -2298,7 +2298,7 @@ export default function Index() {
                           borderRadius: "12px",
                           padding: "20px",
                           boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                          borderRight: isSelected ? "6px solid #0a0" : isCheckboxSelected ? "6px solid #FF8C00" : "6px solid transparent",
+                          borderRight: isSelected ? "6px solid #008060" : isCheckboxSelected ? "6px solid #FF8C00" : "6px solid transparent",
                           cursor: "pointer",
                           transition: "all 0.2s ease",
                           marginBottom: "8px",
@@ -2394,7 +2394,7 @@ export default function Index() {
                                   {note.tags.slice(0, 3).map((tag, index) => (
                                     <span key={index} style={{
                                       display: "inline-block",
-                                      background: "#28a745",
+                                      background: "#008060",
                                       color: "white",
                                       fontSize: "11px",
                                       fontWeight: "600",
@@ -3753,7 +3753,7 @@ export default function Index() {
                     }}
                     style={{
                       display: "inline-block",
-                      background: "#28a745",
+                      background: "#008060",
                       color: "white",
                       fontSize: "11px",
                       fontWeight: "600",
@@ -3764,10 +3764,10 @@ export default function Index() {
                       transition: "background-color 0.2s ease"
                     }}
                     onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = "#1e7e34";
+                      e.target.style.backgroundColor = "#004c3b";
                     }}
                     onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = "#28a745";
+                      e.target.style.backgroundColor = "#008060";
                     }}
                   >
                     {tag}
@@ -3802,7 +3802,7 @@ export default function Index() {
               target="_blank" 
               rel="noopener noreferrer"
               style={{
-                color: "#0a0",
+                color: "#008060",
                 textDecoration: "none",
                 fontWeight: "600",
                 transition: "color 0.2s ease"
@@ -3811,7 +3811,7 @@ export default function Index() {
                 e.target.style.color = "#008000";
               }}
               onMouseLeave={(e) => {
-                e.target.style.color = "#0a0";
+                e.target.style.color = "#008060";
               }}
             >
               Aliens
