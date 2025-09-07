@@ -40,7 +40,6 @@ const FolderIconPicker = ({
     { color: "#dc2626", name: "Red" },
     { color: "#f57c00", name: "Orange" },
     { color: "#facc15", name: "Yellow" },
-    { color: "#ffffff", name: "White" },
     { color: "#374151", name: "Black" },
     { color: "#2563eb", name: "Blue" },
     { color: "#9333ea", name: "Purple" }
@@ -126,7 +125,7 @@ const FolderIconPicker = ({
         
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(8, 1fr)',
+          gridTemplateColumns: 'repeat(7, 1fr)',
           gap: '8px',
           padding: '8px',
           border: '1px solid #e1e3e5',

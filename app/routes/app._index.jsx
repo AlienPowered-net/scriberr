@@ -1484,6 +1484,7 @@ export default function Index() {
                   variant="secondary"
                   size="large"
                   accessibilityLabel="Expand Folders & Tags"
+                  style={{ height: "60px" }}
                 >
                   <i className="far fa-folder-open" style={{ color: "#f57c00", fontSize: "20px" }}></i>
                 </Button>
@@ -1494,6 +1495,7 @@ export default function Index() {
                   variant="secondary"
                   size="large"
                   accessibilityLabel="Expand Notes"
+                  style={{ height: "60px" }}
                 >
                   <i className="far fa-note-sticky" style={{ color: "#f57c00", fontSize: "20px" }}></i>
                 </Button>
@@ -1786,9 +1788,10 @@ export default function Index() {
             {/* Scrollable Folders Section */}
             <div style={{ 
               flex: "1",
-              overflowY: "auto", 
+              overflowY: localFolders.length > 8 ? "auto" : "visible", 
               padding: "16px",
-              paddingBottom: "0"
+              paddingBottom: "0",
+              maxHeight: localFolders.length > 8 ? "calc(100vh - 400px)" : "none"
             }}>
               {localFolders.length === 0 ? (
                 <EmptyState
