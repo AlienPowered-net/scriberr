@@ -28,10 +28,10 @@ console.log("- SCOPES:", process.env.SCOPES);
 // Determine the correct app URL for the environment
 let appUrl;
 
-// For dev branch, always use the custom domain regardless of Vercel's internal URL
-if (process.env.VERCEL_GIT_COMMIT_REF === 'dev') {
-  appUrl = "https://scriberrdev.vercel.app";
-  console.log("- Dev branch detected, forcing custom domain:", appUrl);
+// For dev branch, use Vercel's generated URL to allow dynamic deployments
+if (process.env.VERCEL_GIT_COMMIT_REF === 'dev' && process.env.VERCEL_URL) {
+  appUrl = `https://${process.env.VERCEL_URL}`;
+  console.log("- Dev branch detected, using Vercel generated URL:", appUrl);
 } else if (process.env.SHOPIFY_APP_URL) {
   appUrl = process.env.SHOPIFY_APP_URL;
   console.log("- Using SHOPIFY_APP_URL:", appUrl);
@@ -39,8 +39,8 @@ if (process.env.VERCEL_GIT_COMMIT_REF === 'dev') {
   appUrl = process.env.APP_URL;
   console.log("- Using APP_URL:", appUrl);
 } else {
-  appUrl = "https://scriberrdev.vercel.app";
-  console.log("- Using fallback URL:", appUrl);
+  appUrl = "https://scriberr.vercel.app";
+  console.log("- Using production fallback URL:", appUrl);
 }
 
 console.log("- VERCEL_ENV:", process.env.VERCEL_ENV);
