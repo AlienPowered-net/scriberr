@@ -1796,42 +1796,16 @@ export default function Index() {
               paddingBottom: "0"
             }}>
               {localFolders.length === 0 ? (
-                <div style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "40px 20px",
-                  textAlign: "center",
-                  minHeight: "200px",
-                  cursor: "pointer",
-                  backgroundColor: "#f8fffe",
-                  border: "2px dashed #008060",
-                  borderRadius: "12px",
-                  transition: "all 0.3s ease"
-                }}
-                onClick={() => {
-                  setShowNewFolderModal(true);
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#ecfdf5";
-                  e.currentTarget.style.borderColor = "#15803d";
-                  e.currentTarget.style.transform = "scale(1.02)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "#f8fffe";
-                  e.currentTarget.style.borderColor = "#008060";
-                  e.currentTarget.style.transform = "scale(1)";
-                }}
+                <EmptyState
+                  heading="Create your first folder"
+                  action={{
+                    content: 'Create folder',
+                    onAction: () => setShowNewFolderModal(true),
+                  }}
+                  image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
                 >
-                  <i className="far fa-folder-open" style={{ fontSize: "48px", color: "#008060", marginBottom: "16px" }}></i>
-                  <Text as="h3" variant="headingMd" style={{ color: "#008060", marginBottom: "8px", fontWeight: "700" }}>
-                    STEP 1 - CREATE A FOLDER
-                  </Text>
-                  <Text as="p" style={{ color: "#008060", fontSize: "14px" }}>
-                    Click here to create your first folder to organize your notes
-                  </Text>
-                </div>
+                  <p>Get organized by creating folders to group your notes by topic, project, or category.</p>
+                </EmptyState>
               ) : (
                 <DndContext
                   sensors={sensors}
@@ -2143,61 +2117,21 @@ export default function Index() {
               )}
               
               {filteredNotes.length === 0 ? (
-                <div style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "40px 20px",
-                  textAlign: "center",
-                  minHeight: "200px",
-                  cursor: "pointer",
-                  backgroundColor: selectedFolder ? "#fef7ff" : "#fff7ed",
-                  border: selectedFolder ? "2px dashed #9333ea" : "2px dashed #f57c00",
-                  borderRadius: "12px",
-                  transition: "all 0.3s ease"
-                }}
-                onClick={handleNewNote}
-                onMouseEnter={(e) => {
-                  if (selectedFolder) {
-                    e.currentTarget.style.backgroundColor = "#faf5ff";
-                    e.currentTarget.style.borderColor = "#7c3aed";
-                  } else {
-                    e.currentTarget.style.backgroundColor = "#fff7ed";
-                    e.currentTarget.style.borderColor = "#ea580c";
-                  }
-                  e.currentTarget.style.transform = "scale(1.02)";
-                }}
-                onMouseLeave={(e) => {
-                  if (selectedFolder) {
-                    e.currentTarget.style.backgroundColor = "#fef7ff";
-                    e.currentTarget.style.borderColor = "#9333ea";
-                  } else {
-                    e.currentTarget.style.backgroundColor = "#fff7ed";
-                    e.currentTarget.style.borderColor = "#f57c00";
-                  }
-                  e.currentTarget.style.transform = "scale(1)";
-                }}
+                <EmptyState
+                  heading={selectedFolder ? "Create your first note" : "Select a folder to create notes"}
+                  action={{
+                    content: selectedFolder ? 'Create note' : 'Create folder first',
+                    onAction: selectedFolder ? handleNewNote : () => setShowNewFolderModal(true),
+                  }}
+                  image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
                 >
-                  <i className="far fa-sticky-note" style={{ 
-                    fontSize: "48px", 
-                    color: selectedFolder ? "#9333ea" : "#f57c00", 
-                    marginBottom: "16px" 
-                  }}></i>
-                  <Text as="h3" variant="headingMd" style={{ 
-                    color: selectedFolder ? "#9333ea" : "#f57c00", 
-                    marginBottom: "8px", 
-                    fontWeight: "700" 
-                  }}>
-                    {selectedFolder ? "ADD YOUR FIRST NOTE IN THIS FOLDER" : "STEP 2 - SELECT YOUR FOLDER AND CREATE A NOTE"}
-                  </Text>
-                  <Text as="p" style={{ 
-                    color: selectedFolder ? "#9333ea" : "#f57c00", 
-                    fontSize: "14px" 
-                  }}>
-                    {selectedFolder ? "Click here to create your first note in this folder" : "Select a folder first, then click here to create your first note"}
-                  </Text>
-                </div>
+                  <p>
+                    {selectedFolder 
+                      ? "Start writing your thoughts, ideas, and important information in this folder."
+                      : "Select a folder from the left sidebar to organize your notes, or create your first folder to get started."
+                    }
+                  </p>
+                </EmptyState>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                   {filteredNotes.map((note) => {
