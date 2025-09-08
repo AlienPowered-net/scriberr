@@ -1464,7 +1464,7 @@ export default function Index() {
           </div>
         )}
         
-        <div className="app-layout" style={{ display: "flex", gap: "16px", minHeight: "calc(100vh - 400px)", paddingBottom: "40px" }}>
+        <div className="app-layout" style={{ display: "flex", gap: "16px", minHeight: "calc(100vh - 200px)", paddingBottom: "40px" }}>
           {/* Side Navigation for Collapsed Columns */}
           {(collapsedColumns.folders || collapsedColumns.notes) && (
             <div style={{ 
@@ -1476,7 +1476,7 @@ export default function Index() {
               flexDirection: "column",
               gap: "12px",
               alignItems: "center",
-              height: "calc(100vh - 400px) !important"
+              height: "calc(100vh - 200px) !important"
             }}>
               {collapsedColumns.folders && (
                 <Button
@@ -1508,7 +1508,7 @@ export default function Index() {
           <Card
             style={{
               transition: "all 0.3s ease",
-              height: "calc(100vh - 400px) !important",
+              height: "calc(100vh - 200px) !important",
               display: "flex",
               flexDirection: "column",
               ...(highlightFolders && {
@@ -1928,7 +1928,7 @@ export default function Index() {
         {/* NOTES */}
         {!collapsedColumns.notes && (
         <div className="col-notes" style={{ width: "25%" }}>
-          <Card style={{ height: "calc(100vh - 400px) !important", display: "flex", flexDirection: "column" }}>
+          <Card style={{ height: "calc(100vh - 200px) !important", display: "flex", flexDirection: "column" }}>
             {/* Fixed Header Section */}
             <div style={{ 
               padding: "16px", 
@@ -2565,7 +2565,7 @@ export default function Index() {
           }),
           transition: "all 0.3s ease",
           minWidth: "300px",
-          height: "calc(100vh - 400px) !important"
+          height: "calc(100vh - 200px) !important"
         }}>
           <Card style={{ height: "100%", display: "flex", flexDirection: "column" }}>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
