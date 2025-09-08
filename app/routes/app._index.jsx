@@ -2566,7 +2566,7 @@ export default function Index() {
           transition: "all 0.3s ease",
           minWidth: "300px"
         }}>
-          <Card>
+          <Card style={{ height: "calc(100vh - 240px)", display: "flex", flexDirection: "column" }}>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -2716,7 +2716,7 @@ export default function Index() {
                 )}
               </InlineStack>
             </div>
-            <div style={{ padding: "16px" }}>
+            <div style={{ padding: "16px", flex: "1", overflowY: "auto" }}>
               <BlockStack gap="300">
                 <div>
                   <div style={{ 
