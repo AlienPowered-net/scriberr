@@ -3,7 +3,7 @@ export const addIconFieldsToFolders = (folders, localIconData = {}) => {
   return folders.map(folder => ({
     ...folder,
     icon: folder.icon || localIconData[folder.id]?.icon || 'folder',
-    iconColor: folder.iconColor || localIconData[folder.id]?.iconColor || '#f57c00'
+    iconColor: folder.iconColor || localIconData[folder.id]?.iconColor || 'rgba(255, 184, 0, 1)'
   }));
 };
 

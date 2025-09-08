@@ -9,7 +9,7 @@ const NewFolderModal = ({
 }) => {
   const [folderName, setFolderName] = useState(initialName);
   const [selectedIcon, setSelectedIcon] = useState('folder');
-  const [selectedColor, setSelectedColor] = useState('#f57c00');
+  const [selectedColor, setSelectedColor] = useState('rgba(255, 184, 0, 1)');
 
   const folderIcons = [
     { icon: "folder", name: "Folder" },
@@ -35,14 +35,14 @@ const NewFolderModal = ({
   ];
 
   const iconColors = [
-    { color: "#16a34a", name: "Green" },
-    { color: "#dc2626", name: "Red" },
-    { color: "#f57c00", name: "Orange" },
-    { color: "#facc15", name: "Yellow" },
-    { color: "#ffffff", name: "White" },
-    { color: "#374151", name: "Black" },
-    { color: "#2563eb", name: "Blue" },
-    { color: "#9333ea", name: "Purple" }
+    { color: "rgba(1, 75, 64, 1)", name: "Green", activeColor: "rgba(2, 38, 34, 1)" },
+    { color: "rgba(199, 10, 36, 1)", name: "Red", activeColor: "rgba(142, 11, 33, 1)" },
+    { color: "rgba(255, 184, 0, 1)", name: "Orange", activeColor: "rgba(178, 132, 0, 1)" },
+    { color: "rgba(255, 230, 0, 1)", name: "Yellow", activeColor: "rgba(225, 203, 0, 1)" },
+    { color: "rgba(227, 227, 227, 1)", name: "White", activeColor: "rgba(181, 181, 181, 1)" },
+    { color: "rgba(48, 48, 48, 1)", name: "Black", activeColor: "rgba(26, 26, 26, 1)" },
+    { color: "rgba(0, 91, 211, 1)", name: "Blue", activeColor: "rgba(0, 46, 106, 1)" },
+    { color: "rgba(128, 81, 255, 1)", name: "Purple", activeColor: "rgba(87, 0, 209, 1)" }
   ];
 
   const handleCreate = () => {
@@ -59,7 +59,7 @@ const NewFolderModal = ({
     // Reset form
     setFolderName('');
     setSelectedIcon('folder');
-    setSelectedColor('#f57c00');
+    setSelectedColor('rgba(255, 184, 0, 1)');
     onClose();
   };
 
@@ -176,13 +176,13 @@ const NewFolderModal = ({
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'all 0.2s ease',
-                boxShadow: colorData.color === '#ffffff' ? 'inset 0 0 0 1px #e1e3e5' : 'none'
+                boxShadow: colorData.color === 'rgba(227, 227, 227, 1)' ? 'inset 0 0 0 1px #e1e3e5' : 'none'
               }}
               title={colorData.name}
             >
               {selectedColor === colorData.color && (
                 <i className="fas fa-check" style={{ 
-                  color: colorData.color === '#ffffff' || colorData.color === '#facc15' ? '#374151' : 'white',
+                  color: colorData.color === 'rgba(227, 227, 227, 1)' || colorData.color === 'rgba(255, 230, 0, 1)' ? 'rgba(48, 48, 48, 1)' : 'white',
                   fontSize: '14px' 
                 }}></i>
               )}
