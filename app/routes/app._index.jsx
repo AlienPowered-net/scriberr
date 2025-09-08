@@ -85,7 +85,7 @@ export async function loader({ request }) {
       folders = folders.map(folder => ({
         ...folder,
         icon: 'folder',
-        iconColor: '#f57c00'
+        iconColor: 'rgba(255, 184, 0, 1)'
       }));
     } catch (positionError) {
       // Final fallback: use createdAt ordering
@@ -104,7 +104,7 @@ export async function loader({ request }) {
       folders = folders.map((folder, index) => ({
         ...folder,
         icon: 'folder',
-        iconColor: '#f57c00',
+        iconColor: 'rgba(255, 184, 0, 1)',
         position: index
       }));
     }
@@ -308,7 +308,7 @@ export default function Index() {
   const [showIconPicker, setShowIconPicker] = useState(null);
   const [showNewFolderModal, setShowNewFolderModal] = useState(false);
   const [newFolderIcon, setNewFolderIcon] = useState('folder');
-  const [newFolderIconColor, setNewFolderIconColor] = useState('#f57c00');
+  const [newFolderIconColor, setNewFolderIconColor] = useState('rgba(255, 184, 0, 1)');
   const [localFolders, setLocalFolders] = useState(folders);
   
   // Update local folders when loader data changes
@@ -1486,7 +1486,7 @@ export default function Index() {
                   accessibilityLabel="Expand Folders & Tags"
                   style={{ height: "60px" }}
                 >
-                  <i className="far fa-folder-open" style={{ color: "#f57c00", fontSize: "20px" }}></i>
+                  <i className="far fa-folder-open" style={{ color: "rgba(255, 184, 0, 1)", fontSize: "20px" }}></i>
                 </Button>
               )}
               {collapsedColumns.notes && (
@@ -1497,7 +1497,7 @@ export default function Index() {
                   accessibilityLabel="Expand Notes"
                   style={{ height: "60px" }}
                 >
-                  <i className="far fa-note-sticky" style={{ color: "#f57c00", fontSize: "20px" }}></i>
+                  <i className="far fa-note-sticky" style={{ color: "rgba(255, 184, 0, 1)", fontSize: "20px" }}></i>
                 </Button>
               )}
             </div>
@@ -1626,7 +1626,7 @@ export default function Index() {
                     display: "flex", 
                     alignItems: "center", 
                     gap: "6px",
-                    color: selectedFolder === null ? "#008060" : "#374151",
+                    color: selectedFolder === null ? "#008060" : "rgba(48, 48, 48, 1)",
                     fontSize: "14px"
                   }}>
                     <i className="far fa-note-sticky" style={{ fontSize: "16px" }}></i>
@@ -1671,7 +1671,7 @@ export default function Index() {
                     display: "flex", 
                     alignItems: "center", 
                     gap: "6px",
-                    color: showTagsSection ? "#008060" : "#374151",
+                    color: showTagsSection ? "#008060" : "rgba(48, 48, 48, 1)",
                     fontSize: "14px"
                   }}>
                     <i className="far fa-bookmark" style={{ fontSize: "16px" }}></i>
@@ -2009,7 +2009,7 @@ export default function Index() {
                 <button 
                   onClick={handleNewNote}
                   style={{
-                    backgroundColor: "#f57c00",
+                    backgroundColor: "rgba(255, 184, 0, 1)",
                     border: "0",
                     color: "white",
                     padding: "12px 16px",
@@ -2089,7 +2089,7 @@ export default function Index() {
                     variant="primary"
                     onClick={() => setShowMoveModal('bulk')}
                     style={{
-                      backgroundColor: "#374151",
+                      backgroundColor: "rgba(48, 48, 48, 1)",
                       border: "none",
                       color: "white",
                       padding: "12px 20px",
@@ -2106,7 +2106,7 @@ export default function Index() {
                       e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
                     }}
                     onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = "#374151";
+                      e.target.style.backgroundColor = "rgba(48, 48, 48, 1)";
                       e.target.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
                     }}
                   >
@@ -2228,7 +2228,7 @@ export default function Index() {
                                 color: "#6B7280",
                                 lineHeight: "1.4"
                               }}>
-                                <strong style={{ color: "#374151" }}>Folder:</strong> {note.folder ? note.folder.name : "No folder"}
+                                <strong style={{ color: "rgba(48, 48, 48, 1)" }}>Folder:</strong> {note.folder ? note.folder.name : "No folder"}
                               </div>
                               {note.tags && note.tags.length > 0 && (
                                 <div style={{ 
@@ -2239,7 +2239,7 @@ export default function Index() {
                                 }}>
                                   <strong style={{ 
                                     fontSize: "12px",
-                                    color: "#374151",
+                                    color: "rgba(48, 48, 48, 1)",
                                     marginRight: "4px"
                                   }}>Tags:</strong>
                                   {note.tags.slice(0, 3).map((tag, index) => (
@@ -2445,7 +2445,7 @@ export default function Index() {
                                 setShowDeleteNoteConfirm(note.id);
                               }}
                               style={{
-                                background: "#dc2626",
+                                background: "rgba(199, 10, 36, 1)",
                                 color: "white",
                                 fontWeight: "bold",
                                 padding: "8px 16px",
@@ -2460,7 +2460,7 @@ export default function Index() {
                                 e.target.style.background = "#b91c1c";
                               }}
                               onMouseLeave={(e) => {
-                                e.target.style.background = "#dc2626";
+                                e.target.style.background = "rgba(199, 10, 36, 1)";
                               }}
                             >
                               DELETE
@@ -2576,14 +2576,14 @@ export default function Index() {
                 {hasUnsavedChanges && (
                   <Text as="p" style={{ 
                     fontSize: "14px", 
-                    color: "#dc2626", 
+                    color: "rgba(199, 10, 36, 1)", 
                     fontWeight: "600", 
                     marginTop: "4px",
                     display: "flex",
                     alignItems: "center",
                     gap: "6px"
                   }}>
-                    <i className="fas fa-exclamation-triangle" style={{ fontSize: "16px", color: "#dc2626" }}></i>
+                    <i className="fas fa-exclamation-triangle" style={{ fontSize: "16px", color: "rgba(199, 10, 36, 1)" }}></i>
                     You have unsaved changes
                   </Text>
                 )}
@@ -2820,7 +2820,7 @@ export default function Index() {
                               border: "none",
                               cursor: "pointer",
                               fontSize: "14px",
-                              color: "#dc2626",
+                              color: "rgba(199, 10, 36, 1)",
                               padding: "0",
                               display: "flex",
                               alignItems: "center",
@@ -3699,7 +3699,7 @@ export default function Index() {
               handleIconChange(showIconPicker, iconData);
             }}
             currentIcon="folder"
-            currentColor="#f57c00"
+            currentColor="rgba(255, 184, 0, 1)"
             folderName={localFolders.find(f => f.id === showIconPicker)?.name || "Folder"}
           />
         )}
