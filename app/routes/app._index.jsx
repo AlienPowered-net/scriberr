@@ -1464,7 +1464,14 @@ export default function Index() {
           </div>
         )}
         
-        <div className="app-layout" style={{ display: "flex", gap: "16px", height: "calc(100vh - 200px)", paddingBottom: "40px", alignItems: "stretch" }}>
+        <div className="app-layout" style={{ 
+          display: "flex", 
+          gap: "16px", 
+          minHeight: "calc(100vh - 80px)", // Account for fixed footer height
+          paddingBottom: "80px", // Space for fixed footer
+          alignItems: "stretch",
+          marginBottom: "0"
+        }}>
           {/* Side Navigation for Collapsed Columns */}
           {(collapsedColumns.folders || collapsedColumns.notes) && (
             <div style={{ 
@@ -1476,7 +1483,8 @@ export default function Index() {
               flexDirection: "column",
               gap: "12px",
               alignItems: "center",
-              flex: "0 0 60px"
+              flex: "0 0 60px",
+              alignSelf: "stretch"
             }}>
               {collapsedColumns.folders && (
                 <Button
