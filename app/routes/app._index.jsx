@@ -1791,7 +1791,7 @@ export default function Index() {
               overflowY: localFolders.length > 9 ? "auto" : "visible", 
               padding: "16px",
               paddingBottom: "0",
-              maxHeight: localFolders.length > 9 ? "calc(100vh - 350px)" : "none"
+              maxHeight: localFolders.length > 9 ? "500px" : "none"
             }}>
               {localFolders.length === 0 ? (
                 <EmptyState
