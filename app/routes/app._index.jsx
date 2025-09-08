@@ -2044,10 +2044,10 @@ export default function Index() {
             {/* Scrollable Notes Section */}
             <div style={{ 
               flex: "1",
-              overflowY: filteredNotes.length > 2 ? "auto" : "visible", 
+              overflowY: filteredNotes.length > 1 ? "auto" : "visible", 
               padding: "16px",
               paddingBottom: "0",
-              maxHeight: filteredNotes.length > 2 ? "calc(100vh - 400px)" : "none"
+              maxHeight: filteredNotes.length > 1 ? "calc(100vh - 200px)" : "none"
             }}>
               
               {/* Multi-select action buttons */}
