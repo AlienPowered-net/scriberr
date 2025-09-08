@@ -1464,7 +1464,7 @@ export default function Index() {
           </div>
         )}
         
-        <div className="app-layout" style={{ display: "flex", gap: "16px", height: "calc(100vh - 120px)", paddingBottom: "40px", alignItems: "stretch" }}>
+        <div className="app-layout" style={{ display: "flex", gap: "16px", height: "calc(100vh - 200px)", paddingBottom: "40px", alignItems: "stretch" }}>
           {/* Side Navigation for Collapsed Columns */}
           {(collapsedColumns.folders || collapsedColumns.notes) && (
             <div style={{ 
