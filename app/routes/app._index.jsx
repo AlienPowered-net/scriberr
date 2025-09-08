@@ -1476,7 +1476,7 @@ export default function Index() {
               flexDirection: "column",
               gap: "12px",
               alignItems: "center",
-              maxHeight: "calc(100vh - 400px)"
+              height: "calc(100vh - 400px) !important"
             }}>
               {collapsedColumns.folders && (
                 <Button
@@ -1508,7 +1508,7 @@ export default function Index() {
           <Card
             style={{
               transition: "all 0.3s ease",
-              maxHeight: "calc(100vh - 400px)",
+              height: "calc(100vh - 400px) !important",
               display: "flex",
               flexDirection: "column",
               ...(highlightFolders && {
@@ -1928,7 +1928,7 @@ export default function Index() {
         {/* NOTES */}
         {!collapsedColumns.notes && (
         <div className="col-notes" style={{ width: "25%" }}>
-          <Card style={{ maxHeight: "calc(100vh - 400px)", display: "flex", flexDirection: "column" }}>
+          <Card style={{ height: "calc(100vh - 400px) !important", display: "flex", flexDirection: "column" }}>
             {/* Fixed Header Section */}
             <div style={{ 
               padding: "16px", 
@@ -2565,7 +2565,7 @@ export default function Index() {
           }),
           transition: "all 0.3s ease",
           minWidth: "300px",
-          maxHeight: "calc(100vh - 400px)"
+          height: "calc(100vh - 400px) !important"
         }}>
           <Card style={{ height: "100%", display: "flex", flexDirection: "column" }}>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
