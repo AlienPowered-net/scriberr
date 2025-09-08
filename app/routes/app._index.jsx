@@ -1791,7 +1791,7 @@ export default function Index() {
               overflowY: localFolders.length > 8 ? "auto" : "visible", 
               padding: "16px",
               paddingBottom: "0",
-              maxHeight: localFolders.length > 8 ? "calc(8 * 52px + 16px)" : "none"
+              maxHeight: localFolders.length > 8 ? "calc(100vh - 400px)" : "none"
             }}>
               {localFolders.length === 0 ? (
                 <EmptyState
@@ -2047,7 +2047,7 @@ export default function Index() {
               overflowY: filteredNotes.length > 2 ? "auto" : "visible", 
               padding: "16px",
               paddingBottom: "0",
-              maxHeight: filteredNotes.length > 2 ? "calc(2 * 88px + 16px)" : "none"
+              maxHeight: filteredNotes.length > 2 ? "calc(100vh - 400px)" : "none"
             }}>
               
               {/* Multi-select action buttons */}
