@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -21,11 +21,59 @@ const DraggableFolder = ({
     isDragging: isCurrentlyDragging,
   } = useSortable({ id: folder.id });
 
+  const [isDragMode, setIsDragMode] = useState(false);
+  const dragTimeoutRef = useRef(null);
+  const startPosRef = useRef({ x: 0, y: 0 });
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isCurrentlyDragging ? 0.5 : 1,
   };
+
+  const handleMouseDown = (e) => {
+    // Don't start drag if clicking on menu button
+    if (e.target.closest('.folder-menu-container')) {
+      return;
+    }
+    
+    startPosRef.current = { x: e.clientX, y: e.clientY };
+    
+    // Start drag after 200ms of holding down
+    dragTimeoutRef.current = setTimeout(() => {
+      setIsDragMode(true);
+    }, 200);
+  };
+
+  const handleMouseUp = () => {
+    if (dragTimeoutRef.current) {
+      clearTimeout(dragTimeoutRef.current);
+      dragTimeoutRef.current = null;
+    }
+    setIsDragMode(false);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!dragTimeoutRef.current) return;
+    
+    const deltaX = Math.abs(e.clientX - startPosRef.current.x);
+    const deltaY = Math.abs(e.clientY - startPosRef.current.y);
+    
+    // If mouse moved more than 5px, cancel drag activation
+    if (deltaX > 5 || deltaY > 5) {
+      clearTimeout(dragTimeoutRef.current);
+      dragTimeoutRef.current = null;
+    }
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (dragTimeoutRef.current) {
+        clearTimeout(dragTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div
@@ -34,8 +82,7 @@ const DraggableFolder = ({
       {...props}
     >
       <div 
-        {...attributes}
-        {...listeners}
+        {...(isDragMode ? { ...attributes, ...listeners } : {})}
         style={{ 
           padding: "12px 16px", 
           marginBottom: "8px",
@@ -48,9 +95,13 @@ const DraggableFolder = ({
           position: "relative",
           transition: "all 0.2s ease",
           boxShadow: selectedFolder === folder.id ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)",
-          cursor: isCurrentlyDragging ? 'grabbing' : 'grab'
+          cursor: isCurrentlyDragging ? 'grabbing' : (isDragMode ? 'grabbing' : 'pointer')
         }}
-        title="Drag to reorder"
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseUp}
+        title="Click to select, hold to drag"
       >
         {/* Drag Handle */}
         <div
@@ -76,8 +127,11 @@ const DraggableFolder = ({
             cursor: "pointer"
           }}
           onClick={(e) => {
-            e.stopPropagation();
-            onFolderClick(folder.id);
+            // Only handle click if not in drag mode
+            if (!isDragMode) {
+              e.stopPropagation();
+              onFolderClick(folder.id);
+            }
           }}
           onMouseEnter={(e) => {
             if (selectedFolder !== folder.id) {
