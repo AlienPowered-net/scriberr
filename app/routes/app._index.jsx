@@ -1788,10 +1788,10 @@ export default function Index() {
             {/* Scrollable Folders Section */}
             <div style={{ 
               flex: "1",
-              overflowY: localFolders.length > 9 ? "auto" : "visible", 
+              overflowY: localFolders.length >= 9 ? "auto" : "visible", 
               padding: "16px",
               paddingBottom: "0",
-              maxHeight: localFolders.length > 9 ? "calc(9 * 52px + 16px)" : "none"
+              maxHeight: localFolders.length >= 9 ? "calc(8 * 52px + 16px)" : "none"
             }}>
               {localFolders.length === 0 ? (
                 <EmptyState
@@ -2044,10 +2044,10 @@ export default function Index() {
             {/* Scrollable Notes Section */}
             <div style={{ 
               flex: "1",
-              overflowY: filteredNotes.length > 2 ? "auto" : "visible", 
+              overflowY: filteredNotes.length >= 2 ? "auto" : "visible", 
               padding: "16px",
               paddingBottom: "0",
-              maxHeight: filteredNotes.length > 2 ? "calc(2 * 88px + 16px)" : "none"
+              maxHeight: filteredNotes.length >= 2 ? "calc(1 * 88px + 16px)" : "none"
             }}>
               
               {/* Multi-select action buttons */}
@@ -2245,14 +2245,14 @@ export default function Index() {
                                   {note.tags.slice(0, 3).map((tag, index) => (
                                     <span key={index} style={{
                                       display: "inline-block",
-                                      background: "#f6f6f7",
-                                      color: "#202223",
+                                      background: "#f6fff8",
+                                      color: "#008060",
                                       fontSize: "11px",
                                       fontWeight: "400",
                                       padding: "2px 6px",
-                                      borderRadius: "4px",
+                                      borderRadius: "16px",
                                       lineHeight: "1.2",
-                                      border: "1px solid #d1d3d4",
+                                      border: "1px solid #008060",
                                       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
                                     }}>
                                       {tag}
@@ -2805,10 +2805,11 @@ export default function Index() {
                             alignItems: "center",
                             gap: "6px",
                             padding: "4px 8px",
-                            backgroundColor: "#e1e3e5",
-                            borderRadius: "12px",
+                            backgroundColor: "#f6fff8",
+                            border: "1px solid #008060",
+                            borderRadius: "16px",
                             fontSize: "12px",
-                            color: "#202223"
+                            color: "#008060"
                           }}
                         >
                           <span>{tag}</span>
@@ -2819,10 +2820,11 @@ export default function Index() {
                               border: "none",
                               cursor: "pointer",
                               fontSize: "14px",
-                              color: "#6d7175",
+                              color: "#dc2626",
                               padding: "0",
                               display: "flex",
-                              alignItems: "center"
+                              alignItems: "center",
+                              fontWeight: "bold"
                             }}
                           >
                             ×
