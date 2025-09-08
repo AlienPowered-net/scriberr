@@ -2564,9 +2564,10 @@ export default function Index() {
             flex: "none"
           }),
           transition: "all 0.3s ease",
-          minWidth: "300px"
+          minWidth: "300px",
+          height: "calc(100vh - 240px)"
         }}>
-          <Card style={{ height: "calc(100vh - 240px)", display: "flex", flexDirection: "column" }}>
+          <Card style={{ height: "100%", display: "flex", flexDirection: "column" }}>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
