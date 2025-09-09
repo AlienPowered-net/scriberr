@@ -2140,7 +2140,7 @@ export default function Index() {
                   </p>
                 </EmptyState>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                   {filteredNotes.map((note) => {
                     const createdDate = new Date(note.createdAt);
                     const updatedDate = new Date(note.updatedAt);
@@ -2180,17 +2180,17 @@ export default function Index() {
                         style={{ 
                           ...cardStyle,
                           borderRadius: "8px",
-                          padding: "16px",
+                          padding: "12px",
                           cursor: "pointer",
                           transition: "all 0.2s ease",
-                          marginBottom: "8px",
+                          marginBottom: "6px",
                           position: "relative",
                           zIndex: openNoteMenu === note.id ? 1000 : 1
                         }}
                         onClick={() => handleEditNote(note)}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.transform = "translateY(-1px)";
-                          e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
+                          e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.transform = "translateY(0)";
@@ -2201,8 +2201,8 @@ export default function Index() {
                         <div style={{ 
                           display: "flex", 
                           alignItems: "center",
-                          marginBottom: "12px",
-                          gap: "12px"
+                          marginBottom: "8px",
+                          gap: "8px"
                         }}>
                           <input
                             type="checkbox"
@@ -2212,15 +2212,15 @@ export default function Index() {
                               handleNoteSelection(note.id);
                             }}
                             style={{
-                              width: "16px",
-                              height: "16px",
+                              width: "14px",
+                              height: "14px",
                               flexShrink: "0"
                             }}
                           />
                           <div style={{ 
                             fontWeight: "600", 
-                            fontSize: "16px", 
-                            lineHeight: "1.4",
+                            fontSize: "15px", 
+                            lineHeight: "1.3",
                             color: "#111827",
                             flex: "1"
                           }}>
@@ -2235,10 +2235,10 @@ export default function Index() {
                               background: "none",
                               border: "none",
                               cursor: "pointer",
-                              padding: "4px",
-                              fontSize: "16px",
+                              padding: "2px",
+                              fontSize: "14px",
                               color: "#6B7280",
-                              borderRadius: "4px",
+                              borderRadius: "3px",
                               flexShrink: "0"
                             }}
                             onMouseEnter={(e) => {
@@ -2254,12 +2254,12 @@ export default function Index() {
 
                         {/* Content preview */}
                         <div style={{ 
-                          fontSize: "14px", 
+                          fontSize: "13px", 
                           color: "#6B7280", 
-                          lineHeight: "1.5",
-                          marginBottom: "12px"
+                          lineHeight: "1.4",
+                          marginBottom: "8px"
                         }}>
-                          {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 100) + "..." : "No content"}
+                          {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 80) + "..." : "No content"}
                         </div>
 
                         {/* Bottom row with folder, tags, and date */}
@@ -2269,7 +2269,7 @@ export default function Index() {
                           alignItems: "center"
                         }}>
                           <div style={{ 
-                            fontSize: "12px",
+                            fontSize: "11px",
                             color: "#6B7280"
                           }}>
                             {note.folder ? note.folder.name : "No folder"}
@@ -2278,12 +2278,12 @@ export default function Index() {
                           <div style={{ 
                             display: "flex",
                             alignItems: "center",
-                            gap: "8px"
+                            gap: "6px"
                           }}>
                             {note.tags && note.tags.length > 0 && (
                               <div style={{ 
                                 display: "flex",
-                                gap: "4px",
+                                gap: "3px",
                                 alignItems: "center"
                               }}>
                                 {note.tags.slice(0, 2).map((tag, index) => (
@@ -2291,10 +2291,10 @@ export default function Index() {
                                     display: "inline-block",
                                     background: "#f6fff8",
                                     color: "#008060",
-                                    fontSize: "11px",
+                                    fontSize: "10px",
                                     fontWeight: "500",
-                                    padding: "2px 6px",
-                                    borderRadius: "12px",
+                                    padding: "1px 5px",
+                                    borderRadius: "10px",
                                     border: "1px solid #008060"
                                   }}>
                                     {tag}
@@ -2305,10 +2305,10 @@ export default function Index() {
                                     display: "inline-block",
                                     background: "#6B7280",
                                     color: "white",
-                                    fontSize: "11px",
+                                    fontSize: "10px",
                                     fontWeight: "600",
-                                    padding: "2px 6px",
-                                    borderRadius: "12px"
+                                    padding: "1px 5px",
+                                    borderRadius: "10px"
                                   }}>
                                     +{note.tags.length - 2}
                                   </span>
@@ -2318,21 +2318,21 @@ export default function Index() {
                             
                             <div style={{
                               background: "#F3F4F6",
-                              borderRadius: "6px",
-                              padding: "4px 8px",
+                              borderRadius: "4px",
+                              padding: "3px 6px",
                               textAlign: "center",
-                              minWidth: "50px"
+                              minWidth: "40px"
                             }}>
                               <div style={{ 
-                                fontSize: "12px", 
+                                fontSize: "11px", 
                                 fontWeight: "600", 
                                 color: "#374151",
-                                lineHeight: "1.2"
+                                lineHeight: "1.1"
                               }}>
                                 {updatedDate.getDate()}
                               </div>
                               <div style={{ 
-                                fontSize: "10px",
+                                fontSize: "9px",
                                 color: "#6B7280",
                                 textTransform: "uppercase"
                               }}>
