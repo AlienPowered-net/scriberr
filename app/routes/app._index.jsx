@@ -264,6 +264,8 @@ export default function Index() {
   
   // Note editing states
   const [editingNoteId, setEditingNoteId] = useState(null);
+  const [selectedNoteId, setSelectedNoteId] = useState(null);
+  const [selectedNote, setSelectedNote] = useState(null);
   const [openNoteMenu, setOpenNoteMenu] = useState(null);
   const [showDeleteNoteConfirm, setShowDeleteNoteConfirm] = useState(null);
   const [showChangeFolderModal, setShowChangeFolderModal] = useState(null);
