@@ -2238,54 +2238,16 @@ export default function Index() {
                             justifyContent: "space-between",
                             marginBottom: "12px"
                           }}>
-                            {/* Left side - content and metadata */}
+                            {/* Left side - content preview */}
                             <div style={{ flex: "1", marginRight: "16px" }}>
                               {/* Content preview */}
                               <div style={{ 
                                 fontSize: "14px", 
                                 color: "#6B7280", 
-                                lineHeight: "1.5",
-                                marginBottom: "8px"
+                                lineHeight: "1.5"
                               }}>
-                                {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 80) + "..." : "No content"}
+                                {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 120) + "..." : "No content"}
                               </div>
-
-                              {/* Tags */}
-                              {note.tags && note.tags.length > 0 && (
-                                <div style={{ 
-                                  display: "flex",
-                                  gap: "4px",
-                                  alignItems: "center"
-                                }}>
-                                  {note.tags.slice(0, 2).map((tag, index) => (
-                                    <span key={index} style={{
-                                      display: "inline-block",
-                                      background: "#f6fff8",
-                                      color: "#008060",
-                                      fontSize: "11px",
-                                      fontWeight: "500",
-                                      padding: "2px 6px",
-                                      borderRadius: "12px",
-                                      border: "1px solid #008060"
-                                    }}>
-                                      {tag}
-                                    </span>
-                                  ))}
-                                  {note.tags.length > 2 && (
-                                    <span style={{
-                                      display: "inline-block",
-                                      background: "#6B7280",
-                                      color: "white",
-                                      fontSize: "11px",
-                                      fontWeight: "600",
-                                      padding: "2px 6px",
-                                      borderRadius: "12px"
-                                    }}>
-                                      +{note.tags.length - 2}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
                             </div>
 
                             {/* Right side - stacked dates */}
@@ -2374,6 +2336,45 @@ export default function Index() {
                               </div>
                             </div>
                           </div>
+
+                          {/* Tags above buttons */}
+                          {note.tags && note.tags.length > 0 && (
+                            <div style={{ 
+                              display: "flex",
+                              gap: "4px",
+                              alignItems: "center",
+                              marginBottom: "12px",
+                              justifyContent: "center"
+                            }}>
+                              {note.tags.slice(0, 2).map((tag, index) => (
+                                <span key={index} style={{
+                                  display: "inline-block",
+                                  background: "#f6fff8",
+                                  color: "#008060",
+                                  fontSize: "11px",
+                                  fontWeight: "500",
+                                  padding: "2px 6px",
+                                  borderRadius: "12px",
+                                  border: "1px solid #008060"
+                                }}>
+                                  {tag}
+                                </span>
+                              ))}
+                              {note.tags.length > 2 && (
+                                <span style={{
+                                  display: "inline-block",
+                                  background: "#6B7280",
+                                  color: "white",
+                                  fontSize: "11px",
+                                  fontWeight: "600",
+                                  padding: "2px 6px",
+                                  borderRadius: "12px"
+                                }}>
+                                  +{note.tags.length - 2}
+                                </span>
+                              )}
+                            </div>
+                          )}
 
                           {/* Three buttons at bottom */}
                           <div style={{ 
