@@ -2372,6 +2372,7 @@ export default function Index() {
                               ⋯
                             </button>
                           </div>
+                        </div>
                           
                           {openNoteMenu === note.id && (
                             <div 
