@@ -2197,116 +2197,12 @@ export default function Index() {
                           e.currentTarget.style.boxShadow = "none";
                         }}
                       >
-                        {/* Header with title and date */}
+                        {/* Top row with checkbox, title, and menu */}
                         <div style={{ 
                           display: "flex", 
-                          justifyContent: "space-between",
-                          alignItems: "flex-start",
-                          marginBottom: "8px"
-                        }}>
-                          <div style={{ 
-                            fontWeight: "600", 
-                            fontSize: "16px", 
-                            lineHeight: "1.4",
-                            color: "#111827",
-                            flex: "1"
-                          }}>
-                            {note.title || "(untitled)"}
-                          </div>
-                          <div style={{
-                            background: "#F3F4F6",
-                            borderRadius: "6px",
-                            padding: "4px 8px",
-                            textAlign: "center",
-                            minWidth: "60px",
-                            marginLeft: "12px"
-                          }}>
-                            <div style={{ 
-                              fontSize: "14px", 
-                              fontWeight: "600", 
-                              color: "#374151",
-                              lineHeight: "1.2"
-                            }}>
-                              {updatedDate.getDate()}
-                            </div>
-                            <div style={{ 
-                              fontSize: "11px",
-                              color: "#6B7280",
-                              textTransform: "uppercase"
-                            }}>
-                              {monthNames[updatedDate.getMonth()]}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Content preview */}
-                        <div style={{ 
-                          fontSize: "14px", 
-                          color: "#6B7280", 
-                          lineHeight: "1.4",
-                          marginBottom: "8px"
-                        }}>
-                          {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 80) + "..." : "No content"}
-                        </div>
-
-                        {/* Footer with folder and tags */}
-                        <div style={{ 
-                          display: "flex", 
-                          justifyContent: "space-between",
-                          alignItems: "center"
-                        }}>
-                          <div style={{ 
-                            fontSize: "12px",
-                            color: "#6B7280"
-                          }}>
-                            {note.folder ? note.folder.name : "No folder"}
-                          </div>
-                          
-                          {note.tags && note.tags.length > 0 && (
-                            <div style={{ 
-                              display: "flex",
-                              gap: "4px",
-                              alignItems: "center"
-                            }}>
-                              {note.tags.slice(0, 2).map((tag, index) => (
-                                <span key={index} style={{
-                                  display: "inline-block",
-                                  background: "#f6fff8",
-                                  color: "#008060",
-                                  fontSize: "11px",
-                                  fontWeight: "500",
-                                  padding: "2px 6px",
-                                  borderRadius: "12px",
-                                  border: "1px solid #008060"
-                                }}>
-                                  {tag}
-                                </span>
-                              ))}
-                              {note.tags.length > 2 && (
-                                <span style={{
-                                  display: "inline-block",
-                                  background: "#6B7280",
-                                  color: "white",
-                                  fontSize: "11px",
-                                  fontWeight: "600",
-                                  padding: "2px 6px",
-                                  borderRadius: "12px"
-                                }}>
-                                  +{note.tags.length - 2}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Checkbox and menu */}
-                        <div style={{ 
-                          position: "absolute",
-                          top: "12px",
-                          left: "12px",
-                          display: "flex",
                           alignItems: "center",
-                          gap: "8px"
+                          marginBottom: "12px",
+                          gap: "12px"
                         }}>
                           <input
                             type="checkbox"
@@ -2317,9 +2213,19 @@ export default function Index() {
                             }}
                             style={{
                               width: "16px",
-                              height: "16px"
+                              height: "16px",
+                              flexShrink: "0"
                             }}
                           />
+                          <div style={{ 
+                            fontWeight: "600", 
+                            fontSize: "16px", 
+                            lineHeight: "1.4",
+                            color: "#111827",
+                            flex: "1"
+                          }}>
+                            {note.title || "(untitled)"}
+                          </div>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -2332,7 +2238,8 @@ export default function Index() {
                               padding: "4px",
                               fontSize: "16px",
                               color: "#6B7280",
-                              borderRadius: "4px"
+                              borderRadius: "4px",
+                              flexShrink: "0"
                             }}
                             onMouseEnter={(e) => {
                               e.target.style.backgroundColor = "#F3F4F6";
@@ -2343,6 +2250,96 @@ export default function Index() {
                           >
                             ⋯
                           </button>
+                        </div>
+
+                        {/* Content preview */}
+                        <div style={{ 
+                          fontSize: "14px", 
+                          color: "#6B7280", 
+                          lineHeight: "1.5",
+                          marginBottom: "12px"
+                        }}>
+                          {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 100) + "..." : "No content"}
+                        </div>
+
+                        {/* Bottom row with folder, tags, and date */}
+                        <div style={{ 
+                          display: "flex", 
+                          justifyContent: "space-between",
+                          alignItems: "center"
+                        }}>
+                          <div style={{ 
+                            fontSize: "12px",
+                            color: "#6B7280"
+                          }}>
+                            {note.folder ? note.folder.name : "No folder"}
+                          </div>
+                          
+                          <div style={{ 
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px"
+                          }}>
+                            {note.tags && note.tags.length > 0 && (
+                              <div style={{ 
+                                display: "flex",
+                                gap: "4px",
+                                alignItems: "center"
+                              }}>
+                                {note.tags.slice(0, 2).map((tag, index) => (
+                                  <span key={index} style={{
+                                    display: "inline-block",
+                                    background: "#f6fff8",
+                                    color: "#008060",
+                                    fontSize: "11px",
+                                    fontWeight: "500",
+                                    padding: "2px 6px",
+                                    borderRadius: "12px",
+                                    border: "1px solid #008060"
+                                  }}>
+                                    {tag}
+                                  </span>
+                                ))}
+                                {note.tags.length > 2 && (
+                                  <span style={{
+                                    display: "inline-block",
+                                    background: "#6B7280",
+                                    color: "white",
+                                    fontSize: "11px",
+                                    fontWeight: "600",
+                                    padding: "2px 6px",
+                                    borderRadius: "12px"
+                                  }}>
+                                    +{note.tags.length - 2}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            
+                            <div style={{
+                              background: "#F3F4F6",
+                              borderRadius: "6px",
+                              padding: "4px 8px",
+                              textAlign: "center",
+                              minWidth: "50px"
+                            }}>
+                              <div style={{ 
+                                fontSize: "12px", 
+                                fontWeight: "600", 
+                                color: "#374151",
+                                lineHeight: "1.2"
+                              }}>
+                                {updatedDate.getDate()}
+                              </div>
+                              <div style={{ 
+                                fontSize: "10px",
+                                color: "#6B7280",
+                                textTransform: "uppercase"
+                              }}>
+                                {monthNames[updatedDate.getMonth()]}
+                              </div>
+                            </div>
+                          </div>
                         </div>
                           
                           {openNoteMenu === note.id && (
