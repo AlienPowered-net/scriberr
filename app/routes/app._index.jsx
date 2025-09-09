@@ -2236,11 +2236,11 @@ export default function Index() {
                         }} />
 
                         {/* Main content area */}
-                        <div style={{ padding: "16px", paddingLeft: "20px" }}>
+                        <div style={{ padding: "8px", paddingLeft: "20px", paddingBottom: "16px" }}>
                           {/* Header with title and folder */}
                           <div style={{ 
-                            marginBottom: "12px",
-                            marginTop: "16px"
+                            marginBottom: "8px",
+                            marginTop: "8px"
                           }}>
                             <div style={{ 
                               fontWeight: "600", 
@@ -2263,7 +2263,7 @@ export default function Index() {
                           <div style={{ 
                             display: "flex", 
                             justifyContent: "space-between",
-                            marginBottom: "12px"
+                            marginBottom: "8px"
                           }}>
                             {/* Left side - content preview */}
                             <div style={{ flex: "1", marginRight: "16px" }}>
@@ -2281,7 +2281,7 @@ export default function Index() {
                             <div style={{ 
                               display: "flex",
                               flexDirection: "column",
-                              gap: "8px",
+                              gap: "4px",
                               alignItems: "flex-end"
                             }}>
                               <div style={{
