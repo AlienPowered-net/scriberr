@@ -2140,7 +2140,7 @@ export default function Index() {
                   </p>
                 </EmptyState>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {filteredNotes.map((note) => {
                     const createdDate = new Date(note.createdAt);
                     const updatedDate = new Date(note.updatedAt);
@@ -2148,30 +2148,54 @@ export default function Index() {
                     const isSelected = editingNoteId === note.id;
                     const isCheckboxSelected = selectedNotes.includes(note.id);
                     
+                    // Determine card state for styling
+                    let cardStyle = {
+                      backgroundColor: "#FFFFFF",
+                      border: "1px solid #E5E7EB"
+                    };
+                    
+                    if (isSelected && isCheckboxSelected) {
+                      // Selected and in context
+                      cardStyle = {
+                        backgroundColor: "#F0FDF4",
+                        border: "2px solid #008060"
+                      };
+                    } else if (isSelected) {
+                      // Selected but not in context
+                      cardStyle = {
+                        backgroundColor: "#F0FDF4",
+                        border: "2px solid #008060"
+                      };
+                    } else if (isCheckboxSelected) {
+                      // In context but not selected
+                      cardStyle = {
+                        backgroundColor: "#F8FAFC",
+                        border: "1px solid #CBD5E1"
+                      };
+                    }
+                    
                     return (
                       <div 
                         key={note.id} 
                         style={{ 
                           display: "flex",
-                          backgroundColor: "#FFFFFF",
-                          borderRadius: "12px",
-                          padding: "20px",
-                          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                          borderRight: isSelected ? "6px solid #008060" : isCheckboxSelected ? "6px solid #FF8C00" : "6px solid transparent",
+                          ...cardStyle,
+                          borderRadius: "8px",
+                          padding: "12px",
                           cursor: "pointer",
                           transition: "all 0.2s ease",
-                          marginBottom: "8px",
+                          marginBottom: "6px",
                           position: "relative",
                           zIndex: openNoteMenu === note.id ? 1000 : 1
                         }}
                         onClick={() => handleEditNote(note)}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
-                          e.currentTarget.style.transform = "translateY(-2px)";
+                          e.currentTarget.style.transform = "translateY(-1px)";
+                          e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.1)";
                           e.currentTarget.style.transform = "translateY(0)";
+                          e.currentTarget.style.boxShadow = "none";
                         }}
                       >
                         {/* Left checkbox area */}
@@ -2180,7 +2204,7 @@ export default function Index() {
                           style={{ 
                             display: "flex", 
                             alignItems: "center", 
-                            paddingRight: "12px"
+                            paddingRight: "8px"
                           }}
                         >
                           <input
@@ -2191,9 +2215,8 @@ export default function Index() {
                               handleNoteSelection(note.id);
                             }}
                             style={{
-                              width: "16px",
-                              height: "16px",
-                              transform: "scale(1.1)"
+                              width: "14px",
+                              height: "14px"
                             }}
                           />
                         </div>
@@ -2203,17 +2226,16 @@ export default function Index() {
                           display: "flex", 
                           flexDirection: "column", 
                           flex: "1",
-                          minHeight: "0"
+                          minHeight: "0",
+                          gap: "4px"
                         }}>
                           {/* Title section */}
                           <div style={{ 
-                            fontWeight: "bold", 
-                            fontSize: "18px", 
-                            lineHeight: "1.2",
+                            fontWeight: "600", 
+                            fontSize: "14px", 
+                            lineHeight: "1.3",
                             color: "#111827",
-                            marginBottom: "12px",
-                            paddingBottom: "8px",
-                            borderBottom: "1px solid #E5E7EB"
+                            marginBottom: "4px"
                           }}>
                             {note.title || "(untitled)"}
                           </div>
@@ -2221,7 +2243,7 @@ export default function Index() {
                           <div style={{ 
                             display: "flex", 
                             justifyContent: "space-between",
-                            gap: "16px",
+                            gap: "8px",
                             flex: "1"
                           }}>
                             <div style={{ 
@@ -2229,85 +2251,59 @@ export default function Index() {
                               minWidth: "0",
                               display: "flex",
                               flexDirection: "column",
-                              gap: "8px"
+                              gap: "3px"
                             }}>
                               <div style={{ 
-                                fontSize: "13px",
+                                fontSize: "11px",
                                 color: "#6B7280",
-                                lineHeight: "1.4"
+                                lineHeight: "1.3"
                               }}>
-                                <strong style={{ color: "rgba(48, 48, 48, 1)" }}>Folder:</strong> {note.folder ? note.folder.name : "No folder"}
+                                {note.folder ? note.folder.name : "No folder"}
                               </div>
                               {note.tags && note.tags.length > 0 && (
                                 <div style={{ 
                                   display: "flex",
                                   flexWrap: "wrap",
-                                  gap: "4px",
+                                  gap: "3px",
                                   alignItems: "center"
                                 }}>
-                                  <strong style={{ 
-                                    fontSize: "12px",
-                                    color: "rgba(48, 48, 48, 1)",
-                                    marginRight: "4px"
-                                  }}>Tags:</strong>
-                                  {note.tags.slice(0, 3).map((tag, index) => (
+                                  {note.tags.slice(0, 2).map((tag, index) => (
                                     <span key={index} style={{
                                       display: "inline-block",
                                       background: "#f6fff8",
                                       color: "#008060",
-                                      fontSize: "11px",
+                                      fontSize: "10px",
                                       fontWeight: "400",
-                                      padding: "2px 6px",
-                                      borderRadius: "16px",
+                                      padding: "1px 4px",
+                                      borderRadius: "12px",
                                       lineHeight: "1.2",
-                                      border: "1px solid #008060",
-                                      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                                      border: "1px solid #008060"
                                     }}>
                                       {tag}
                                     </span>
                                   ))}
-                                  {note.tags.length > 3 && (
-                                    <span 
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        const rect = e.target.getBoundingClientRect();
-                                        setTagPopupPosition({ x: rect.left, y: rect.bottom + 5 });
-                                        setShowTagPopup(note.id);
-                                      }}
-                                      style={{
-                                        display: "inline-block",
-                                        background: "#6B7280",
-                                        color: "white",
-                                        fontSize: "11px",
-                                        fontWeight: "600",
-                                        padding: "3px 8px",
-                                        borderRadius: "10px",
-                                        lineHeight: "1.2",
-                                        cursor: "pointer",
-                                        transition: "background-color 0.2s ease"
-                                      }}
-                                      onMouseEnter={(e) => {
-                                        e.target.style.backgroundColor = "#4B5563";
-                                      }}
-                                      onMouseLeave={(e) => {
-                                        e.target.style.backgroundColor = "#6B7280";
-                                      }}
-                                    >
-                                      View All
+                                  {note.tags.length > 2 && (
+                                    <span style={{
+                                      display: "inline-block",
+                                      background: "#6B7280",
+                                      color: "white",
+                                      fontSize: "10px",
+                                      fontWeight: "600",
+                                      padding: "1px 4px",
+                                      borderRadius: "8px",
+                                      lineHeight: "1.2"
+                                    }}>
+                                      +{note.tags.length - 2}
                                     </span>
                                   )}
                                 </div>
                               )}
                               <div style={{ 
-                                fontSize: "12px", 
-                                fontStyle: "italic", 
+                                fontSize: "11px", 
                                 color: "#6B7280", 
-                                lineHeight: "1.4"
+                                lineHeight: "1.3"
                               }}>
-                                <strong style={{ 
-                                  fontStyle: "normal",
-                                  color: "#374151"
-                                }}>Preview:</strong> {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 100) : "No content"}
+                                {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 60) + "..." : "No content"}
                               </div>
                             </div>
 
@@ -2315,110 +2311,42 @@ export default function Index() {
                             <div style={{ 
                               display: "flex", 
                               flexDirection: "column", 
-                              gap: "16px", 
-                              alignItems: "center",
+                              alignItems: "flex-end",
                               flexShrink: "0",
-                              alignSelf: "flex-end"
+                              justifyContent: "center"
                             }}>
-                              <div>
+                              <div style={{
+                                background: "#f3f4f6",
+                                borderRadius: "6px",
+                                padding: "4px 8px",
+                                textAlign: "center",
+                                minWidth: "50px"
+                              }}>
                                 <div style={{ 
-                                  fontSize: "11px", 
-                                  color: "#777", 
-                                  fontWeight: "bold", 
-                                  textAlign: "center", 
-                                  marginBottom: "3px", 
-                                  textTransform: "uppercase" 
+                                  fontSize: "12px", 
+                                  fontWeight: "600", 
+                                  color: "#374151",
+                                  lineHeight: "1.2"
                                 }}>
-                                  LAST EDITED
+                                  {updatedDate.getDate()}
                                 </div>
-                                <div style={{
-                                  background: "#f3f3f3",
-                                  borderRadius: "10px",
-                                  padding: "10px 15px",
-                                  textAlign: "center",
-                                  width: "80px",
-                                  fontSize: "14px",
-                                  color: "#333"
-                                }}>
-                                  <span style={{ 
-                                    fontSize: "22px", 
-                                    fontWeight: "bold", 
-                                    display: "block" 
-                                  }}>
-                                    {updatedDate.getDate()}
-                                  </span>
-                                  <span style={{ 
-                                    display: "block",
-                                    fontSize: "12px",
-                                    fontWeight: "600",
-                                    textTransform: "uppercase"
-                                  }}>
-                                    {monthNames[updatedDate.getMonth()]}
-                                  </span>
-                                  <span style={{ 
-                                    display: "block",
-                                    fontSize: "11px",
-                                    marginTop: "2px"
-                                  }}>
-                                    {updatedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                  </span>
-                                </div>
-                              </div>
-                              <div>
                                 <div style={{ 
-                                  fontSize: "11px", 
-                                  color: "#777", 
-                                  fontWeight: "bold", 
-                                  textAlign: "center", 
-                                  marginBottom: "3px", 
-                                  textTransform: "uppercase" 
+                                  fontSize: "10px",
+                                  color: "#6B7280",
+                                  textTransform: "uppercase"
                                 }}>
-                                  NOTE CREATED
+                                  {monthNames[updatedDate.getMonth()]}
                                 </div>
-                                <div style={{
-                                  background: "#f3f3f3",
-                                  borderRadius: "10px",
-                                  padding: "10px 15px",
-                                  textAlign: "center",
-                                  width: "80px",
-                                  fontSize: "14px",
-                                  color: "#333"
-                                }}>
-                                  <span style={{ 
-                                    fontSize: "22px", 
-                                    fontWeight: "bold", 
-                                    display: "block" 
-                                  }}>
-                                    {createdDate.getDate()}
-                                  </span>
-                                  <span style={{ 
-                                    display: "block",
-                                    fontSize: "12px",
-                                    fontWeight: "600",
-                                    textTransform: "uppercase"
-                                  }}>
-                                    {monthNames[createdDate.getMonth()]}
-                                  </span>
-                                  <span style={{ 
-                                    display: "block",
-                                    fontSize: "11px",
-                                    marginTop: "2px"
-                                  }}>
-                                    {createdDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                  </span>
-                                </div>
-                              </div>
                             </div>
                           </div>
 
-                          {/* Buttons aligned bottom */}
-                                                    <div 
+                          {/* Menu button */}
+                          <div 
                             className="note-menu-container"
                             style={{ 
                               display: "flex", 
-                              gap: "8px",
-                              marginTop: "12px",
-                              justifyContent: "flex-end"
+                              justifyContent: "flex-end",
+                              marginTop: "4px"
                             }}
                           >
                             <button
@@ -2427,51 +2355,21 @@ export default function Index() {
                                 setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
                               }}
                               style={{
-                                background: "orange",
-                                color: "white",
-                                fontWeight: "bold",
-                                padding: "8px 16px",
+                                background: "none",
                                 border: "none",
-                                borderRadius: "5px",
                                 cursor: "pointer",
-                                transition: "background 0.2s ease-in-out",
-                                width: "fit-content",
-                                fontSize: "12px"
+                                padding: "2px",
+                                fontSize: "14px",
+                                color: "#6B7280"
                               }}
                               onMouseEnter={(e) => {
-                                e.target.style.background = "#e69500";
+                                e.target.style.color = "#374151";
                               }}
                               onMouseLeave={(e) => {
-                                e.target.style.background = "orange";
+                                e.target.style.color = "#6B7280";
                               }}
                             >
-                              MANAGE
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowDeleteNoteConfirm(note.id);
-                              }}
-                              style={{
-                                background: "rgba(199, 10, 36, 1)",
-                                color: "white",
-                                fontWeight: "bold",
-                                padding: "8px 16px",
-                                border: "none",
-                                borderRadius: "5px",
-                                cursor: "pointer",
-                                transition: "background 0.2s ease-in-out",
-                                width: "fit-content",
-                                fontSize: "12px"
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.background = "#b91c1c";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.background = "rgba(199, 10, 36, 1)";
-                              }}
-                            >
-                              DELETE
+                              ⋯
                             </button>
                           </div>
                           
