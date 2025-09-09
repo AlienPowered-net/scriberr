@@ -2208,7 +2208,6 @@ export default function Index() {
                           ...cardStyle,
                           borderRadius: "8px",
                           padding: "0",
-                          paddingTop: "15%",
                           cursor: "pointer",
                           transition: "all 0.2s ease",
                           marginBottom: "8px",
@@ -2283,7 +2282,9 @@ export default function Index() {
                               display: "flex",
                               flexDirection: "column",
                               gap: "4px",
-                              alignItems: "flex-end"
+                              alignItems: "flex-end",
+                              marginTop: "70px",
+                              marginBottom: "30px"
                             }}>
                               <div style={{
                                 background: "#F3F4F6",
