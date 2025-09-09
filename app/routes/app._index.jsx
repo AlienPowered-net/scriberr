@@ -2174,23 +2174,24 @@ export default function Index() {
                     const isSelected = editingNoteId === note.id;
                     const isCheckboxSelected = selectedNotes.includes(note.id);
                     
-                    // Determine card state for styling based on reference images
+                    // Determine card state for styling based on new reference images
                     let cardStyle = {
                       backgroundColor: "#FFFFFF",
                       border: "1px solid #E5E7EB"
                     };
                     
                     if (isSelected && isCheckboxSelected) {
-                      // Selected and in context - green background with green border
+                      // Selected and in context - dark green background with white text
                       cardStyle = {
-                        backgroundColor: "#F0FDF4",
-                        border: "2px solid #008060"
+                        backgroundColor: "#008060",
+                        border: "1px solid #008060",
+                        color: "#FFFFFF"
                       };
                     } else if (isSelected) {
-                      // Selected but not in context - green background with green border
+                      // Selected but not in context - light green background
                       cardStyle = {
                         backgroundColor: "#F0FDF4",
-                        border: "2px solid #008060"
+                        border: "1px solid #008060"
                       };
                     } else if (isCheckboxSelected) {
                       // In context but not selected - light blue background
@@ -2206,14 +2207,15 @@ export default function Index() {
                         className="note-card-container"
                         style={{ 
                           ...cardStyle,
-                          borderRadius: "8px",
-                          padding: "0",
+                          borderRadius: "6px",
+                          padding: "12px",
                           cursor: "pointer",
                           transition: "all 0.2s ease",
-                          marginBottom: "8px",
+                          marginBottom: "6px",
                           position: "relative",
                           zIndex: openNoteMenu === note.id ? 1000 : 1,
-                          overflow: "hidden"
+                          overflow: "hidden",
+                          minHeight: "120px"
                         }}
                         onClick={() => handleEditNote(note)}
                         onMouseEnter={(e) => {
@@ -2225,36 +2227,32 @@ export default function Index() {
                           e.currentTarget.style.boxShadow = "none";
                         }}
                       >
-                        {/* Left colored bar for state indication */}
-                        <div style={{
-                          position: "absolute",
-                          left: "0",
-                          top: "0",
-                          bottom: "0",
-                          width: "4px",
-                          backgroundColor: isCheckboxSelected ? "#F97316" : (isSelected ? "#008060" : "#E5E7EB")
-                        }} />
-
                         {/* Main content area */}
-                        <div style={{ padding: "8px", paddingLeft: "20px", paddingBottom: "16px" }}>
+                        <div style={{ 
+                          display: "flex", 
+                          flexDirection: "column", 
+                          height: "100%",
+                          justifyContent: "space-between"
+                        }}>
                           {/* Header with title and folder */}
-                          <div style={{ 
-                            marginBottom: "-25%"
-                          }}>
+                          <div>
                             <div style={{ 
                               fontWeight: "600", 
-                              fontSize: "16px", 
-                              lineHeight: "1.4",
-                              color: "#111827",
-                              marginBottom: "4px"
+                              fontSize: "14px", 
+                              lineHeight: "1.3",
+                              color: isSelected && isCheckboxSelected ? "#FFFFFF" : "#111827",
+                              marginBottom: "4px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap"
                             }}>
                               {note.title || "(untitled)"}
                             </div>
                             <div style={{ 
-                              fontSize: "12px",
-                              color: "#6B7280"
+                              fontSize: "11px",
+                              color: isSelected && isCheckboxSelected ? "#E5E7EB" : "#6B7280"
                             }}>
-                              <strong>Folder:</strong> {note.folder ? note.folder.name : "No folder"}
+                              {note.folder ? note.folder.name : "No folder"}
                             </div>
                           </div>
 
@@ -2262,18 +2260,21 @@ export default function Index() {
                           <div style={{ 
                             display: "flex", 
                             justifyContent: "space-between",
-                            marginBottom: "8px",
-                            alignItems: "flex-end"
+                            alignItems: "flex-end",
+                            marginTop: "8px"
                           }}>
                             {/* Left side - content preview */}
-                            <div style={{ flex: "1", marginRight: "16px" }}>
+                            <div style={{ flex: "1", marginRight: "12px" }}>
                               {/* Content preview */}
                               <div style={{ 
-                                fontSize: "14px", 
-                                color: "#6B7280", 
-                                lineHeight: "1.5"
+                                fontSize: "12px", 
+                                color: isSelected && isCheckboxSelected ? "#E5E7EB" : "#6B7280", 
+                                lineHeight: "1.4",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap"
                               }}>
-                                {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 120) + "..." : "No content"}
+                                {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 80) + "..." : "No content"}
                               </div>
                             </div>
 
@@ -2281,123 +2282,108 @@ export default function Index() {
                             <div style={{ 
                               display: "flex",
                               flexDirection: "column",
-                              gap: "4px",
-                              alignItems: "flex-end",
-                              marginTop: "70px",
-                              marginBottom: "30px"
+                              gap: "2px",
+                              alignItems: "flex-end"
                             }}>
                               <div style={{
-                                background: "#F3F4F6",
-                                borderRadius: "6px",
-                                padding: "6px 10px",
+                                background: isSelected && isCheckboxSelected ? "#FFFFFF" : "#F3F4F6",
+                                borderRadius: "4px",
+                                padding: "4px 6px",
                                 textAlign: "center",
-                                minWidth: "70px"
+                                minWidth: "50px"
                               }}>
                                 <div style={{ 
-                                  fontSize: "10px", 
-                                  color: "#6B7280",
+                                  fontSize: "8px", 
+                                  color: isSelected && isCheckboxSelected ? "#008060" : "#6B7280",
                                   textTransform: "uppercase",
-                                  marginBottom: "2px"
+                                  marginBottom: "1px"
                                 }}>
                                   Created
                                 </div>
                                 <div style={{ 
-                                  fontSize: "12px", 
+                                  fontSize: "10px", 
                                   fontWeight: "600", 
-                                  color: "#374151",
-                                  lineHeight: "1.2"
+                                  color: isSelected && isCheckboxSelected ? "#008060" : "#374151",
+                                  lineHeight: "1.1"
                                 }}>
                                   {createdDate.getDate()}
                                 </div>
                                 <div style={{ 
-                                  fontSize: "10px",
-                                  color: "#6B7280",
+                                  fontSize: "8px",
+                                  color: isSelected && isCheckboxSelected ? "#008060" : "#6B7280",
                                   textTransform: "uppercase"
                                 }}>
                                   {monthNames[createdDate.getMonth()]}
                                 </div>
-                                <div style={{ 
-                                  fontSize: "9px",
-                                  color: "#6B7280",
-                                  marginTop: "2px"
-                                }}>
-                                  {createdDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </div>
                               </div>
                               
                               <div style={{
-                                background: "#F3F4F6",
-                                borderRadius: "6px",
-                                padding: "6px 10px",
+                                background: isSelected && isCheckboxSelected ? "#FFFFFF" : "#F3F4F6",
+                                borderRadius: "4px",
+                                padding: "4px 6px",
                                 textAlign: "center",
-                                minWidth: "70px"
+                                minWidth: "50px"
                               }}>
                                 <div style={{ 
-                                  fontSize: "10px", 
-                                  color: "#6B7280",
+                                  fontSize: "8px", 
+                                  color: isSelected && isCheckboxSelected ? "#008060" : "#6B7280",
                                   textTransform: "uppercase",
-                                  marginBottom: "2px"
+                                  marginBottom: "1px"
                                 }}>
                                   Edited
                                 </div>
                                 <div style={{ 
-                                  fontSize: "12px", 
+                                  fontSize: "10px", 
                                   fontWeight: "600", 
-                                  color: "#374151",
-                                  lineHeight: "1.2"
+                                  color: isSelected && isCheckboxSelected ? "#008060" : "#374151",
+                                  lineHeight: "1.1"
                                 }}>
                                   {updatedDate.getDate()}
                                 </div>
                                 <div style={{ 
-                                  fontSize: "10px",
-                                  color: "#6B7280",
+                                  fontSize: "8px",
+                                  color: isSelected && isCheckboxSelected ? "#008060" : "#6B7280",
                                   textTransform: "uppercase"
                                 }}>
                                   {monthNames[updatedDate.getMonth()]}
-                                </div>
-                                <div style={{ 
-                                  fontSize: "9px",
-                                  color: "#6B7280",
-                                  marginTop: "2px"
-                                }}>
-                                  {updatedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </div>
                               </div>
                             </div>
                           </div>
 
-                          {/* Tags above buttons - aligned left */}
+                          {/* Tags at bottom - compact design */}
                           {note.tags && note.tags.length > 0 && (
                             <div style={{ 
                               display: "flex",
-                              gap: "4px",
+                              gap: "3px",
                               alignItems: "center",
-                              marginBottom: "12px"
+                              marginTop: "8px",
+                              flexWrap: "wrap"
                             }}>
-                              {note.tags.slice(0, 3).map((tag, index) => (
+                              {note.tags.slice(0, 2).map((tag, index) => (
                                 <span key={index} style={{
                                   display: "inline-block",
-                                  background: "#f6fff8",
-                                  color: "#008060",
-                                  fontSize: "11px",
+                                  background: isSelected && isCheckboxSelected ? "#FFFFFF" : "#f6fff8",
+                                  color: isSelected && isCheckboxSelected ? "#008060" : "#008060",
+                                  fontSize: "9px",
                                   fontWeight: "500",
-                                  padding: "2px 6px",
-                                  borderRadius: "12px",
-                                  border: "1px solid #008060"
+                                  padding: "1px 4px",
+                                  borderRadius: "8px",
+                                  border: isSelected && isCheckboxSelected ? "1px solid #008060" : "1px solid #008060"
                                 }}>
                                   {tag}
                                 </span>
                               ))}
-                              {note.tags.length > 3 && (
+                              {note.tags.length > 2 && (
                                 <span 
                                   style={{
                                     display: "inline-block",
-                                    background: "#6B7280",
+                                    background: isSelected && isCheckboxSelected ? "#008060" : "#6B7280",
                                     color: "white",
-                                    fontSize: "11px",
+                                    fontSize: "9px",
                                     fontWeight: "600",
-                                    padding: "2px 6px",
-                                    borderRadius: "12px",
+                                    padding: "1px 4px",
+                                    borderRadius: "8px",
                                     cursor: "pointer",
                                     position: "relative"
                                   }}
@@ -2420,7 +2406,7 @@ export default function Index() {
                                       maxWidth: 200px;
                                     `;
                                     
-                                    const additionalTags = note.tags.slice(3);
+                                    const additionalTags = note.tags.slice(2);
                                     tooltip.innerHTML = additionalTags.map(tag => 
                                       `<div style="
                                         padding: 4px 8px;
@@ -2444,100 +2430,12 @@ export default function Index() {
                                     }
                                   }}
                                 >
-                                  +{note.tags.length - 3}
+                                  +{note.tags.length - 2}
                                 </span>
                               )}
                             </div>
                           )}
 
-                          {/* Three buttons at bottom */}
-                          <div style={{ 
-                            display: "flex", 
-                            gap: "8px",
-                            justifyContent: "center"
-                          }}>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleNoteSelection(note.id);
-                              }}
-                              style={{
-                                background: isCheckboxSelected ? "#000000" : "#F3F4F6",
-                                border: isCheckboxSelected ? "1px solid #000000" : "1px solid #D1D5DB",
-                                borderRadius: "6px",
-                                padding: "8px 12px",
-                                cursor: "pointer",
-                                fontSize: "12px",
-                                color: isCheckboxSelected ? "white" : "#374151",
-                                fontWeight: "500",
-                                flex: "1"
-                              }}
-                              onMouseEnter={(e) => {
-                                if (!isCheckboxSelected) {
-                                  e.target.style.backgroundColor = "#E5E7EB";
-                                }
-                              }}
-                              onMouseLeave={(e) => {
-                                if (!isCheckboxSelected) {
-                                  e.target.style.backgroundColor = "#F3F4F6";
-                                }
-                              }}
-                            >
-                              Select
-                            </button>
-                            
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
-                              }}
-                              style={{
-                                background: "#F97316",
-                                border: "1px solid #F97316",
-                                borderRadius: "6px",
-                                padding: "8px 12px",
-                                cursor: "pointer",
-                                fontSize: "12px",
-                                color: "white",
-                                fontWeight: "500",
-                                flex: "1"
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = "#EA580C";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = "#F97316";
-                              }}
-                            >
-                              Manage
-                            </button>
-                            
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowDeleteNoteConfirm(note.id);
-                              }}
-                              style={{
-                                background: "#FEF2F2",
-                                border: "1px solid #FECACA",
-                                borderRadius: "6px",
-                                padding: "8px 12px",
-                                cursor: "pointer",
-                                fontSize: "12px",
-                                color: "#DC2626",
-                                fontWeight: "500",
-                                flex: "1"
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = "#FEE2E2";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = "#FEF2F2";
-                              }}
-                            >
-                              Delete
-                            </button>
-                          </div>
                         </div>
 
                         {/* Manage Menu */}
