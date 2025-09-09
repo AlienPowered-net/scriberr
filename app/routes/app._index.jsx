@@ -524,6 +524,8 @@ export default function Index() {
       const noteToSelect = notes.find(note => note.id === savedNoteId);
       if (noteToSelect) {
         setEditingNoteId(savedNoteId);
+        setSelectedNoteId(savedNoteId);
+        setSelectedNote(noteToSelect);
         setTitle(noteToSelect.title || "");
         setBody(noteToSelect.content || "");
         setFolderId(savedFolderId);
@@ -640,6 +642,10 @@ export default function Index() {
           const currentFolderId = selectedFolder;
           const currentNoteId = editingNoteId;
           
+          // Store the note ID and folder ID in localStorage BEFORE reload
+          localStorage.setItem('selectedNoteId', currentNoteId);
+          localStorage.setItem('selectedFolderId', currentFolderId);
+          
           // Clear the form
           setEditingNoteId(null);
           setTitle('');
@@ -649,10 +655,6 @@ export default function Index() {
           
           // Reload the page but maintain context
           window.location.reload();
-          
-          // After reload, restore context (this will be handled by the useEffect that checks localStorage)
-          localStorage.setItem('selectedNoteId', currentNoteId);
-          localStorage.setItem('selectedFolderId', currentFolderId);
         } else {
           setAlertMessage(result.error || 'Failed to update note');
           setAlertType('error');
@@ -1060,6 +1062,10 @@ export default function Index() {
           const currentFolderId = selectedFolder;
           const newNoteId = result.noteId; // For new notes, we get the ID back
           
+          // Store the note ID and folder ID in localStorage BEFORE reload
+          localStorage.setItem('selectedNoteId', newNoteId || editingNoteId);
+          localStorage.setItem('selectedFolderId', currentFolderId);
+          
           // Clear the form
           setEditingNoteId(null);
           setTitle('');
@@ -1069,10 +1075,6 @@ export default function Index() {
           
           // Reload the page but maintain context
           window.location.reload();
-          
-          // After reload, restore context (this will be handled by the useEffect that checks localStorage)
-          localStorage.setItem('selectedNoteId', newNoteId || editingNoteId);
-          localStorage.setItem('selectedFolderId', currentFolderId);
         } else {
           setAlertMessage(result.error || 'Failed to save note');
           setAlertType('error');
