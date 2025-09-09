@@ -2236,10 +2236,11 @@ export default function Index() {
                         }} />
 
                         {/* Main content area */}
-                        <div style={{ padding: "24px", paddingLeft: "24px", paddingTop: "40px", paddingBottom: "24px" }}>
+                        <div style={{ padding: "16px", paddingLeft: "20px" }}>
                           {/* Header with title and folder */}
                           <div style={{ 
-                            marginBottom: "12px"
+                            marginBottom: "12px",
+                            marginTop: "16px"
                           }}>
                             <div style={{ 
                               fontWeight: "600", 
