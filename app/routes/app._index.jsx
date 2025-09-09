@@ -2202,15 +2202,18 @@ export default function Index() {
                       };
                     }
                     
+                    // Format dates as strings like "9 Sep"
+                    const createdAt = `${createdDate.getDate()} ${monthNames[createdDate.getMonth()]}`;
+                    const updatedAt = `${updatedDate.getDate()} ${monthNames[updatedDate.getMonth()]}`;
+                    
                     return (
                       <NoteCard
                         key={note.id}
                         title={note.title}
                         content={note.content}
                         tags={note.tags || []}
-                        folder={note.folder?.name}
-                        createdDate={createdDate}
-                        updatedDate={updatedDate}
+                        createdAt={createdAt}
+                        updatedAt={updatedAt}
                         isSelected={isSelected}
                         inContext={isCheckboxSelected}
                         onClick={() => handleEditNote(note)}

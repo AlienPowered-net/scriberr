@@ -4,11 +4,10 @@ const NoteCard = ({
   title,
   content,
   tags,
+  createdAt,
+  updatedAt,
   isSelected,
   inContext,
-  folder,
-  createdDate,
-  updatedDate,
   onClick
 }) => {
   // Compute which state we're in
@@ -18,101 +17,78 @@ const NoteCard = ({
   else if (isSelected && !inContext) state = "selected";
   else state = "default";
 
-  const baseClasses = "rounded-lg p-3 transition-all cursor-pointer flex flex-col justify-between min-h-[100px] mb-2";
+  const baseClasses = "rounded-lg p-3 transition-all cursor-pointer flex flex-col justify-between min-h-[90px] mb-1";
 
   const stateClasses = {
-    "default": "bg-white border border-gray-200 hover:border-gray-300",
-    "in-context": "bg-blue-50 border border-blue-300",
-    "selected-in-context": "bg-green-600 border border-green-600 text-white",
-    "selected": "bg-green-50 border border-green-500",
+    "default": "bg-white border border-gray-200 hover:border-gray-300 hover:shadow-sm",
+    "in-context": "bg-blue-50 border border-blue-200 hover:border-blue-300 hover:shadow-sm",
+    "selected-in-context": "bg-green-600 border border-green-600 text-white shadow-md",
+    "selected": "bg-green-50 border border-green-500 hover:border-green-600 hover:shadow-sm",
   };
-
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   return (
     <div className={`${baseClasses} ${stateClasses[state]}`} onClick={onClick}>
-      {/* Header Section */}
-      <div className="flex-1">
-        {/* Title and Folder */}
-        <div className="mb-1">
-          <h3 className={`font-semibold text-sm truncate ${
-            state === "selected-in-context" ? "text-white" : "text-gray-900"
-          }`}>
-            {title || "(untitled)"}
-          </h3>
-          <p className={`text-xs ${
+      {/* Title */}
+      <h3 className={`font-medium text-sm truncate mb-1 ${
+        state === "selected-in-context" ? "text-white" : "text-gray-900"
+      }`}>
+        {title || "(untitled)"}
+      </h3>
+
+      {/* Content Preview */}
+      <p className={`text-xs leading-relaxed flex-1 mb-2 ${
+        state === "selected-in-context" ? "text-gray-200" : "text-gray-600"
+      }`}>
+        {content ? content.replace(/<[^>]*>/g, '').substring(0, 80) + "..." : "No content"}
+      </p>
+
+      {/* Bottom Row: Tags (left) and Dates (right) */}
+      <div className="flex justify-between items-end">
+        {/* Tags */}
+        {tags && tags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {tags.slice(0, 2).map((tag, idx) => (
+              <span
+                key={idx}
+                className={`px-2 py-0.5 text-[10px] font-normal rounded-full ${
+                  state === "selected-in-context"
+                    ? "bg-white text-green-600"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {tag}
+              </span>
+            ))}
+            {tags.length > 2 && (
+              <span
+                className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${
+                  state === "selected-in-context"
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-400 text-white"
+                }`}
+              >
+                +{tags.length - 2}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Dates */}
+        <div className="flex flex-col items-end text-right">
+          <div className={`text-[10px] ${
             state === "selected-in-context" ? "text-gray-200" : "text-gray-500"
           }`}>
-            {folder || "No folder"}
-          </p>
-        </div>
-
-        {/* Content and Dates Row */}
-        <div className="flex justify-between items-end mt-2">
-          {/* Content Preview */}
-          <div className="flex-1 mr-2">
-            <p className={`text-xs leading-tight ${
-              state === "selected-in-context" ? "text-gray-200" : "text-gray-600"
-            }`}>
-              {content ? content.replace(/<[^>]*>/g, '').substring(0, 60) + "..." : "No content"}
-            </p>
+            {createdAt}
           </div>
-
-          {/* Dates */}
-          <div className="flex flex-col gap-1">
-            {/* Created Date */}
-            <div className={`text-center px-1.5 py-1 rounded text-[7px] font-medium ${
-              state === "selected-in-context" 
-                ? "bg-white text-green-600" 
-                : "bg-gray-100 text-gray-600"
+          {updatedAt && (
+            <div className={`text-[10px] ${
+              state === "selected-in-context" ? "text-gray-200" : "text-gray-500"
             }`}>
-              <div className="uppercase leading-none">Created</div>
-              <div className="text-[9px] font-semibold leading-none mt-0.5">{createdDate?.getDate()}</div>
-              <div className="text-[7px] uppercase leading-none">{monthNames[createdDate?.getMonth()]}</div>
+              {updatedAt}
             </div>
-
-            {/* Updated Date */}
-            <div className={`text-center px-1.5 py-1 rounded text-[7px] font-medium ${
-              state === "selected-in-context" 
-                ? "bg-white text-green-600" 
-                : "bg-gray-100 text-gray-600"
-            }`}>
-              <div className="uppercase leading-none">Edited</div>
-              <div className="text-[9px] font-semibold leading-none mt-0.5">{updatedDate?.getDate()}</div>
-              <div className="text-[7px] uppercase leading-none">{monthNames[updatedDate?.getMonth()]}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tags Section */}
-      {tags && tags.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1">
-          {tags.slice(0, 2).map((tag, idx) => (
-            <span
-              key={idx}
-              className={`px-1.5 py-0.5 text-[8px] font-medium rounded-full ${
-                state === "selected-in-context"
-                  ? "bg-white text-green-600 border border-green-600"
-                  : "bg-green-50 text-green-600 border border-green-600"
-              }`}
-            >
-              {tag}
-            </span>
-          ))}
-          {tags.length > 2 && (
-            <span
-              className={`px-1.5 py-0.5 text-[8px] font-semibold rounded-full ${
-                state === "selected-in-context"
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-500 text-white"
-              }`}
-            >
-              +{tags.length - 2}
-            </span>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
