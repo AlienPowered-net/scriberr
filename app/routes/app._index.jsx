@@ -2205,12 +2205,12 @@ export default function Index() {
                           top: "0",
                           bottom: "0",
                           width: "4px",
-                          backgroundColor: isSelected ? "#008060" : (isCheckboxSelected ? "#3B82F6" : "#E5E7EB")
+                          backgroundColor: isSelected ? "#008060" : (isCheckboxSelected ? "#F97316" : "#E5E7EB")
                         }} />
 
                         {/* Main content area */}
                         <div style={{ padding: "16px", paddingLeft: "20px" }}>
-                          {/* Header with title */}
+                          {/* Header with title and folder */}
                           <div style={{ 
                             marginBottom: "12px"
                           }}>
@@ -2218,9 +2218,16 @@ export default function Index() {
                               fontWeight: "600", 
                               fontSize: "16px", 
                               lineHeight: "1.4",
-                              color: "#111827"
+                              color: "#111827",
+                              marginBottom: "4px"
                             }}>
                               {note.title || "(untitled)"}
+                            </div>
+                            <div style={{ 
+                              fontSize: "12px",
+                              color: "#6B7280"
+                            }}>
+                              <strong>Folder:</strong> {note.folder ? note.folder.name : "No folder"}
                             </div>
                           </div>
 
@@ -2242,55 +2249,42 @@ export default function Index() {
                                 {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 80) + "..." : "No content"}
                               </div>
 
-                              {/* Folder and tags */}
-                              <div style={{ 
-                                display: "flex", 
-                                flexDirection: "column",
-                                gap: "4px"
-                              }}>
+                              {/* Tags */}
+                              {note.tags && note.tags.length > 0 && (
                                 <div style={{ 
-                                  fontSize: "12px",
-                                  color: "#6B7280"
+                                  display: "flex",
+                                  gap: "4px",
+                                  alignItems: "center"
                                 }}>
-                                  {note.folder ? note.folder.name : "No folder"}
+                                  {note.tags.slice(0, 2).map((tag, index) => (
+                                    <span key={index} style={{
+                                      display: "inline-block",
+                                      background: "#f6fff8",
+                                      color: "#008060",
+                                      fontSize: "11px",
+                                      fontWeight: "500",
+                                      padding: "2px 6px",
+                                      borderRadius: "12px",
+                                      border: "1px solid #008060"
+                                    }}>
+                                      {tag}
+                                    </span>
+                                  ))}
+                                  {note.tags.length > 2 && (
+                                    <span style={{
+                                      display: "inline-block",
+                                      background: "#6B7280",
+                                      color: "white",
+                                      fontSize: "11px",
+                                      fontWeight: "600",
+                                      padding: "2px 6px",
+                                      borderRadius: "12px"
+                                    }}>
+                                      +{note.tags.length - 2}
+                                    </span>
+                                  )}
                                 </div>
-                                
-                                {note.tags && note.tags.length > 0 && (
-                                  <div style={{ 
-                                    display: "flex",
-                                    gap: "4px",
-                                    alignItems: "center"
-                                  }}>
-                                    {note.tags.slice(0, 2).map((tag, index) => (
-                                      <span key={index} style={{
-                                        display: "inline-block",
-                                        background: "#f6fff8",
-                                        color: "#008060",
-                                        fontSize: "11px",
-                                        fontWeight: "500",
-                                        padding: "2px 6px",
-                                        borderRadius: "12px",
-                                        border: "1px solid #008060"
-                                      }}>
-                                        {tag}
-                                      </span>
-                                    ))}
-                                    {note.tags.length > 2 && (
-                                      <span style={{
-                                        display: "inline-block",
-                                        background: "#6B7280",
-                                        color: "white",
-                                        fontSize: "11px",
-                                        fontWeight: "600",
-                                        padding: "2px 6px",
-                                        borderRadius: "12px"
-                                      }}>
-                                        +{note.tags.length - 2}
-                                      </span>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
+                              )}
                             </div>
 
                             {/* Right side - stacked dates */}
@@ -2305,7 +2299,7 @@ export default function Index() {
                                 borderRadius: "6px",
                                 padding: "6px 10px",
                                 textAlign: "center",
-                                minWidth: "60px"
+                                minWidth: "70px"
                               }}>
                                 <div style={{ 
                                   fontSize: "10px", 
@@ -2330,6 +2324,13 @@ export default function Index() {
                                 }}>
                                   {monthNames[createdDate.getMonth()]}
                                 </div>
+                                <div style={{ 
+                                  fontSize: "9px",
+                                  color: "#6B7280",
+                                  marginTop: "2px"
+                                }}>
+                                  {createdDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </div>
                               </div>
                               
                               <div style={{
@@ -2337,7 +2338,7 @@ export default function Index() {
                                 borderRadius: "6px",
                                 padding: "6px 10px",
                                 textAlign: "center",
-                                minWidth: "60px"
+                                minWidth: "70px"
                               }}>
                                 <div style={{ 
                                   fontSize: "10px", 
@@ -2362,6 +2363,13 @@ export default function Index() {
                                 }}>
                                   {monthNames[updatedDate.getMonth()]}
                                 </div>
+                                <div style={{ 
+                                  fontSize: "9px",
+                                  color: "#6B7280",
+                                  marginTop: "2px"
+                                }}>
+                                  {updatedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -2378,8 +2386,8 @@ export default function Index() {
                                 handleNoteSelection(note.id);
                               }}
                               style={{
-                                background: isCheckboxSelected ? "#008060" : "#F3F4F6",
-                                border: isCheckboxSelected ? "1px solid #008060" : "1px solid #D1D5DB",
+                                background: isCheckboxSelected ? "#F97316" : "#F3F4F6",
+                                border: isCheckboxSelected ? "1px solid #F97316" : "1px solid #D1D5DB",
                                 borderRadius: "6px",
                                 padding: "8px 12px",
                                 cursor: "pointer",
@@ -2408,21 +2416,21 @@ export default function Index() {
                                 setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
                               }}
                               style={{
-                                background: "#F3F4F6",
-                                border: "1px solid #D1D5DB",
+                                background: "#F97316",
+                                border: "1px solid #F97316",
                                 borderRadius: "6px",
                                 padding: "8px 12px",
                                 cursor: "pointer",
                                 fontSize: "12px",
-                                color: "#374151",
+                                color: "white",
                                 fontWeight: "500",
                                 flex: "1"
                               }}
                               onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = "#E5E7EB";
+                                e.target.style.backgroundColor = "#EA580C";
                               }}
                               onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = "#F3F4F6";
+                                e.target.style.backgroundColor = "#F97316";
                               }}
                             >
                               Manage
@@ -2455,6 +2463,77 @@ export default function Index() {
                             </button>
                           </div>
                         </div>
+
+                        {/* Manage Menu */}
+                        {openNoteMenu === note.id && (
+                          <div 
+                            style={{
+                              position: "absolute",
+                              top: "100%",
+                              left: "0",
+                              right: "0",
+                              backgroundColor: "white",
+                              border: "1px solid #E5E7EB",
+                              borderRadius: "6px",
+                              boxShadow: "0 8px 25px rgba(0,0,0,0.2)",
+                              zIndex: 99999,
+                              marginTop: "4px"
+                            }}
+                          >
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowMoveModal(note.id);
+                                setOpenNoteMenu(null);
+                              }}
+                              style={{
+                                display: "block",
+                                width: "100%",
+                                padding: "8px 12px",
+                                border: "none",
+                                background: "none",
+                                textAlign: "left",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                                color: "#374151"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = "#F3F4F6";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = "transparent";
+                              }}
+                            >
+                              Move to Folder
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowDuplicateModal(note.id);
+                                setOpenNoteMenu(null);
+                              }}
+                              style={{
+                                display: "block",
+                                width: "100%",
+                                padding: "8px 12px",
+                                border: "none",
+                                background: "none",
+                                textAlign: "left",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                                color: "#374151"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = "#F3F4F6";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = "transparent";
+                              }}
+                            >
+                              Duplicate Note
+                            </button>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
