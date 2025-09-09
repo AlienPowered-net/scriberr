@@ -439,7 +439,7 @@ export default function Index() {
       }
       
       // Close note menu if clicking outside
-      if (openNoteMenu && !event.target.closest('.note-menu-container')) {
+      if (openNoteMenu && !event.target.closest('.note-card-container')) {
         setOpenNoteMenu(null);
       }
     };
@@ -2176,7 +2176,8 @@ export default function Index() {
                     
                     return (
                       <div 
-                        key={note.id} 
+                        key={note.id}
+                        className="note-card-container"
                         style={{ 
                           ...cardStyle,
                           borderRadius: "8px",
@@ -2205,7 +2206,7 @@ export default function Index() {
                           top: "0",
                           bottom: "0",
                           width: "4px",
-                          backgroundColor: isSelected ? "#008060" : (isCheckboxSelected ? "#F97316" : "#E5E7EB")
+                          backgroundColor: isCheckboxSelected ? "#F97316" : (isSelected ? "#008060" : "#E5E7EB")
                         }} />
 
                         {/* Main content area */}
@@ -2346,7 +2347,7 @@ export default function Index() {
                                   textTransform: "uppercase",
                                   marginBottom: "2px"
                                 }}>
-                                  Last Edited
+                                  Edited
                                 </div>
                                 <div style={{ 
                                   fontSize: "12px", 
@@ -2386,8 +2387,8 @@ export default function Index() {
                                 handleNoteSelection(note.id);
                               }}
                               style={{
-                                background: isCheckboxSelected ? "#F97316" : "#F3F4F6",
-                                border: isCheckboxSelected ? "1px solid #F97316" : "1px solid #D1D5DB",
+                                background: isCheckboxSelected ? "#000000" : "#F3F4F6",
+                                border: isCheckboxSelected ? "1px solid #000000" : "1px solid #D1D5DB",
                                 borderRadius: "6px",
                                 padding: "8px 12px",
                                 cursor: "pointer",
@@ -2479,6 +2480,7 @@ export default function Index() {
                               zIndex: 99999,
                               marginTop: "4px"
                             }}
+                            onClick={(e) => e.stopPropagation()}
                           >
                             <button
                               onClick={(e) => {
