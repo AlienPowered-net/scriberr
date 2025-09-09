@@ -2208,6 +2208,7 @@ export default function Index() {
                           ...cardStyle,
                           borderRadius: "8px",
                           padding: "0",
+                          paddingTop: "15%",
                           cursor: "pointer",
                           transition: "all 0.2s ease",
                           marginBottom: "8px",
@@ -2239,8 +2240,7 @@ export default function Index() {
                         <div style={{ padding: "8px", paddingLeft: "20px", paddingBottom: "16px" }}>
                           {/* Header with title and folder */}
                           <div style={{ 
-                            marginBottom: "8px",
-                            marginTop: "32px"
+                            marginBottom: "-25%"
                           }}>
                             <div style={{ 
                               fontWeight: "600", 
@@ -2263,7 +2263,8 @@ export default function Index() {
                           <div style={{ 
                             display: "flex", 
                             justifyContent: "space-between",
-                            marginBottom: "8px"
+                            marginBottom: "8px",
+                            alignItems: "flex-end"
                           }}>
                             {/* Left side - content preview */}
                             <div style={{ flex: "1", marginRight: "16px" }}>
