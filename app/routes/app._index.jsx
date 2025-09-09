@@ -2210,165 +2210,158 @@ export default function Index() {
 
                         {/* Main content area */}
                         <div style={{ padding: "16px", paddingLeft: "20px" }}>
-                          {/* Header with title and checkbox */}
+                          {/* Header with title */}
                           <div style={{ 
-                            display: "flex", 
-                            alignItems: "center",
-                            marginBottom: "12px",
-                            gap: "12px"
+                            marginBottom: "12px"
                           }}>
-                            <input
-                              type="checkbox"
-                              checked={isCheckboxSelected}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                handleNoteSelection(note.id);
-                              }}
-                              style={{
-                                width: "16px",
-                                height: "16px",
-                                flexShrink: "0"
-                              }}
-                            />
                             <div style={{ 
                               fontWeight: "600", 
                               fontSize: "16px", 
                               lineHeight: "1.4",
-                              color: "#111827",
-                              flex: "1"
+                              color: "#111827"
                             }}>
                               {note.title || "(untitled)"}
                             </div>
                           </div>
 
-                          {/* Content preview */}
-                          <div style={{ 
-                            fontSize: "14px", 
-                            color: "#6B7280", 
-                            lineHeight: "1.5",
-                            marginBottom: "12px"
-                          }}>
-                            {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 100) + "..." : "No content"}
-                          </div>
-
-                          {/* Folder and tags */}
+                          {/* Content and dates row */}
                           <div style={{ 
                             display: "flex", 
                             justifyContent: "space-between",
-                            alignItems: "center",
                             marginBottom: "12px"
                           }}>
-                            <div style={{ 
-                              fontSize: "12px",
-                              color: "#6B7280"
-                            }}>
-                              {note.folder ? note.folder.name : "No folder"}
-                            </div>
-                            
-                            {note.tags && note.tags.length > 0 && (
+                            {/* Left side - content and metadata */}
+                            <div style={{ flex: "1", marginRight: "16px" }}>
+                              {/* Content preview */}
                               <div style={{ 
-                                display: "flex",
-                                gap: "4px",
-                                alignItems: "center"
+                                fontSize: "14px", 
+                                color: "#6B7280", 
+                                lineHeight: "1.5",
+                                marginBottom: "8px"
                               }}>
-                                {note.tags.slice(0, 2).map((tag, index) => (
-                                  <span key={index} style={{
-                                    display: "inline-block",
-                                    background: "#f6fff8",
-                                    color: "#008060",
-                                    fontSize: "11px",
-                                    fontWeight: "500",
-                                    padding: "2px 6px",
-                                    borderRadius: "12px",
-                                    border: "1px solid #008060"
+                                {note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 80) + "..." : "No content"}
+                              </div>
+
+                              {/* Folder and tags */}
+                              <div style={{ 
+                                display: "flex", 
+                                flexDirection: "column",
+                                gap: "4px"
+                              }}>
+                                <div style={{ 
+                                  fontSize: "12px",
+                                  color: "#6B7280"
+                                }}>
+                                  {note.folder ? note.folder.name : "No folder"}
+                                </div>
+                                
+                                {note.tags && note.tags.length > 0 && (
+                                  <div style={{ 
+                                    display: "flex",
+                                    gap: "4px",
+                                    alignItems: "center"
                                   }}>
-                                    {tag}
-                                  </span>
-                                ))}
-                                {note.tags.length > 2 && (
-                                  <span style={{
-                                    display: "inline-block",
-                                    background: "#6B7280",
-                                    color: "white",
-                                    fontSize: "11px",
-                                    fontWeight: "600",
-                                    padding: "2px 6px",
-                                    borderRadius: "12px"
-                                  }}>
-                                    +{note.tags.length - 2}
-                                  </span>
+                                    {note.tags.slice(0, 2).map((tag, index) => (
+                                      <span key={index} style={{
+                                        display: "inline-block",
+                                        background: "#f6fff8",
+                                        color: "#008060",
+                                        fontSize: "11px",
+                                        fontWeight: "500",
+                                        padding: "2px 6px",
+                                        borderRadius: "12px",
+                                        border: "1px solid #008060"
+                                      }}>
+                                        {tag}
+                                      </span>
+                                    ))}
+                                    {note.tags.length > 2 && (
+                                      <span style={{
+                                        display: "inline-block",
+                                        background: "#6B7280",
+                                        color: "white",
+                                        fontSize: "11px",
+                                        fontWeight: "600",
+                                        padding: "2px 6px",
+                                        borderRadius: "12px"
+                                      }}>
+                                        +{note.tags.length - 2}
+                                      </span>
+                                    )}
+                                  </div>
                                 )}
                               </div>
-                            )}
-                          </div>
-
-                          {/* Dates */}
-                          <div style={{ 
-                            display: "flex", 
-                            justifyContent: "space-between",
-                            marginBottom: "16px"
-                          }}>
-                            <div style={{
-                              background: "#F3F4F6",
-                              borderRadius: "6px",
-                              padding: "6px 10px",
-                              textAlign: "center",
-                              minWidth: "60px"
-                            }}>
-                              <div style={{ 
-                                fontSize: "10px", 
-                                color: "#6B7280",
-                                textTransform: "uppercase",
-                                marginBottom: "2px"
-                              }}>
-                                Created
-                              </div>
-                              <div style={{ 
-                                fontSize: "12px", 
-                                fontWeight: "600", 
-                                color: "#374151",
-                                lineHeight: "1.2"
-                              }}>
-                                {createdDate.getDate()}
-                              </div>
-                              <div style={{ 
-                                fontSize: "10px",
-                                color: "#6B7280",
-                                textTransform: "uppercase"
-                              }}>
-                                {monthNames[createdDate.getMonth()]}
-                              </div>
                             </div>
-                            
-                            <div style={{
-                              background: "#F3F4F6",
-                              borderRadius: "6px",
-                              padding: "6px 10px",
-                              textAlign: "center",
-                              minWidth: "60px"
+
+                            {/* Right side - stacked dates */}
+                            <div style={{ 
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "8px",
+                              alignItems: "flex-end"
                             }}>
-                              <div style={{ 
-                                fontSize: "10px", 
-                                color: "#6B7280",
-                                textTransform: "uppercase",
-                                marginBottom: "2px"
+                              <div style={{
+                                background: "#F3F4F6",
+                                borderRadius: "6px",
+                                padding: "6px 10px",
+                                textAlign: "center",
+                                minWidth: "60px"
                               }}>
-                                Last Edited
+                                <div style={{ 
+                                  fontSize: "10px", 
+                                  color: "#6B7280",
+                                  textTransform: "uppercase",
+                                  marginBottom: "2px"
+                                }}>
+                                  Created
+                                </div>
+                                <div style={{ 
+                                  fontSize: "12px", 
+                                  fontWeight: "600", 
+                                  color: "#374151",
+                                  lineHeight: "1.2"
+                                }}>
+                                  {createdDate.getDate()}
+                                </div>
+                                <div style={{ 
+                                  fontSize: "10px",
+                                  color: "#6B7280",
+                                  textTransform: "uppercase"
+                                }}>
+                                  {monthNames[createdDate.getMonth()]}
+                                </div>
                               </div>
-                              <div style={{ 
-                                fontSize: "12px", 
-                                fontWeight: "600", 
-                                color: "#374151",
-                                lineHeight: "1.2"
+                              
+                              <div style={{
+                                background: "#F3F4F6",
+                                borderRadius: "6px",
+                                padding: "6px 10px",
+                                textAlign: "center",
+                                minWidth: "60px"
                               }}>
-                                {updatedDate.getDate()}
-                              </div>
-                              <div style={{ 
-                                fontSize: "10px",
-                                color: "#6B7280",
-                                textTransform: "uppercase"
-                              }}>
-                                {monthNames[updatedDate.getMonth()]}
+                                <div style={{ 
+                                  fontSize: "10px", 
+                                  color: "#6B7280",
+                                  textTransform: "uppercase",
+                                  marginBottom: "2px"
+                                }}>
+                                  Last Edited
+                                </div>
+                                <div style={{ 
+                                  fontSize: "12px", 
+                                  fontWeight: "600", 
+                                  color: "#374151",
+                                  lineHeight: "1.2"
+                                }}>
+                                  {updatedDate.getDate()}
+                                </div>
+                                <div style={{ 
+                                  fontSize: "10px",
+                                  color: "#6B7280",
+                                  textTransform: "uppercase"
+                                }}>
+                                  {monthNames[updatedDate.getMonth()]}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -2382,33 +2375,37 @@ export default function Index() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setShowDuplicateModal(note.id);
+                                handleNoteSelection(note.id);
                               }}
                               style={{
-                                background: "#F3F4F6",
-                                border: "1px solid #D1D5DB",
+                                background: isCheckboxSelected ? "#008060" : "#F3F4F6",
+                                border: isCheckboxSelected ? "1px solid #008060" : "1px solid #D1D5DB",
                                 borderRadius: "6px",
                                 padding: "8px 12px",
                                 cursor: "pointer",
                                 fontSize: "12px",
-                                color: "#374151",
+                                color: isCheckboxSelected ? "white" : "#374151",
                                 fontWeight: "500",
                                 flex: "1"
                               }}
                               onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = "#E5E7EB";
+                                if (!isCheckboxSelected) {
+                                  e.target.style.backgroundColor = "#E5E7EB";
+                                }
                               }}
                               onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = "#F3F4F6";
+                                if (!isCheckboxSelected) {
+                                  e.target.style.backgroundColor = "#F3F4F6";
+                                }
                               }}
                             >
-                              Duplicate
+                              Select
                             </button>
                             
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setShowMoveModal(note.id);
+                                setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
                               }}
                               style={{
                                 background: "#F3F4F6",
@@ -2428,7 +2425,7 @@ export default function Index() {
                                 e.target.style.backgroundColor = "#F3F4F6";
                               }}
                             >
-                              Move
+                              Manage
                             </button>
                             
                             <button
