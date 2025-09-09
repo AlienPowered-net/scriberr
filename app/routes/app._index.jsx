@@ -2240,7 +2240,7 @@ export default function Index() {
                           {/* Header with title and folder */}
                           <div style={{ 
                             marginBottom: "8px",
-                            marginTop: "8px"
+                            marginTop: "32px"
                           }}>
                             <div style={{ 
                               fontWeight: "600", 
