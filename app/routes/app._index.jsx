@@ -493,6 +493,28 @@ export default function Index() {
     });
   };
 
+  // Handle tag search from tooltip
+  const handleTagSearch = (tag) => {
+    setGlobalSearchQuery(`tag:${tag}`);
+    setSelectedTags([tag]);
+    setSelectedFolder(null);
+    setSelectedNoteId(null);
+    setSelectedNote(null);
+    setEditingNoteId(null);
+    setTitle('');
+    setBody('');
+    setFolderId('');
+    setNoteTags([]);
+  };
+
+  // Make searchForTag available globally for tooltip clicks
+  useEffect(() => {
+    window.searchForTag = handleTagSearch;
+    return () => {
+      delete window.searchForTag;
+    };
+  }, []);
+
   // Track unsaved changes
   useEffect(() => {
     if (!editingNoteId) {
@@ -2339,16 +2361,15 @@ export default function Index() {
                             </div>
                           </div>
 
-                          {/* Tags above buttons */}
+                          {/* Tags above buttons - aligned left */}
                           {note.tags && note.tags.length > 0 && (
                             <div style={{ 
                               display: "flex",
                               gap: "4px",
                               alignItems: "center",
-                              marginBottom: "12px",
-                              justifyContent: "center"
+                              marginBottom: "12px"
                             }}>
-                              {note.tags.slice(0, 2).map((tag, index) => (
+                              {note.tags.slice(0, 3).map((tag, index) => (
                                 <span key={index} style={{
                                   display: "inline-block",
                                   background: "#f6fff8",
@@ -2362,17 +2383,63 @@ export default function Index() {
                                   {tag}
                                 </span>
                               ))}
-                              {note.tags.length > 2 && (
-                                <span style={{
-                                  display: "inline-block",
-                                  background: "#6B7280",
-                                  color: "white",
-                                  fontSize: "11px",
-                                  fontWeight: "600",
-                                  padding: "2px 6px",
-                                  borderRadius: "12px"
-                                }}>
-                                  +{note.tags.length - 2}
+                              {note.tags.length > 3 && (
+                                <span 
+                                  style={{
+                                    display: "inline-block",
+                                    background: "#6B7280",
+                                    color: "white",
+                                    fontSize: "11px",
+                                    fontWeight: "600",
+                                    padding: "2px 6px",
+                                    borderRadius: "12px",
+                                    cursor: "pointer",
+                                    position: "relative"
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    // Show tooltip
+                                    const tooltip = document.createElement('div');
+                                    tooltip.id = 'tag-tooltip';
+                                    tooltip.style.cssText = `
+                                      position: absolute;
+                                      bottom: 100%;
+                                      left: 50%;
+                                      transform: translateX(-50%);
+                                      background: white;
+                                      border: 1px solid #E5E7EB;
+                                      borderRadius: 6px;
+                                      boxShadow: 0 4px 12px rgba(0,0,0,0.15);
+                                      padding: 8px;
+                                      zIndex: 10000;
+                                      minWidth: 120px;
+                                      maxWidth: 200px;
+                                    `;
+                                    
+                                    const additionalTags = note.tags.slice(3);
+                                    tooltip.innerHTML = additionalTags.map(tag => 
+                                      `<div style="
+                                        padding: 4px 8px;
+                                        margin: 2px 0;
+                                        background: #f6fff8;
+                                        color: #008060;
+                                        border: 1px solid #008060;
+                                        border-radius: 12px;
+                                        font-size: 11px;
+                                        cursor: pointer;
+                                        text-align: center;
+                                      " onclick="window.searchForTag('${tag}')">${tag}</div>`
+                                    ).join('');
+                                    
+                                    e.target.appendChild(tooltip);
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    const tooltip = document.getElementById('tag-tooltip');
+                                    if (tooltip) {
+                                      tooltip.remove();
+                                    }
+                                  }}
+                                >
+                                  +{note.tags.length - 3}
                                 </span>
                               )}
                             </div>
