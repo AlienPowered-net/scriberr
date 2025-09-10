@@ -73,7 +73,8 @@ const NoteCard = ({
             fontSize: "10px",
             padding: "2px 6px",
             borderRadius: "10px",
-            border: "1px solid #D1D3D4"
+            border: "1px solid #D1D3D4",
+            boxShadow: "none"
           },
           dates: {
             color: "#8C9196",
@@ -132,7 +133,8 @@ const NoteCard = ({
             fontSize: "10px",
             padding: "2px 6px",
             borderRadius: "10px",
-            border: "1px solid #B8E6B8"
+            border: "1px solid #B8E6B8",
+            boxShadow: "none"
           },
           dates: {
             color: "#008060",
@@ -191,7 +193,8 @@ const NoteCard = ({
             fontSize: "10px",
             padding: "2px 6px",
             borderRadius: "10px",
-            border: "1px solid #B8E6B8"
+            border: "1px solid #B8E6B8",
+            boxShadow: "none"
           },
           dates: {
             color: "#008060",
@@ -250,7 +253,8 @@ const NoteCard = ({
             fontSize: "10px",
             padding: "2px 6px",
             borderRadius: "10px",
-            border: "1px solid #8DD88D"
+            border: "1px solid #8DD88D",
+            boxShadow: "none"
           },
           dates: {
             color: "#004C3F",
@@ -294,7 +298,23 @@ const NoteCard = ({
         {content ? content.replace(/<[^>]*>/g, '').trim() : "Type your note here..."}
       </div>
 
-      {/* Footer with Tags and Dates */}
+      {/* Dates - Top Right Corner */}
+      <div style={{
+        position: "absolute",
+        top: "8px",
+        right: "8px",
+        ...styles.dates
+      }}>
+        <span>{createdAt}</span>
+        {updatedAt && updatedAt !== createdAt && (
+          <>
+            <span>•</span>
+            <span>{updatedAt}</span>
+          </>
+        )}
+      </div>
+
+      {/* Footer with Tags and Action Buttons */}
       <div style={styles.footer}>
         {/* Tags */}
         {tags && tags.length > 0 && (
@@ -312,89 +332,66 @@ const NoteCard = ({
           </div>
         )}
 
-        {/* Dates */}
-        <div style={styles.dates}>
-          <span>{createdAt}</span>
-          {updatedAt && updatedAt !== createdAt && (
-            <>
-              <span>•</span>
-              <span>{updatedAt}</span>
-            </>
-          )}
+        {/* Action Buttons - Bottom Right Corner */}
+        <div style={{
+          display: "flex",
+          gap: "4px"
+        }}>
+          <button
+            style={{
+              backgroundColor: isSelected ? "#FFC453" : "#F5F5F5", // Warning orange when selected
+              color: isSelected ? "#FFFFFF" : "#666666",
+              border: "none",
+              borderRadius: "4px",
+              padding: "4px 8px",
+              fontSize: "10px",
+              cursor: "pointer",
+              transition: "all 0.2s ease"
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect && onSelect();
+            }}
+          >
+            {isSelected ? "Selected" : "Select"}
+          </button>
+          <button
+            style={{
+              backgroundColor: "#F5F5F5",
+              color: "#666666",
+              border: "none",
+              borderRadius: "4px",
+              padding: "4px 8px",
+              fontSize: "10px",
+              cursor: "pointer",
+              transition: "all 0.2s ease"
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onManage && onManage();
+            }}
+          >
+            Manage
+          </button>
+          <button
+            style={{
+              backgroundColor: "#FFEBEE",
+              color: "#D32F2F",
+              border: "none",
+              borderRadius: "4px",
+              padding: "4px 8px",
+              fontSize: "10px",
+              cursor: "pointer",
+              transition: "all 0.2s ease"
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete && onDelete();
+            }}
+          >
+            Delete
+          </button>
         </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div style={{
-        position: "absolute",
-        top: "8px",
-        right: "8px",
-        display: "flex",
-        gap: "4px",
-        opacity: 0,
-        transition: "opacity 0.2s ease"
-      }}
-      onMouseEnter={(e) => {
-        e.target.style.opacity = "1";
-      }}
-      onMouseLeave={(e) => {
-        e.target.style.opacity = "0";
-      }}
-      >
-        <button
-          style={{
-            backgroundColor: isSelected ? "#FFC453" : "#F5F5F5", // Warning orange when selected
-            color: isSelected ? "#FFFFFF" : "#666666",
-            border: "none",
-            borderRadius: "4px",
-            padding: "4px 8px",
-            fontSize: "10px",
-            cursor: "pointer",
-            transition: "all 0.2s ease"
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect && onSelect();
-          }}
-        >
-          {isSelected ? "Selected" : "Select"}
-        </button>
-        <button
-          style={{
-            backgroundColor: "#F5F5F5",
-            color: "#666666",
-            border: "none",
-            borderRadius: "4px",
-            padding: "4px 8px",
-            fontSize: "10px",
-            cursor: "pointer",
-            transition: "all 0.2s ease"
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onManage && onManage();
-          }}
-        >
-          Manage
-        </button>
-        <button
-          style={{
-            backgroundColor: "#FFEBEE",
-            color: "#D32F2F",
-            border: "none",
-            borderRadius: "4px",
-            padding: "4px 8px",
-            fontSize: "10px",
-            cursor: "pointer",
-            transition: "all 0.2s ease"
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete && onDelete();
-          }}
-        >
-          Delete
-        </button>
       </div>
     </div>
   );
