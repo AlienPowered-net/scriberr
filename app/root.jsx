@@ -3,6 +3,8 @@ import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/reac
 import { AppProvider } from "@shopify/polaris";
 import en from "@shopify/polaris/locales/en.json";
 import "@shopify/polaris/build/esm/styles.css"; // Polaris (bundled)
+import { MantineProvider } from "@mantine/core";
+import "@mantine/core/styles.css"; // Mantine styles
 
 // ✅ Import your local CSS and pass its URL to <Links/>
 import notepadCssUrl from "./styles/notepad.css?url";
@@ -24,7 +26,9 @@ export default function App() {
       </head>
       <body>
         <AppProvider i18n={en}>
-          <Outlet />
+          <MantineProvider>
+            <Outlet />
+          </MantineProvider>
         </AppProvider>
         <ScrollRestoration />
         <Scripts />
