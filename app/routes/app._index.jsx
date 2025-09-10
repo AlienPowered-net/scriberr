@@ -2167,40 +2167,13 @@ export default function Index() {
                   </p>
                 </EmptyState>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px", padding: "8px" }}>
                   {filteredNotes.map((note) => {
                     const createdDate = new Date(note.createdAt);
                     const updatedDate = new Date(note.updatedAt);
                     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                     const isSelected = editingNoteId === note.id;
                     const isCheckboxSelected = selectedNotes.includes(note.id);
-                    
-                    // Determine card state for styling based on new reference images
-                    let cardStyle = {
-                      backgroundColor: "#FFFFFF",
-                      border: "1px solid #E5E7EB"
-                    };
-                    
-                    if (isSelected && isCheckboxSelected) {
-                      // Selected and in context - dark green background with white text
-                      cardStyle = {
-                        backgroundColor: "#008060",
-                        border: "1px solid #008060",
-                        color: "#FFFFFF"
-                      };
-                    } else if (isSelected) {
-                      // Selected but not in context - light green background
-                      cardStyle = {
-                        backgroundColor: "#F0FDF4",
-                        border: "1px solid #008060"
-                      };
-                    } else if (isCheckboxSelected) {
-                      // In context but not selected - light blue background
-                      cardStyle = {
-                        backgroundColor: "#F0F9FF",
-                        border: "1px solid #BAE6FD"
-                      };
-                    }
                     
                     // Format dates as strings like "9 Sep"
                     const createdAt = `${createdDate.getDate()} ${monthNames[createdDate.getMonth()]}`;

@@ -21,34 +21,6 @@ const NoteCard = ({
   else if (!isSelected && inContext) state = "in-context";
   else if (isSelected && !inContext) state = "selected";
 
-  // Polaris Callout card styling based on state
-  const getCalloutProps = () => {
-    switch (state) {
-      case "in-context":
-        return {
-          status: "info",
-          title: null
-        };
-      case "selected":
-        return {
-          status: "success",
-          title: null
-        };
-      case "selected-in-context":
-        return {
-          status: "success",
-          title: null
-        };
-      default:
-        return {
-          status: "info",
-          title: null
-        };
-    }
-  };
-
-  const calloutProps = getCalloutProps();
-
   return (
     <div style={{ marginBottom: "12px" }}>
       <Card>
