@@ -1,6 +1,7 @@
-import React from "react";
-import { Card, Text, Badge, Button, Group, Stack, ActionIcon } from "@mantine/core";
-import { IconHeart } from "@tabler/icons-react";
+import React, { useState } from "react";
+import { Card, Text, Badge, Button, Group, Stack, ActionIcon, Menu } from "@mantine/core";
+import { IconHeart, IconCopy, IconFolder } from "@tabler/icons-react";
+import { Tooltip } from "@shopify/polaris";
 
 const NoteCard = ({
   title,
@@ -14,7 +15,10 @@ const NoteCard = ({
   onClick,
   onSelect,
   onManage,
-  onDelete
+  onDelete,
+  onTagClick,
+  onDuplicate,
+  onMove
 }) => {
   // Determine card state
   let state = "default";
@@ -49,20 +53,20 @@ const NoteCard = ({
         return {
           bg: "transparent",
           style: {
-            border: "2px solid #008060",
+            border: "2px solid #FF8C00",
             cursor: "pointer",
             transition: "all 0.2s ease",
-            boxShadow: "0 4px 12px rgba(0, 128, 96, 0.3)"
+            boxShadow: "0 4px 12px rgba(255, 140, 0, 0.3)"
           }
         };
       case "selected-in-context":
         return {
           bg: "transparent",
           style: {
-            border: "2px solid #008060",
+            border: "2px solid #FF8C00",
             cursor: "pointer",
             transition: "all 0.2s ease",
-            boxShadow: "0 6px 16px rgba(0, 128, 96, 0.4)"
+            boxShadow: "0 6px 16px rgba(255, 140, 0, 0.4)"
           }
         };
       default:
@@ -75,10 +79,11 @@ const NoteCard = ({
       case "default":
         return "#202223";
       case "in-context":
-      case "selected":
         return "#008060";
+      case "selected":
+        return "#FF8C00";
       case "selected-in-context":
-        return "#004C3F";
+        return "#CC7000";
       default:
         return "#202223";
     }
@@ -89,6 +94,7 @@ const NoteCard = ({
       case "default":
         return "#6D7175";
       case "in-context":
+        return "#4A4A4A";
       case "selected":
         return "#4A4A4A";
       case "selected-in-context":
@@ -103,10 +109,11 @@ const NoteCard = ({
       case "default":
         return "#8C9196";
       case "in-context":
-      case "selected":
         return "#008060";
+      case "selected":
+        return "#FF8C00";
       case "selected-in-context":
-        return "#004C3F";
+        return "#CC7000";
       default:
         return "#8C9196";
     }
@@ -196,7 +203,7 @@ const NoteCard = ({
           </Text>
           {tags && tags.length > 0 ? (
             <Group gap="xs">
-              {tags.slice(0, 4).map((tag, idx) => (
+              {tags.slice(0, 3).map((tag, idx) => (
                 <Badge
                   key={idx}
                   size="sm"
@@ -205,16 +212,58 @@ const NoteCard = ({
                   style={{
                     backgroundColor: state === "selected-in-context" ? "#E8F5E8" : "#F5F5F5",
                     color: state === "selected-in-context" ? "#008060" : "#6D7175",
-                    border: state === "selected-in-context" ? "1px solid #B8E6B8" : "1px solid #E0E0E0"
+                    border: state === "selected-in-context" ? "1px solid #B8E6B8" : "1px solid #E0E0E0",
+                    cursor: "pointer"
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTagClick && onTagClick(tag);
                   }}
                 >
                   {tag}
                 </Badge>
               ))}
-              {tags.length > 4 && (
-                <Text size="xs" c="dimmed">
-                  +{tags.length - 4}
-                </Text>
+              {tags.length > 3 && (
+                <Tooltip content={
+                  <div style={{ padding: "8px" }}>
+                    {tags.map((tag, idx) => (
+                      <div key={idx} style={{ marginBottom: "4px" }}>
+                        <Badge
+                          size="sm"
+                          variant="light"
+                          color="gray"
+                          style={{
+                            backgroundColor: "#F5F5F5",
+                            color: "#6D7175",
+                            border: "1px solid #E0E0E0",
+                            cursor: "pointer",
+                            marginRight: "4px"
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onTagClick && onTagClick(tag);
+                          }}
+                        >
+                          {tag}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                }>
+                  <Badge
+                    size="sm"
+                    variant="light"
+                    color="gray"
+                    style={{
+                      backgroundColor: "#F5F5F5",
+                      color: "#6D7175",
+                      border: "1px solid #E0E0E0",
+                      cursor: "pointer"
+                    }}
+                  >
+                    +{tags.length - 3}
+                  </Badge>
+                </Tooltip>
               )}
             </Group>
           ) : (
@@ -226,16 +275,22 @@ const NoteCard = ({
 
         {/* Footer with Dates and Action Buttons */}
         <Group justify="space-between" align="center">
-          <Text size="xs" c={getDateColor()}>
-            {createdAt}
-            {updatedAt && updatedAt !== createdAt && ` • ${updatedAt}`}
-          </Text>
+          <Stack gap="xs">
+            <Text size="xs" c={getDateColor()}>
+              <strong>Created:</strong> {createdAt}
+            </Text>
+            {updatedAt && updatedAt !== createdAt && (
+              <Text size="xs" c={getDateColor()}>
+                <strong>Edited:</strong> {updatedAt}
+              </Text>
+            )}
+          </Stack>
           
           <Group gap="xs">
             <Button
               size="xs"
               variant={isSelected ? "filled" : "light"}
-              color={isSelected ? "orange" : "gray"}
+              color={isSelected ? "dark" : "gray"}
               onClick={(e) => {
                 e.stopPropagation();
                 onSelect && onSelect();
@@ -243,17 +298,49 @@ const NoteCard = ({
             >
               {isSelected ? "Selected" : "Select"}
             </Button>
-            <Button
-              size="xs"
-              variant="light"
-              color="gray"
-              onClick={(e) => {
-                e.stopPropagation();
-                onManage && onManage();
-              }}
-            >
-              Manage
-            </Button>
+            <Menu shadow="md" width={200}>
+              <Menu.Target>
+                <Button
+                  size="xs"
+                  variant="light"
+                  color="orange"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                >
+                  Manage
+                </Button>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item
+                  leftSection={<IconCopy size={14} />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDuplicate && onDuplicate();
+                  }}
+                >
+                  Duplicate to current folder
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<IconCopy size={14} />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDuplicate && onDuplicate("different");
+                  }}
+                >
+                  Duplicate to different folder
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<IconFolder size={14} />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onMove && onMove();
+                  }}
+                >
+                  Move to different folder
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
             <Button
               size="xs"
               variant="light"

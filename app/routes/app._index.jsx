@@ -2175,9 +2175,20 @@ export default function Index() {
                     const isSelected = editingNoteId === note.id;
                     const isCheckboxSelected = selectedNotes.includes(note.id);
                     
-                    // Format dates as strings like "9 Sep"
-                    const createdAt = `${createdDate.getDate()} ${monthNames[createdDate.getMonth()]}`;
-                    const updatedAt = `${updatedDate.getDate()} ${monthNames[updatedDate.getMonth()]}`;
+                    // Format dates with exact time like "9 Sep 2024, 2:30 PM"
+                    const formatDateTime = (date) => {
+                      const day = date.getDate();
+                      const month = monthNames[date.getMonth()];
+                      const year = date.getFullYear();
+                      const hours = date.getHours();
+                      const minutes = date.getMinutes().toString().padStart(2, '0');
+                      const ampm = hours >= 12 ? 'PM' : 'AM';
+                      const displayHours = hours % 12 || 12;
+                      return `${day} ${month} ${year}, ${displayHours}:${minutes} ${ampm}`;
+                    };
+                    
+                    const createdAt = formatDateTime(createdDate);
+                    const updatedAt = formatDateTime(updatedDate);
                     
                     return (
                       <NoteCard
@@ -2194,6 +2205,18 @@ export default function Index() {
                         onSelect={() => handleNoteSelection(note.id)}
                         onManage={() => setOpenNoteMenu(openNoteMenu === note.id ? null : note.id)}
                         onDelete={() => setShowDeleteNoteConfirm(note.id)}
+                        onTagClick={(tag) => {
+                          // Filter notes by tag
+                          setSearchQuery(tag);
+                        }}
+                        onDuplicate={(type) => {
+                          // Handle duplicate functionality
+                          console.log('Duplicate note:', note.id, 'type:', type);
+                        }}
+                        onMove={() => {
+                          // Handle move functionality
+                          console.log('Move note:', note.id);
+                        }}
                       />
                     );
                   })}
