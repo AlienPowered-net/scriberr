@@ -15,10 +15,8 @@
   box-shadow: none !important;
 }
 
-/* Remove shadows from Card components (keep only the main card shadow) */
-.mantine-Card-root {
-  box-shadow: none !important;
-}
+/* Allow shadows for Card components - they should have shadows */
+/* .mantine-Card-root - Commented out to allow card shadows */
 
 /* Remove shadows from Badge components */
 .mantine-Badge-root {

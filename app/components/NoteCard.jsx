@@ -31,7 +31,8 @@ const NoteCard = ({
           style: {
             border: "1px solid #D1D3D4",
             cursor: "pointer",
-            transition: "all 0.2s ease"
+            transition: "all 0.2s ease",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)"
           }
         };
       case "in-context":
