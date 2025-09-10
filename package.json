@@ -44,6 +44,7 @@
     "@shopify/polaris-icons": "^9.3.1",
     "@shopify/shopify-app-remix": "^3.7.0",
     "@shopify/shopify-app-session-storage-prisma": "^6.0.0",
+    "@tabler/icons-react": "^3.34.1",
     "@tiptap/extension-blockquote": "^3.4.1",
     "@tiptap/extension-bubble-menu": "^3.4.1",
     "@tiptap/extension-code-block-lowlight": "^3.4.1",

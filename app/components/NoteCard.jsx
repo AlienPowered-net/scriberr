@@ -1,5 +1,6 @@
 import React from "react";
-import { Card, Text, Badge, Button, Group, Stack } from "@mantine/core";
+import { Card, Text, Badge, Button, Group, Stack, ActionIcon } from "@mantine/core";
+import { IconHeart } from "@tabler/icons-react";
 
 const NoteCard = ({
   title,
@@ -21,37 +22,34 @@ const NoteCard = ({
   else if (!isSelected && inContext) state = "in-context";
   else if (isSelected && !inContext) state = "selected";
 
-  // Get state-specific styles
+  // Get state-specific styles using Polaris colors
   const getCardProps = () => {
     switch (state) {
       case "default":
         return {
-          bg: "#f8f9fa",
+          bg: "white",
           style: {
             border: "1px solid #D1D3D4",
             cursor: "pointer",
-            height: "160px",
             transition: "all 0.2s ease"
           }
         };
       case "in-context":
         return {
-          bg: "#f8f9fa",
+          bg: "white",
           style: {
             border: "1px solid #008060",
             cursor: "pointer",
-            height: "160px",
             transition: "all 0.2s ease",
             boxShadow: "0 2px 6px rgba(0, 128, 96, 0.2)"
           }
         };
       case "selected":
         return {
-          bg: "#FFFFFF",
+          bg: "white",
           style: {
             border: "2px solid #008060",
             cursor: "pointer",
-            height: "160px",
             transition: "all 0.2s ease",
             boxShadow: "0 4px 12px rgba(0, 128, 96, 0.3)"
           }
@@ -62,7 +60,6 @@ const NoteCard = ({
           style: {
             border: "2px solid #008060",
             cursor: "pointer",
-            height: "160px",
             transition: "all 0.2s ease",
             boxShadow: "0 6px 16px rgba(0, 128, 96, 0.4)"
           }
@@ -132,34 +129,56 @@ const NoteCard = ({
           e.target.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.1)";
         }
       }}
-      padding="md"
+      padding="lg"
       radius="md"
+      shadow="sm"
     >
-      <Stack h="100%" justify="space-between">
-        {/* Header with Title and Dates */}
+      <Stack gap="md">
+        {/* Header with Title, Folder Badge, and Heart Icon */}
         <Group justify="space-between" align="flex-start">
-          <Text
+          <Group gap="xs" align="center">
+            <Text
+              size="lg"
+              fw={600}
+              c={getTextColor()}
+              style={{ lineHeight: 1.2 }}
+            >
+              {title || "(untitled)"}
+            </Text>
+            {folder && (
+              <Badge
+                size="sm"
+                variant="light"
+                color="blue"
+                style={{ 
+                  backgroundColor: "#E3F2FD",
+                  color: "#1976D2",
+                  border: "1px solid #BBDEFB"
+                }}
+              >
+                {folder}
+              </Badge>
+            )}
+          </Group>
+          <ActionIcon
+            variant="subtle"
+            color="gray"
             size="sm"
-            fw={600}
-            c={getTextColor()}
-            style={{ lineHeight: 1.2, flex: 1 }}
-            truncate
+            onClick={(e) => {
+              e.stopPropagation();
+              // Heart functionality can be added here if needed
+            }}
           >
-            {title || "(untitled)"}
-          </Text>
-          <Text size="xs" c={getDateColor()}>
-            {createdAt}
-            {updatedAt && updatedAt !== createdAt && ` • ${updatedAt}`}
-          </Text>
+            <IconHeart size={16} />
+          </ActionIcon>
         </Group>
 
         {/* Content Preview */}
         <Text
-          size="xs"
+          size="sm"
           c={getContentColor()}
           style={{
-            lineHeight: 1.4,
-            flex: 1,
+            lineHeight: 1.5,
             overflow: "hidden",
             display: "-webkit-box",
             WebkitLineClamp: 3,
@@ -169,30 +188,48 @@ const NoteCard = ({
           {content ? content.replace(/<[^>]*>/g, '').trim() : "Type your note here..."}
         </Text>
 
-        {/* Footer with Tags and Buttons */}
-        <Group justify="space-between" align="center">
-          {/* Tags */}
-          {tags && tags.length > 0 && (
+        {/* Tags Section */}
+        <Stack gap="xs">
+          <Text size="sm" fw={500} c={getTextColor()}>
+            Tags
+          </Text>
+          {tags && tags.length > 0 ? (
             <Group gap="xs">
-              {tags.slice(0, 3).map((tag, idx) => (
+              {tags.slice(0, 4).map((tag, idx) => (
                 <Badge
                   key={idx}
-                  size="xs"
+                  size="sm"
                   variant="light"
                   color={state === "selected-in-context" ? "green" : "gray"}
+                  style={{
+                    backgroundColor: state === "selected-in-context" ? "#E8F5E8" : "#F5F5F5",
+                    color: state === "selected-in-context" ? "#008060" : "#6D7175",
+                    border: state === "selected-in-context" ? "1px solid #B8E6B8" : "1px solid #E0E0E0"
+                  }}
                 >
                   {tag}
                 </Badge>
               ))}
-              {tags.length > 3 && (
+              {tags.length > 4 && (
                 <Text size="xs" c="dimmed">
-                  +{tags.length - 3}
+                  +{tags.length - 4}
                 </Text>
               )}
             </Group>
+          ) : (
+            <Text size="xs" c="dimmed">
+              No tags
+            </Text>
           )}
+        </Stack>
 
-          {/* Action Buttons */}
+        {/* Footer with Dates and Action Buttons */}
+        <Group justify="space-between" align="center">
+          <Text size="xs" c={getDateColor()}>
+            {createdAt}
+            {updatedAt && updatedAt !== createdAt && ` • ${updatedAt}`}
+          </Text>
+          
           <Group gap="xs">
             <Button
               size="xs"
