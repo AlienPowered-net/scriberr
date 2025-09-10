@@ -2214,9 +2214,13 @@ export default function Index() {
                         tags={note.tags || []}
                         createdAt={createdAt}
                         updatedAt={updatedAt}
+                        folder={note.folder?.name}
                         isSelected={isSelected}
                         inContext={isCheckboxSelected}
                         onClick={() => handleEditNote(note)}
+                        onSelect={() => handleNoteSelection(note.id)}
+                        onManage={() => setOpenNoteMenu(openNoteMenu === note.id ? null : note.id)}
+                        onDelete={() => setShowDeleteNoteConfirm(note.id)}
                       />
                     );
                   })}
