@@ -10,155 +10,58 @@ const NoteCard = ({
   inContext,
   onClick
 }) => {
-  // Compute which state we're in
+  // Determine card state
   let state = "default";
   if (isSelected && inContext) state = "selected-in-context";
   else if (!isSelected && inContext) state = "in-context";
   else if (isSelected && !inContext) state = "selected";
-  else state = "default";
 
-  // Base styles for all cards
-  const baseStyles = {
-    borderRadius: "6px",
-    padding: "10px",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-    marginBottom: "6px",
-    minHeight: "85px",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    border: "1px solid",
-    fontFamily: "system-ui, -apple-system, sans-serif",
-    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)"
+  const baseClasses =
+    "rounded-lg p-3 shadow-sm transition-all cursor-pointer flex flex-col justify-between h-32";
+
+  const stateClasses = {
+    default: "bg-white border border-gray-200 hover:border-gray-300",
+    "in-context": "bg-gray-50 border border-blue-200 hover:border-blue-300",
+    selected: "bg-white border-2 border-blue-500 shadow-md",
+    "selected-in-context": "bg-blue-50 border-2 border-blue-500 shadow-md",
   };
-
-  // State-specific styles
-  const stateStyles = {
-    "default": {
-      backgroundColor: "#FFFFFF",
-      borderColor: "#D1D5DB",
-      color: "#111827"
-    },
-    "in-context": {
-      backgroundColor: "#EFF6FF",
-      borderColor: "#93C5FD",
-      color: "#111827"
-    },
-    "selected-in-context": {
-      backgroundColor: "#059669",
-      borderColor: "#059669",
-      color: "#FFFFFF",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
-    },
-    "selected": {
-      backgroundColor: "#ECFDF5",
-      borderColor: "#059669",
-      color: "#111827"
-    }
-  };
-
-  const cardStyle = { ...baseStyles, ...stateStyles[state] };
 
   return (
-    <div style={cardStyle} onClick={onClick}>
+    <div className={`${baseClasses} ${stateClasses[state]}`} onClick={onClick}>
       {/* Title */}
-      <div style={{
-        fontSize: "13px",
-        fontWeight: "600",
-        color: state === "selected-in-context" ? "#FFFFFF" : "#1F2937",
-        marginBottom: "3px",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap",
-        lineHeight: "1.2"
-      }}>
+      <h3 className="font-medium text-xs text-gray-800 truncate">
         {title || "(untitled)"}
-      </div>
+      </h3>
 
       {/* Content Preview */}
-      <div style={{
-        fontSize: "11px",
-        lineHeight: "1.3",
-        color: state === "selected-in-context" ? "#D1D5DB" : "#6B7280",
-        marginBottom: "6px",
-        flex: "1",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        display: "-webkit-box",
-        WebkitLineClamp: 2,
-        WebkitBoxOrient: "vertical"
-      }}>
-        {content ? content.replace(/<[^>]*>/g, '').substring(0, 70) + "..." : "No content"}
-      </div>
+      <p className="text-[11px] text-gray-600 mt-1 line-clamp-3 flex-1">
+        {content ? content.replace(/<[^>]*>/g, '') : "Type your note here..."}
+      </p>
 
-      {/* Bottom Row: Tags (left) and Dates (right) */}
-      <div style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "flex-end"
-      }}>
+      <div className="mt-2 flex items-end justify-between">
         {/* Tags */}
         {tags && tags.length > 0 && (
-          <div style={{ display: "flex", gap: "3px", flexWrap: "wrap" }}>
-            {tags.slice(0, 2).map((tag, idx) => (
+          <div className="flex flex-wrap gap-1">
+            {tags.map((tag, idx) => (
               <span
                 key={idx}
-                style={{
-                  padding: "1px 5px",
-                  fontSize: "9px",
-                  fontWeight: "500",
-                  borderRadius: "10px",
-                  backgroundColor: state === "selected-in-context" ? "#FFFFFF" : "#F3F4F6",
-                  color: state === "selected-in-context" ? "#059669" : "#6B7280",
-                  border: state === "selected-in-context" ? "1px solid #059669" : "none"
-                }}
+                className="px-1.5 py-0.5 text-[10px] bg-gray-100 text-gray-600 rounded-full"
               >
                 {tag}
               </span>
             ))}
-            {tags.length > 2 && (
-              <span
-                style={{
-                  padding: "1px 5px",
-                  fontSize: "9px",
-                  fontWeight: "600",
-                  borderRadius: "10px",
-                  backgroundColor: state === "selected-in-context" ? "#047857" : "#9CA3AF",
-                  color: "#FFFFFF"
-                }}
-              >
-                +{tags.length - 2}
-              </span>
-            )}
           </div>
         )}
 
-        {/* Dates */}
-        <div style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          textAlign: "right",
-          gap: "1px"
-        }}>
-          <div style={{
-            fontSize: "9px",
-            color: state === "selected-in-context" ? "#D1D5DB" : "#9CA3AF",
-            lineHeight: "1.1",
-            fontWeight: "400"
-          }}>
-            {createdAt}
-          </div>
+        {/* Created/Edited fields as badges */}
+        <div className="flex gap-1">
+          <span className="px-1.5 py-0.5 text-[10px] bg-gray-50 text-gray-400 rounded-md">
+            Created {createdAt}
+          </span>
           {updatedAt && (
-            <div style={{
-              fontSize: "9px",
-              color: state === "selected-in-context" ? "#D1D5DB" : "#9CA3AF",
-              lineHeight: "1.1",
-              fontWeight: "400"
-            }}>
-              {updatedAt}
-            </div>
+            <span className="px-1.5 py-0.5 text-[10px] bg-gray-50 text-gray-400 rounded-md">
+              Edited {updatedAt}
+            </span>
           )}
         </div>
       </div>
