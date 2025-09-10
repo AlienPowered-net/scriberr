@@ -27,7 +27,7 @@ const NoteCard = ({
     switch (state) {
       case "default":
         return {
-          bg: "white",
+          bg: "transparent",
           style: {
             border: "1px solid #D1D3D4",
             cursor: "pointer",
@@ -36,7 +36,7 @@ const NoteCard = ({
         };
       case "in-context":
         return {
-          bg: "white",
+          bg: "transparent",
           style: {
             border: "1px solid #008060",
             cursor: "pointer",
@@ -46,7 +46,7 @@ const NoteCard = ({
         };
       case "selected":
         return {
-          bg: "white",
+          bg: "transparent",
           style: {
             border: "2px solid #008060",
             cursor: "pointer",
@@ -56,7 +56,7 @@ const NoteCard = ({
         };
       case "selected-in-context":
         return {
-          bg: "#E8F5E8",
+          bg: "transparent",
           style: {
             border: "2px solid #008060",
             cursor: "pointer",
