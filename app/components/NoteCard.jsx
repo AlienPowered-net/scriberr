@@ -18,11 +18,13 @@ const NoteCard = ({
   onDelete,
   onTagClick,
   onDuplicate,
-  onMove
+  onMove,
+  isSelectButtonClicked
 }) => {
   // Determine card state
   let state = "default";
-  if (isSelected && inContext) state = "selected-in-context";
+  if (isSelectButtonClicked) state = "select-button-clicked";
+  else if (isSelected && inContext) state = "selected-in-context";
   else if (!isSelected && inContext) state = "in-context";
   else if (isSelected && !inContext) state = "selected";
 
@@ -53,20 +55,30 @@ const NoteCard = ({
         return {
           bg: "transparent",
           style: {
-            border: "2px solid #FF8C00",
+            border: "2px solid #008060",
             cursor: "pointer",
             transition: "all 0.2s ease",
-            boxShadow: "0 4px 12px rgba(255, 140, 0, 0.3)"
+            boxShadow: "0 4px 12px rgba(0, 128, 96, 0.3)"
           }
         };
       case "selected-in-context":
         return {
           bg: "transparent",
           style: {
+            border: "2px solid #008060",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            boxShadow: "0 6px 16px rgba(0, 128, 96, 0.4)"
+          }
+        };
+      case "select-button-clicked":
+        return {
+          bg: "transparent",
+          style: {
             border: "2px solid #FF8C00",
             cursor: "pointer",
             transition: "all 0.2s ease",
-            boxShadow: "0 6px 16px rgba(255, 140, 0, 0.4)"
+            boxShadow: "0 4px 12px rgba(255, 140, 0, 0.3)"
           }
         };
       default:
@@ -81,9 +93,11 @@ const NoteCard = ({
       case "in-context":
         return "#008060";
       case "selected":
-        return "#FF8C00";
+        return "#008060";
       case "selected-in-context":
-        return "#CC7000";
+        return "#004C3F";
+      case "select-button-clicked":
+        return "#FF8C00";
       default:
         return "#202223";
     }
@@ -99,6 +113,8 @@ const NoteCard = ({
         return "#4A4A4A";
       case "selected-in-context":
         return "#2C2C2C";
+      case "select-button-clicked":
+        return "#4A4A4A";
       default:
         return "#6D7175";
     }
@@ -111,9 +127,11 @@ const NoteCard = ({
       case "in-context":
         return "#008060";
       case "selected":
-        return "#FF8C00";
+        return "#008060";
       case "selected-in-context":
-        return "#CC7000";
+        return "#004C3F";
+      case "select-button-clicked":
+        return "#FF8C00";
       default:
         return "#8C9196";
     }
@@ -289,14 +307,14 @@ const NoteCard = ({
           <Group gap="xs">
             <Button
               size="xs"
-              variant={isSelected ? "filled" : "light"}
-              color={isSelected ? "dark" : "gray"}
+              variant={isSelectButtonClicked ? "filled" : "light"}
+              color={isSelectButtonClicked ? "dark" : "gray"}
               onClick={(e) => {
                 e.stopPropagation();
                 onSelect && onSelect();
               }}
             >
-              {isSelected ? "Selected" : "Select"}
+              Select
             </Button>
             <Menu shadow="md" width={200}>
               <Menu.Target>

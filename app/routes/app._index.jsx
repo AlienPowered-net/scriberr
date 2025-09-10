@@ -285,6 +285,9 @@ export default function Index() {
   const [selectedNotes, setSelectedNotes] = useState([]);
   const [showDeleteMultipleConfirm, setShowDeleteMultipleConfirm] = useState(false);
   
+  // Select button states
+  const [selectButtonClicked, setSelectButtonClicked] = useState(new Set());
+  
   // Duplicate note states
   const [showDuplicateModal, setShowDuplicateModal] = useState(null);
   const [duplicateFolderId, setDuplicateFolderId] = useState("");
@@ -1038,6 +1041,19 @@ export default function Index() {
       } else {
         return [...prev, noteId];
       }
+    });
+  };
+
+  // Handle select button clicks
+  const handleSelectButtonClick = (noteId) => {
+    setSelectButtonClicked(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(noteId)) {
+        newSet.delete(noteId);
+      } else {
+        newSet.add(noteId);
+      }
+      return newSet;
     });
   };
 
@@ -2202,7 +2218,8 @@ export default function Index() {
                         isSelected={isSelected}
                         inContext={isCheckboxSelected}
                         onClick={() => handleEditNote(note)}
-                        onSelect={() => handleNoteSelection(note.id)}
+                        onSelect={() => handleSelectButtonClick(note.id)}
+                        isSelectButtonClicked={selectButtonClicked.has(note.id)}
                         onManage={() => setOpenNoteMenu(openNoteMenu === note.id ? null : note.id)}
                         onDelete={() => setShowDeleteNoteConfirm(note.id)}
                         onTagClick={(tag) => {
