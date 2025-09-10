@@ -20,14 +20,14 @@ const NoteCard = ({
   else if (!isSelected && inContext) state = "in-context";
   else if (isSelected && !inContext) state = "selected";
 
-  // Get state-specific styles based on the reference design
+  // Get state-specific styles based on folder colors and Polaris color system
   const getStateStyles = () => {
     switch (state) {
       case "default":
         return {
           container: {
-            backgroundColor: "#FFFEF7",
-            border: "1px solid #E5E5E0",
+            backgroundColor: "#F6F6F7", // Same as folder background
+            border: "1px solid #D1D3D4", // Same as folder border
             borderRadius: "8px",
             boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
             transition: "all 0.2s ease",
@@ -39,14 +39,14 @@ const NoteCard = ({
             flexDirection: "column"
           },
           title: {
-            color: "#333333",
+            color: "#202223", // Same as folder text
             fontSize: "14px",
             fontWeight: "600",
             marginBottom: "8px",
             lineHeight: "1.2"
           },
           content: {
-            color: "#666666",
+            color: "#6D7175", // Same as folder secondary text
             fontSize: "12px",
             lineHeight: "1.4",
             flex: "1",
@@ -68,15 +68,15 @@ const NoteCard = ({
             flexWrap: "wrap"
           },
           tag: {
-            backgroundColor: "#F5F5F5",
-            color: "#666666",
+            backgroundColor: "#F6F6F7",
+            color: "#6D7175",
             fontSize: "10px",
             padding: "2px 6px",
             borderRadius: "10px",
-            border: "1px solid #E0E0E0"
+            border: "1px solid #D1D3D4"
           },
           dates: {
-            color: "#999999",
+            color: "#8C9196",
             fontSize: "10px",
             display: "flex",
             gap: "4px"
@@ -85,10 +85,10 @@ const NoteCard = ({
       case "in-context":
         return {
           container: {
-            backgroundColor: "#FFFEF7",
-            border: "1px solid #4A90E2",
+            backgroundColor: "#F6F6F7", // Same as folder background
+            border: "1px solid #008060", // Success green border
             borderRadius: "8px",
-            boxShadow: "0 2px 6px rgba(74, 144, 226, 0.2)",
+            boxShadow: "0 2px 6px rgba(0, 128, 96, 0.2)",
             transition: "all 0.2s ease",
             cursor: "pointer",
             position: "relative",
@@ -98,7 +98,7 @@ const NoteCard = ({
             flexDirection: "column"
           },
           title: {
-            color: "#2C5AA0",
+            color: "#008060", // Success green
             fontSize: "14px",
             fontWeight: "600",
             marginBottom: "8px",
@@ -127,15 +127,15 @@ const NoteCard = ({
             flexWrap: "wrap"
           },
           tag: {
-            backgroundColor: "#E3F2FD",
-            color: "#1976D2",
+            backgroundColor: "#E8F5E8",
+            color: "#008060",
             fontSize: "10px",
             padding: "2px 6px",
             borderRadius: "10px",
-            border: "1px solid #BBDEFB"
+            border: "1px solid #B8E6B8"
           },
           dates: {
-            color: "#4A90E2",
+            color: "#008060",
             fontSize: "10px",
             display: "flex",
             gap: "4px"
@@ -145,9 +145,9 @@ const NoteCard = ({
         return {
           container: {
             backgroundColor: "#FFFFFF",
-            border: "2px solid #4A90E2",
+            border: "2px solid #008060", // Success green border
             borderRadius: "8px",
-            boxShadow: "0 4px 12px rgba(74, 144, 226, 0.3)",
+            boxShadow: "0 4px 12px rgba(0, 128, 96, 0.3)",
             transition: "all 0.2s ease",
             cursor: "pointer",
             position: "relative",
@@ -157,7 +157,7 @@ const NoteCard = ({
             flexDirection: "column"
           },
           title: {
-            color: "#2C5AA0",
+            color: "#008060", // Success green
             fontSize: "14px",
             fontWeight: "600",
             marginBottom: "8px",
@@ -186,15 +186,15 @@ const NoteCard = ({
             flexWrap: "wrap"
           },
           tag: {
-            backgroundColor: "#E3F2FD",
-            color: "#1976D2",
+            backgroundColor: "#E8F5E8",
+            color: "#008060",
             fontSize: "10px",
             padding: "2px 6px",
             borderRadius: "10px",
-            border: "1px solid #BBDEFB"
+            border: "1px solid #B8E6B8"
           },
           dates: {
-            color: "#4A90E2",
+            color: "#008060",
             fontSize: "10px",
             display: "flex",
             gap: "4px"
@@ -203,10 +203,10 @@ const NoteCard = ({
       case "selected-in-context":
         return {
           container: {
-            backgroundColor: "#F0F7FF",
-            border: "2px solid #4A90E2",
+            backgroundColor: "#E8F5E8", // Light success green background
+            border: "2px solid #008060", // Success green border
             borderRadius: "8px",
-            boxShadow: "0 6px 16px rgba(74, 144, 226, 0.4)",
+            boxShadow: "0 6px 16px rgba(0, 128, 96, 0.4)",
             transition: "all 0.2s ease",
             cursor: "pointer",
             position: "relative",
@@ -216,7 +216,7 @@ const NoteCard = ({
             flexDirection: "column"
           },
           title: {
-            color: "#1A4480",
+            color: "#004C3F", // Dark success green
             fontSize: "14px",
             fontWeight: "700",
             marginBottom: "8px",
@@ -245,15 +245,15 @@ const NoteCard = ({
             flexWrap: "wrap"
           },
           tag: {
-            backgroundColor: "#BBDEFB",
-            color: "#0D47A1",
+            backgroundColor: "#B8E6B8",
+            color: "#004C3F",
             fontSize: "10px",
             padding: "2px 6px",
             borderRadius: "10px",
-            border: "1px solid #90CAF9"
+            border: "1px solid #8DD88D"
           },
           dates: {
-            color: "#1A4480",
+            color: "#004C3F",
             fontSize: "10px",
             display: "flex",
             gap: "4px",
@@ -343,7 +343,7 @@ const NoteCard = ({
       >
         <button
           style={{
-            backgroundColor: isSelected ? "#4A90E2" : "#F5F5F5",
+            backgroundColor: isSelected ? "#FFC453" : "#F5F5F5", // Warning orange when selected
             color: isSelected ? "#FFFFFF" : "#666666",
             border: "none",
             borderRadius: "4px",
