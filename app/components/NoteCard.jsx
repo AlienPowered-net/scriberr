@@ -26,7 +26,7 @@ const NoteCard = ({
       case "default":
         return {
           container: {
-            backgroundColor: "#F6F6F7", // Same as folder background
+            backgroundColor: "#f8f9fa", // Updated background color
             border: "1px solid #D1D3D4", // Same as folder border
             borderRadius: "8px",
             boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
@@ -68,7 +68,7 @@ const NoteCard = ({
             flexWrap: "wrap"
           },
           tag: {
-            backgroundColor: "#F6F6F7",
+            backgroundColor: "#f8f9fa",
             color: "#6D7175",
             fontSize: "10px",
             padding: "2px 6px",
@@ -86,7 +86,7 @@ const NoteCard = ({
       case "in-context":
         return {
           container: {
-            backgroundColor: "#F6F6F7", // Same as folder background
+            backgroundColor: "#f8f9fa", // Updated background color
             border: "1px solid #008060", // Success green border
             borderRadius: "8px",
             boxShadow: "0 2px 6px rgba(0, 128, 96, 0.2)",
