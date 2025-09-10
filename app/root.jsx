@@ -10,11 +10,13 @@ import "@mantine/core/styles.css"; // Mantine styles
 import notepadCssUrl from "./styles/notepad.css?url";
 import tiptapCssUrl from "./styles/tiptap.css?url";
 import fontAwesomeCssUrl from "@fortawesome/fontawesome-free/css/all.min.css?url";
+import mantineOverridesCssUrl from "./styles/mantine-overrides.css?url";
 
 export const links = () => [
   { rel: "stylesheet", href: notepadCssUrl },
   { rel: "stylesheet", href: tiptapCssUrl },
   { rel: "stylesheet", href: fontAwesomeCssUrl },
+  { rel: "stylesheet", href: mantineOverridesCssUrl },
 ];
 
 export default function App() {
