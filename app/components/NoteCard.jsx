@@ -202,11 +202,11 @@ const NoteCard = ({
                   key={idx}
                   size="sm"
                   variant="light"
-                  color={state === "selected-in-context" ? "green" : "gray"}
+                  color="green"
                   style={{
-                    backgroundColor: state === "selected-in-context" ? "#E8F5E8" : "#F5F5F5",
-                    color: state === "selected-in-context" ? "#008060" : "#6D7175",
-                    border: state === "selected-in-context" ? "1px solid #B8E6B8" : "1px solid #E0E0E0",
+                    backgroundColor: "#E8F5E8",
+                    color: "#008060",
+                    border: "1px solid #B8E6B8",
                     cursor: "pointer"
                   }}
                   onClick={(e) => {
@@ -219,28 +219,26 @@ const NoteCard = ({
               ))}
               {tags.length > 3 && (
                 <Tooltip content={
-                  <div style={{ padding: "8px" }}>
+                  <div style={{ padding: "8px", display: "flex", flexWrap: "wrap", gap: "4px" }}>
                     {tags.map((tag, idx) => (
-                      <div key={idx} style={{ marginBottom: "4px" }}>
-                        <Badge
-                          size="sm"
-                          variant="light"
-                          color="gray"
-                          style={{
-                            backgroundColor: "#F5F5F5",
-                            color: "#6D7175",
-                            border: "1px solid #E0E0E0",
-                            cursor: "pointer",
-                            marginRight: "4px"
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onTagClick && onTagClick(tag);
-                          }}
-                        >
-                          {tag}
-                        </Badge>
-                      </div>
+                      <Badge
+                        key={idx}
+                        size="sm"
+                        variant="light"
+                        color="green"
+                        style={{
+                          backgroundColor: "#E8F5E8",
+                          color: "#008060",
+                          border: "1px solid #B8E6B8",
+                          cursor: "pointer"
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onTagClick && onTagClick(tag);
+                        }}
+                      >
+                        {tag}
+                      </Badge>
                     ))}
                   </div>
                 }>
