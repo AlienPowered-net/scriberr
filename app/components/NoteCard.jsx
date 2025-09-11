@@ -136,34 +136,8 @@ const NoteCard = ({
       shadow="sm"
     >
       <Stack gap="md">
-        {/* Header with Title, Folder Badge, and Heart Icon */}
-        <Group justify="space-between" align="flex-start">
-          <Group gap="xs" align="center">
-            <Tooltip content={title || "(untitled)"} disabled={!title || title.length <= 19}>
-              <Text
-                size="lg"
-                fw={600}
-                c={getTextColor()}
-                style={{ lineHeight: 1.2, cursor: title && title.length > 19 ? "help" : "default" }}
-              >
-                {title && title.length > 19 ? `${title.substring(0, 19)}...` : (title || "(untitled)")}
-              </Text>
-            </Tooltip>
-            {folder && (
-              <Badge
-                size="sm"
-                variant="light"
-                color="blue"
-                style={{ 
-                  backgroundColor: "#E3F2FD",
-                  color: "#1976D2",
-                  border: "1px solid #BBDEFB"
-                }}
-              >
-                {folder}
-              </Badge>
-            )}
-          </Group>
+        {/* Header with Heart Icon in top right */}
+        <Group justify="flex-end" align="flex-start">
           <ActionIcon
             variant="subtle"
             color="gray"
@@ -175,6 +149,34 @@ const NoteCard = ({
           >
             <IconHeart size={16} />
           </ActionIcon>
+        </Group>
+
+        {/* Title and Folder on separate line */}
+        <Group gap="xs" align="center">
+          <Tooltip content={title || "(untitled)"} disabled={!title || title.length <= 19}>
+            <Text
+              size="lg"
+              fw={600}
+              c={getTextColor()}
+              style={{ lineHeight: 1.2, cursor: title && title.length > 19 ? "help" : "default" }}
+            >
+              {title && title.length > 19 ? `${title.substring(0, 19)}...` : (title || "(untitled)")}
+            </Text>
+          </Tooltip>
+          {folder && (
+            <Badge
+              size="sm"
+              variant="light"
+              color="blue"
+              style={{ 
+                backgroundColor: "#E3F2FD",
+                color: "#1976D2",
+                border: "1px solid #BBDEFB"
+              }}
+            >
+              {folder}
+            </Badge>
+          )}
         </Group>
 
         {/* Content Preview */}
