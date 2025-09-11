@@ -37,16 +37,17 @@ model Folder {
 }
 
 model Note {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   shopId    String
   folderId  String?
   title     String
-  content   String   @db.Text
-  tags      String[] @default([])
-  createdAt DateTime @default(now())
-  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  folder    Folder?  @relation(fields: [folderId], references: [id])
-  updatedAt DateTime @updatedAt
+  content   String    @db.Text
+  tags      String[]  @default([])
+  pinnedAt  DateTime?
+  createdAt DateTime  @default(now())
+  shop      Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  folder    Folder?   @relation(fields: [folderId], references: [id])
+  updatedAt DateTime  @updatedAt
   @@index([shopId, folderId, updatedAt])
 }
 
