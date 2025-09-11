@@ -113,13 +113,17 @@ export async function loader({ request }) {
 
   const notes = await prisma.note.findMany({
     where: { shopId },
-    orderBy: { updatedAt: "desc" },
+    orderBy: [
+      { pinnedAt: "desc" },
+      { updatedAt: "desc" }
+    ],
     select: {
       id: true,
       title: true,
       content: true,
       tags: true,
       folderId: true,
+      pinnedAt: true,
       folder: {
         select: {
           id: true,
@@ -1055,6 +1059,28 @@ export default function Index() {
       }
       return newSet;
     });
+  };
+
+  // Handle pin note
+  const handlePinNote = async (noteId) => {
+    try {
+      const response = await fetch('/api/pin-note', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ noteId }),
+      });
+
+      if (response.ok) {
+        // Refresh the page to show updated note order
+        window.location.reload();
+      } else {
+        console.error('Failed to pin note');
+      }
+    } catch (error) {
+      console.error('Error pinning note:', error);
+    }
   };
 
   // Handle creating a new note or updating existing note
@@ -2234,6 +2260,7 @@ export default function Index() {
                           // Handle move functionality
                           console.log('Move note:', note.id);
                         }}
+                        onPin={() => handlePinNote(note.id)}
                       />
                     );
                   })}

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Card, Text, Badge, Button, Group, Stack, ActionIcon, Menu } from "@mantine/core";
-import { IconHeart, IconCopy, IconFolder } from "@tabler/icons-react";
+import { Card, Text, Badge, Button, Group, Stack, Menu } from "@mantine/core";
+import { IconCopy, IconFolder, IconPin } from "@tabler/icons-react";
 import { Tooltip } from "@shopify/polaris";
 
 const NoteCard = ({
@@ -19,6 +19,7 @@ const NoteCard = ({
   onTagClick,
   onDuplicate,
   onMove,
+  onPin,
   isSelectButtonClicked
 }) => {
   // Determine card state
@@ -136,22 +137,7 @@ const NoteCard = ({
       shadow="sm"
     >
       <Stack gap="md">
-        {/* Header with Heart Icon in top right */}
-        <Group justify="flex-end" align="flex-start">
-          <ActionIcon
-            variant="subtle"
-            color="gray"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              // Heart functionality can be added here if needed
-            }}
-          >
-            <IconHeart size={16} />
-          </ActionIcon>
-        </Group>
-
-        {/* Title and Folder on separate line */}
+        {/* Title and Folder */}
         <Group gap="xs" align="center">
           <Tooltip content={title || "(untitled)"} disabled={!title || title.length <= 19}>
             <Text
@@ -308,6 +294,15 @@ const NoteCard = ({
                 </Button>
               </Menu.Target>
               <Menu.Dropdown>
+                <Menu.Item
+                  leftSection={<IconPin size={14} />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPin && onPin();
+                  }}
+                >
+                  Pin
+                </Menu.Item>
                 <Menu.Item
                   leftSection={<IconCopy size={14} />}
                   onClick={(e) => {
