@@ -20,6 +20,15 @@ export async function action({ request }) {
 
     const shopId = await getOrCreateShopId(shop);
 
+    // Check if pinnedAt column exists, if not, add it
+    try {
+      await prisma.$queryRaw`SELECT "pinnedAt" FROM "Note" LIMIT 1`;
+    } catch (error) {
+      console.log('pinnedAt column does not exist, adding it...');
+      await prisma.$executeRaw`ALTER TABLE "Note" ADD COLUMN IF NOT EXISTS "pinnedAt" TIMESTAMP(3)`;
+      console.log('✅ pinnedAt column added');
+    }
+
     // Update the note to set pinnedAt timestamp
     const updatedNote = await prisma.note.update({
       where: {

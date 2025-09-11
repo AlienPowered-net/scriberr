@@ -111,10 +111,31 @@ export async function loader({ request }) {
     }
   }
 
+  // Check if pinnedAt column exists before querying
+  let pinnedAtExists = false;
+  try {
+    await prisma.$queryRaw`SELECT "pinnedAt" FROM "Note" LIMIT 1`;
+    pinnedAtExists = true;
+  } catch (error) {
+    console.log('pinnedAt column does not exist, applying migration...');
+    
+    // Apply the migration automatically
+    try {
+      await prisma.$executeRaw`ALTER TABLE "Note" ADD COLUMN IF NOT EXISTS "pinnedAt" TIMESTAMP(3)`;
+      console.log('✅ pinnedAt column added successfully');
+      pinnedAtExists = true;
+    } catch (migrationError) {
+      console.error('Failed to add pinnedAt column:', migrationError);
+      // Continue without pinnedAt functionality
+    }
+  }
+
   const notes = await prisma.note.findMany({
     where: { shopId },
-    orderBy: [
+    orderBy: pinnedAtExists ? [
       { pinnedAt: "desc" },
+      { updatedAt: "desc" }
+    ] : [
       { updatedAt: "desc" }
     ],
     select: {
@@ -123,7 +144,7 @@ export async function loader({ request }) {
       content: true,
       tags: true,
       folderId: true,
-      pinnedAt: true,
+      ...(pinnedAtExists && { pinnedAt: true }),
       folder: {
         select: {
           id: true,
