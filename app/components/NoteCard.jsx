@@ -139,14 +139,14 @@ const NoteCard = ({
         {/* Header with Title, Folder Badge, and Heart Icon */}
         <Group justify="space-between" align="flex-start">
           <Group gap="xs" align="center">
-            <Tooltip content={title || "(untitled)"} disabled={!title || title.length <= 15}>
+            <Tooltip content={title || "(untitled)"} disabled={!title || title.length <= 19}>
               <Text
                 size="lg"
                 fw={600}
                 c={getTextColor()}
-                style={{ lineHeight: 1.2, cursor: title && title.length > 15 ? "help" : "default" }}
+                style={{ lineHeight: 1.2, cursor: title && title.length > 19 ? "help" : "default" }}
               >
-                {title && title.length > 15 ? `${title.substring(0, 15)}...` : (title || "(untitled)")}
+                {title && title.length > 19 ? `${title.substring(0, 19)}...` : (title || "(untitled)")}
               </Text>
             </Tooltip>
             {folder && (
