@@ -43,7 +43,7 @@ const NoteCard = ({
         };
       case "in-context":
         return {
-          bg: "transparent",
+          bg: "#f6fff9",
           style: {
             border: "1px solid #008060",
             cursor: "pointer",
@@ -53,7 +53,7 @@ const NoteCard = ({
         };
       case "selected":
         return {
-          bg: "transparent",
+          bg: "#f6fff9",
           style: {
             border: "2px solid #008060",
             cursor: "pointer",
@@ -63,7 +63,7 @@ const NoteCard = ({
         };
       case "selected-in-context":
         return {
-          bg: "transparent",
+          bg: "#f6fff9",
           style: {
             border: "2px solid #008060",
             cursor: "pointer",
@@ -73,7 +73,7 @@ const NoteCard = ({
         };
       case "select-button-clicked":
         return {
-          bg: "transparent",
+          bg: "#fffbf8",
           style: {
             border: "2px solid #FF8C00",
             cursor: "pointer",
@@ -121,14 +121,14 @@ const NoteCard = ({
       onClick={onClick}
       onMouseEnter={(e) => {
         if (state === "default") {
-          e.target.style.transform = "translateY(-2px)";
-          e.target.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
+          e.currentTarget.style.transform = "translateY(-2px)";
+          e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)";
         }
       }}
       onMouseLeave={(e) => {
         if (state === "default") {
-          e.target.style.transform = "translateY(0)";
-          e.target.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.1)";
+          e.currentTarget.style.transform = "translateY(0)";
+          e.currentTarget.style.boxShadow = cardProps.style.boxShadow || "0 1px 3px rgba(0, 0, 0, 0.1)";
         }
       }}
       padding="lg"
