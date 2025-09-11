@@ -75,7 +75,7 @@ const NoteCard = ({
         return {
           bg: "#fffbf8",
           style: {
-            border: "2px solid #FF8C00",
+            border: "1px solid #FF8C00",
             cursor: "pointer",
             transition: "all 0.2s ease",
             boxShadow: "0 4px 12px rgba(255, 140, 0, 0.3)"
