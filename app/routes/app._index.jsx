@@ -2270,8 +2270,10 @@ export default function Index() {
                         onManage={() => setOpenNoteMenu(openNoteMenu === note.id ? null : note.id)}
                         onDelete={() => setShowDeleteNoteConfirm(note.id)}
                         onTagClick={(tag) => {
-                          // Filter notes by tag
-                          setSearchQuery(tag);
+                          // Filter notes by tag within current context
+                          // - If in a specific folder: shows notes with that tag in that folder only
+                          // - If in All Notes: shows notes with that tag across all folders
+                          setGlobalSearchQuery(`tag:${tag}`);
                         }}
                         onDuplicate={(type) => {
                           // Handle duplicate functionality
