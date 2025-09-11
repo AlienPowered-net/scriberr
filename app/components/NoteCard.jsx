@@ -87,20 +87,8 @@ const NoteCard = ({
   };
 
   const getTextColor = () => {
-    switch (state) {
-      case "default":
-        return "#202223";
-      case "in-context":
-        return "#008060";
-      case "selected":
-        return "#008060";
-      case "selected-in-context":
-        return "#004C3F";
-      case "select-button-clicked":
-        return "#FF8C00";
-      default:
-        return "#202223";
-    }
+    // Keep text labels at default color regardless of card state
+    return "#202223";
   };
 
   const getContentColor = () => {
@@ -121,20 +109,8 @@ const NoteCard = ({
   };
 
   const getDateColor = () => {
-    switch (state) {
-      case "default":
-        return "#8C9196";
-      case "in-context":
-        return "#008060";
-      case "selected":
-        return "#008060";
-      case "selected-in-context":
-        return "#004C3F";
-      case "select-button-clicked":
-        return "#FF8C00";
-      default:
-        return "#8C9196";
-    }
+    // Keep date labels at default color regardless of card state
+    return "#8C9196";
   };
 
   const cardProps = getCardProps();
