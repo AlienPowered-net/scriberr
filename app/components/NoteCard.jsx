@@ -25,7 +25,8 @@ const NoteCard = ({
 }) => {
   // Determine card state
   let state = "default";
-  if (isSelectButtonClicked) state = "select-button-clicked";
+  if (isPinned) state = "pinned";
+  else if (isSelectButtonClicked) state = "select-button-clicked";
   else if (isSelected && inContext) state = "selected-in-context";
   else if (!isSelected && inContext) state = "in-context";
   else if (isSelected && !inContext) state = "selected";
@@ -33,6 +34,16 @@ const NoteCard = ({
   // Get state-specific styles using Polaris colors
   const getCardProps = () => {
     switch (state) {
+      case "pinned":
+        return {
+          bg: "#F6F6F7",
+          style: {
+            border: "1px solid #C9CCCF",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)"
+          }
+        };
       case "default":
         return {
           bg: "transparent",
@@ -95,6 +106,8 @@ const NoteCard = ({
 
   const getContentColor = () => {
     switch (state) {
+      case "pinned":
+        return "#4A4A4A";
       case "default":
         return "#6D7175";
       case "in-context":
@@ -166,18 +179,6 @@ const NoteCard = ({
               </Badge>
             )}
           </Group>
-          {/* Pin Indicator */}
-          {isPinned && (
-            <Tooltip content="Pinned note">
-              <IconPin 
-                size={16} 
-                style={{ 
-                  color: "#FF8C00",
-                  cursor: "default"
-                }} 
-              />
-            </Tooltip>
-          )}
         </Group>
 
         {/* Content Preview */}
