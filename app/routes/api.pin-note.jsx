@@ -1,24 +1,18 @@
 import { json } from "@remix-run/node";
+import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
 
 export async function action({ request }) {
   try {
+    const { session } = await shopify.authenticate.admin(request);
+    const shopId = await getOrCreateShopId(session.shop);
+
     const { noteId } = await request.json();
 
     if (!noteId) {
       return json({ error: "Note ID is required" }, { status: 400 });
     }
-
-    // Get the shop ID from the request (you may need to adjust this based on your auth setup)
-    const url = new URL(request.url);
-    const shop = url.searchParams.get('shop');
-    
-    if (!shop) {
-      return json({ error: "Shop parameter is required" }, { status: 400 });
-    }
-
-    const shopId = await getOrCreateShopId(shop);
 
     // Check if pinnedAt column exists, if not, add it
     try {

@@ -1108,6 +1108,100 @@ export default function Index() {
     }
   };
 
+  // Handle duplicate note from manage menu
+  const handleDuplicateFromMenu = async (noteId, type = "current") => {
+    try {
+      let targetFolderId = null;
+      
+      if (type === "current") {
+        // Duplicate to current folder - use the note's current folder
+        const note = localNotes.find(n => n.id === noteId);
+        if (note) {
+          targetFolderId = note.folderId;
+        }
+      } else if (type === "different") {
+        // For different folder, we'll need to show a folder picker
+        // For now, let's prompt the user to select a folder
+        const folderNames = localFolders.map(f => f.name);
+        const selectedFolderName = prompt(`Select a folder to duplicate to:\n${folderNames.join('\n')}`);
+        
+        if (selectedFolderName) {
+          const selectedFolder = localFolders.find(f => f.name === selectedFolderName);
+          if (selectedFolder) {
+            targetFolderId = selectedFolder.id;
+          } else {
+            alert('Invalid folder selected');
+            return;
+          }
+        } else {
+          return; // User cancelled
+        }
+      }
+
+      const formData = new FormData();
+      formData.append('noteId', noteId);
+      if (targetFolderId) {
+        formData.append('targetFolderId', targetFolderId);
+      }
+
+      const response = await fetch('/api/duplicate-note', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        console.log('Note duplicated successfully');
+        // Refresh the page to show the new note
+        window.location.reload();
+      } else {
+        const error = await response.json();
+        console.error('Failed to duplicate note:', error.error);
+        alert(`Failed to duplicate note: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error duplicating note:', error);
+      alert('Error duplicating note');
+    }
+  };
+
+  // Handle move note from manage menu
+  const handleMoveFromMenu = async (noteId) => {
+    try {
+      // Show folder picker for move
+      const folderNames = localFolders.map(f => f.name);
+      const selectedFolderName = prompt(`Select a folder to move to:\n${folderNames.join('\n')}`);
+      
+      if (selectedFolderName) {
+        const selectedFolder = localFolders.find(f => f.name === selectedFolderName);
+        if (selectedFolder) {
+          const formData = new FormData();
+          formData.append('noteId', noteId);
+          formData.append('folderId', selectedFolder.id);
+
+          const response = await fetch('/api/move-note', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (response.ok) {
+            console.log('Note moved successfully');
+            // Refresh the page to show updated note location
+            window.location.reload();
+          } else {
+            const error = await response.json();
+            console.error('Failed to move note:', error.error);
+            alert(`Failed to move note: ${error.error}`);
+          }
+        } else {
+          alert('Invalid folder selected');
+        }
+      }
+    } catch (error) {
+      console.error('Error moving note:', error);
+      alert('Error moving note');
+    }
+  };
+
   // Auto-save note every 30 seconds
   useEffect(() => {
     if (!editingNoteId || !hasUnsavedChanges) return;
@@ -2333,14 +2427,8 @@ export default function Index() {
                           console.log('onTagClick called with tag:', tag);
                           setGlobalSearchQuery(`tag:${tag}`);
                         }}
-                        onDuplicate={(type) => {
-                          // Handle duplicate functionality
-                          console.log('Duplicate note:', note.id, 'type:', type);
-                        }}
-                        onMove={() => {
-                          // Handle move functionality
-                          console.log('Move note:', note.id);
-                        }}
+                        onDuplicate={(type) => handleDuplicateFromMenu(note.id, type)}
+                        onMove={() => handleMoveFromMenu(note.id)}
                         onPin={() => handlePinNote(note.id)}
                       />
                     );
