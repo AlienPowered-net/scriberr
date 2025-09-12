@@ -305,6 +305,7 @@ export default function Index() {
   const [folderSearchQuery, setFolderSearchQuery] = useState("");
   const [noteTags, setNoteTags] = useState([]);
   const [newTagInput, setNewTagInput] = useState("");
+  const [autoSaveNotification, setAutoSaveNotification] = useState("");
   
   // Multi-select states
   const [selectedNotes, setSelectedNotes] = useState([]);
@@ -1101,6 +1102,56 @@ export default function Index() {
       }
     } catch (error) {
       console.error('Error pinning note:', error);
+    }
+  };
+
+  // Auto-save note every 30 seconds
+  useEffect(() => {
+    if (!editingNoteId || !hasUnsavedChanges) return;
+
+    const autoSaveInterval = setInterval(async () => {
+      await handleAutoSaveNote();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(autoSaveInterval);
+  }, [editingNoteId, hasUnsavedChanges, title, body, folderId, noteTags]);
+
+  // Handle auto-saving the entire note
+  const handleAutoSaveNote = async () => {
+    if (!editingNoteId) return;
+
+    try {
+      const trimmedTitle = title.trim();
+      const trimmedBody = body.trim();
+      const trimmedFolderId = folderId.trim();
+
+      const formData = new FormData();
+      formData.append('noteId', editingNoteId);
+      formData.append('title', trimmedTitle);
+      formData.append('body', trimmedBody);
+      formData.append('folderId', trimmedFolderId);
+      formData.append('tags', JSON.stringify(noteTags.map(tag => removeEmojis(tag))));
+
+      const response = await fetch('/api/update-note', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Accept-Charset': 'utf-8'
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        const now = new Date();
+        const timestamp = now.toLocaleTimeString();
+        setAutoSaveNotification(`Auto-saved at ${timestamp}`);
+        setHasUnsavedChanges(false);
+        
+        // Clear notification after 3 seconds
+        setTimeout(() => setAutoSaveNotification(""), 3000);
+      }
+    } catch (error) {
+      console.error('Auto-save failed:', error);
     }
   };
 
@@ -2362,132 +2413,54 @@ export default function Index() {
                     You have unsaved changes
                   </Text>
                 )}
+                {autoSaveNotification && (
+                  <Text as="p" style={{ 
+                    fontSize: "14px", 
+                    color: "#008060", 
+                    fontWeight: "500", 
+                    marginTop: "4px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px"
+                  }}>
+                    <i className="fas fa-check-circle" style={{ fontSize: "16px", color: "#008060" }}></i>
+                    {autoSaveNotification}
+                  </Text>
+                )}
               </div>
               <InlineStack gap="200">
                 {editingNoteId ? (
                   <>
-                    <button 
+                    <Button 
                       onClick={handleSaveNote}
-                      style={{
-                        backgroundColor: "#2e7d32",
-                        border: "0",
-                        color: "white",
-                        padding: "7px 20px",
-                        borderRadius: "8px",
-                        cursor: "pointer",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        textAlign: "center",
-                        textDecoration: "none",
-                        transition: "all 250ms",
-                        userSelect: "none",
-                        WebkitUserSelect: "none",
-                        touchAction: "manipulation",
-                        boxShadow: "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px"
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.boxShadow = "rgba(46, 125, 50, .35) 0 -25px 18px -14px inset, rgba(46, 125, 50, .25) 0 1px 2px, rgba(46, 125, 50, .25) 0 2px 4px, rgba(46, 125, 50, .25) 0 4px 8px, rgba(46, 125, 50, .25) 0 8px 16px, rgba(46, 125, 50, .25) 0 16px 32px";
-                        e.target.style.transform = "scale(1.05) rotate(-1deg)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.boxShadow = "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px";
-                        e.target.style.transform = "scale(1) rotate(0deg)";
-                      }}
+                      variant="primary"
+                      tone="success"
                     >
                       Save Note
-                    </button>
-                    <button 
+                    </Button>
+                    <Button 
                       onClick={handleCancelEdit}
-                      style={{
-                        backgroundColor: "#6d7175",
-                        border: "0",
-                        color: "white",
-                        padding: "7px 20px",
-                        borderRadius: "8px",
-                        cursor: "pointer",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        textAlign: "center",
-                        textDecoration: "none",
-                        transition: "all 250ms",
-                        userSelect: "none",
-                        WebkitUserSelect: "none",
-                        touchAction: "manipulation",
-                        boxShadow: "rgba(109, 113, 117, .2) 0 -25px 18px -14px inset, rgba(109, 113, 117, .15) 0 1px 2px, rgba(109, 113, 117, .15) 0 2px 4px, rgba(109, 113, 117, .15) 0 4px 8px, rgba(109, 113, 117, .15) 0 8px 16px, rgba(109, 113, 117, .15) 0 16px 32px"
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.boxShadow = "rgba(109, 113, 117, .35) 0 -25px 18px -14px inset, rgba(109, 113, 117, .25) 0 1px 2px, rgba(109, 113, 117, .25) 0 2px 4px, rgba(109, 113, 117, .25) 0 4px 8px, rgba(109, 113, 117, .25) 0 8px 16px, rgba(109, 113, 117, .25) 0 16px 32px";
-                        e.target.style.transform = "scale(1.05) rotate(-1deg)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.boxShadow = "rgba(109, 113, 117, .2) 0 -25px 18px -14px inset, rgba(109, 113, 117, .15) 0 1px 2px, rgba(109, 113, 117, .15) 0 2px 4px, rgba(109, 113, 117, .15) 0 4px 8px, rgba(109, 113, 117, .15) 0 8px 16px, rgba(109, 113, 117, .15) 0 16px 32px";
-                        e.target.style.transform = "scale(1) rotate(0deg)";
-                      }}
+                      variant="primary"
+                      tone="base"
                     >
                       Cancel
-                    </button>
-                    <button 
+                    </Button>
+                    <Button 
                       onClick={() => setShowDeleteNoteConfirm(editingNoteId)}
-                      style={{
-                        backgroundColor: "#d82c0d",
-                        border: "0",
-                        color: "white",
-                        padding: "7px 20px",
-                        borderRadius: "8px",
-                        cursor: "pointer",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        textAlign: "center",
-                        textDecoration: "none",
-                        transition: "all 250ms",
-                        userSelect: "none",
-                        WebkitUserSelect: "none",
-                        touchAction: "manipulation",
-                        boxShadow: "rgba(216, 44, 13, .2) 0 -25px 18px -14px inset, rgba(216, 44, 13, .15) 0 1px 2px, rgba(216, 44, 13, .15) 0 2px 4px, rgba(216, 44, 13, .15) 0 4px 8px, rgba(216, 44, 13, .15) 0 8px 16px, rgba(216, 44, 13, .15) 0 16px 32px"
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.boxShadow = "rgba(216, 44, 13, .35) 0 -25px 18px -14px inset, rgba(216, 44, 13, .25) 0 1px 2px, rgba(216, 44, 13, .25) 0 2px 4px, rgba(216, 44, 13, .25) 0 4px 8px, rgba(216, 44, 13, .25) 0 8px 16px, rgba(216, 44, 13, .25) 0 16px 32px";
-                        e.target.style.transform = "scale(1.05) rotate(-1deg)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.boxShadow = "rgba(216, 44, 13, .2) 0 -25px 18px -14px inset, rgba(216, 44, 13, .15) 0 1px 2px, rgba(216, 44, 13, .15) 0 2px 4px, rgba(216, 44, 13, .15) 0 4px 8px, rgba(216, 44, 13, .15) 0 8px 16px, rgba(216, 44, 13, .15) 0 16px 32px";
-                        e.target.style.transform = "scale(1) rotate(0deg)";
-                      }}
+                      variant="primary"
+                      tone="critical"
                     >
                       Delete Note
-                    </button>
+                    </Button>
                   </>
                 ) : (
-                  <button 
+                  <Button 
                     onClick={handleCreateNote}
-                    style={{
-                      backgroundColor: "#2e7d32",
-                      border: "0",
-                      color: "white",
-                      padding: "7px 20px",
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                      fontWeight: "500",
-                      textAlign: "center",
-                      textDecoration: "none",
-                      transition: "all 250ms",
-                      userSelect: "none",
-                      WebkitUserSelect: "none",
-                      touchAction: "manipulation",
-                      boxShadow: "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px"
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.boxShadow = "rgba(46, 125, 50, .35) 0 -25px 18px -14px inset, rgba(46, 125, 50, .25) 0 1px 2px, rgba(46, 125, 50, .25) 0 2px 4px, rgba(46, 125, 50, .25) 0 4px 8px, rgba(46, 125, 50, .25) 0 8px 16px, rgba(46, 125, 50, .25) 0 16px 32px";
-                      e.target.style.transform = "scale(1.05) rotate(-1deg)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.boxShadow = "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px";
-                      e.target.style.transform = "scale(1) rotate(0deg)";
-                    }}
+                    variant="primary"
+                    tone="success"
                   >
                     Save Note
-                  </button>
+                  </Button>
                 )}
               </InlineStack>
             </div>
@@ -2658,128 +2631,36 @@ export default function Index() {
                   <InlineStack gap="300">
                   {editingNoteId ? (
                     <>
-                      <button 
+                      <Button 
                         onClick={handleSaveNote}
-                        style={{
-                          backgroundColor: "#2e7d32",
-                          border: "0",
-                          color: "white",
-                          padding: "7px 20px",
-                          borderRadius: "8px",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          textAlign: "center",
-                          textDecoration: "none",
-                          transition: "all 250ms",
-                          userSelect: "none",
-                          WebkitUserSelect: "none",
-                          touchAction: "manipulation",
-                          boxShadow: "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px"
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.boxShadow = "rgba(46, 125, 50, .35) 0 -25px 18px -14px inset, rgba(46, 125, 50, .25) 0 1px 2px, rgba(46, 125, 50, .25) 0 2px 4px, rgba(46, 125, 50, .25) 0 4px 8px, rgba(46, 125, 50, .25) 0 8px 16px, rgba(46, 125, 50, .25) 0 16px 32px";
-                          e.target.style.transform = "scale(1.05) rotate(-1deg)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.boxShadow = "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px";
-                          e.target.style.transform = "scale(1) rotate(0deg)";
-                        }}
+                        variant="primary"
+                        tone="success"
                       >
                         Save Note
-                      </button>
-                      <button 
+                      </Button>
+                      <Button 
                         onClick={handleCancelEdit}
-                        style={{
-                          backgroundColor: "#6d7175",
-                          border: "0",
-                          color: "white",
-                          padding: "7px 20px",
-                          borderRadius: "8px",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          textAlign: "center",
-                          textDecoration: "none",
-                          transition: "all 250ms",
-                          userSelect: "none",
-                          WebkitUserSelect: "none",
-                          touchAction: "manipulation",
-                          boxShadow: "rgba(109, 113, 117, .2) 0 -25px 18px -14px inset, rgba(109, 113, 117, .15) 0 1px 2px, rgba(109, 113, 117, .15) 0 2px 4px, rgba(109, 113, 117, .15) 0 4px 8px, rgba(109, 113, 117, .15) 0 8px 16px, rgba(109, 113, 117, .15) 0 16px 32px"
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.boxShadow = "rgba(109, 113, 117, .35) 0 -25px 18px -14px inset, rgba(109, 113, 117, .25) 0 1px 2px, rgba(109, 113, 117, .25) 0 2px 4px, rgba(109, 113, 117, .25) 0 4px 8px, rgba(109, 113, 117, .25) 0 8px 16px, rgba(109, 113, 117, .25) 0 16px 32px";
-                          e.target.style.transform = "scale(1.05) rotate(-1deg)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.boxShadow = "rgba(109, 113, 117, .2) 0 -25px 18px -14px inset, rgba(109, 113, 117, .15) 0 1px 2px, rgba(109, 113, 117, .15) 0 2px 4px, rgba(109, 113, 117, .15) 0 4px 8px, rgba(109, 113, 117, .15) 0 8px 16px, rgba(109, 113, 117, .15) 0 16px 32px";
-                          e.target.style.transform = "scale(1) rotate(0deg)";
-                        }}
+                        variant="primary"
+                        tone="base"
                       >
                         Cancel
-                      </button>
-                      <button 
+                      </Button>
+                      <Button 
                         onClick={() => setShowDeleteNoteConfirm(editingNoteId)}
-                        style={{
-                          backgroundColor: "#d82c0d",
-                          border: "0",
-                          color: "white",
-                          padding: "7px 20px",
-                          borderRadius: "8px",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          textAlign: "center",
-                          textDecoration: "none",
-                          transition: "all 250ms",
-                          userSelect: "none",
-                          WebkitUserSelect: "none",
-                          touchAction: "manipulation",
-                          boxShadow: "rgba(216, 44, 13, .2) 0 -25px 18px -14px inset, rgba(216, 44, 13, .15) 0 1px 2px, rgba(216, 44, 13, .15) 0 2px 4px, rgba(216, 44, 13, .15) 0 4px 8px, rgba(216, 44, 13, .15) 0 8px 16px, rgba(216, 44, 13, .15) 0 16px 32px"
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.boxShadow = "rgba(216, 44, 13, .35) 0 -25px 18px -14px inset, rgba(216, 44, 13, .25) 0 1px 2px, rgba(216, 44, 13, .25) 0 2px 4px, rgba(216, 44, 13, .25) 0 4px 8px, rgba(216, 44, 13, .25) 0 8px 16px, rgba(216, 44, 13, .25) 0 16px 32px";
-                          e.target.style.transform = "scale(1.05) rotate(-1deg)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.boxShadow = "rgba(216, 44, 13, .2) 0 -25px 18px -14px inset, rgba(216, 44, 13, .15) 0 1px 2px, rgba(216, 44, 13, .15) 0 2px 4px, rgba(216, 44, 13, .15) 0 4px 8px, rgba(216, 44, 13, .15) 0 8px 16px, rgba(216, 44, 13, .15) 0 16px 32px";
-                          e.target.style.transform = "scale(1) rotate(0deg)";
-                        }}
+                        variant="primary"
+                        tone="critical"
                       >
                         Delete Note
-                      </button>
+                      </Button>
                     </>
                   ) : (
-                    <button 
+                    <Button 
                       onClick={handleCreateNote}
-                      style={{
-                        backgroundColor: "#2e7d32",
-                        border: "0",
-                        color: "white",
-                        padding: "7px 20px",
-                        borderRadius: "8px",
-                        cursor: "pointer",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        textAlign: "center",
-                        textDecoration: "none",
-                        transition: "all 250ms",
-                        userSelect: "none",
-                        WebkitUserSelect: "none",
-                        touchAction: "manipulation",
-                        boxShadow: "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px"
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.boxShadow = "rgba(46, 125, 50, .35) 0 -25px 18px -14px inset, rgba(46, 125, 50, .25) 0 1px 2px, rgba(46, 125, 50, .25) 0 2px 4px, rgba(46, 125, 50, .25) 0 4px 8px, rgba(46, 125, 50, .25) 0 8px 16px, rgba(46, 125, 50, .25) 0 16px 32px";
-                        e.target.style.transform = "scale(1.05) rotate(-1deg)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.boxShadow = "rgba(46, 125, 50, .2) 0 -25px 18px -14px inset, rgba(46, 125, 50, .15) 0 1px 2px, rgba(46, 125, 50, .15) 0 2px 4px, rgba(46, 125, 50, .15) 0 4px 8px, rgba(46, 125, 50, .15) 0 8px 16px, rgba(46, 125, 50, .15) 0 16px 32px";
-                        e.target.style.transform = "scale(1) rotate(0deg)";
-                      }}
+                      variant="primary"
+                      tone="success"
                     >
                       Save Note
-                                         </button>
+                    </Button>
                    )}
                  </InlineStack>
                </div>
