@@ -1679,7 +1679,7 @@ export default function Index() {
           )}
                 {/* FOLDERS */}
         {!collapsedColumns.folders && (
-        <div className="col-folders" style={{ width: "350px", minWidth: "350px", maxWidth: "350px", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div className="col-folders" style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <Card
             style={{
               transition: "all 0.3s ease",
@@ -1965,8 +1965,7 @@ export default function Index() {
               flex: "1",
               overflowY: localFolders.length > 9 ? "auto" : "visible",
               overflowX: "hidden", 
-              padding: "16px",
-              paddingBottom: "0",
+              padding: "16px 20px 0 16px",
               maxHeight: localFolders.length > 9 ? "500px" : "none"
             }}>
               {localFolders.length === 0 ? (
@@ -2103,7 +2102,7 @@ export default function Index() {
 
         {/* NOTES */}
         {!collapsedColumns.notes && (
-        <div className="col-notes" style={{ width: "350px", minWidth: "350px", maxWidth: "350px", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div className="col-notes" style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <Card style={{ flex: "1", display: "flex", flexDirection: "column" }}>
             {/* Fixed Header Section */}
             <div style={{ 
@@ -2222,8 +2221,7 @@ export default function Index() {
               flex: "1",
               overflowY: filteredNotes.length > 1 ? "auto" : "visible",
               overflowX: "hidden",
-              padding: "16px",
-              paddingBottom: "0",
+              padding: "16px 20px 0 16px",
               maxHeight: filteredNotes.length > 1 ? "calc(100vh - 200px)" : "none"
             }}>
               
