@@ -2273,6 +2273,7 @@ export default function Index() {
                           // Filter notes by tag within current context
                           // - If in a specific folder: shows notes with that tag in that folder only
                           // - If in All Notes: shows notes with that tag across all folders
+                          console.log('onTagClick called with tag:', tag);
                           setGlobalSearchQuery(`tag:${tag}`);
                         }}
                         onDuplicate={(type) => {

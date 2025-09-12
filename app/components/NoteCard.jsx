@@ -188,47 +188,63 @@ const NoteCard = ({
           {tags && tags.length > 0 ? (
             <Group gap="xs">
               {tags.slice(0, 3).map((tag, idx) => (
-                <Badge
+                <div
                   key={idx}
-                  size="sm"
-                  variant="light"
-                  color="green"
-                  style={{
-                    backgroundColor: "#E8F5E8",
-                    color: "#008060",
-                    border: "1px solid #B8E6B8",
-                    cursor: "pointer"
-                  }}
                   onClick={(e) => {
                     e.stopPropagation();
+                    console.log('Tag clicked:', tag);
                     onTagClick && onTagClick(tag);
                   }}
+                  style={{
+                    display: "inline-block",
+                    cursor: "pointer"
+                  }}
                 >
-                  {tag}
-                </Badge>
+                  <Badge
+                    size="sm"
+                    variant="light"
+                    color="green"
+                    style={{
+                      backgroundColor: "#E8F5E8",
+                      color: "#008060",
+                      border: "1px solid #B8E6B8",
+                      cursor: "pointer"
+                    }}
+                  >
+                    {tag}
+                  </Badge>
+                </div>
               ))}
               {tags.length > 3 && (
                 <Tooltip content={
                   <div style={{ padding: "8px", display: "flex", flexWrap: "wrap", gap: "4px" }}>
                     {tags.map((tag, idx) => (
-                      <Badge
+                      <div
                         key={idx}
-                        size="sm"
-                        variant="light"
-                        color="green"
-                        style={{
-                          backgroundColor: "#E8F5E8",
-                          color: "#008060",
-                          border: "1px solid #B8E6B8",
-                          cursor: "pointer"
-                        }}
                         onClick={(e) => {
                           e.stopPropagation();
+                          console.log('Tooltip tag clicked:', tag);
                           onTagClick && onTagClick(tag);
                         }}
+                        style={{
+                          display: "inline-block",
+                          cursor: "pointer"
+                        }}
                       >
-                        {tag}
-                      </Badge>
+                        <Badge
+                          size="sm"
+                          variant="light"
+                          color="green"
+                          style={{
+                            backgroundColor: "#E8F5E8",
+                            color: "#008060",
+                            border: "1px solid #B8E6B8",
+                            cursor: "pointer"
+                          }}
+                        >
+                          {tag}
+                        </Badge>
+                      </div>
                     ))}
                   </div>
                 }>
