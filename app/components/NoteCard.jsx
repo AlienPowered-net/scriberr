@@ -36,7 +36,7 @@ const NoteCard = ({
     switch (state) {
       case "pinned":
         return {
-          bg: "#eaf4ff",
+          bg: "#f0f7fd",
           style: {
             border: "1px solid #4FC3F7",
             cursor: "pointer",
