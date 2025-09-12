@@ -55,8 +55,9 @@ export async function action({ request }) {
 
     return json({ 
       success: true, 
-      note: updatedNote,
-      isPinned: !isCurrentlyPinned // Return the new pin status
+      noteId: noteId,
+      isPinned: !isCurrentlyPinned, // Return the new pin status
+      pinnedAt: newPinnedAt // Return the new pinnedAt value
     });
   } catch (error) {
     console.error('Error toggling note pin:', error);

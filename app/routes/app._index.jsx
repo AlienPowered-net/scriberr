@@ -1096,8 +1096,40 @@ export default function Index() {
     });
   };
 
-  // Handle pin note
+  // Handle pin note with optimistic updates
   const handlePinNote = async (noteId) => {
+    // Find the note to get current pin status
+    const note = localNotes.find(n => n.id === noteId);
+    if (!note) return;
+
+    const wasPinned = note.pinnedAt !== null;
+    const newPinnedAt = wasPinned ? null : new Date();
+
+    // Optimistic update: immediately update local state
+    setLocalNotes(prevNotes => {
+      const updatedNotes = prevNotes.map(n => 
+        n.id === noteId 
+          ? { ...n, pinnedAt: newPinnedAt }
+          : n
+      );
+      
+      // Sort notes: pinned first (newest pins first), then unpinned by updatedAt
+      return updatedNotes.sort((a, b) => {
+        // If one is pinned and other isn't, pinned comes first
+        if (a.pinnedAt && !b.pinnedAt) return -1;
+        if (!a.pinnedAt && b.pinnedAt) return 1;
+        
+        // If both pinned, sort by pinnedAt DESC (newest first)
+        if (a.pinnedAt && b.pinnedAt) {
+          return new Date(b.pinnedAt) - new Date(a.pinnedAt);
+        }
+        
+        // If both unpinned, sort by updatedAt DESC (most recent first)
+        return new Date(b.updatedAt) - new Date(a.updatedAt);
+      });
+    });
+
+    // Make API call in background
     try {
       const response = await fetch('/api/pin-note', {
         method: 'POST',
@@ -1110,13 +1142,48 @@ export default function Index() {
       if (response.ok) {
         const result = await response.json();
         console.log('Note pin toggled successfully:', result.isPinned ? 'pinned' : 'unpinned');
-        // Refresh the page to show updated note order
-        window.location.reload();
+        // No need to reload - optimistic update already handled it
       } else {
         console.error('Failed to toggle note pin');
+        // Revert optimistic update on error
+        setLocalNotes(prevNotes => {
+          const revertedNotes = prevNotes.map(n => 
+            n.id === noteId 
+              ? { ...n, pinnedAt: wasPinned ? new Date() : null }
+              : n
+          );
+          
+          // Re-sort with reverted data
+          return revertedNotes.sort((a, b) => {
+            if (a.pinnedAt && !b.pinnedAt) return -1;
+            if (!a.pinnedAt && b.pinnedAt) return 1;
+            if (a.pinnedAt && b.pinnedAt) {
+              return new Date(b.pinnedAt) - new Date(a.pinnedAt);
+            }
+            return new Date(b.updatedAt) - new Date(a.updatedAt);
+          });
+        });
       }
     } catch (error) {
       console.error('Error toggling note pin:', error);
+      // Revert optimistic update on error
+      setLocalNotes(prevNotes => {
+        const revertedNotes = prevNotes.map(n => 
+          n.id === noteId 
+            ? { ...n, pinnedAt: wasPinned ? new Date() : null }
+            : n
+        );
+        
+        // Re-sort with reverted data
+        return revertedNotes.sort((a, b) => {
+          if (a.pinnedAt && !b.pinnedAt) return -1;
+          if (!a.pinnedAt && b.pinnedAt) return 1;
+          if (a.pinnedAt && b.pinnedAt) {
+            return new Date(b.pinnedAt) - new Date(a.pinnedAt);
+          }
+          return new Date(b.updatedAt) - new Date(a.updatedAt);
+        });
+      });
     }
   };
 
