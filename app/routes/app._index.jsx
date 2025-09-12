@@ -130,31 +130,43 @@ export async function loader({ request }) {
     }
   }
 
-  const notes = await prisma.note.findMany({
-    where: { shopId },
-    orderBy: pinnedAtExists ? [
-      { pinnedAt: "desc" },
-      { updatedAt: "desc" }
-    ] : [
-      { updatedAt: "desc" }
-    ],
-    select: {
-      id: true,
-      title: true,
-      content: true,
-      tags: true,
-      folderId: true,
-      ...(pinnedAtExists && { pinnedAt: true }),
-      folder: {
-        select: {
-          id: true,
-          name: true,
+  let notes;
+  if (pinnedAtExists) {
+    // Use raw SQL to properly order pinned notes first, then by updatedAt
+    notes = await prisma.$queryRaw`
+      SELECT 
+        id, title, content, tags, "folderId", "pinnedAt",
+        "createdAt", "updatedAt",
+        json_build_object('id', f.id, 'name', f.name) as folder
+      FROM "Note" n
+      LEFT JOIN "Folder" f ON n."folderId" = f.id
+      WHERE n."shopId" = ${shopId}
+      ORDER BY 
+        CASE WHEN "pinnedAt" IS NULL THEN 1 ELSE 0 END,
+        "pinnedAt" DESC,
+        "updatedAt" DESC
+    `;
+  } else {
+    notes = await prisma.note.findMany({
+      where: { shopId },
+      orderBy: { updatedAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        tags: true,
+        folderId: true,
+        folder: {
+          select: {
+            id: true,
+            name: true,
+          },
         },
+        createdAt: true,
+        updatedAt: true,
       },
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
+    });
+  }
 
 
 
