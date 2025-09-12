@@ -25,23 +25,23 @@ const NoteCard = ({
 }) => {
   // Determine card state
   let state = "default";
-  if (isPinned) state = "pinned";
-  else if (isSelectButtonClicked) state = "select-button-clicked";
+  if (isSelectButtonClicked) state = "select-button-clicked";
   else if (isSelected && inContext) state = "selected-in-context";
   else if (!isSelected && inContext) state = "in-context";
   else if (isSelected && !inContext) state = "selected";
+  else if (isPinned) state = "pinned";
 
   // Get state-specific styles using Polaris colors
   const getCardProps = () => {
     switch (state) {
       case "pinned":
         return {
-          bg: "#F6F6F7",
+          bg: "#E1F5FE",
           style: {
-            border: "1px solid #C9CCCF",
+            border: "1px solid #4FC3F7",
             cursor: "pointer",
             transition: "all 0.2s ease",
-            boxShadow: "0 2px 6px rgba(0, 0, 0, 0.15)"
+            boxShadow: "0 2px 6px rgba(79, 195, 247, 0.2)"
           }
         };
       case "default":
