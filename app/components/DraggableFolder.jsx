@@ -31,6 +31,7 @@ const DraggableFolder = ({
     <div
       ref={setNodeRef}
       style={style}
+      data-folder-id={folder.id}
       {...props}
     >
       <div style={{ 

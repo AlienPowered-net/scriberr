@@ -500,6 +500,79 @@ export default function Index() {
     };
   }, [openFolderMenu, openNoteMenu]);
 
+  // Create portal dropdown when folder menu opens
+  useEffect(() => {
+    if (!openFolderMenu) return;
+
+    // Find the folder button element
+    const folderButton = document.querySelector(`[data-folder-id="${openFolderMenu}"] .folder-menu-container button`);
+    if (!folderButton) return;
+
+    // Get button position
+    const buttonRect = folderButton.getBoundingClientRect();
+    const dropdownHeight = 120;
+    const viewportHeight = window.innerHeight;
+    const spaceBelow = viewportHeight - buttonRect.bottom;
+    const spaceAbove = buttonRect.top;
+    
+    // Create portal element
+    const portal = document.createElement('div');
+    portal.style.position = 'fixed';
+    portal.style.zIndex = '9999';
+    portal.style.backgroundColor = 'white';
+    portal.style.border = '1px solid #c9cccf';
+    portal.style.borderRadius = '4px';
+    portal.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+    portal.style.minWidth = '150px';
+    portal.style.right = `${window.innerWidth - buttonRect.right}px`;
+    
+    // Position above or below based on available space
+    if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+      portal.style.bottom = `${viewportHeight - buttonRect.top}px`;
+    } else {
+      portal.style.top = `${buttonRect.bottom}px`;
+    }
+    
+    // Add dropdown content
+    portal.innerHTML = `
+      <button type="button" style="display: block; width: 100%; padding: 8px 12px; border: none; background: none; text-align: left; cursor: pointer; border-bottom: 1px solid #e1e3e5;">
+        Rename Folder
+      </button>
+      <button type="button" style="display: block; width: 100%; padding: 8px 12px; border: none; background: none; text-align: left; cursor: pointer; border-bottom: 1px solid #e1e3e5;">
+        Change Icon
+      </button>
+      <button type="button" style="display: block; width: 100%; padding: 8px 12px; border: none; background: none; text-align: left; cursor: pointer; color: #d32f2f;">
+        Delete Folder
+      </button>
+    `;
+    
+    // Add click handlers
+    portal.querySelectorAll('button').forEach((btn, index) => {
+      btn.addEventListener('click', () => {
+        if (index === 0) {
+          setShowRenameFolderModal(openFolderMenu);
+          setEditingFolderName(folders.find(f => f.id === openFolderMenu)?.name || '');
+        } else if (index === 1) {
+          setShowIconPicker(openFolderMenu);
+        } else if (index === 2) {
+          setShowDeleteConfirm(openFolderMenu);
+        }
+        setOpenFolderMenu(null);
+        document.body.removeChild(portal);
+      });
+    });
+    
+    // Add to body
+    document.body.appendChild(portal);
+    
+    // Cleanup function
+    return () => {
+      if (document.body.contains(portal)) {
+        document.body.removeChild(portal);
+      }
+    };
+  }, [openFolderMenu, folders]);
+
   // Debug state changes
   useEffect(() => {
     console.log('showDuplicateModal changed:', showDuplicateModal);
@@ -2181,81 +2254,7 @@ export default function Index() {
                         onFolderClick={(folderId) => setSelectedFolder(selectedFolder === folderId ? null : folderId)}
                       >
                         {openFolderMenu === folder.id && (
-                          <div 
-                            ref={(el) => {
-                              if (el) {
-                                // Get the button position for portal positioning
-                                const buttonRect = el.getBoundingClientRect();
-                                const dropdownHeight = 120;
-                                const viewportHeight = window.innerHeight;
-                                const spaceBelow = viewportHeight - buttonRect.bottom;
-                                const spaceAbove = buttonRect.top;
-                                
-                                // Create portal element
-                                const portal = document.createElement('div');
-                                portal.style.position = 'fixed';
-                                portal.style.zIndex = '9999';
-                                portal.style.backgroundColor = 'white';
-                                portal.style.border = '1px solid #c9cccf';
-                                portal.style.borderRadius = '4px';
-                                portal.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-                                portal.style.minWidth = '150px';
-                                portal.style.right = `${window.innerWidth - buttonRect.right}px`;
-                                
-                                // Position above or below based on available space
-                                if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
-                                  portal.style.bottom = `${viewportHeight - buttonRect.top}px`;
-                                } else {
-                                  portal.style.top = `${buttonRect.bottom}px`;
-                                }
-                                
-                                // Add dropdown content
-                                portal.innerHTML = `
-                                  <button type="button" style="display: block; width: 100%; padding: 8px 12px; border: none; background: none; text-align: left; cursor: pointer; border-bottom: 1px solid #e1e3e5;">
-                                    Rename Folder
-                                  </button>
-                                  <button type="button" style="display: block; width: 100%; padding: 8px 12px; border: none; background: none; text-align: left; cursor: pointer; border-bottom: 1px solid #e1e3e5;">
-                                    Change Icon
-                                  </button>
-                                  <button type="button" style="display: block; width: 100%; padding: 8px 12px; border: none; background: none; text-align: left; cursor: pointer; color: #d32f2f;">
-                                    Delete Folder
-                                  </button>
-                                `;
-                                
-                                // Add click handlers
-                                portal.querySelectorAll('button').forEach((btn, index) => {
-                                  btn.addEventListener('click', () => {
-                                    if (index === 0) {
-                                      setShowRenameFolderModal(folder.id);
-                                      setEditingFolderName(folder.name);
-                                    } else if (index === 1) {
-                                      setShowIconPicker(folder.id);
-                                    } else if (index === 2) {
-                                      setShowDeleteConfirm(folder.id);
-                                    }
-                                    setOpenFolderMenu(null);
-                                    document.body.removeChild(portal);
-                                  });
-                                });
-                                
-                                // Add to body
-                                document.body.appendChild(portal);
-                                
-                                // Close on outside click
-                                const handleOutsideClick = (e) => {
-                                  if (!portal.contains(e.target) && !el.contains(e.target)) {
-                                    setOpenFolderMenu(null);
-                                    document.body.removeChild(portal);
-                                    document.removeEventListener('click', handleOutsideClick);
-                                  }
-                                };
-                                
-                                setTimeout(() => {
-                                  document.addEventListener('click', handleOutsideClick);
-                                }, 0);
-                              }
-                            }}
-                            style={{ display: 'none' }}>
+                          <div style={{ display: 'none' }}>
                           </div>
                         )}
                       </DraggableFolder>
