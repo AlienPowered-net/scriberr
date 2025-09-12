@@ -2181,17 +2181,39 @@ export default function Index() {
                         onFolderClick={(folderId) => setSelectedFolder(selectedFolder === folderId ? null : folderId)}
                       >
                         {openFolderMenu === folder.id && (
-                          <div style={{
-                            position: "absolute",
-                            right: "0",
-                            top: "100%",
-                            backgroundColor: "white",
-                            border: "1px solid #c9cccf",
-                            borderRadius: "4px",
-                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                            zIndex: 1000,
-                            minWidth: "150px"
-                          }}>
+                          <div 
+                            ref={(el) => {
+                              if (el) {
+                                // Use setTimeout to ensure element is fully rendered
+                                setTimeout(() => {
+                                  const rect = el.getBoundingClientRect();
+                                  const viewportHeight = window.innerHeight;
+                                  const spaceBelow = viewportHeight - rect.top;
+                                  const spaceAbove = rect.top;
+                                  const dropdownHeight = 120; // Approximate height of dropdown
+                                  
+                                  // If not enough space below but enough space above, position above
+                                  if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+                                    el.style.top = "auto";
+                                    el.style.bottom = "100%";
+                                  } else {
+                                    el.style.top = "100%";
+                                    el.style.bottom = "auto";
+                                  }
+                                }, 0);
+                              }
+                            }}
+                            style={{
+                              position: "absolute",
+                              right: "0",
+                              top: "100%",
+                              backgroundColor: "white",
+                              border: "1px solid #c9cccf",
+                              borderRadius: "4px",
+                              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                              zIndex: 1000,
+                              minWidth: "150px"
+                            }}>
                             <button
                               type="button"
                               onClick={() => {
