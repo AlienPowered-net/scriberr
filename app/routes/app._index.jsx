@@ -21,8 +21,9 @@ import {
   Avatar,
   EmptyState,
   ButtonGroup,
-  Select,
-  Modal,
+  Popover,
+  ActionList,
+  TextContainer,
 } from "@shopify/polaris";
 // Temporarily removed Polaris icons to fix server error
 import { useState, useEffect } from "react";
@@ -362,6 +363,12 @@ export default function Index() {
   const [newFolderIcon, setNewFolderIcon] = useState('folder');
   const [newFolderIconColor, setNewFolderIconColor] = useState('rgba(255, 184, 0, 1)');
   const [localFolders, setLocalFolders] = useState(folders);
+  
+  // Folder selection popover states
+  const [showFolderSelector, setShowFolderSelector] = useState(false);
+  const [folderSelectorAction, setFolderSelectorAction] = useState(null); // 'duplicate' or 'move'
+  const [folderSelectorNoteId, setFolderSelectorNoteId] = useState(null);
+  const [folderSelectorSearchQuery, setFolderSelectorSearchQuery] = useState("");
   
   // Update local folders when loader data changes
   useEffect(() => {
@@ -1271,95 +1278,102 @@ export default function Index() {
 
   // Handle duplicate note from manage menu
   const handleDuplicateFromMenu = async (noteId, type = "current") => {
-    try {
-      let targetFolderId = null;
-      
-      if (type === "current") {
-        // Duplicate to current folder - use the note's current folder
+    if (type === "current") {
+      // Duplicate to current folder - use the note's current folder
+      try {
         const note = localNotes.find(n => n.id === noteId);
-        if (note) {
-          targetFolderId = note.folderId;
+        const targetFolderId = note ? note.folderId : null;
+
+        const formData = new FormData();
+        formData.append('noteId', noteId);
+        if (targetFolderId) {
+          formData.append('targetFolderId', targetFolderId);
         }
-      } else if (type === "different") {
-        // For different folder, we'll need to show a folder picker
-        // For now, let's prompt the user to select a folder
-        const folderNames = localFolders.map(f => f.name);
-        const selectedFolderName = prompt(`Select a folder to duplicate to:\n${folderNames.join('\n')}`);
-        
-        if (selectedFolderName) {
-          const selectedFolder = localFolders.find(f => f.name === selectedFolderName);
-          if (selectedFolder) {
-            targetFolderId = selectedFolder.id;
-          } else {
-            alert('Invalid folder selected');
-            return;
-          }
+
+        const response = await fetch('/api/duplicate-note', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          console.log('Note duplicated successfully');
+          window.location.reload();
         } else {
-          return; // User cancelled
+          const error = await response.json();
+          console.error('Failed to duplicate note:', error.error);
+          alert(`Failed to duplicate note: ${error.error}`);
         }
+      } catch (error) {
+        console.error('Error duplicating note:', error);
+        alert('Error duplicating note');
       }
-
-      const formData = new FormData();
-      formData.append('noteId', noteId);
-      if (targetFolderId) {
-        formData.append('targetFolderId', targetFolderId);
-      }
-
-      const response = await fetch('/api/duplicate-note', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        console.log('Note duplicated successfully');
-        // Refresh the page to show the new note
-        window.location.reload();
-      } else {
-        const error = await response.json();
-        console.error('Failed to duplicate note:', error.error);
-        alert(`Failed to duplicate note: ${error.error}`);
-      }
-    } catch (error) {
-      console.error('Error duplicating note:', error);
-      alert('Error duplicating note');
+    } else if (type === "different") {
+      // Show folder selector popover
+      setFolderSelectorAction('duplicate');
+      setFolderSelectorNoteId(noteId);
+      setShowFolderSelector(true);
     }
   };
 
   // Handle move note from manage menu
-  const handleMoveFromMenu = async (noteId) => {
+  const handleMoveFromMenu = (noteId) => {
+    // Show folder selector popover
+    setFolderSelectorAction('move');
+    setFolderSelectorNoteId(noteId);
+    setShowFolderSelector(true);
+  };
+
+  // Handle folder selection from popover
+  const handleFolderSelection = async (folderId) => {
+    if (!folderSelectorNoteId || !folderSelectorAction) return;
+
     try {
-      // Show folder picker for move
-      const folderNames = localFolders.map(f => f.name);
-      const selectedFolderName = prompt(`Select a folder to move to:\n${folderNames.join('\n')}`);
-      
-      if (selectedFolderName) {
-        const selectedFolder = localFolders.find(f => f.name === selectedFolderName);
-        if (selectedFolder) {
-          const formData = new FormData();
-          formData.append('noteId', noteId);
-          formData.append('folderId', selectedFolder.id);
+      if (folderSelectorAction === 'duplicate') {
+        const formData = new FormData();
+        formData.append('noteId', folderSelectorNoteId);
+        formData.append('targetFolderId', folderId);
 
-          const response = await fetch('/api/move-note', {
-            method: 'POST',
-            body: formData,
-          });
+        const response = await fetch('/api/duplicate-note', {
+          method: 'POST',
+          body: formData,
+        });
 
-          if (response.ok) {
-            console.log('Note moved successfully');
-            // Refresh the page to show updated note location
-            window.location.reload();
-          } else {
-            const error = await response.json();
-            console.error('Failed to move note:', error.error);
-            alert(`Failed to move note: ${error.error}`);
-          }
+        if (response.ok) {
+          console.log('Note duplicated successfully');
+          window.location.reload();
         } else {
-          alert('Invalid folder selected');
+          const error = await response.json();
+          console.error('Failed to duplicate note:', error.error);
+          alert(`Failed to duplicate note: ${error.error}`);
+        }
+      } else if (folderSelectorAction === 'move') {
+        const formData = new FormData();
+        formData.append('noteId', folderSelectorNoteId);
+        formData.append('folderId', folderId);
+
+        const response = await fetch('/api/move-note', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          console.log('Note moved successfully');
+          window.location.reload();
+        } else {
+          const error = await response.json();
+          console.error('Failed to move note:', error.error);
+          alert(`Failed to move note: ${error.error}`);
         }
       }
     } catch (error) {
-      console.error('Error moving note:', error);
-      alert('Error moving note');
+      console.error(`Error ${folderSelectorAction}ing note:`, error);
+      alert(`Error ${folderSelectorAction}ing note`);
+    } finally {
+      // Close popover and reset state
+      setShowFolderSelector(false);
+      setFolderSelectorAction(null);
+      setFolderSelectorNoteId(null);
+      setFolderSelectorSearchQuery("");
     }
   };
 
@@ -3525,6 +3539,55 @@ export default function Index() {
             folderName={localFolders.find(f => f.id === showIconPicker)?.name || "Folder"}
           />
         )}
+
+        {/* Folder Selector Popover */}
+        <Popover
+          active={showFolderSelector}
+          activator={
+            <div style={{ display: 'none' }} />
+          }
+          onClose={() => {
+            setShowFolderSelector(false);
+            setFolderSelectorAction(null);
+            setFolderSelectorNoteId(null);
+            setFolderSelectorSearchQuery("");
+          }}
+          preferredPosition="below"
+          preferredAlignment="left"
+        >
+          <Popover.Pane>
+            <div style={{ padding: '16px', minWidth: '280px' }}>
+              <TextContainer>
+                <Text variant="headingMd" as="h3">
+                  {folderSelectorAction === 'duplicate' ? 'Duplicate to folder' : 'Move to folder'}
+                </Text>
+                <div style={{ marginTop: '12px' }}>
+                  <TextField
+                    label="Search folders"
+                    value={folderSelectorSearchQuery}
+                    onChange={setFolderSelectorSearchQuery}
+                    placeholder="Type to search folders..."
+                    autoComplete="off"
+                  />
+                </div>
+                <div style={{ marginTop: '12px', maxHeight: '200px', overflowY: 'auto' }}>
+                  <ActionList
+                    items={localFolders
+                      .filter(folder => 
+                        folder.name.toLowerCase().includes(folderSelectorSearchQuery.toLowerCase())
+                      )
+                      .map(folder => ({
+                        content: folder.name,
+                        onAction: () => handleFolderSelection(folder.id),
+                        icon: 'folder'
+                      }))
+                    }
+                  />
+                </div>
+              </TextContainer>
+            </div>
+          </Popover.Pane>
+        </Popover>
       </Page>
     );
   }
