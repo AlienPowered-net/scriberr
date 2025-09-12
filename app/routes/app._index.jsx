@@ -1144,7 +1144,7 @@ export default function Index() {
       if (response.ok) {
         const now = new Date();
         const timestamp = now.toLocaleTimeString();
-        setAutoSaveNotification(`Auto-saved at ${timestamp}`);
+        setAutoSaveNotification(`Your note was auto-saved at ${timestamp}`);
         setHasUnsavedChanges(false);
         
         // Clear notification after 3 seconds
@@ -2399,21 +2399,7 @@ export default function Index() {
                   <i className="far fa-edit" style={{ fontSize: "20px" }}></i>
                   Note Editor
                 </Text>
-                {hasUnsavedChanges && (
-                  <Text as="p" style={{ 
-                    fontSize: "14px", 
-                    color: "rgba(199, 10, 36, 1)", 
-                    fontWeight: "600", 
-                    marginTop: "4px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px"
-                  }}>
-                    <i className="fas fa-exclamation-triangle" style={{ fontSize: "16px", color: "rgba(199, 10, 36, 1)" }}></i>
-                    You have unsaved changes
-                  </Text>
-                )}
-                {autoSaveNotification && (
+                {autoSaveNotification ? (
                   <Text as="p" style={{ 
                     fontSize: "14px", 
                     color: "#008060", 
@@ -2426,7 +2412,20 @@ export default function Index() {
                     <i className="fas fa-check-circle" style={{ fontSize: "16px", color: "#008060" }}></i>
                     {autoSaveNotification}
                   </Text>
-                )}
+                ) : hasUnsavedChanges ? (
+                  <Text as="p" style={{ 
+                    fontSize: "14px", 
+                    color: "rgba(199, 10, 36, 1)", 
+                    fontWeight: "600", 
+                    marginTop: "4px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px"
+                  }}>
+                    <i className="fas fa-exclamation-triangle" style={{ fontSize: "16px", color: "rgba(199, 10, 36, 1)" }}></i>
+                    You have unsaved changes
+                  </Text>
+                ) : null}
               </div>
               <InlineStack gap="200">
                 {editingNoteId ? (
