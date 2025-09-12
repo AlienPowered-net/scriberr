@@ -2181,38 +2181,15 @@ export default function Index() {
               
               {/* New Note Button */}
               <div style={{ marginTop: "16px" }}>
-                <button 
+                <Button 
                   onClick={handleNewNote}
-                  style={{
-                    backgroundColor: "rgba(255, 184, 0, 1)",
-                    border: "0",
-                    color: "white",
-                    padding: "12px 16px",
-                    borderRadius: "24px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    textAlign: "center",
-                    textDecoration: "none",
-                    transition: "all 250ms",
-                    userSelect: "none",
-                    WebkitUserSelect: "none",
-                    touchAction: "manipulation",
-                    width: "100%",
-                    boxShadow: "rgba(245, 124, 0, .2) 0 -25px 18px -14px inset, rgba(245, 124, 0, .15) 0 1px 2px, rgba(245, 124, 0, .15) 0 2px 4px, rgba(245, 124, 0, .15) 0 4px 8px, rgba(245, 124, 0, .15) 0 8px 16px, rgba(245, 124, 0, .15) 0 16px 32px"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.boxShadow = "rgba(245, 124, 0, .35) 0 -25px 18px -14px inset, rgba(245, 124, 0, .25) 0 1px 2px, rgba(245, 124, 0, .25) 0 2px 4px, rgba(245, 124, 0, .25) 0 4px 8px, rgba(245, 124, 0, .25) 0 8px 16px, rgba(245, 124, 0, .25) 0 16px 32px";
-                    e.target.style.transform = "scale(1.05) rotate(-1deg)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.boxShadow = "rgba(245, 124, 0, .2) 0 -25px 18px -14px inset, rgba(245, 124, 0, .15) 0 1px 2px, rgba(245, 124, 0, .15) 0 2px 4px, rgba(245, 124, 0, .15) 0 4px 8px, rgba(245, 124, 0, .15) 0 8px 16px, rgba(245, 124, 0, .15) 0 16px 32px";
-                    e.target.style.transform = "scale(1) rotate(0deg)";
-                  }}
+                  variant="primary"
+                  tone="warning"
+                  icon={<i className="fas fa-plus"></i>}
+                  fullWidth
                 >
-                  <i className="fas fa-plus" style={{ marginRight: "8px" }}></i>
                   New Note
-                </button>
+                </Button>
               </div>
             </div>
 
