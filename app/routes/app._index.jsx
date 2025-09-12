@@ -135,16 +135,16 @@ export async function loader({ request }) {
     // Use raw SQL to properly order pinned notes first, then by updatedAt
     notes = await prisma.$queryRaw`
       SELECT 
-        id, title, content, tags, "folderId", "pinnedAt",
-        "createdAt", "updatedAt",
+        n.id, n.title, n.content, n.tags, n."folderId", n."pinnedAt",
+        n."createdAt", n."updatedAt",
         json_build_object('id', f.id, 'name', f.name) as folder
       FROM "Note" n
       LEFT JOIN "Folder" f ON n."folderId" = f.id
       WHERE n."shopId" = ${shopId}
       ORDER BY 
-        CASE WHEN "pinnedAt" IS NULL THEN 1 ELSE 0 END,
-        "pinnedAt" DESC,
-        "updatedAt" DESC
+        CASE WHEN n."pinnedAt" IS NULL THEN 1 ELSE 0 END,
+        n."pinnedAt" DESC,
+        n."updatedAt" DESC
     `;
   } else {
     notes = await prisma.note.findMany({
