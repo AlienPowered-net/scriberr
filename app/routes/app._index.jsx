@@ -269,9 +269,15 @@ export async function action({ request }) {
 /* ------------------ UI ------------------ */
 export default function Index() {
   const { folders, notes, version } = useLoaderData();
+  const [localNotes, setLocalNotes] = useState(notes);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [folderId, setFolderId] = useState("");
+
+  // Sync localNotes with server data when notes change
+  useEffect(() => {
+    setLocalNotes(notes);
+  }, [notes]);
   const [folderName, setFolderName] = useState("");
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -506,7 +512,7 @@ export default function Index() {
   // Get all unique tags and their counts
   const getAllTagsWithCounts = () => {
     const tagCounts = {};
-    notes.forEach(note => {
+    localNotes.forEach(note => {
       if (note.tags && Array.isArray(note.tags)) {
         note.tags.forEach(tag => {
           tagCounts[tag] = (tagCounts[tag] || 0) + 1;
@@ -566,7 +572,7 @@ export default function Index() {
       return;
     }
 
-    const currentNote = notes.find(note => note.id === editingNoteId);
+    const currentNote = localNotes.find(note => note.id === editingNoteId);
     if (!currentNote) {
       setHasUnsavedChanges(false);
       return;
@@ -587,7 +593,7 @@ export default function Index() {
     
     if (savedNoteId && savedFolderId) {
       // Find the note in the current notes list
-      const noteToSelect = notes.find(note => note.id === savedNoteId);
+      const noteToSelect = localNotes.find(note => note.id === savedNoteId);
       if (noteToSelect) {
         setEditingNoteId(savedNoteId);
         setSelectedNoteId(savedNoteId);
@@ -611,7 +617,7 @@ export default function Index() {
   const moveFolderOptions = localFolders.map((f) => ({ label: f.name, value: String(f.id) }));
 
   // Filter notes based on selected folder and search queries
-  const filteredNotes = notes.filter(note => {
+  const filteredNotes = localNotes.filter(note => {
     // First filter by selected folder
     const folderMatch = selectedFolder ? note.folderId === selectedFolder : true;
     
@@ -945,7 +951,7 @@ export default function Index() {
   const handleDeleteTag = async (tagToDelete) => {
     try {
       // Find all notes that have this tag
-      const notesWithTag = notes.filter(note => 
+      const notesWithTag = localNotes.filter(note => 
         note.tags && Array.isArray(note.tags) && note.tags.includes(tagToDelete)
       );
 
@@ -3396,7 +3402,7 @@ export default function Index() {
                 All Tags:
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                {notes.find(n => n.id === showTagPopup)?.tags?.map((tag, index) => (
+                {localNotes.find(n => n.id === showTagPopup)?.tags?.map((tag, index) => (
                   <span 
                     key={index}
                     onClick={(e) => {
