@@ -12,6 +12,7 @@ const NoteCard = ({
   isSelected,
   inContext,
   folder,
+  isPinned,
   onClick,
   onSelect,
   onManage,
@@ -137,31 +138,45 @@ const NoteCard = ({
       shadow="sm"
     >
       <Stack gap="md">
-        {/* Title and Folder */}
-        <Group gap="xs" align="center">
-          <Tooltip content={title || "(untitled)"} disabled={!title || title.length <= 19}>
-            <Text
-              size="lg"
-              fw={600}
-              c={getTextColor()}
-              style={{ lineHeight: 1.2, cursor: title && title.length > 19 ? "help" : "default" }}
-            >
-              {title && title.length > 19 ? `${title.substring(0, 19)}...` : (title || "(untitled)")}
-            </Text>
-          </Tooltip>
-          {folder && (
-            <Badge
-              size="sm"
-              variant="light"
-              color="blue"
-              style={{ 
-                backgroundColor: "#E3F2FD",
-                color: "#1976D2",
-                border: "1px solid #BBDEFB"
-              }}
-            >
-              {folder}
-            </Badge>
+        {/* Title and Folder with Pin Indicator */}
+        <Group gap="xs" align="center" justify="space-between">
+          <Group gap="xs" align="center">
+            <Tooltip content={title || "(untitled)"} disabled={!title || title.length <= 19}>
+              <Text
+                size="lg"
+                fw={600}
+                c={getTextColor()}
+                style={{ lineHeight: 1.2, cursor: title && title.length > 19 ? "help" : "default" }}
+              >
+                {title && title.length > 19 ? `${title.substring(0, 19)}...` : (title || "(untitled)")}
+              </Text>
+            </Tooltip>
+            {folder && (
+              <Badge
+                size="sm"
+                variant="light"
+                color="blue"
+                style={{ 
+                  backgroundColor: "#E3F2FD",
+                  color: "#1976D2",
+                  border: "1px solid #BBDEFB"
+                }}
+              >
+                {folder}
+              </Badge>
+            )}
+          </Group>
+          {/* Pin Indicator */}
+          {isPinned && (
+            <Tooltip content="Pinned note">
+              <IconPin 
+                size={16} 
+                style={{ 
+                  color: "#FF8C00",
+                  cursor: "default"
+                }} 
+              />
+            </Tooltip>
           )}
         </Group>
 
@@ -317,7 +332,7 @@ const NoteCard = ({
                     onPin && onPin();
                   }}
                 >
-                  Pin
+                  {isPinned ? "Unpin" : "Pin"}
                 </Menu.Item>
                 <Menu.Item
                   leftSection={<IconCopy size={14} />}

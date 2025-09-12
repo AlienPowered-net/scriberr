@@ -1096,13 +1096,15 @@ export default function Index() {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        console.log('Note pin toggled successfully:', result.isPinned ? 'pinned' : 'unpinned');
         // Refresh the page to show updated note order
         window.location.reload();
       } else {
-        console.error('Failed to pin note');
+        console.error('Failed to toggle note pin');
       }
     } catch (error) {
-      console.error('Error pinning note:', error);
+      console.error('Error toggling note pin:', error);
     }
   };
 
@@ -2318,6 +2320,7 @@ export default function Index() {
                         folder={note.folder?.name}
                         isSelected={isSelected}
                         inContext={isCheckboxSelected}
+                        isPinned={note.pinnedAt !== null}
                         onClick={() => handleEditNote(note)}
                         onSelect={() => handleSelectButtonClick(note.id)}
                         isSelectButtonClicked={selectButtonClicked.has(note.id)}

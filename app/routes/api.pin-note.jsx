@@ -29,20 +29,43 @@ export async function action({ request }) {
       console.log('✅ pinnedAt column added');
     }
 
-    // Update the note to set pinnedAt timestamp
+    // First, get the current note to check if it's already pinned
+    const currentNote = await prisma.note.findUnique({
+      where: {
+        id: noteId,
+        shopId: shopId
+      },
+      select: {
+        id: true,
+        pinnedAt: true
+      }
+    });
+
+    if (!currentNote) {
+      return json({ error: "Note not found" }, { status: 404 });
+    }
+
+    // Toggle pin status: if already pinned, unpin it; if not pinned, pin it
+    const isCurrentlyPinned = currentNote.pinnedAt !== null;
+    const newPinnedAt = isCurrentlyPinned ? null : new Date();
+
     const updatedNote = await prisma.note.update({
       where: {
         id: noteId,
         shopId: shopId
       },
       data: {
-        pinnedAt: new Date()
+        pinnedAt: newPinnedAt
       }
     });
 
-    return json({ success: true, note: updatedNote });
+    return json({ 
+      success: true, 
+      note: updatedNote,
+      isPinned: !isCurrentlyPinned // Return the new pin status
+    });
   } catch (error) {
-    console.error('Error pinning note:', error);
-    return json({ error: "Failed to pin note" }, { status: 500 });
+    console.error('Error toggling note pin:', error);
+    return json({ error: "Failed to toggle note pin" }, { status: 500 });
   }
 }
