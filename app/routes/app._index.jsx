@@ -1679,7 +1679,7 @@ export default function Index() {
           )}
                 {/* FOLDERS */}
         {!collapsedColumns.folders && (
-        <div className="col-folders" style={{ width: "320px", minWidth: "320px", maxWidth: "320px", display: "flex", flexDirection: "column" }}>
+        <div className="col-folders" style={{ width: "350px", minWidth: "350px", maxWidth: "350px", display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <Card
             style={{
               transition: "all 0.3s ease",
@@ -1963,7 +1963,8 @@ export default function Index() {
             {/* Scrollable Folders Section */}
             <div style={{ 
               flex: "1",
-              overflowY: localFolders.length > 9 ? "auto" : "visible", 
+              overflowY: localFolders.length > 9 ? "auto" : "visible",
+              overflowX: "hidden", 
               padding: "16px",
               paddingBottom: "0",
               maxHeight: localFolders.length > 9 ? "500px" : "none"
@@ -2102,7 +2103,7 @@ export default function Index() {
 
         {/* NOTES */}
         {!collapsedColumns.notes && (
-        <div className="col-notes" style={{ width: "320px", minWidth: "320px", maxWidth: "320px", display: "flex", flexDirection: "column" }}>
+        <div className="col-notes" style={{ width: "350px", minWidth: "350px", maxWidth: "350px", display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <Card style={{ flex: "1", display: "flex", flexDirection: "column" }}>
             {/* Fixed Header Section */}
             <div style={{ 
@@ -2219,7 +2220,8 @@ export default function Index() {
             {/* Scrollable Notes Section */}
             <div style={{ 
               flex: "1",
-              overflowY: filteredNotes.length > 1 ? "auto" : "visible", 
+              overflowY: filteredNotes.length > 1 ? "auto" : "visible",
+              overflowX: "hidden",
               padding: "16px",
               paddingBottom: "0",
               maxHeight: filteredNotes.length > 1 ? "calc(100vh - 200px)" : "none"
