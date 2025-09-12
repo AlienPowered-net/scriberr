@@ -1104,6 +1104,34 @@ export default function Index() {
     }
   };
 
+  // Handle auto-saving tags when they are added or removed
+  const handleAutoSaveTags = async (newTags) => {
+    if (!editingNoteId) return; // Only auto-save if we're editing an existing note
+    
+    try {
+      const formData = new FormData();
+      formData.append('noteId', editingNoteId);
+      formData.append('tags', JSON.stringify(newTags.map(tag => removeEmojis(tag))));
+      
+      const response = await fetch('/api/update-note-tags', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Accept-Charset': 'utf-8'
+        },
+        body: formData
+      });
+      
+      if (response.ok) {
+        console.log('Tags auto-saved successfully');
+      } else {
+        console.error('Failed to auto-save tags');
+      }
+    } catch (error) {
+      console.error('Error auto-saving tags:', error);
+    }
+  };
+
   // Handle creating a new note or updating existing note
   const handleCreateNote = async () => {
     const trimmedTitle = title.trim();
@@ -1804,15 +1832,15 @@ export default function Index() {
                             alignItems: "center",
                             gap: "6px",
                             padding: "4px 8px",
-                            backgroundColor: selectedTags.includes(tag) ? "#008060" : "#f6f6f7",
-                            borderRadius: "4px",
-                            border: "1px solid #d1d3d4",
+                            backgroundColor: selectedTags.includes(tag) ? "#008060" : "#f6fff8",
+                            borderRadius: "16px",
+                            border: selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060",
                             cursor: "pointer",
                             transition: "all 0.15s ease",
                             position: "relative",
-                            fontSize: "13px",
+                            fontSize: "12px",
                             fontWeight: "400",
-                            color: selectedTags.includes(tag) ? "white" : "#202223",
+                            color: selectedTags.includes(tag) ? "white" : "#008060",
                             minHeight: "24px",
                             justifyContent: "center",
                             fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
@@ -2529,7 +2557,9 @@ export default function Index() {
                         if (e.key === 'Enter' && newTagInput.trim()) {
                           const cleanTag = removeEmojis(newTagInput.trim());
                           if (!noteTags.includes(cleanTag)) {
-                            setNoteTags([...noteTags, cleanTag]);
+                            const newTags = [...noteTags, cleanTag];
+                            setNoteTags(newTags);
+                            handleAutoSaveTags(newTags);
                           }
                           setNewTagInput("");
                         }
@@ -2561,7 +2591,11 @@ export default function Index() {
                         >
                           <span>{tag}</span>
                           <button
-                            onClick={() => setNoteTags(noteTags.filter((_, i) => i !== index))}
+                            onClick={() => {
+                              const newTags = noteTags.filter((_, i) => i !== index);
+                              setNoteTags(newTags);
+                              handleAutoSaveTags(newTags);
+                            }}
                             style={{
                               background: "none",
                               border: "none",
