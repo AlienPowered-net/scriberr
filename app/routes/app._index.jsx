@@ -484,7 +484,7 @@ export default function Index() {
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Close folder menu if clicking outside
-      if (openFolderMenu && !event.target.closest('.folder-menu-container')) {
+      if (openFolderMenu && !event.target.closest('.folder-menu-container') && !event.target.closest('[data-portal-dropdown]')) {
         setOpenFolderMenu(null);
       }
       
@@ -517,6 +517,7 @@ export default function Index() {
     
     // Create portal element
     const portal = document.createElement('div');
+    portal.setAttribute('data-portal-dropdown', 'true');
     portal.style.position = 'fixed';
     portal.style.zIndex = '9999';
     portal.style.backgroundColor = 'white';
