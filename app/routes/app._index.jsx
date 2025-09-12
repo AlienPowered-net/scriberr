@@ -846,6 +846,7 @@ export default function Index() {
     setFolderId('');
     setNoteTags([]);
     setHasUnsavedChanges(false);
+    setAutoSaveNotification('');
   };
 
   // Handle deleting a note
@@ -1146,9 +1147,6 @@ export default function Index() {
         const timestamp = now.toLocaleTimeString();
         setAutoSaveNotification(`Your note was auto-saved at ${timestamp}`);
         setHasUnsavedChanges(false);
-        
-        // Clear notification after 3 seconds
-        setTimeout(() => setAutoSaveNotification(""), 3000);
       }
     } catch (error) {
       console.error('Auto-save failed:', error);
@@ -2399,33 +2397,37 @@ export default function Index() {
                   <i className="far fa-edit" style={{ fontSize: "20px" }}></i>
                   Note Editor
                 </Text>
-                {autoSaveNotification ? (
-                  <Text as="p" style={{ 
-                    fontSize: "14px", 
-                    color: "#008060", 
-                    fontWeight: "500", 
-                    marginTop: "4px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px"
-                  }}>
-                    <i className="fas fa-check-circle" style={{ fontSize: "16px", color: "#008060" }}></i>
-                    {autoSaveNotification}
-                  </Text>
-                ) : hasUnsavedChanges ? (
-                  <Text as="p" style={{ 
-                    fontSize: "14px", 
-                    color: "rgba(199, 10, 36, 1)", 
-                    fontWeight: "600", 
-                    marginTop: "4px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px"
-                  }}>
-                    <i className="fas fa-exclamation-triangle" style={{ fontSize: "16px", color: "rgba(199, 10, 36, 1)" }}></i>
-                    You have unsaved changes
-                  </Text>
-                ) : null}
+                {(autoSaveNotification || hasUnsavedChanges) && (
+                  <div style={{ marginTop: "4px" }}>
+                    {autoSaveNotification && (
+                      <Text as="p" style={{ 
+                        fontSize: "14px", 
+                        color: "#008060", 
+                        fontWeight: "500", 
+                        marginBottom: hasUnsavedChanges ? "4px" : "0",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px"
+                      }}>
+                        <i className="fas fa-check-circle" style={{ fontSize: "16px", color: "#008060" }}></i>
+                        {autoSaveNotification}
+                      </Text>
+                    )}
+                    {hasUnsavedChanges && (
+                      <Text as="p" style={{ 
+                        fontSize: "14px", 
+                        color: "rgba(199, 10, 36, 1)", 
+                        fontWeight: "600", 
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px"
+                      }}>
+                        <i className="fas fa-exclamation-triangle" style={{ fontSize: "16px", color: "rgba(199, 10, 36, 1)" }}></i>
+                        You have unsaved changes
+                      </Text>
+                    )}
+                  </div>
+                )}
               </div>
               <InlineStack gap="200">
                 {editingNoteId ? (
