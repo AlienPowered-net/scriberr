@@ -18,6 +18,7 @@ import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack } from '@shopify/polaris';
+import { MagicIcon } from '@shopify/polaris-icons';
 
 const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -652,26 +653,25 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           <button
             onClick={() => setShowAIModal(true)}
             style={{
-              padding: "6px 12px",
-              border: "1px solid #6b5b95",
+              padding: "6px 8px",
+              border: "1px solid #8B5CF6",
               borderRadius: "4px",
-              backgroundColor: "#6b5b95",
+              backgroundColor: "#8B5CF6",
               color: "white",
               cursor: "pointer",
               transition: "all 0.2s ease",
-              fontSize: "12px",
-              fontWeight: "500",
+              fontSize: "13px",
+              minWidth: "32px",
               height: "32px",
               display: "flex",
               alignItems: "center",
-              gap: "4px"
+              justifyContent: "center"
             }}
             title="AI Assistant"
-            onMouseEnter={(e) => e.target.style.backgroundColor = "#5a4d7a"}
-            onMouseLeave={(e) => e.target.style.backgroundColor = "#6b5b95"}
+            onMouseEnter={(e) => e.target.style.backgroundColor = "#7C3AED"}
+            onMouseLeave={(e) => e.target.style.backgroundColor = "#8B5CF6"}
           >
-            <i className="fas fa-wand-magic-sparkles"></i>
-            AI
+            <MagicIcon />
           </button>
 
         </div>
