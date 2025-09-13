@@ -35,32 +35,54 @@ import {
   Badge
 } from '@shopify/polaris';
 import { 
-  MagicIcon,
-  BoldIcon,
-  ItalicIcon,
-  UnderlineIcon,
-  StrikethroughIcon,
-  CodeIcon,
-  LinkIcon,
-  ImageIcon,
-  VideoIcon,
-  TextBlockIcon,
-  ListBulletedIcon,
-  ListNumberedIcon,
-  CheckboxIcon,
-  QuestionCircleIcon,
-  TextAlignLeftIcon,
-  TextAlignCenterIcon,
-  TextAlignRightIcon,
-  TableIcon,
-  HorizontalDotsIcon,
-  PlusCircleIcon,
-  HashtagIcon,
-  ChevronDownIcon,
-  SortIcon,
-  TypeIcon
+  MagicIcon
 } from '@shopify/polaris-icons';
 import './NotionTiptapEditor.css';
+
+// Simple icon component using emoji/text since many Polaris icons don't exist
+const TextIcon = ({ icon }) => {
+  const iconMap = {
+    bold: '𝐁',
+    italic: '𝐼',
+    underline: 'U̲',
+    strikethrough: 'S̶',
+    code: '</>',
+    link: '🔗',
+    image: '🖼️',
+    video: '📹',
+    text: '¶',
+    bulletList: '•',
+    numberedList: '1.',
+    checkbox: '☑',
+    question: '?',
+    alignLeft: '⬅',
+    alignCenter: '⬛',
+    alignRight: '➡',
+    table: '⊞',
+    horizontalDots: '•••',
+    plus: '+',
+    hashtag: '#',
+    chevronDown: '▼',
+    sort: '↕',
+    type: 'Aa',
+    quote: '❝'
+  };
+  
+  return (
+    <span style={{ 
+      fontWeight: 'bold', 
+      fontSize: '14px',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '20px',
+      height: '20px'
+    }}>
+      {iconMap[icon] || icon}
+    </span>
+  );
+};
 
 const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for commands..." }) => {
   const [showAIModal, setShowAIModal] = useState(false);
@@ -227,91 +249,91 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     { 
       id: 'heading1',
       title: 'Heading 1',
-      icon: HashtagIcon,
+      iconType: 'hashtag',
       description: 'Big section heading',
       action: () => editor.chain().focus().toggleHeading({ level: 1 }).run()
     },
     { 
       id: 'heading2',
       title: 'Heading 2',
-      icon: HashtagIcon,
+      iconType: 'hashtag',
       description: 'Medium section heading',
       action: () => editor.chain().focus().toggleHeading({ level: 2 }).run()
     },
     { 
       id: 'heading3',
       title: 'Heading 3',
-      icon: HashtagIcon,
+      iconType: 'hashtag',
       description: 'Small section heading',
       action: () => editor.chain().focus().toggleHeading({ level: 3 }).run()
     },
     { 
       id: 'paragraph',
       title: 'Text',
-      icon: TextBlockIcon,
+      iconType: 'text',
       description: 'Just start writing with plain text',
       action: () => editor.chain().focus().setParagraph().run()
     },
     { 
       id: 'bulletList',
       title: 'Bullet List',
-      icon: ListBulletedIcon,
+      iconType: 'bulletList',
       description: 'Create a simple bullet list',
       action: () => editor.chain().focus().toggleBulletList().run()
     },
     { 
       id: 'numberedList',
       title: 'Numbered List',
-      icon: ListNumberedIcon,
+      iconType: 'numberedList',
       description: 'Create a numbered list',
       action: () => editor.chain().focus().toggleOrderedList().run()
     },
     { 
       id: 'taskList',
       title: 'Task List',
-      icon: CheckboxIcon,
+      iconType: 'checkbox',
       description: 'Track tasks with checkboxes',
       action: () => editor.chain().focus().toggleTaskList().run()
     },
     { 
       id: 'quote',
       title: 'Quote',
-      icon: TextBlockIcon,
+      iconType: 'quote',
       description: 'Capture a quote',
       action: () => editor.chain().focus().toggleBlockquote().run()
     },
     { 
       id: 'code',
       title: 'Code',
-      icon: CodeIcon,
+      iconType: 'code',
       description: 'Capture a code snippet',
       action: () => editor.chain().focus().toggleCodeBlock().run()
     },
     { 
       id: 'table',
       title: 'Table',
-      icon: TableIcon,
+      iconType: 'table',
       description: 'Add a table',
       action: () => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
     },
     { 
       id: 'image',
       title: 'Image',
-      icon: ImageIcon,
+      iconType: 'image',
       description: 'Upload or embed with a link',
       action: () => setShowImageModal(true)
     },
     { 
       id: 'video',
       title: 'Video',
-      icon: VideoIcon,
+      iconType: 'video',
       description: 'Embed a YouTube video',
       action: () => setShowVideoModal(true)
     },
     { 
       id: 'divider',
       title: 'Divider',
-      icon: HorizontalDotsIcon,
+      iconType: 'horizontalDots',
       description: 'Visually divide sections',
       action: () => editor.chain().focus().setHorizontalRule().run()
     },
@@ -420,32 +442,36 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 size="slim"
                 pressed={editor.isActive('bold')}
                 onClick={() => editor.chain().focus().toggleBold().run()}
-                icon={BoldIcon}
-              />
+              >
+                <TextIcon icon="bold" />
+              </Button>
             </Tooltip>
             <Tooltip content="Italic (⌘I)">
               <Button
                 size="slim"
                 pressed={editor.isActive('italic')}
                 onClick={() => editor.chain().focus().toggleItalic().run()}
-                icon={ItalicIcon}
-              />
+              >
+                <TextIcon icon="italic" />
+              </Button>
             </Tooltip>
             <Tooltip content="Underline (⌘U)">
               <Button
                 size="slim"
                 pressed={editor.isActive('underline')}
                 onClick={() => editor.chain().focus().toggleUnderline().run()}
-                icon={UnderlineIcon}
-              />
+              >
+                <TextIcon icon="underline" />
+              </Button>
             </Tooltip>
             <Tooltip content="Strikethrough">
               <Button
                 size="slim"
                 pressed={editor.isActive('strike')}
                 onClick={() => editor.chain().focus().toggleStrike().run()}
-                icon={StrikethroughIcon}
-              />
+              >
+                <TextIcon icon="strikethrough" />
+              </Button>
             </Tooltip>
           </ButtonGroup>
 
@@ -457,8 +483,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 size="slim"
                 disclosure
                 onClick={() => setShowHeadingPopover(!showHeadingPopover)}
-                icon={TypeIcon}
               >
+                <TextIcon icon="type" />
                 {editor.isActive('heading', { level: 1 }) ? 'H1' :
                  editor.isActive('heading', { level: 2 }) ? 'H2' :
                  editor.isActive('heading', { level: 3 }) ? 'H3' : 'Text'}
@@ -511,24 +537,27 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 size="slim"
                 pressed={editor.isActive('bulletList')}
                 onClick={() => editor.chain().focus().toggleBulletList().run()}
-                icon={ListBulletedIcon}
-              />
+              >
+                <TextIcon icon="bulletList" />
+              </Button>
             </Tooltip>
             <Tooltip content="Numbered List">
               <Button
                 size="slim"
                 pressed={editor.isActive('orderedList')}
                 onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                icon={ListNumberedIcon}
-              />
+              >
+                <TextIcon icon="numberedList" />
+              </Button>
             </Tooltip>
             <Tooltip content="Task List">
               <Button
                 size="slim"
                 pressed={editor.isActive('taskList')}
                 onClick={() => editor.chain().focus().toggleTaskList().run()}
-                icon={CheckboxIcon}
-              />
+              >
+                <TextIcon icon="checkbox" />
+              </Button>
             </Tooltip>
           </ButtonGroup>
 
@@ -540,8 +569,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 size="slim"
                 disclosure
                 onClick={() => setShowAlignPopover(!showAlignPopover)}
-                icon={TextAlignLeftIcon}
-              />
+              >
+                <TextIcon icon="alignLeft" />
+              </Button>
             }
             onClose={() => setShowAlignPopover(false)}
           >
@@ -549,7 +579,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               items={[
                 {
                   content: 'Align Left',
-                  icon: TextAlignLeftIcon,
+                  prefix: <TextIcon icon="alignLeft" />,
                   active: editor.isActive({ textAlign: 'left' }),
                   onAction: () => {
                     editor.chain().focus().setTextAlign('left').run();
@@ -558,7 +588,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 },
                 {
                   content: 'Align Center',
-                  icon: TextAlignCenterIcon,
+                  prefix: <TextIcon icon="alignCenter" />,
                   active: editor.isActive({ textAlign: 'center' }),
                   onAction: () => {
                     editor.chain().focus().setTextAlign('center').run();
@@ -567,7 +597,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 },
                 {
                   content: 'Align Right',
-                  icon: TextAlignRightIcon,
+                  prefix: <TextIcon icon="alignRight" />,
                   active: editor.isActive({ textAlign: 'right' }),
                   onAction: () => {
                     editor.chain().focus().setTextAlign('right').run();
@@ -586,8 +616,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 size="slim"
                 disclosure
                 onClick={() => setShowFormatPopover(!showFormatPopover)}
-                icon={HorizontalDotsIcon}
-              />
+              >
+                <TextIcon icon="horizontalDots" />
+              </Button>
             }
             onClose={() => setShowFormatPopover(false)}
           >
@@ -598,7 +629,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   items: [
                     {
                       content: 'Link',
-                      icon: LinkIcon,
+                      prefix: <TextIcon icon="link" />,
                       onAction: () => {
                         setShowLinkModal(true);
                         setShowFormatPopover(false);
@@ -606,7 +637,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     },
                     {
                       content: 'Image',
-                      icon: ImageIcon,
+                      prefix: <TextIcon icon="image" />,
                       onAction: () => {
                         setShowImageModal(true);
                         setShowFormatPopover(false);
@@ -614,7 +645,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     },
                     {
                       content: 'Video',
-                      icon: VideoIcon,
+                      prefix: <TextIcon icon="video" />,
                       onAction: () => {
                         setShowVideoModal(true);
                         setShowFormatPopover(false);
@@ -622,7 +653,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     },
                     {
                       content: 'Table',
-                      icon: TableIcon,
+                      prefix: <TextIcon icon="table" />,
                       onAction: () => {
                         editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
                         setShowFormatPopover(false);
@@ -635,7 +666,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   items: [
                     {
                       content: 'Quote',
-                      icon: TextBlockIcon,
+                      prefix: <TextIcon icon="quote" />,
                       active: editor.isActive('blockquote'),
                       onAction: () => {
                         editor.chain().focus().toggleBlockquote().run();
@@ -644,7 +675,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     },
                     {
                       content: 'Code Block',
-                      icon: CodeIcon,
+                      prefix: <TextIcon icon="code" />,
                       active: editor.isActive('codeBlock'),
                       onAction: () => {
                         editor.chain().focus().toggleCodeBlock().run();
@@ -653,7 +684,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     },
                     {
                       content: 'Divider',
-                      icon: HorizontalDotsIcon,
+                      prefix: <TextIcon icon="horizontalDots" />,
                       onAction: () => {
                         editor.chain().focus().setHorizontalRule().run();
                         setShowFormatPopover(false);
@@ -695,38 +726,44 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               size="micro"
               pressed={editor.isActive('bold')}
               onClick={() => editor.chain().focus().toggleBold().run()}
-              icon={BoldIcon}
-            />
+            >
+              <TextIcon icon="bold" />
+            </Button>
             <Button
               size="micro"
               pressed={editor.isActive('italic')}
               onClick={() => editor.chain().focus().toggleItalic().run()}
-              icon={ItalicIcon}
-            />
+            >
+              <TextIcon icon="italic" />
+            </Button>
             <Button
               size="micro"
               pressed={editor.isActive('underline')}
               onClick={() => editor.chain().focus().toggleUnderline().run()}
-              icon={UnderlineIcon}
-            />
+            >
+              <TextIcon icon="underline" />
+            </Button>
             <Button
               size="micro"
               pressed={editor.isActive('strike')}
               onClick={() => editor.chain().focus().toggleStrike().run()}
-              icon={StrikethroughIcon}
-            />
+            >
+              <TextIcon icon="strikethrough" />
+            </Button>
             <Button
               size="micro"
               pressed={editor.isActive('code')}
               onClick={() => editor.chain().focus().toggleCode().run()}
-              icon={CodeIcon}
-            />
+            >
+              <TextIcon icon="code" />
+            </Button>
             <Button
               size="micro"
               pressed={editor.isActive('link')}
               onClick={() => setShowLinkModal(true)}
-              icon={LinkIcon}
-            />
+            >
+              <TextIcon icon="link" />
+            </Button>
           </ButtonGroup>
         </BubbleMenu>
 
@@ -738,7 +775,6 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         >
           <Button
             size="micro"
-            icon={PlusCircleIcon}
             onClick={() => {
               const coords = editor.view.coordsAtPos(editor.state.selection.from);
               setSlashMenuPosition({
@@ -748,7 +784,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               setShowSlashMenu(true);
               setSlashMenuFilter('');
             }}
-          />
+          >
+            <TextIcon icon="plus" />
+          </Button>
         </FloatingMenu>
       </div>
 
@@ -782,7 +820,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   >
                     <InlineStack gap="3" align="start" blockAlign="center">
                       <div className="notion-slash-icon">
-                        <Icon source={command.icon} color={command.highlight ? 'magic' : 'base'} />
+                        {command.icon ? (
+                          <Icon source={command.icon} color={command.highlight ? 'magic' : 'base'} />
+                        ) : (
+                          <TextIcon icon={command.iconType} />
+                        )}
                       </div>
                       <BlockStack gap="1">
                         <Text variant="bodyMd" fontWeight="medium">
