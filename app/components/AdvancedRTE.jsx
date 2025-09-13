@@ -893,7 +893,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               width: "100%"
             }}
           />
-        </DragHandleReact>
+        </DragHandle>
         
         {/* Character Count */}
         {editor && (
