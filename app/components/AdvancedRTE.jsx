@@ -15,6 +15,7 @@ import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import Link from '@tiptap/extension-link';
+import Placeholder from '@tiptap/extension-placeholder';
 import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack } from '@shopify/polaris';
 
@@ -127,6 +128,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       Highlight.configure({
         multicolor: true,
       }),
+      Placeholder.configure({
+        placeholder: placeholder,
+        showOnlyWhenEditable: true,
+        showOnlyCurrent: false,
+      }),
     ],
     content: value || '',
     onUpdate: ({ editor }) => {
@@ -136,6 +142,24 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     editorProps: {
       attributes: {
         class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[300px] p-4',
+        style: 'min-height: 300px; width: 100%; outline: none; cursor: text;',
+      },
+      handleClick: (view, pos, event) => {
+        // Ensure the entire editor area is clickable and focuses properly
+        return false;
+      },
+      handleKeyDown: (view, event) => {
+        // Allow normal keyboard navigation and editing
+        return false;
+      },
+      handleDOMEvents: {
+        click: (view, event) => {
+          // Focus the editor when clicking anywhere in the content area
+          if (!view.hasFocus()) {
+            view.focus();
+          }
+          return false;
+        },
       },
     },
   });
@@ -662,7 +686,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           margin: "0",
           padding: "0",
           border: "1px solid #dee2e6",
-          borderTop: "none"
+          borderTop: "none",
+          cursor: "text"
+        }}
+        onClick={() => {
+          if (editor) {
+            editor.commands.focus();
+          }
         }}
       >
         <EditorContent 
@@ -676,7 +706,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             borderRadius: "0 0 8px 8px",
             fontSize: "14px",
             lineHeight: "1.5",
-            color: "#212529"
+            color: "#212529",
+            cursor: "text",
+            width: "100%"
           }}
         />
         
