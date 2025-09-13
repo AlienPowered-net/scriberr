@@ -19,7 +19,6 @@ import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import CharacterCount from '@tiptap/extension-character-count';
 import DragHandleExtension from '@tiptap/extension-drag-handle';
-import { DragHandle } from '@tiptap/extension-drag-handle-react';
 import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack } from '@shopify/polaris';
 import { MagicIcon } from '@shopify/polaris-icons';
@@ -85,19 +84,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
 
   const editor = useEditor({
     extensions: [
-      DragHandleExtension.configure({
-        render() {
-          return {
-            onMount: (props) => {
-              return {
-                // Return a dummy element since we'll use DragHandleReact
-                element: document.createElement('div'),
-                destroy: () => {},
-              };
-            },
-          };
-        },
-      }),
+      DragHandleExtension,
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3, 4, 5, 6],
@@ -876,24 +863,22 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           }
         }}
       >
-        <DragHandle editor={editor}>
-          <EditorContent 
-            editor={editor} 
-            style={{
-              backgroundColor: "#ffffff",
-              minHeight: "400px",
-              padding: "16px 20px",
-              border: "none",
-              outline: "none",
-              borderRadius: "0 0 8px 8px",
-              fontSize: "14px",
-              lineHeight: "1.5",
-              color: "#212529",
-              cursor: "text",
-              width: "100%"
-            }}
-          />
-        </DragHandle>
+        <EditorContent 
+          editor={editor} 
+          style={{
+            backgroundColor: "#ffffff",
+            minHeight: "400px",
+            padding: "16px 20px",
+            border: "none",
+            outline: "none",
+            borderRadius: "0 0 8px 8px",
+            fontSize: "14px",
+            lineHeight: "1.5",
+            color: "#212529",
+            cursor: "text",
+            width: "100%"
+          }}
+        />
         
         {/* Character Count */}
         {editor && (
