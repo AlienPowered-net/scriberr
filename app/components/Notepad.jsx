@@ -3,8 +3,37 @@ import {
   TextField, Button, ResourceList, InlineStack, Text
 } from "@shopify/polaris";
 import { STORAGE_KEYS, loadJSON, saveJSON, generateId } from "../utils/storage";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  horizontalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const AUTOSAVE_MS = 30_000;
+
+// Column identifiers
+const COLUMNS = {
+  FOLDERS: 'folders-tags',
+  NOTES: 'notes',
+  EDITOR: 'note-editor'
+};
+
+// Default column order
+const DEFAULT_COLUMN_ORDER = [COLUMNS.FOLDERS, COLUMNS.NOTES, COLUMNS.EDITOR];
 
 function useStoreName() {
   const [name, setName] = useState("STORE NAME");
@@ -21,8 +50,48 @@ function useStoreName() {
   return name;
 }
 
+// Draggable Column Component
+function DraggableColumn({ id, children }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    position: 'relative',
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`draggable-column ${isDragging ? 'dragging' : ''}`}
+    >
+      <div className="drag-handle" {...attributes} {...listeners}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M5 3a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm6 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2zM5 7a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm6 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2zM5 11a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm6 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+        </svg>
+      </div>
+      {children}
+    </div>
+  );
+}
+
 export default function Notepad() {
   const storeName = useStoreName();
+
+  // Column order state
+  const [columnOrder, setColumnOrder] = useState(() => 
+    loadJSON(STORAGE_KEYS.COLUMN_ORDER, DEFAULT_COLUMN_ORDER)
+  );
+  const [activeId, setActiveId] = useState(null);
 
   // Data (folders + notes persisted to localStorage)
   const [folders, setFolders] = useState(() => loadJSON(STORAGE_KEYS.CATEGORIES, ["General"]));
@@ -43,6 +112,7 @@ export default function Notepad() {
   // Persist
   useEffect(() => saveJSON(STORAGE_KEYS.CATEGORIES, folders), [folders]);
   useEffect(() => saveJSON(STORAGE_KEYS.NOTES, notes), [notes]);
+  useEffect(() => saveJSON(STORAGE_KEYS.COLUMN_ORDER, columnOrder), [columnOrder]);
 
   // Keep selections valid
   useEffect(() => {
@@ -154,12 +224,41 @@ export default function Notepad() {
       : "Autosaves every 30s"
     : "Draft (unsaved). Autosaves every 30s once you start typing.";
 
-  // UI
-  return (
-    <div className="ui-premium">
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
-      {/* LEFT: Folders */}
-      <aside className="pane folders">
+  const handleDragStart = (event) => {
+    setActiveId(event.active.id);
+  };
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      setColumnOrder((items) => {
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+
+    setActiveId(null);
+  };
+
+  // Create column components mapping
+  const columnComponents = {
+    [COLUMNS.FOLDERS]: (
+      <aside className="pane folders" key={COLUMNS.FOLDERS}>
+
         <div className="brand">{storeName}</div>
 
         <div className="search">
@@ -242,9 +341,9 @@ export default function Notepad() {
           <Button fullWidth onClick={addFolder}>+ Add new folder</Button>
         </div>
       </aside>
-
-      {/* MIDDLE: Notes list */}
-      <main className="pane notes">
+    ),
+    [COLUMNS.NOTES]: (
+      <main className="pane notes" key={COLUMNS.NOTES}>
         <div className="notesHeader">
           <Text as="h2" variant="headingLg">My Notes</Text>
           <Button onClick={handleNewNote}>+ Add new note</Button>
@@ -277,9 +376,9 @@ export default function Notepad() {
           />
         </div>
       </main>
-
-      {/* RIGHT: Editor */}
-      <section className="pane editor">
+    ),
+    [COLUMNS.EDITOR]: (
+      <section className="pane editor" key={COLUMNS.EDITOR}>
         <div className="crumbRow">
           <div className="crumb">
             {selectedFolder} &nbsp;&gt;&nbsp; {editingId ? (title || "Untitled") : "New note"}
@@ -351,6 +450,36 @@ export default function Notepad() {
           </InlineStack>
         </div>
       </section>
-    </div>
+    )
+  };
+
+  // UI
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="ui-premium" style={{ gridTemplateColumns: columnOrder.map(() => 'auto').join(' ') }}>
+        <SortableContext
+          items={columnOrder}
+          strategy={horizontalListSortingStrategy}
+        >
+          {columnOrder.map((columnId) => (
+            <DraggableColumn key={columnId} id={columnId}>
+              {columnComponents[columnId]}
+            </DraggableColumn>
+          ))}
+        </SortableContext>
+        <DragOverlay>
+          {activeId ? (
+            <div className="drag-overlay">
+              {columnComponents[activeId]}
+            </div>
+          ) : null}
+        </DragOverlay>
+      </div>
+    </DndContext>
   );
 }

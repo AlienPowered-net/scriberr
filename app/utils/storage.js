@@ -1,6 +1,7 @@
 export const STORAGE_KEYS = {
   CATEGORIES: "notepad.categories",
   NOTES: "notepad.notes",
+  COLUMN_ORDER: "notepad.columnOrder",
 };
 
 function isBrowser() {
