@@ -654,10 +654,10 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             onClick={() => setShowAIModal(true)}
             style={{
               padding: "6px 8px",
-              border: "1px solid #8B5CF6",
+              border: "1px solid #8052fe",
               borderRadius: "4px",
-              backgroundColor: "#8B5CF6",
-              color: "white",
+              backgroundColor: "#8052fe",
+              color: "#ffffff",
               cursor: "pointer",
               transition: "all 0.2s ease",
               fontSize: "13px",
@@ -668,8 +668,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               justifyContent: "center"
             }}
             title="AI Assistant"
-            onMouseEnter={(e) => e.target.style.backgroundColor = "#7C3AED"}
-            onMouseLeave={(e) => e.target.style.backgroundColor = "#8B5CF6"}
+            onMouseEnter={(e) => e.target.style.backgroundColor = "#6d3dd8"}
+            onMouseLeave={(e) => e.target.style.backgroundColor = "#8052fe"}
           >
             <MagicIcon />
           </button>
