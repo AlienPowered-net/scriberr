@@ -11,6 +11,48 @@
   flex-direction: column;
 }
 
+/* Drag Handle Styles */
+.drag-handle {
+  position: absolute;
+  left: -40px;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 0.2s;
+  border-radius: 4px;
+  background: transparent;
+}
+
+.drag-handle:hover {
+  background: #f0f0f0;
+  opacity: 1;
+}
+
+.drag-handle.show {
+  opacity: 1;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-handle svg {
+  width: 16px;
+  height: 16px;
+  color: #999;
+}
+
+/* Show drag handle on hover */
+.ProseMirror:not(.ProseMirror-hideselection) .has-focus .drag-handle,
+.ProseMirror:not(.ProseMirror-hideselection) *:hover > .drag-handle {
+  opacity: 1;
+}
+
 /* Toolbar */
 .notion-toolbar {
   background: #fbfbfb;

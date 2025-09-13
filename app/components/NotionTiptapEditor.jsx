@@ -18,8 +18,9 @@ import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import CharacterCount from '@tiptap/extension-character-count';
+import DragHandle from '@tiptap/extension-drag-handle';
+import { DragHandleReact } from '@tiptap/extension-drag-handle-react';
 import { createLowlight } from 'lowlight';
-import TiptapDragHandle from './TiptapDragHandle';
 import { 
   Button, 
   Text, 
@@ -136,6 +137,19 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
 
   const editor = useEditor({
     extensions: [
+      DragHandle.configure({
+        render() {
+          return {
+            onMount: (props) => {
+              return {
+                // Return a dummy element since we'll use DragHandleReact
+                element: document.createElement('div'),
+                destroy: () => {},
+              };
+            },
+          };
+        },
+      }),
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3],
@@ -732,10 +746,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
 
       {/* Editor Content */}
       <div className="notion-editor-wrapper" ref={editorRef}>
-        <EditorContent editor={editor} />
-        
-        {/* Drag Handle */}
-        {editor && <TiptapDragHandle editor={editor} />}
+        <DragHandleReact editor={editor}>
+          <EditorContent editor={editor} />
+        </DragHandleReact>
         
         {/* Character Count */}
         {editor && (
