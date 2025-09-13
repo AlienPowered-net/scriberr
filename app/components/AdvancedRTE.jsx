@@ -671,7 +671,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             onMouseEnter={(e) => e.target.style.backgroundColor = "#6d3dd8"}
             onMouseLeave={(e) => e.target.style.backgroundColor = "#8052fe"}
           >
-            <MagicIcon style={{ color: "#ffffff", fill: "#ffffff" }} />
+            <MagicIcon style={{ color: "#ffffff", fill: "#ffffff", width: "18px", height: "18px" }} />
           </button>
 
         </div>
