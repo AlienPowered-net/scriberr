@@ -53,7 +53,6 @@ import {
   TextAlignCenterIcon,
   TextAlignRightIcon,
   TableIcon,
-  QuoteIcon,
   HorizontalDotsIcon,
   PlusCircleIcon,
   HashtagIcon,
@@ -277,7 +276,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     { 
       id: 'quote',
       title: 'Quote',
-      icon: QuoteIcon,
+      icon: TextBlockIcon,
       description: 'Capture a quote',
       action: () => editor.chain().focus().toggleBlockquote().run()
     },
@@ -636,7 +635,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   items: [
                     {
                       content: 'Quote',
-                      icon: QuoteIcon,
+                      icon: TextBlockIcon,
                       active: editor.isActive('blockquote'),
                       onAction: () => {
                         editor.chain().focus().toggleBlockquote().run();
