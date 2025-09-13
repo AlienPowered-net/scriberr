@@ -16,6 +16,7 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
+import TextAlign from '@tiptap/extension-text-align';
 import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack } from '@shopify/polaris';
 import { MagicIcon } from '@shopify/polaris-icons';
@@ -128,6 +129,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       Color,
       Highlight.configure({
         multicolor: true,
+      }),
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
       }),
       Placeholder.configure({
         placeholder: placeholder,
@@ -458,8 +462,74 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           >
             <i className="fas fa-underline"></i>
           </button>
+          <button
+            onClick={() => editor.chain().focus().unsetAllMarks().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: "white",
+              color: "#495057",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Clear Marks"
+          >
+            <i className="fas fa-eraser"></i>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().setHardBreak().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: "white",
+              color: "#495057",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Hard Break"
+          >
+            <i className="fas fa-level-down-alt"></i>
+          </button>
           
           <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
+
+          {/* Paragraph Button */}
+          <button
+            onClick={() => editor.chain().focus().setParagraph().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive('paragraph') ? '#007bff' : 'white',
+              color: editor.isActive('paragraph') ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "12px",
+              fontWeight: "600",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Paragraph"
+          >
+            P
+          </button>
 
           {/* Headings */}
           {[1, 2, 3].map((level) => (
@@ -532,6 +602,98 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             title="Numbered List"
           >
             <i className="fas fa-list-ol"></i>
+          </button>
+          
+          <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
+
+          {/* Horizontal Rule */}
+          <button
+            onClick={() => editor.chain().focus().setHorizontalRule().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: "white",
+              color: "#495057",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Horizontal Rule"
+          >
+            <i className="fas fa-minus"></i>
+          </button>
+          
+          <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
+
+          {/* Text Alignment */}
+          <button
+            onClick={() => editor.chain().focus().setTextAlign('left').run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive({ textAlign: 'left' }) ? '#007bff' : 'white',
+              color: editor.isActive({ textAlign: 'left' }) ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Align Left"
+          >
+            <i className="fas fa-align-left"></i>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().setTextAlign('center').run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive({ textAlign: 'center' }) ? '#007bff' : 'white',
+              color: editor.isActive({ textAlign: 'center' }) ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Align Center"
+          >
+            <i className="fas fa-align-center"></i>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().setTextAlign('right').run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive({ textAlign: 'right' }) ? '#007bff' : 'white',
+              color: editor.isActive({ textAlign: 'right' }) ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Align Right"
+          >
+            <i className="fas fa-align-right"></i>
           </button>
           
           <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
