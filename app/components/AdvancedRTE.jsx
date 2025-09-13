@@ -17,7 +17,9 @@ import TaskItem from '@tiptap/extension-task-item';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
+import CharacterCount from '@tiptap/extension-character-count';
 import { createLowlight } from 'lowlight';
+import TiptapDragHandle from './TiptapDragHandle';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack } from '@shopify/polaris';
 import { MagicIcon } from '@shopify/polaris-icons';
 
@@ -137,6 +139,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         placeholder: placeholder,
         showOnlyWhenEditable: true,
         showOnlyCurrent: false,
+      }),
+      CharacterCount.configure({
+        limit: null, // No character limit
       }),
     ],
     content: value || '',
@@ -873,6 +878,24 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             width: "100%"
           }}
         />
+        
+        {/* Drag Handle */}
+        {editor && <TiptapDragHandle editor={editor} />}
+        
+        {/* Character Count */}
+        {editor && (
+          <div style={{
+            padding: "8px 20px",
+            borderTop: "1px solid #dee2e6",
+            backgroundColor: "#f8f9fa",
+            borderRadius: "0 0 8px 8px",
+            fontSize: "12px",
+            color: "#6c757d",
+            textAlign: "right"
+          }}>
+            {editor.storage.characterCount.characters()} characters • {editor.storage.characterCount.words()} words
+          </div>
+        )}
         
         {/* Custom Bubble Menu for text selection */}
         {showBubbleMenu && editor && (

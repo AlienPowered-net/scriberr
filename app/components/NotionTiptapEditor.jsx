@@ -17,7 +17,9 @@ import TaskItem from '@tiptap/extension-task-item';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
+import CharacterCount from '@tiptap/extension-character-count';
 import { createLowlight } from 'lowlight';
+import TiptapDragHandle from './TiptapDragHandle';
 import { 
   Button, 
   Text, 
@@ -186,6 +188,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         placeholder: placeholder,
         showOnlyWhenEditable: true,
         showOnlyCurrent: false,
+      }),
+      CharacterCount.configure({
+        limit: null, // No character limit
       }),
     ],
     content: value || '',
@@ -728,6 +733,18 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       {/* Editor Content */}
       <div className="notion-editor-wrapper" ref={editorRef}>
         <EditorContent editor={editor} />
+        
+        {/* Drag Handle */}
+        {editor && <TiptapDragHandle editor={editor} />}
+        
+        {/* Character Count */}
+        {editor && (
+          <div className="notion-character-count">
+            <Text variant="bodySm" color="subdued">
+              {editor.storage.characterCount.characters()} characters • {editor.storage.characterCount.words()} words
+            </Text>
+          </div>
+        )}
       </div>
 
       {/* Slash Command Menu */}
