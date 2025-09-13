@@ -29,6 +29,7 @@ import {
 import { useState, useEffect } from "react";
 import QuillEditor from "../components/LexicalEditor";
 import AdvancedRTE from "../components/AdvancedRTE";
+import ShadcnTiptapEditor from "../components/ShadcnTiptapEditor";
 import FolderIconPicker from "../components/FolderIconPicker";
 import NewFolderModal from "../components/NewFolderModal";
 import DraggableFolder from "../components/DraggableFolder";
@@ -2795,7 +2796,7 @@ export default function Index() {
                   <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
                     Body
                   </label>
-                  <AdvancedRTE
+                  <ShadcnTiptapEditor
                     value={body}
                     onChange={setBody}
                     placeholder="Type your note here..."
