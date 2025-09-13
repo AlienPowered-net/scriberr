@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useEditor, EditorContent, BubbleMenu, FloatingMenu } from '@tiptap/react';
+import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TableKit } from '@tiptap/extension-table';
 import Image from '@tiptap/extension-image';
@@ -241,6 +241,20 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
 
       document.addEventListener('keydown', handleInput);
       return () => document.removeEventListener('keydown', handleInput);
+    }
+  }, [showSlashMenu]);
+
+  // Close slash menu on click outside
+  useEffect(() => {
+    if (showSlashMenu) {
+      const handleClickOutside = (e) => {
+        if (slashMenuRef.current && !slashMenuRef.current.contains(e.target)) {
+          setShowSlashMenu(false);
+        }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [showSlashMenu]);
 
@@ -714,80 +728,6 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       {/* Editor Content */}
       <div className="notion-editor-wrapper" ref={editorRef}>
         <EditorContent editor={editor} />
-        
-        {/* Bubble Menu for selected text */}
-        <BubbleMenu 
-          editor={editor} 
-          tippyOptions={{ duration: 100 }}
-          className="notion-bubble-menu"
-        >
-          <ButtonGroup variant="segmented">
-            <Button
-              size="micro"
-              pressed={editor.isActive('bold')}
-              onClick={() => editor.chain().focus().toggleBold().run()}
-            >
-              <TextIcon icon="bold" />
-            </Button>
-            <Button
-              size="micro"
-              pressed={editor.isActive('italic')}
-              onClick={() => editor.chain().focus().toggleItalic().run()}
-            >
-              <TextIcon icon="italic" />
-            </Button>
-            <Button
-              size="micro"
-              pressed={editor.isActive('underline')}
-              onClick={() => editor.chain().focus().toggleUnderline().run()}
-            >
-              <TextIcon icon="underline" />
-            </Button>
-            <Button
-              size="micro"
-              pressed={editor.isActive('strike')}
-              onClick={() => editor.chain().focus().toggleStrike().run()}
-            >
-              <TextIcon icon="strikethrough" />
-            </Button>
-            <Button
-              size="micro"
-              pressed={editor.isActive('code')}
-              onClick={() => editor.chain().focus().toggleCode().run()}
-            >
-              <TextIcon icon="code" />
-            </Button>
-            <Button
-              size="micro"
-              pressed={editor.isActive('link')}
-              onClick={() => setShowLinkModal(true)}
-            >
-              <TextIcon icon="link" />
-            </Button>
-          </ButtonGroup>
-        </BubbleMenu>
-
-        {/* Floating Menu for new blocks */}
-        <FloatingMenu 
-          editor={editor} 
-          tippyOptions={{ duration: 100 }}
-          className="notion-floating-menu"
-        >
-          <Button
-            size="micro"
-            onClick={() => {
-              const coords = editor.view.coordsAtPos(editor.state.selection.from);
-              setSlashMenuPosition({
-                x: coords.left,
-                y: coords.top + 20
-              });
-              setShowSlashMenu(true);
-              setSlashMenuFilter('');
-            }}
-          >
-            <TextIcon icon="plus" />
-          </Button>
-        </FloatingMenu>
       </div>
 
       {/* Slash Command Menu */}
