@@ -112,3 +112,77 @@
 
 /* Small UX touches */
 .Polaris-ResourceItem { cursor: pointer; }
+
+/* Draggable columns */
+.draggable-column {
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.draggable-column.dragging {
+  z-index: 100;
+}
+
+.drag-handle {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 24px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.draggable-column:hover .drag-handle {
+  opacity: 1;
+}
+
+.drag-handle svg {
+  color: #6b7280;
+  pointer-events: none;
+}
+
+/* Drag overlay styling */
+.drag-overlay {
+  opacity: 0.9;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  border-radius: 14px;
+}
+
+.drag-overlay .pane {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive grid for dynamic columns */
+.ui-premium[style*="grid-template-columns"] {
+  grid-template-columns: repeat(3, minmax(260px, 1fr)) !important;
+}
+
+@media (max-width: 1200px) {
+  .ui-premium[style*="grid-template-columns"] {
+    grid-template-columns: repeat(3, minmax(240px, 1fr)) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .ui-premium[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .draggable-column {
+    margin-bottom: 20px;
+  }
+}
