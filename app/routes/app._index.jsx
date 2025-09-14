@@ -1408,54 +1408,59 @@ export default function Index() {
     return () => clearInterval(autoSaveInterval);
   }, [editingNoteId, hasUnsavedChanges, title, body, folderId, noteTags]);
 
-  // Initialize drag and drop for columns (client-side only)
+  // Initialize drag and drop for columns using native HTML5 drag and drop
   useEffect(() => {
     // Only run on client side
     if (typeof window === 'undefined') return;
 
-    let sortable = null;
+    const initializeDraggable = () => {
+      const container = document.querySelector('.app-layout');
+      if (!container) {
+        console.log('Container not found, retrying...');
+        return;
+      }
 
-    const initializeDraggable = async () => {
-      try {
-        // Dynamically import Sortable only on client side
-        const { Sortable } = await import('@shopify/draggable');
+      console.log('Initializing native drag and drop');
+      console.log('Draggable columns found:', document.querySelectorAll('.draggable-column').length);
+
+      const columns = document.querySelectorAll('.draggable-column');
+      
+      columns.forEach((column, index) => {
+        // Make the entire column draggable
+        column.draggable = true;
+        column.setAttribute('data-index', index);
         
-        const container = document.querySelector('.app-layout');
-        if (!container) {
-          console.log('Container not found, retrying...');
-          return;
-        }
-
-        console.log('Initializing draggable with container:', container);
-        console.log('Draggable columns found:', document.querySelectorAll('.draggable-column').length);
-
-        sortable = new Sortable(container, {
-          draggable: '.draggable-column',
-          handle: '.column-drag-handle',
-          mirror: {
-            constrainDimensions: true,
-          },
-          swapAnimation: {
-            duration: 200,
-            easingFunction: 'ease-in-out',
-          },
+        column.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', index.toString());
+          column.style.opacity = '0.5';
+          console.log('Drag started for column:', index);
         });
-
-        sortable.on('sortable:stop', (event) => {
-          console.log('Sortable stop event:', event);
-          const { oldIndex, newIndex } = event;
-          if (oldIndex !== newIndex) {
+        
+        column.addEventListener('dragend', (e) => {
+          column.style.opacity = '1';
+          console.log('Drag ended for column:', index);
+        });
+        
+        column.addEventListener('dragover', (e) => {
+          e.preventDefault();
+        });
+        
+        column.addEventListener('drop', (e) => {
+          e.preventDefault();
+          const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'));
+          const dropIndex = parseInt(column.getAttribute('data-index'));
+          
+          if (draggedIndex !== dropIndex) {
+            console.log('Dropping column', draggedIndex, 'onto column', dropIndex);
             const newOrder = [...columnOrder];
-            const [movedColumn] = newOrder.splice(oldIndex, 1);
-            newOrder.splice(newIndex, 0, movedColumn);
+            const [movedColumn] = newOrder.splice(draggedIndex, 1);
+            newOrder.splice(dropIndex, 0, movedColumn);
             saveColumnOrder(newOrder);
           }
         });
+      });
 
-        console.log('Draggable initialized successfully');
-      } catch (error) {
-        console.error('Failed to initialize draggable:', error);
-      }
+      console.log('Native drag and drop initialized successfully');
     };
 
     // Add a small delay to ensure DOM is ready
@@ -1463,11 +1468,8 @@ export default function Index() {
 
     return () => {
       clearTimeout(timer);
-      if (sortable) {
-        sortable.destroy();
-      }
     };
-  }, []); // Remove columnOrder dependency to prevent re-initialization
+  }, [columnOrder]);
 
   // Handle auto-saving the entire note
   const handleAutoSaveNote = async () => {
