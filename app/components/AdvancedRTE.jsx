@@ -863,22 +863,24 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           }
         }}
       >
-        <EditorContent 
-          editor={editor} 
-          style={{
-            minHeight: "400px",
-            padding: "16px 20px",
-            paddingLeft: "50px", // Extra padding for drag handle
-            border: "none",
-            outline: "none",
-            fontSize: "14px",
-            lineHeight: "1.5",
-            color: "#212529",
-            cursor: "text",
-            width: "100%"
-          }}
-        />
-        {editor && <TiptapDragHandle editor={editor} />}
+        <div style={{ position: 'relative' }}>
+          <EditorContent 
+            editor={editor} 
+            style={{
+              minHeight: "400px",
+              padding: "16px 20px",
+              paddingLeft: "50px", // Extra padding for drag handle
+              border: "none",
+              outline: "none",
+              fontSize: "14px",
+              lineHeight: "1.5",
+              color: "#212529",
+              cursor: "text",
+              width: "100%"
+            }}
+          />
+          {editor && <TiptapDragHandle editor={editor} />}
+        </div>
         
         {/* Character Count */}
         {editor && (
