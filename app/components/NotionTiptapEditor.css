@@ -14,8 +14,8 @@
 /* Drag Handle Styles */
 .drag-handle {
   position: absolute;
-  left: -40px;
-  top: 0;
+  left: -32px;
+  top: 4px;
   width: 24px;
   height: 24px;
   display: flex;
@@ -23,13 +23,14 @@
   justify-content: center;
   cursor: grab;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, background-color 0.2s;
   border-radius: 4px;
   background: transparent;
+  z-index: 10;
 }
 
 .drag-handle:hover {
-  background: #f0f0f0;
+  background-color: rgba(0, 0, 0, 0.08);
   opacity: 1;
 }
 
@@ -39,18 +40,28 @@
 
 .drag-handle:active {
   cursor: grabbing;
+  background-color: rgba(0, 0, 0, 0.12);
 }
 
 .drag-handle svg {
   width: 16px;
   height: 16px;
-  color: #999;
+  color: #6b7280;
 }
 
 /* Show drag handle on hover */
-.ProseMirror:not(.ProseMirror-hideselection) .has-focus .drag-handle,
-.ProseMirror:not(.ProseMirror-hideselection) *:hover > .drag-handle {
+.ProseMirror .node-view:hover > .drag-handle,
+.ProseMirror .ProseMirror-selectednode > .drag-handle {
   opacity: 1;
+}
+
+/* Ensure the editor has proper positioning context */
+.notion-editor-wrapper {
+  position: relative;
+}
+
+.ProseMirror {
+  position: relative;
 }
 
 /* Toolbar */
