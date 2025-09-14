@@ -18,7 +18,7 @@ import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import CharacterCount from '@tiptap/extension-character-count';
-import DragHandleExtension from '@tiptap/extension-drag-handle';
+import TiptapDragHandle from './TiptapDragHandle';
 import { createLowlight } from 'lowlight';
 import { 
   Button, 
@@ -136,25 +136,6 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
 
   const editor = useEditor({
     extensions: [
-      DragHandleExtension.configure({
-        render: () => {
-          const element = document.createElement('div');
-          element.classList.add('drag-handle');
-          element.draggable = true;
-          element.setAttribute('data-drag-handle', '');
-          element.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="9" cy="5" r="1"></circle>
-              <circle cx="9" cy="12" r="1"></circle>
-              <circle cx="9" cy="19" r="1"></circle>
-              <circle cx="15" cy="5" r="1"></circle>
-              <circle cx="15" cy="12" r="1"></circle>
-              <circle cx="15" cy="19" r="1"></circle>
-            </svg>
-          `;
-          return element;
-        },
-      }),
       StarterKit.configure({
         heading: {
           levels: [1, 2, 3],
@@ -752,6 +733,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       {/* Editor Content */}
       <div className="notion-editor-wrapper" ref={editorRef}>
         <EditorContent editor={editor} />
+        {editor && <TiptapDragHandle editor={editor} />}
         
         {/* Character Count */}
         {editor && (

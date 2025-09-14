@@ -64,6 +64,12 @@
   position: relative;
 }
 
+/* Custom drag handle styles */
+.tiptap-drag-handle {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* Toolbar */
 .notion-toolbar {
   background: #fbfbfb;
