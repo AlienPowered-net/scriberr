@@ -26,7 +26,7 @@ import {
   TextContainer,
 } from "@shopify/polaris";
 // Temporarily removed Polaris icons to fix server error
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import QuillEditor from "../components/LexicalEditor";
 import AdvancedRTE from "../components/AdvancedRTE";
 import FolderIconPicker from "../components/FolderIconPicker";
@@ -358,6 +358,14 @@ export default function Index() {
     }
     return ['folders', 'notes', 'editor'];
   });
+  
+  // Ref to hold the current columnOrder for use in event handlers
+  const columnOrderRef = useRef(columnOrder);
+  
+  // Update the ref whenever columnOrder changes
+  useEffect(() => {
+    columnOrderRef.current = columnOrder;
+  }, [columnOrder]);
   
   // Save column order to localStorage
   const saveColumnOrder = (newOrder) => {
@@ -1413,12 +1421,14 @@ export default function Index() {
     // Only run on client side
     if (typeof window === 'undefined') return;
 
+    let eventListeners = [];
+    let retryTimeout = null;
+
     const initializeDraggable = () => {
       const container = document.querySelector('.app-layout');
       if (!container) {
         console.log('Container not found, retrying in 500ms...');
-        // Retry after a longer delay
-        setTimeout(initializeDraggable, 500);
+        retryTimeout = setTimeout(initializeDraggable, 500);
         return;
       }
 
@@ -1428,7 +1438,7 @@ export default function Index() {
 
       if (columns.length === 0) {
         console.log('No draggable columns found, retrying in 500ms...');
-        setTimeout(initializeDraggable, 500);
+        retryTimeout = setTimeout(initializeDraggable, 500);
         return;
       }
       
@@ -1437,34 +1447,50 @@ export default function Index() {
         column.draggable = true;
         column.setAttribute('data-index', index);
         
-        column.addEventListener('dragstart', (e) => {
+        // Create event handler functions
+        const handleDragStart = (e) => {
           e.dataTransfer.setData('text/plain', index.toString());
           column.style.opacity = '0.5';
           console.log('Drag started for column:', index);
-        });
+        };
         
-        column.addEventListener('dragend', (e) => {
+        const handleDragEnd = (e) => {
           column.style.opacity = '1';
           console.log('Drag ended for column:', index);
-        });
+        };
         
-        column.addEventListener('dragover', (e) => {
+        const handleDragOver = (e) => {
           e.preventDefault();
-        });
+        };
         
-        column.addEventListener('drop', (e) => {
+        const handleDrop = (e) => {
           e.preventDefault();
           const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'));
           const dropIndex = parseInt(column.getAttribute('data-index'));
           
           if (draggedIndex !== dropIndex) {
             console.log('Dropping column', draggedIndex, 'onto column', dropIndex);
-            const newOrder = [...columnOrder];
+            // Use the ref to get the current columnOrder
+            const newOrder = [...columnOrderRef.current];
             const [movedColumn] = newOrder.splice(draggedIndex, 1);
             newOrder.splice(dropIndex, 0, movedColumn);
             saveColumnOrder(newOrder);
           }
-        });
+        };
+        
+        // Add event listeners and store references for cleanup
+        column.addEventListener('dragstart', handleDragStart);
+        column.addEventListener('dragend', handleDragEnd);
+        column.addEventListener('dragover', handleDragOver);
+        column.addEventListener('drop', handleDrop);
+        
+        // Store event listener references for cleanup
+        eventListeners.push(
+          { element: column, event: 'dragstart', handler: handleDragStart },
+          { element: column, event: 'dragend', handler: handleDragEnd },
+          { element: column, event: 'dragover', handler: handleDragOver },
+          { element: column, event: 'drop', handler: handleDrop }
+        );
       });
 
       console.log('Native drag and drop initialized successfully');
@@ -1478,10 +1504,24 @@ export default function Index() {
       setTimeout(initializeDraggable, 100);
     }
 
+    // Cleanup function
     return () => {
-      // Cleanup is handled by the event listeners being removed when components unmount
+      // Clear any pending retry timeout
+      if (retryTimeout) {
+        clearTimeout(retryTimeout);
+      }
+      
+      // Remove all event listeners
+      eventListeners.forEach(({ element, event, handler }) => {
+        element.removeEventListener(event, handler);
+      });
+      
+      // Clear the event listeners array
+      eventListeners = [];
+      
+      console.log('Drag and drop event listeners cleaned up');
     };
-  }, [columnOrder]);
+  }, []); // Empty dependency array - only run once on mount
 
   // Handle auto-saving the entire note
   const handleAutoSaveNote = async () => {
