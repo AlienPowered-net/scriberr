@@ -869,7 +869,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             style={{
               minHeight: "400px",
               padding: "16px 20px",
-              paddingLeft: "50px", // Extra padding for drag handle
+              paddingLeft: "70px", // Extra padding for drag handle
               border: "none",
               outline: "none",
               fontSize: "14px",

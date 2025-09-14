@@ -16,6 +16,21 @@ const TiptapDragHandle = ({ editor }) => {
     const editorElement = editor.view.dom;
     editorRef.current = editorElement;
 
+    // Show drag handle when editor is focused
+    const handleFocus = () => {
+      const pos = editor.state.selection.from;
+      if (pos !== null) {
+        updateDragHandle(pos);
+      }
+    };
+
+    const handleSelectionUpdate = () => {
+      const pos = editor.state.selection.from;
+      if (pos !== null) {
+        updateDragHandle(pos);
+      }
+    };
+
     const updateDragHandle = (pos) => {
       if (!pos) {
         setVisible(false);
@@ -43,11 +58,11 @@ const TiptapDragHandle = ({ editor }) => {
 
       // Calculate proper alignment with text baseline
       const lineHeight = coords.bottom - coords.top;
-      const textBaselineOffset = lineHeight * 0.3; // Adjust for text baseline
+      const textBaselineOffset = lineHeight * 0.2; // Better alignment with text baseline
       
       setPosition({
         top: coords.top - editorRect.top + textBaselineOffset,
-        left: -40 // Position outside the editor content area
+        left: -60 // Position outside the editor content area, accounting for editor padding
       });
       setVisible(true);
 
@@ -75,6 +90,14 @@ const TiptapDragHandle = ({ editor }) => {
       }
     };
 
+    const handleMouseEnter = () => {
+      // Show drag handle when entering editor area
+      const pos = editor.state.selection.from;
+      if (pos !== null) {
+        updateDragHandle(pos);
+      }
+    };
+
     const handleMouseLeave = () => {
       setVisible(false);
       setHoveredNode(null);
@@ -83,10 +106,18 @@ const TiptapDragHandle = ({ editor }) => {
     // Add event listeners
     editorElement.addEventListener('mousemove', handleMouseMove);
     editorElement.addEventListener('mouseleave', handleMouseLeave);
+    editorElement.addEventListener('mouseenter', handleMouseEnter);
+    editorElement.addEventListener('focus', handleFocus);
+    
+    // Listen for selection changes
+    editor.on('selectionUpdate', handleSelectionUpdate);
 
     return () => {
       editorElement.removeEventListener('mousemove', handleMouseMove);
       editorElement.removeEventListener('mouseleave', handleMouseLeave);
+      editorElement.removeEventListener('mouseenter', handleMouseEnter);
+      editorElement.removeEventListener('focus', handleFocus);
+      editor.off('selectionUpdate', handleSelectionUpdate);
     };
   }, [editor]);
 
@@ -200,11 +231,11 @@ const TiptapDragHandle = ({ editor }) => {
         alignItems: 'center',
         justifyContent: 'center',
         cursor: isDragging ? 'grabbing' : 'grab',
-        opacity: visible ? 1 : 0,
+        opacity: 1, // Always visible when rendered
         background: 'transparent',
         borderRadius: '4px',
         transition: 'all 0.15s ease',
-        zIndex: 10,
+        zIndex: 1000, // Higher z-index to ensure visibility
         transform: 'translateY(-50%)',
         pointerEvents: 'auto',
       }}

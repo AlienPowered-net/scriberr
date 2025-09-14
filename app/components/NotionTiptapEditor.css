@@ -9,6 +9,7 @@
   min-height: 500px;
   display: flex;
   flex-direction: column;
+  position: relative; /* Ensure proper positioning context */
 }
 
 /* Drag Handle Styles */
@@ -73,7 +74,11 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .notion-editor {
-    padding-left: 50px; /* Less padding on mobile */
+    padding-left: 60px; /* Less padding on mobile but still space for drag handle */
+  }
+  
+  .tiptap-drag-handle {
+    left: -50px !important; /* Adjust position for mobile */
   }
 }
 
@@ -96,6 +101,7 @@
 .notion-editor-wrapper {
   flex: 1;
   overflow-y: auto;
+  overflow-x: visible; /* Allow drag handle to extend beyond editor bounds */
   background: #ffffff;
   position: relative;
 }
@@ -103,7 +109,7 @@
 /* Editor Core Styles */
 .notion-editor {
   padding: 40px 60px;
-  padding-left: 70px; /* Extra padding on the left for drag handle */
+  padding-left: 80px; /* Extra padding on the left for drag handle */
   min-height: 100%;
   max-width: 900px;
   margin: 0 auto;
@@ -593,21 +599,27 @@
 }
 
 .tiptap-drag-handle {
-  opacity: 0;
+  opacity: 1; /* Always visible when rendered */
   transition: all 0.15s ease;
   pointer-events: auto;
   user-select: none;
   -webkit-user-select: none;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .tiptap-drag-handle:hover {
   background: rgba(0, 0, 0, 0.1) !important;
   transform: translateY(-50%) scale(1.1) !important;
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .tiptap-drag-handle:active {
   cursor: grabbing;
   background: rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-50%) scale(1.05) !important;
 }
 
 /* Dark mode drag handle */
