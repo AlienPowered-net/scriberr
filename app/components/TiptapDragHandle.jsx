@@ -5,76 +5,88 @@ const TiptapDragHandle = ({ editor }) => {
   const [visible, setVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const [hoveredNode, setHoveredNode] = useState(null);
   const dragHandleRef = useRef(null);
   const draggedNodeInfo = useRef(null);
+  const editorRef = useRef(null);
 
   useEffect(() => {
     if (!editor) return;
 
-    const updateDragHandle = () => {
-      const { from, to, $from } = editor.state.selection;
-      
-      // Only show for cursor selections (not text selections)
-      if (from !== to) {
+    const editorElement = editor.view.dom;
+    editorRef.current = editorElement;
+
+    const updateDragHandle = (pos) => {
+      if (!pos) {
         setVisible(false);
         return;
       }
 
+      const $pos = editor.state.doc.resolve(pos);
+      
       // Find the nearest block node
-      let depth = $from.depth;
-      while (depth > 0 && $from.node(depth).isInline) {
+      let depth = $pos.depth;
+      while (depth > 0 && $pos.node(depth).isInline) {
         depth -= 1;
       }
 
-      const node = $from.node(depth);
+      const node = $pos.node(depth);
       if (!node || node.isInline) {
         setVisible(false);
         return;
       }
 
       // Get the position of the block
-      const pos = depth > 0 ? $from.before(depth) : 0;
-      const coords = editor.view.coordsAtPos(pos);
-      const editorRect = editor.view.dom.getBoundingClientRect();
+      const blockPos = depth > 0 ? $pos.before(depth) : 0;
+      const coords = editor.view.coordsAtPos(blockPos);
+      const editorRect = editorElement.getBoundingClientRect();
 
-      // Adjust position to align with the text line
-      // Get the actual line height and text metrics for better alignment
+      // Calculate proper alignment with text baseline
       const lineHeight = coords.bottom - coords.top;
-      
-      // Different alignment for different node types
-      let verticalOffset = 0;
-      if (node.type.name === 'heading') {
-        // Headings need different alignment due to larger font size
-        verticalOffset = lineHeight * 0.1;
-      } else if (node.type.name === 'paragraph') {
-        // Regular paragraphs
-        verticalOffset = lineHeight * 0.15;
-      } else {
-        // Lists and other elements
-        verticalOffset = lineHeight * 0.2;
-      }
+      const textBaselineOffset = lineHeight * 0.3; // Adjust for text baseline
       
       setPosition({
-        top: coords.top - editorRect.top + verticalOffset, // Better vertical alignment
-        left: -32 // Position outside the editor content area
+        top: coords.top - editorRect.top + textBaselineOffset,
+        left: -40 // Position outside the editor content area
       });
       setVisible(true);
 
       // Store node info for dragging
       draggedNodeInfo.current = {
         node,
-        pos,
+        pos: blockPos,
         depth,
         size: node.nodeSize
       };
     };
 
-    editor.on('selectionUpdate', updateDragHandle);
-    editor.on('update', updateDragHandle);
+    const handleMouseMove = (event) => {
+      const pos = editor.view.posAtCoords({
+        left: event.clientX,
+        top: event.clientY
+      });
+
+      if (pos) {
+        updateDragHandle(pos.pos);
+        setHoveredNode(pos.pos);
+      } else {
+        setVisible(false);
+        setHoveredNode(null);
+      }
+    };
+
+    const handleMouseLeave = () => {
+      setVisible(false);
+      setHoveredNode(null);
+    };
+
+    // Add event listeners
+    editorElement.addEventListener('mousemove', handleMouseMove);
+    editorElement.addEventListener('mouseleave', handleMouseLeave);
 
     return () => {
-      editor.off('selectionUpdate', updateDragHandle);
-      editor.off('update', updateDragHandle);
+      editorElement.removeEventListener('mousemove', handleMouseMove);
+      editorElement.removeEventListener('mouseleave', handleMouseLeave);
     };
   }, [editor]);
 
@@ -182,42 +194,48 @@ const TiptapDragHandle = ({ editor }) => {
         position: 'absolute',
         top: position.top,
         left: position.left,
-        width: '24px',
-        height: '24px',
+        width: '20px',
+        height: '20px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         cursor: isDragging ? 'grabbing' : 'grab',
-        opacity: isDragging ? 0.5 : 1,
+        opacity: visible ? 1 : 0,
         background: 'transparent',
         borderRadius: '4px',
-        transition: 'background-color 0.2s, opacity 0.2s',
+        transition: 'all 0.15s ease',
         zIndex: 10,
-        transform: 'translateY(-50%)', // Center vertically on the text line
+        transform: 'translateY(-50%)',
+        pointerEvents: 'auto',
       }}
       draggable
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.08)';
+        e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+        e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
       }}
       onMouseLeave={(e) => {
         if (!isDragging) {
           e.currentTarget.style.backgroundColor = 'transparent';
+          e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
         }
       }}
     >
       <svg 
         xmlns="http://www.w3.org/2000/svg" 
-        width="16" 
-        height="16" 
+        width="14" 
+        height="14" 
         viewBox="0 0 24 24" 
         fill="none" 
         stroke="currentColor" 
         strokeWidth="2" 
         strokeLinecap="round" 
         strokeLinejoin="round"
-        style={{ color: '#6b7280' }}
+        style={{ 
+          color: '#9ca3af',
+          transition: 'color 0.15s ease'
+        }}
       >
         <circle cx="9" cy="5" r="1"></circle>
         <circle cx="9" cy="12" r="1"></circle>
