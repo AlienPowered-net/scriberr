@@ -1416,14 +1416,21 @@ export default function Index() {
     const initializeDraggable = () => {
       const container = document.querySelector('.app-layout');
       if (!container) {
-        console.log('Container not found, retrying...');
+        console.log('Container not found, retrying in 500ms...');
+        // Retry after a longer delay
+        setTimeout(initializeDraggable, 500);
         return;
       }
 
-      console.log('Initializing native drag and drop');
-      console.log('Draggable columns found:', document.querySelectorAll('.draggable-column').length);
-
+      console.log('Container found, initializing drag and drop');
       const columns = document.querySelectorAll('.draggable-column');
+      console.log('Draggable columns found:', columns.length);
+
+      if (columns.length === 0) {
+        console.log('No draggable columns found, retrying in 500ms...');
+        setTimeout(initializeDraggable, 500);
+        return;
+      }
       
       columns.forEach((column, index) => {
         // Make the entire column draggable
@@ -1463,11 +1470,16 @@ export default function Index() {
       console.log('Native drag and drop initialized successfully');
     };
 
-    // Add a small delay to ensure DOM is ready
-    const timer = setTimeout(initializeDraggable, 100);
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeDraggable);
+    } else {
+      // DOM is already ready, but add a small delay to ensure React has rendered
+      setTimeout(initializeDraggable, 100);
+    }
 
     return () => {
-      clearTimeout(timer);
+      // Cleanup is handled by the event listeners being removed when components unmount
     };
   }, [columnOrder]);
 
