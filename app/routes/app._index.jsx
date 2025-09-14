@@ -1413,15 +1413,23 @@ export default function Index() {
     // Only run on client side
     if (typeof window === 'undefined') return;
 
+    let sortable = null;
+
     const initializeDraggable = async () => {
       try {
         // Dynamically import Sortable only on client side
         const { Sortable } = await import('@shopify/draggable');
         
         const container = document.querySelector('.app-layout');
-        if (!container) return;
+        if (!container) {
+          console.log('Container not found, retrying...');
+          return;
+        }
 
-        const sortable = new Sortable(container, {
+        console.log('Initializing draggable with container:', container);
+        console.log('Draggable columns found:', document.querySelectorAll('.draggable-column').length);
+
+        sortable = new Sortable(container, {
           draggable: '.draggable-column',
           handle: '.column-drag-handle',
           mirror: {
@@ -1434,6 +1442,7 @@ export default function Index() {
         });
 
         sortable.on('sortable:stop', (event) => {
+          console.log('Sortable stop event:', event);
           const { oldIndex, newIndex } = event;
           if (oldIndex !== newIndex) {
             const newOrder = [...columnOrder];
@@ -1443,17 +1452,22 @@ export default function Index() {
           }
         });
 
-        return () => {
-          sortable.destroy();
-        };
+        console.log('Draggable initialized successfully');
       } catch (error) {
         console.error('Failed to initialize draggable:', error);
       }
     };
 
-    const cleanup = initializeDraggable();
-    return cleanup;
-  }, [columnOrder]);
+    // Add a small delay to ensure DOM is ready
+    const timer = setTimeout(initializeDraggable, 100);
+
+    return () => {
+      clearTimeout(timer);
+      if (sortable) {
+        sortable.destroy();
+      }
+    };
+  }, []); // Remove columnOrder dependency to prevent re-initialization
 
   // Handle auto-saving the entire note
   const handleAutoSaveNote = async () => {
