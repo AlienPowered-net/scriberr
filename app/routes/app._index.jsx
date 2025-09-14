@@ -48,7 +48,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Draggable, Droppable, Sortable } from '@shopify/draggable';
+// Note: Shopify Draggable will be imported dynamically on client-side only
 
 /* ------------------ Loader ------------------ */
 export async function loader({ request }) {
@@ -492,36 +492,51 @@ export default function Index() {
     }
   };
 
-  // Initialize drag and drop for columns
+  // Initialize drag and drop for columns (client-side only)
   useEffect(() => {
-    const container = document.querySelector('.app-layout');
-    if (!container) return;
+    // Only run on client side
+    if (typeof window === 'undefined') return;
 
-    const sortable = new Sortable(container, {
-      draggable: '.draggable-column',
-      handle: '.column-drag-handle',
-      mirror: {
-        constrainDimensions: true,
-      },
-      swapAnimation: {
-        duration: 200,
-        easingFunction: 'ease-in-out',
-      },
-    });
+    const initializeDraggable = async () => {
+      try {
+        // Dynamically import Sortable only on client side
+        const { Sortable } = await import('@shopify/draggable');
+        
+        const container = document.querySelector('.app-layout');
+        if (!container) return;
 
-    sortable.on('sortable:stop', (event) => {
-      const { oldIndex, newIndex } = event;
-      if (oldIndex !== newIndex) {
-        const newOrder = [...columnOrder];
-        const [movedColumn] = newOrder.splice(oldIndex, 1);
-        newOrder.splice(newIndex, 0, movedColumn);
-        saveColumnOrder(newOrder);
+        const sortable = new Sortable(container, {
+          draggable: '.draggable-column',
+          handle: '.column-drag-handle',
+          mirror: {
+            constrainDimensions: true,
+          },
+          swapAnimation: {
+            duration: 200,
+            easingFunction: 'ease-in-out',
+          },
+        });
+
+        sortable.on('sortable:stop', (event) => {
+          const { oldIndex, newIndex } = event;
+          if (oldIndex !== newIndex) {
+            const newOrder = [...columnOrder];
+            const [movedColumn] = newOrder.splice(oldIndex, 1);
+            newOrder.splice(newIndex, 0, movedColumn);
+            saveColumnOrder(newOrder);
+          }
+        });
+
+        return () => {
+          sortable.destroy();
+        };
+      } catch (error) {
+        console.error('Failed to initialize draggable:', error);
       }
-    });
-
-    return () => {
-      sortable.destroy();
     };
+
+    const cleanup = initializeDraggable();
+    return cleanup;
   }, [columnOrder]);
   
   // Show loading page while content loads
