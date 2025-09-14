@@ -38,9 +38,25 @@ const TiptapDragHandle = ({ editor }) => {
       const editorRect = editor.view.dom.getBoundingClientRect();
 
       // Adjust position to align with the text line
+      // Get the actual line height and text metrics for better alignment
+      const lineHeight = coords.bottom - coords.top;
+      
+      // Different alignment for different node types
+      let verticalOffset = 0;
+      if (node.type.name === 'heading') {
+        // Headings need different alignment due to larger font size
+        verticalOffset = lineHeight * 0.1;
+      } else if (node.type.name === 'paragraph') {
+        // Regular paragraphs
+        verticalOffset = lineHeight * 0.15;
+      } else {
+        // Lists and other elements
+        verticalOffset = lineHeight * 0.2;
+      }
+      
       setPosition({
-        top: coords.top - editorRect.top + 2, // Slight offset to align with text
-        left: 16 // Position inside the editor with some padding
+        top: coords.top - editorRect.top + verticalOffset, // Better vertical alignment
+        left: -32 // Position outside the editor content area
       });
       setVisible(true);
 
@@ -175,8 +191,9 @@ const TiptapDragHandle = ({ editor }) => {
         opacity: isDragging ? 0.5 : 1,
         background: 'transparent',
         borderRadius: '4px',
-        transition: 'background-color 0.2s',
+        transition: 'background-color 0.2s, opacity 0.2s',
         zIndex: 10,
+        transform: 'translateY(-50%)', // Center vertically on the text line
       }}
       draggable
       onDragStart={handleDragStart}

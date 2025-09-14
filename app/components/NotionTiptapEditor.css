@@ -103,7 +103,7 @@
 /* Editor Core Styles */
 .notion-editor {
   padding: 40px 60px;
-  padding-left: 80px; /* Extra padding on the left for drag handle */
+  padding-left: 60px; /* Extra padding on the left for drag handle */
   min-height: 100%;
   max-width: 900px;
   margin: 0 auto;
@@ -594,7 +594,8 @@
 
 .tiptap-drag-handle {
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+  pointer-events: auto;
 }
 
 .notion-editor-wrapper:hover .tiptap-drag-handle {
@@ -602,11 +603,12 @@
 }
 
 .tiptap-drag-handle:hover {
-  background: #f0f0f0;
+  background: rgba(0, 0, 0, 0.08) !important;
 }
 
 .tiptap-drag-handle:active {
   cursor: grabbing;
+  background: rgba(0, 0, 0, 0.12) !important;
 }
 
 /* Dark mode drag handle */
