@@ -5,7 +5,7 @@
   background: #ffffff;
   border: 1px solid #e1e3e5;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible; /* Allow drag handle to be visible */
   min-height: 500px;
   display: flex;
   flex-direction: column;
@@ -70,6 +70,13 @@
   -webkit-user-select: none;
 }
 
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .notion-editor {
+    padding-left: 50px; /* Less padding on mobile */
+  }
+}
+
 /* Toolbar */
 .notion-toolbar {
   background: #fbfbfb;
@@ -90,11 +97,13 @@
   flex: 1;
   overflow-y: auto;
   background: #ffffff;
+  position: relative;
 }
 
 /* Editor Core Styles */
 .notion-editor {
   padding: 40px 60px;
+  padding-left: 80px; /* Extra padding on the left for drag handle */
   min-height: 100%;
   max-width: 900px;
   margin: 0 auto;

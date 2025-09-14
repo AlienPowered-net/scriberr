@@ -848,6 +848,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       <div 
         className={`${isExpanded ? 'h-full overflow-auto' : 'min-h-[400px]'}`}
         style={{
+          position: "relative",
           backgroundColor: "#ffffff",
           borderRadius: "0 0 8px 8px",
           margin: "0",
@@ -865,12 +866,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         <EditorContent 
           editor={editor} 
           style={{
-            backgroundColor: "#ffffff",
             minHeight: "400px",
             padding: "16px 20px",
+            paddingLeft: "50px", // Extra padding for drag handle
             border: "none",
             outline: "none",
-            borderRadius: "0 0 8px 8px",
             fontSize: "14px",
             lineHeight: "1.5",
             color: "#212529",

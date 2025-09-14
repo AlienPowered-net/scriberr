@@ -39,7 +39,7 @@ const TiptapDragHandle = ({ editor }) => {
 
       setPosition({
         top: coords.top - editorRect.top,
-        left: editorRect.left - 40
+        left: 16 // Position inside the editor with some padding
       });
       setVisible(true);
 
