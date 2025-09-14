@@ -40,6 +40,7 @@
     "@remix-run/react": "2.16.7",
     "@remix-run/route-config": "2.16.7",
     "@shopify/app-bridge-react": "^4.1.6",
+    "@shopify/draggable": "^1.1.4",
     "@shopify/polaris": "^13.9.5",
     "@shopify/polaris-icons": "^9.3.1",
     "@shopify/shopify-app-remix": "^3.7.0",
