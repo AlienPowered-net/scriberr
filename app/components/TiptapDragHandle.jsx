@@ -37,8 +37,9 @@ const TiptapDragHandle = ({ editor }) => {
       const coords = editor.view.coordsAtPos(pos);
       const editorRect = editor.view.dom.getBoundingClientRect();
 
+      // Adjust position to align with the text line
       setPosition({
-        top: coords.top - editorRect.top,
+        top: coords.top - editorRect.top + 2, // Slight offset to align with text
         left: 16 // Position inside the editor with some padding
       });
       setVisible(true);

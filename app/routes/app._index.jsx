@@ -370,6 +370,9 @@ export default function Index() {
   const [folderSelectorNoteId, setFolderSelectorNoteId] = useState(null);
   const [folderSelectorSearchQuery, setFolderSelectorSearchQuery] = useState("");
   
+  // Onboarding state - show only if user has no folders yet
+  const [showOnboarding, setShowOnboarding] = useState(folders.length === 0);
+  
   // Update local folders when loader data changes
   useEffect(() => {
     setLocalFolders(folders);
@@ -1564,6 +1567,10 @@ export default function Index() {
           // Add new folder to local state immediately
           setLocalFolders(prev => [result.folder, ...prev]);
           setFolderName(''); // Clear the input
+          
+          // Hide onboarding since user now has a folder
+          setShowOnboarding(false);
+          
           setAlertMessage('Folder created successfully!');
           setAlertType('success');
           setTimeout(() => setAlertMessage(''), 3000);
@@ -1758,6 +1765,16 @@ export default function Index() {
             .Polaris-Card {
               margin-bottom: 12px;
             }
+            
+            /* Onboarding block mobile adjustments */
+            .onboarding-content {
+              flex-direction: column !important;
+              align-items: flex-start !important;
+            }
+            .onboarding-buttons {
+              width: 100%;
+              margin-top: 12px;
+            }
           }
           
           /* Tablet responsive layout */
@@ -1902,13 +1919,60 @@ export default function Index() {
           </div>
         )}
         
+        {/* Onboarding Block */}
+        {showOnboarding && (
+          <Card sectioned>
+            <div className="onboarding-content" style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "space-between",
+              gap: "16px"
+            }}>
+              <div style={{ flex: 1 }}>
+                <Text variant="headingMd" as="h2">
+                  Welcome to Scriberr! 🎉
+                </Text>
+                <Text variant="bodyMd" color="subdued" as="p" style={{ marginTop: "4px" }}>
+                  Your intelligent note-taking assistant. Create folders to organize your thoughts, write notes with our powerful editor, and use AI to enhance your writing.
+                </Text>
+              </div>
+              <div className="onboarding-buttons" style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <ButtonGroup>
+                  <Button onClick={() => setShowNewFolderModal(true)}>
+                    Create Your First Folder
+                  </Button>
+                  <Button variant="plain" url="https://scriberr.app/docs" external>
+                    View Documentation
+                  </Button>
+                </ButtonGroup>
+                <Button 
+                  variant="tertiary" 
+                  icon={<span className="material-symbols-rounded">close</span>}
+                  onClick={() => setShowOnboarding(false)}
+                  accessibilityLabel="Dismiss onboarding"
+                />
+              </div>
+            </div>
+            <div style={{ 
+              marginTop: "12px", 
+              display: "flex", 
+              gap: "12px",
+              flexWrap: "wrap"
+            }}>
+              <Badge status="info">✨ Tip: Use "/" in the editor to access quick commands</Badge>
+              <Badge status="success">🤖 AI-powered writing assistance available</Badge>
+            </div>
+          </Card>
+        )}
+
         <div className="app-layout" style={{ 
           display: "flex", 
           gap: "16px", 
           minHeight: "calc(100vh - 80px)", // Account for fixed footer height
           paddingBottom: "80px", // Space for fixed footer
           alignItems: "stretch",
-          marginBottom: "0"
+          marginBottom: "0",
+          marginTop: "16px" // Add spacing after onboarding block
         }}>
           {/* Side Navigation for Collapsed Columns */}
           {(collapsedColumns.folders || collapsedColumns.notes) && (
