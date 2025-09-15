@@ -1469,13 +1469,22 @@ export default function Index() {
               column.classList.add('sortable-available');
             }
           });
+          
+          // Show the original column's space as a green drop zone (where it can return)
+          evt.data.source.classList.add('sortable-drag-over');
         });
         
         // Add hover effects for available drop zones
         sortable.on('sortable:sort', (evt) => {
-          // This event fires when dragging over a sortable element
+          // Remove drag-over class from all elements first
+          const allColumns = container.querySelectorAll('.draggable-column');
+          allColumns.forEach(column => {
+            column.classList.remove('sortable-drag-over');
+          });
+          
+          // Add drag-over class to the element being hovered over
           const overElement = evt.data.over;
-          if (overElement && overElement.classList.contains('sortable-available')) {
+          if (overElement) {
             overElement.classList.add('sortable-drag-over');
           }
         });
@@ -2093,12 +2102,12 @@ export default function Index() {
                 margin: 8px 0;
               }
               
-              /* Drop zone styling - shows where the column will be placed */
+              /* Drop zone styling - shows where the column will be placed (Success color scheme) */
               .sortable-drag-over {
-                border: 2px solid #00a86b !important;
-                background-color: rgba(0, 168, 107, 0.1) !important;
+                border: 2px solid #008060 !important;
+                background-color: rgba(0, 128, 96, 0.1) !important;
                 transform: scale(1.02);
-                box-shadow: 0 4px 12px rgba(0, 168, 107, 0.3);
+                box-shadow: 0 4px 12px rgba(0, 128, 96, 0.3);
                 border-radius: 8px !important;
                 opacity: 1 !important;
                 position: relative;
@@ -2108,7 +2117,7 @@ export default function Index() {
                 min-height: 200px;
               }
               
-              /* Save icon overlay for drop zones */
+              /* Save icon overlay for drop zones (Success color scheme) */
               .sortable-drag-over::before {
                 content: "💾";
                 position: absolute;
@@ -2116,17 +2125,17 @@ export default function Index() {
                 left: 50%;
                 transform: translate(-50%, -50%);
                 font-size: 48px;
-                color: #00a86b;
+                color: #008060;
                 z-index: 10;
                 pointer-events: none;
                 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
               }
               
-              /* Available drop spaces styling - shows all possible drop locations */
+              /* Available drop spaces styling - shows all possible drop locations (Info color scheme) */
               .sortable-available {
-                border: 2px solid #ff8c00 !important;
-                background-color: rgba(255, 140, 0, 0.1) !important;
-                opacity: 1 !important;
+                border: 2px solid #5c6ac4 !important;
+                background-color: rgba(92, 106, 196, 0.1) !important;
+                opacity: 0.5 !important;
                 position: relative;
                 display: flex;
                 align-items: center;
@@ -2135,28 +2144,31 @@ export default function Index() {
                 border-radius: 8px !important;
               }
               
-              /* Drag icon overlay for available spaces - using drag handle icon */
+              /* Drag icon overlay for available spaces (Info color scheme) */
               .sortable-available::before {
-                content: "⋮⋮";
+                content: "📦";
                 position: absolute;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
                 font-size: 48px;
-                color: #ff8c00;
+                color: #5c6ac4;
                 z-index: 10;
                 pointer-events: none;
                 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-                font-weight: bold;
-                letter-spacing: 8px;
               }
               
-              /* Dragged element styling - 100% transparent */
+              /* Dragged element styling - completely invisible (picked up effect) */
               .sortable-dragging {
                 opacity: 0 !important;
                 transform: rotate(2deg);
                 box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
                 z-index: 1000;
+              }
+              
+              /* Make the column content invisible when being dragged */
+              .sortable-dragging * {
+                opacity: 0 !important;
               }
               
               /* Drag handle hover effect */
