@@ -1449,6 +1449,12 @@ export default function Index() {
             duration: 200,
             easingFunction: 'ease-in-out',
           },
+          // Visual feedback classes
+          classes: {
+            'sortable-placeholder': 'sortable-placeholder',
+            'sortable-drag-over': 'sortable-drag-over',
+            'sortable-dragging': 'sortable-dragging',
+          },
         });
 
         // Listen for sortable events
@@ -2027,6 +2033,52 @@ export default function Index() {
                 border-bottom-left-radius: 4px !important;
                 border-bottom-right-radius: 4px !important;
                 border: 1px solid #c9cccf !important;
+              }
+              
+              /* Drag and Drop Visual Feedback */
+              .draggable-column {
+                transition: all 0.2s ease-in-out;
+              }
+              
+              /* Placeholder styling - shows where the dragged column was */
+              .sortable-placeholder {
+                background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+                           linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+                           linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+                           linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+                background-size: 20px 20px;
+                background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+                border: 2px dashed #007ace;
+                border-radius: 8px;
+                opacity: 0.6;
+                min-height: 200px;
+                margin: 8px 0;
+              }
+              
+              /* Drop zone styling - shows where the column will be placed */
+              .sortable-drag-over {
+                border: 2px solid #007ace !important;
+                background-color: rgba(0, 122, 206, 0.1) !important;
+                transform: scale(1.02);
+                box-shadow: 0 4px 12px rgba(0, 122, 206, 0.3);
+              }
+              
+              /* Dragged element styling */
+              .sortable-dragging {
+                opacity: 0.8;
+                transform: rotate(2deg);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+                z-index: 1000;
+              }
+              
+              /* Drag handle hover effect */
+              .column-drag-handle:hover {
+                background-color: #e1e3e5 !important;
+                cursor: grab;
+              }
+              
+              .column-drag-handle:active {
+                cursor: grabbing;
               }
         `}</style>
 
