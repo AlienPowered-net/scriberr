@@ -2087,7 +2087,7 @@ export default function Index() {
                 background-size: 20px 20px;
                 background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
                 border: 2px dashed #007ace;
-                border-radius: 8px;
+                border-radius: 8px !important;
                 opacity: 0.6;
                 min-height: 200px;
                 margin: 8px 0;
@@ -2096,16 +2096,11 @@ export default function Index() {
               /* Drop zone styling - shows where the column will be placed */
               .sortable-drag-over {
                 border: 2px solid #00a86b !important;
-                background-color: rgba(0, 168, 107, 0.5) !important;
+                background-color: rgba(0, 168, 107, 0.1) !important;
                 transform: scale(1.02);
                 box-shadow: 0 4px 12px rgba(0, 168, 107, 0.3);
-              }
-              
-              /* Available drop spaces styling - shows all possible drop locations */
-              .sortable-available {
-                border: 2px solid #ff8c00 !important;
-                background-color: rgba(255, 140, 0, 0.1) !important;
-                opacity: 0.5;
+                border-radius: 8px !important;
+                opacity: 1 !important;
                 position: relative;
                 display: flex;
                 align-items: center;
@@ -2113,39 +2108,52 @@ export default function Index() {
                 min-height: 200px;
               }
               
-              /* Drag icon and text overlay for available spaces */
-              .sortable-available::before {
-                content: "↕️ Move column here";
+              /* Save icon overlay for drop zones */
+              .sortable-drag-over::before {
+                content: "💾";
                 position: absolute;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                background: rgba(255, 140, 0, 0.9);
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                font-weight: 600;
-                font-size: 14px;
+                font-size: 48px;
+                color: #00a86b;
                 z-index: 10;
                 pointer-events: none;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-                white-space: nowrap;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
               }
               
-              /* Hover effect for available spaces - turn green when hovering */
-              .sortable-available:hover {
-                border: 2px solid #00a86b !important;
-                background-color: rgba(0, 168, 107, 0.1) !important;
+              /* Available drop spaces styling - shows all possible drop locations */
+              .sortable-available {
+                border: 2px solid #ff8c00 !important;
+                background-color: rgba(255, 140, 0, 0.1) !important;
+                opacity: 1 !important;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 200px;
+                border-radius: 8px !important;
               }
               
-              .sortable-available:hover::before {
-                background: rgba(0, 168, 107, 0.9);
-                content: "✓ Drop here";
+              /* Drag icon overlay for available spaces - using drag handle icon */
+              .sortable-available::before {
+                content: "⋮⋮";
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 48px;
+                color: #ff8c00;
+                z-index: 10;
+                pointer-events: none;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                font-weight: bold;
+                letter-spacing: 8px;
               }
               
-              /* Dragged element styling */
+              /* Dragged element styling - 100% transparent */
               .sortable-dragging {
-                opacity: 0.8;
+                opacity: 0 !important;
                 transform: rotate(2deg);
                 box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
                 z-index: 1000;
