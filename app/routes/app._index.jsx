@@ -1441,6 +1441,7 @@ export default function Index() {
         // Initialize Sortable
         sortable = new Sortable(container, {
           draggable: '.draggable-column',
+          handle: '.column-drag-handle', // Only the drag handle is draggable
           mirror: {
             constrainDimensions: true,
           },
@@ -1460,18 +1461,32 @@ export default function Index() {
           
           // Get the new order of columns
           const columns = container.querySelectorAll('.draggable-column');
-          const newOrder = Array.from(columns).map(column => {
-            // Map the column classes to our column order array
-            if (column.classList.contains('col-folders')) return 'folders';
-            if (column.classList.contains('col-notes')) return 'notes';
-            if (column.classList.contains('col-editor')) return 'editor';
-            return null;
-          }).filter(Boolean);
+          const newOrder = [];
           
-          // Only update if the order actually changed
-          if (JSON.stringify(newOrder) !== JSON.stringify(columnOrderRef.current)) {
+          // Use a Set to track which columns we've already seen to prevent duplicates
+          const seenColumns = new Set();
+          
+          Array.from(columns).forEach(column => {
+            let columnType = null;
+            
+            // Map the column classes to our column order array
+            if (column.classList.contains('col-folders')) columnType = 'folders';
+            else if (column.classList.contains('col-notes')) columnType = 'notes';
+            else if (column.classList.contains('col-editor')) columnType = 'editor';
+            
+            // Only add if we haven't seen this column type yet
+            if (columnType && !seenColumns.has(columnType)) {
+              newOrder.push(columnType);
+              seenColumns.add(columnType);
+            }
+          });
+          
+          // Only update if the order actually changed and we have exactly 3 columns
+          if (newOrder.length === 3 && JSON.stringify(newOrder) !== JSON.stringify(columnOrderRef.current)) {
             console.log('Column order changed:', newOrder);
             saveColumnOrder(newOrder);
+          } else if (newOrder.length !== 3) {
+            console.warn('Invalid column order detected:', newOrder);
           }
         });
 
