@@ -1454,16 +1454,31 @@ export default function Index() {
             'sortable-placeholder': 'sortable-placeholder',
             'sortable-drag-over': 'sortable-drag-over',
             'sortable-dragging': 'sortable-dragging',
+            'sortable-available': 'sortable-available',
           },
         });
 
         // Listen for sortable events
         sortable.on('sortable:start', (evt) => {
           console.log('Sortable started:', evt);
+          
+          // Show available drop zones for all other columns
+          const allColumns = container.querySelectorAll('.draggable-column');
+          allColumns.forEach(column => {
+            if (column !== evt.data.source) {
+              column.classList.add('sortable-available');
+            }
+          });
         });
 
         sortable.on('sortable:stop', (evt) => {
           console.log('Sortable stopped:', evt);
+          
+          // Remove available drop zone styling from all columns
+          const allColumns = container.querySelectorAll('.draggable-column');
+          allColumns.forEach(column => {
+            column.classList.remove('sortable-available');
+          });
           
           // Get the new order of columns
           const columns = container.querySelectorAll('.draggable-column');
@@ -1518,6 +1533,12 @@ export default function Index() {
       if (retryTimeout) {
         clearTimeout(retryTimeout);
       }
+      
+      // Remove any remaining visual feedback classes
+      const allColumns = document.querySelectorAll('.draggable-column');
+      allColumns.forEach(column => {
+        column.classList.remove('sortable-available', 'sortable-drag-over', 'sortable-dragging');
+      });
       
       // Destroy the sortable instance
       if (sortable) {
@@ -2057,10 +2078,17 @@ export default function Index() {
               
               /* Drop zone styling - shows where the column will be placed */
               .sortable-drag-over {
-                border: 2px solid #007ace !important;
-                background-color: rgba(0, 122, 206, 0.1) !important;
+                border: 2px solid #00a86b !important;
+                background-color: rgba(0, 168, 107, 0.5) !important;
                 transform: scale(1.02);
-                box-shadow: 0 4px 12px rgba(0, 122, 206, 0.3);
+                box-shadow: 0 4px 12px rgba(0, 168, 107, 0.3);
+              }
+              
+              /* Available drop spaces styling - shows all possible drop locations */
+              .sortable-available {
+                border: 2px solid #ff8c00 !important;
+                background-color: rgba(255, 140, 0, 0.1) !important;
+                opacity: 0.5;
               }
               
               /* Dragged element styling */
