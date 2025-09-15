@@ -2117,10 +2117,15 @@ export default function Index() {
                 min-height: 200px;
               }
               
-              /* Hide column content when it's a drop zone */
-              .sortable-drag-over > *:not(::before) {
+              /* Hide ALL column content when it's a drop zone */
+              .sortable-drag-over * {
                 opacity: 0 !important;
                 pointer-events: none !important;
+              }
+              
+              /* Ensure the drop zone itself is visible */
+              .sortable-drag-over {
+                opacity: 1 !important;
               }
               
               /* Save icon overlay for drop zones (Success color scheme) */
@@ -2130,13 +2135,15 @@ export default function Index() {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                width: 120px;
-                height: 120px;
+                width: 150px;
+                height: 150px;
                 background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23008060'%3E%3Cpath d='M17 3H3v14h14V3zM3 2a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H3zm2 3h10v2H5V5zm0 4h6v2H5V9zm0 4h8v2H5v-2z'/%3E%3C/svg%3E");
                 background-size: contain;
                 background-repeat: no-repeat;
-                z-index: 10;
+                z-index: 1000;
                 pointer-events: none;
+                opacity: 1 !important;
+                filter: drop-shadow(0 4px 8px rgba(0, 128, 96, 0.3));
               }
               
               /* Available drop spaces styling - shows all possible drop locations (Info color scheme) */
@@ -2152,10 +2159,15 @@ export default function Index() {
                 border-radius: 8px !important;
               }
               
-              /* Hide column content when it's an available drop space */
-              .sortable-available > *:not(::before) {
+              /* Hide ALL column content when it's an available drop space */
+              .sortable-available * {
                 opacity: 0 !important;
                 pointer-events: none !important;
+              }
+              
+              /* Ensure the available space itself is visible */
+              .sortable-available {
+                opacity: 0.5 !important;
               }
               
               /* Drag icon overlay for available spaces (Info color scheme) */
@@ -2165,13 +2177,15 @@ export default function Index() {
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                width: 120px;
-                height: 120px;
+                width: 150px;
+                height: 150px;
                 background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%235c6ac4'%3E%3Cpath d='M3 7h14v2H3V7zm4-4h6v2H7V3zm0 14h6v2H7v-2zm-4-7h4v2H3v-2zm14 0h4v2h-4v-2z'/%3E%3C/svg%3E");
                 background-size: contain;
                 background-repeat: no-repeat;
-                z-index: 10;
+                z-index: 1000;
                 pointer-events: none;
+                opacity: 1 !important;
+                filter: drop-shadow(0 4px 8px rgba(92, 106, 196, 0.3));
               }
               
               /* Dragged element styling - completely invisible (picked up effect) */
