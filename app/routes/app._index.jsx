@@ -2119,9 +2119,9 @@ export default function Index() {
                 min-height: 200px;
               }
               
-              /* Hide ALL column content when it's a drop zone */
+              /* Make column content 50% transparent when it's a drop zone */
               .sortable-drag-over * {
-                opacity: 0 !important;
+                opacity: 0.5 !important;
                 pointer-events: none !important;
               }
               
@@ -2161,15 +2161,15 @@ export default function Index() {
                 border-radius: 8px !important;
               }
               
-              /* Hide ALL column content when it's an available drop space */
+              /* Make column content 50% transparent when it's an available drop space */
               .sortable-available * {
-                opacity: 0 !important;
+                opacity: 0.5 !important;
                 pointer-events: none !important;
               }
               
               /* Ensure the available space itself is visible */
               .sortable-available {
-                opacity: 0.5 !important;
+                opacity: 1 !important;
               }
               
               /* Drag icon overlay for available spaces (Info color scheme) */
@@ -2189,6 +2189,7 @@ export default function Index() {
                 opacity: 1 !important;
                 filter: drop-shadow(0 4px 8px rgba(92, 106, 196, 0.3));
               }
+              
               
               /* Dragged element styling - completely invisible (picked up effect) */
               .sortable-dragging {
