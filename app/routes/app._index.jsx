@@ -1470,6 +1470,23 @@ export default function Index() {
             }
           });
         });
+        
+        // Add hover effects for available drop zones
+        sortable.on('sortable:sort', (evt) => {
+          // This event fires when dragging over a sortable element
+          const overElement = evt.data.over;
+          if (overElement && overElement.classList.contains('sortable-available')) {
+            overElement.classList.add('sortable-drag-over');
+          }
+        });
+        
+        sortable.on('sortable:sort:stop', (evt) => {
+          // Remove drag-over class from all elements
+          const allColumns = container.querySelectorAll('.draggable-column');
+          allColumns.forEach(column => {
+            column.classList.remove('sortable-drag-over');
+          });
+        });
 
         sortable.on('sortable:stop', (evt) => {
           console.log('Sortable stopped:', evt);
@@ -1477,7 +1494,7 @@ export default function Index() {
           // Remove available drop zone styling from all columns
           const allColumns = container.querySelectorAll('.draggable-column');
           allColumns.forEach(column => {
-            column.classList.remove('sortable-available');
+            column.classList.remove('sortable-available', 'sortable-drag-over');
           });
           
           // Get the new order of columns
@@ -2089,6 +2106,41 @@ export default function Index() {
                 border: 2px solid #ff8c00 !important;
                 background-color: rgba(255, 140, 0, 0.1) !important;
                 opacity: 0.5;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 200px;
+              }
+              
+              /* Drag icon and text overlay for available spaces */
+              .sortable-available::before {
+                content: "↕️ Move column here";
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(255, 140, 0, 0.9);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-weight: 600;
+                font-size: 14px;
+                z-index: 10;
+                pointer-events: none;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                white-space: nowrap;
+              }
+              
+              /* Hover effect for available spaces - turn green when hovering */
+              .sortable-available:hover {
+                border: 2px solid #00a86b !important;
+                background-color: rgba(0, 168, 107, 0.1) !important;
+              }
+              
+              .sortable-available:hover::before {
+                background: rgba(0, 168, 107, 0.9);
+                content: "✓ Drop here";
               }
               
               /* Dragged element styling */
