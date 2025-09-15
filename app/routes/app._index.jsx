@@ -1462,16 +1462,18 @@ export default function Index() {
         sortable.on('sortable:start', (evt) => {
           console.log('Sortable started:', evt);
           
-          // Show available drop zones for all other columns
+          // Show available drop zones for all other columns (blue)
           const allColumns = container.querySelectorAll('.draggable-column');
           allColumns.forEach(column => {
             if (column !== evt.data.source) {
               column.classList.add('sortable-available');
+              console.log('Added sortable-available class to:', column);
             }
           });
           
           // Show the original column's space as a green drop zone (where it can return)
           evt.data.source.classList.add('sortable-drag-over');
+          console.log('Added sortable-drag-over class to source:', evt.data.source);
         });
         
         // Add hover effects for available drop zones
@@ -2103,7 +2105,7 @@ export default function Index() {
               }
               
               /* Drop zone styling - shows where the column will be placed (Success color scheme) */
-              .sortable-drag-over {
+              .draggable-column.sortable-drag-over {
                 border: 2px solid #008060 !important;
                 background-color: rgba(0, 128, 96, 0.1) !important;
                 transform: scale(1.02);
@@ -2147,7 +2149,7 @@ export default function Index() {
               }
               
               /* Available drop spaces styling - shows all possible drop locations (Info color scheme) */
-              .sortable-available {
+              .draggable-column.sortable-available {
                 border: 2px solid #5c6ac4 !important;
                 background-color: rgba(92, 106, 196, 0.1) !important;
                 opacity: 0.5 !important;
