@@ -1416,92 +1416,79 @@ export default function Index() {
     return () => clearInterval(autoSaveInterval);
   }, [editingNoteId, hasUnsavedChanges, title, body, folderId, noteTags]);
 
-  // Initialize drag and drop for columns using native HTML5 drag and drop
+  // Initialize drag and drop for columns using Shopify Draggable Sortable
   useEffect(() => {
     // Only run on client side
     if (typeof window === 'undefined') return;
 
-    let eventListeners = [];
+    let sortable = null;
     let retryTimeout = null;
 
-    const initializeDraggable = () => {
-      const container = document.querySelector('.app-layout');
-      if (!container) {
-        console.log('Container not found, retrying in 500ms...');
-        retryTimeout = setTimeout(initializeDraggable, 500);
-        return;
-      }
+    const initializeSortable = async () => {
+      try {
+        // Dynamically import Sortable to avoid SSR issues
+        const { Sortable } = await import('@shopify/draggable');
+        
+        const container = document.querySelector('.app-layout');
+        if (!container) {
+          console.log('Container not found, retrying in 500ms...');
+          retryTimeout = setTimeout(initializeSortable, 500);
+          return;
+        }
 
-      console.log('Container found, initializing drag and drop');
-      const columns = document.querySelectorAll('.draggable-column');
-      console.log('Draggable columns found:', columns.length);
+        console.log('Container found, initializing Shopify Draggable Sortable');
+        
+        // Initialize Sortable
+        sortable = new Sortable(container, {
+          draggable: '.draggable-column',
+          mirror: {
+            constrainDimensions: true,
+          },
+          swapAnimation: {
+            duration: 200,
+            easingFunction: 'ease-in-out',
+          },
+        });
 
-      if (columns.length === 0) {
-        console.log('No draggable columns found, retrying in 500ms...');
-        retryTimeout = setTimeout(initializeDraggable, 500);
-        return;
-      }
-      
-      columns.forEach((column, index) => {
-        // Make the entire column draggable
-        column.draggable = true;
-        column.setAttribute('data-index', index);
-        
-        // Create event handler functions
-        const handleDragStart = (e) => {
-          e.dataTransfer.setData('text/plain', index.toString());
-          column.style.opacity = '0.5';
-          console.log('Drag started for column:', index);
-        };
-        
-        const handleDragEnd = (e) => {
-          column.style.opacity = '1';
-          console.log('Drag ended for column:', index);
-        };
-        
-        const handleDragOver = (e) => {
-          e.preventDefault();
-        };
-        
-        const handleDrop = (e) => {
-          e.preventDefault();
-          const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'));
-          const dropIndex = parseInt(column.getAttribute('data-index'));
+        // Listen for sortable events
+        sortable.on('sortable:start', (evt) => {
+          console.log('Sortable started:', evt);
+        });
+
+        sortable.on('sortable:stop', (evt) => {
+          console.log('Sortable stopped:', evt);
           
-          if (draggedIndex !== dropIndex) {
-            console.log('Dropping column', draggedIndex, 'onto column', dropIndex);
-            // Use the ref to get the current columnOrder
-            const newOrder = [...columnOrderRef.current];
-            const [movedColumn] = newOrder.splice(draggedIndex, 1);
-            newOrder.splice(dropIndex, 0, movedColumn);
+          // Get the new order of columns
+          const columns = container.querySelectorAll('.draggable-column');
+          const newOrder = Array.from(columns).map(column => {
+            // Map the column classes to our column order array
+            if (column.classList.contains('col-folders')) return 'folders';
+            if (column.classList.contains('col-notes')) return 'notes';
+            if (column.classList.contains('col-editor')) return 'editor';
+            return null;
+          }).filter(Boolean);
+          
+          // Only update if the order actually changed
+          if (JSON.stringify(newOrder) !== JSON.stringify(columnOrderRef.current)) {
+            console.log('Column order changed:', newOrder);
             saveColumnOrder(newOrder);
           }
-        };
-        
-        // Add event listeners and store references for cleanup
-        column.addEventListener('dragstart', handleDragStart);
-        column.addEventListener('dragend', handleDragEnd);
-        column.addEventListener('dragover', handleDragOver);
-        column.addEventListener('drop', handleDrop);
-        
-        // Store event listener references for cleanup
-        eventListeners.push(
-          { element: column, event: 'dragstart', handler: handleDragStart },
-          { element: column, event: 'dragend', handler: handleDragEnd },
-          { element: column, event: 'dragover', handler: handleDragOver },
-          { element: column, event: 'drop', handler: handleDrop }
-        );
-      });
+        });
 
-      console.log('Native drag and drop initialized successfully');
+        console.log('Shopify Draggable Sortable initialized successfully');
+      } catch (error) {
+        console.error('Error initializing Sortable:', error);
+        // Retry after a delay
+        retryTimeout = setTimeout(initializeSortable, 1000);
+      }
     };
 
     // Wait for DOM to be ready
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initializeDraggable);
+      document.addEventListener('DOMContentLoaded', initializeSortable);
     } else {
       // DOM is already ready, but add a small delay to ensure React has rendered
-      setTimeout(initializeDraggable, 100);
+      setTimeout(initializeSortable, 100);
     }
 
     // Cleanup function
@@ -1511,15 +1498,12 @@ export default function Index() {
         clearTimeout(retryTimeout);
       }
       
-      // Remove all event listeners
-      eventListeners.forEach(({ element, event, handler }) => {
-        element.removeEventListener(event, handler);
-      });
-      
-      // Clear the event listeners array
-      eventListeners = [];
-      
-      console.log('Drag and drop event listeners cleaned up');
+      // Destroy the sortable instance
+      if (sortable) {
+        sortable.destroy();
+        sortable = null;
+        console.log('Sortable instance destroyed');
+      }
     };
   }, []); // Empty dependency array - only run once on mount
 
