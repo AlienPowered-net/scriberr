@@ -72,6 +72,7 @@ function SortableColumn({ id, children, ...props }) {
     borderRadius: '8px',
     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
     border: '1px solid #e1e3e5',
+    position: 'relative',
     ...props.style,
   };
 
@@ -143,17 +144,20 @@ function DropIndicator({
       }}
       id={`drop-${index}`}
       style={{
-        width: active ? '52px' : '44px',
-        height: active ? '52px' : '44px',
+        position: 'absolute',
+        top: '8px',
+        left: '8px',
+        right: '8px',
+        bottom: '8px',
         borderRadius: '8px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-        backgroundColor: active ? '#4ade80' : '#3b82f6',
-        transform: active ? 'scale(1.1)' : 'scale(1)',
-        boxShadow: active ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        cursor: 'pointer'
+        backgroundColor: active ? 'rgba(74, 222, 128, 0.5)' : 'rgba(59, 130, 246, 0.3)',
+        border: active ? '2px solid #4ade80' : '2px solid #3b82f6',
+        cursor: 'pointer',
+        zIndex: 1000
       }}
       role="button"
       aria-label={`Drop column at position ${index + 1}`}
@@ -161,9 +165,9 @@ function DropIndicator({
     >
       {/* Use the project's Polaris icons. Show Save on active, DragDrop otherwise */}
       {active ? (
-        <SaveIcon style={{ width: '22px', height: '22px', color: 'white' }} />
+        <SaveIcon style={{ width: '32px', height: '32px', color: 'white' }} />
       ) : (
-        <DragDropIcon style={{ width: '18px', height: '18px', color: 'white' }} />
+        <DragDropIcon style={{ width: '28px', height: '28px', color: 'white' }} />
       )}
     </div>
   );
@@ -2296,10 +2300,9 @@ export default function Index() {
               )}
             </div>
           )}
-            {/* Drop Indicators and Columns */}
+            {/* Columns with Drop Indicators */}
             {columnOrder.map((columnId, index) => (
-              <div key={`slot-${index}`} style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                <DropIndicator index={index} isActive={activeDropIndex === index} />
+              <div key={`slot-${index}`} style={{ position: 'relative' }}>
                 {columnId === 'folders' && !collapsedColumns.folders && (
                   <SortableColumn 
                     key="folders"
@@ -2657,6 +2660,10 @@ export default function Index() {
           </Card>
                   </SortableColumn>
                 )}
+                {/* Drop indicator overlay - only show when dragging */}
+                {activeId && (
+                  <DropIndicator index={index} isActive={activeDropIndex === index} />
+                )}
                 {columnId === 'notes' && !collapsedColumns.notes && (
                   <SortableColumn 
                     key="notes"
@@ -2902,6 +2909,10 @@ export default function Index() {
             </div>
           </Card>
                   </SortableColumn>
+                )}
+                {/* Drop indicator overlay - only show when dragging */}
+                {activeId && (
+                  <DropIndicator index={index} isActive={activeDropIndex === index} />
                 )}
                 {columnId === 'editor' && (
                   <SortableColumn 
@@ -3201,13 +3212,19 @@ export default function Index() {
           </Card>
                   </SortableColumn>
                 )}
+                {/* Drop indicator overlay - only show when dragging */}
+                {activeId && (
+                  <DropIndicator index={index} isActive={activeDropIndex === index} />
+                )}
               </div>
             ))}
 
-            {/* Final drop indicator after last item */}
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <DropIndicator index={columnOrder.length} isActive={activeDropIndex === columnOrder.length} />
-            </div>
+            {/* Final drop indicator after last item - only show when dragging */}
+            {activeId && (
+              <div style={{ position: 'relative', height: '100px', minWidth: '380px' }}>
+                <DropIndicator index={columnOrder.length} isActive={activeDropIndex === columnOrder.length} />
+              </div>
+            )}
           </div>
           </SortableContext>
         
