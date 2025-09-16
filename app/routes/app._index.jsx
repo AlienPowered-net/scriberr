@@ -2680,7 +2680,7 @@ export default function Index() {
               flex: "1",
               overflowY: localFolders.length > 9 ? "auto" : "visible",
               overflowX: "hidden", 
-              padding: "16px 20px 0 16px",
+              padding: "16px 20px 16px 16px",
               maxHeight: localFolders.length > 9 ? "500px" : "none"
             }}>
               {localFolders.length === 0 ? (
@@ -2851,7 +2851,7 @@ export default function Index() {
               flex: "1",
               overflowY: filteredNotes.length > 1 ? "auto" : "visible",
               overflowX: "hidden",
-              padding: "16px 20px 0 16px",
+              padding: "16px 20px 16px 16px",
               maxHeight: filteredNotes.length > 1 ? "calc(100vh - 200px)" : "none"
             }}>
               
@@ -3093,7 +3093,7 @@ export default function Index() {
                 )}
               </InlineStack>
             </div>
-            <div style={{ padding: "16px", flex: "1", overflowY: "auto" }}>
+            <div style={{ padding: "16px 16px 16px 16px", flex: "1", overflowY: "auto" }}>
               <BlockStack gap="300">
                 <div>
                   <div style={{ 
