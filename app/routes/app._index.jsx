@@ -153,11 +153,13 @@ function DropIndicator({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-        backgroundColor: active ? 'rgba(74, 222, 128, 0.5)' : 'rgba(59, 130, 246, 0.3)',
-        border: active ? '2px solid #4ade80' : '2px solid #3b82f6',
+        transition: 'all 0.15s ease-out',
+        backgroundColor: active ? '#abcbbc' : '#eaf4ff',
+        border: active ? '2px solid #345848' : '2px solid #00527c',
         cursor: 'pointer',
-        zIndex: 1000
+        zIndex: 1000,
+        transform: active ? 'scale(1.1)' : 'scale(1)',
+        boxShadow: active ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
       }}
       role="button"
       aria-label={`Drop column at position ${index + 1}`}
@@ -165,9 +167,9 @@ function DropIndicator({
     >
       {/* Use the project's Polaris icons. Show Save on active, DragDrop otherwise */}
       {active ? (
-        <SaveIcon style={{ width: '32px', height: '32px', color: 'white' }} />
+        <SaveIcon style={{ width: '24px', height: '24px', color: '#cdfee1' }} />
       ) : (
-        <DragDropIcon style={{ width: '28px', height: '28px', color: 'white' }} />
+        <DragDropIcon style={{ width: '24px', height: '24px', color: '#afbfcc' }} />
       )}
     </div>
   );
