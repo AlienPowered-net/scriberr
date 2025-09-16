@@ -2046,13 +2046,13 @@ export default function Index() {
               
               /* dnd-kit Drag and Drop Visual Feedback */
               .draggable-column {
-                transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 position: relative;
               }
               
               /* Dragged element - visually distinct */
               .sortable-dragging {
-                opacity: 0.6 !important;
+                opacity: 0.3 !important;
                 transform: rotate(2deg) scale(1.02);
                 box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
                 z-index: 1000;
@@ -2062,25 +2062,26 @@ export default function Index() {
               
               /* Active drop target - single green highlight */
               .sortable-drag-over {
-                border: 2px solid #008060 !important;
-                background-color: rgba(0, 128, 96, 0.1) !important;
-                transform: scale(1.01);
-                box-shadow: 0 4px 16px rgba(0, 128, 96, 0.2);
+                border: 3px solid #008060 !important;
+                background-color: rgba(0, 128, 96, 0.15) !important;
+                transform: scale(1.02);
+                box-shadow: 0 6px 20px rgba(0, 128, 96, 0.3);
                 border-radius: 8px !important;
                 position: relative;
               }
               
               /* Potential drop targets - subtle blue outline */
               .sortable-available {
-                border: 1px solid #5c6ac4 !important;
-                background-color: rgba(92, 106, 196, 0.03) !important;
+                border: 2px solid #5c6ac4 !important;
+                background-color: rgba(92, 106, 196, 0.08) !important;
                 border-radius: 8px !important;
                 position: relative;
+                transform: translateY(1px);
               }
               
               /* Smooth space-making animation for other columns */
               .sortable-available:not(.sortable-drag-over) {
-                transform: translateY(2px);
+                transform: translateY(1px);
               }
               
               /* Drag handle hover effect */
@@ -2216,14 +2217,17 @@ export default function Index() {
               )}
             </div>
           )}
-                {/* FOLDERS */}
-        {!collapsedColumns.folders && (
-        <SortableColumn 
-          id="folders"
-          style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}
-          isActive={overId === 'folders' && activeId !== 'folders'}
-          isPotential={activeId && activeId !== 'folders'}
-        >
+                {/* DYNAMIC COLUMNS BASED ON ORDER */}
+        {columnOrder.map((columnId) => {
+          if (columnId === 'folders' && !collapsedColumns.folders) {
+            return (
+              <SortableColumn 
+                key="folders"
+                id="folders"
+                style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}
+                isActive={overId === 'folders' && activeId !== 'folders'}
+                isPotential={activeId && activeId !== 'folders'}
+              >
           <Card
             style={{
               transition: "all 0.3s ease",
@@ -2574,18 +2578,16 @@ export default function Index() {
             </div>
           </Card>
         </SortableColumn>
-        )}
-
-
-
-        {/* NOTES */}
-        {!collapsedColumns.notes && (
-        <SortableColumn 
-          id="notes"
-          style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}
-          isActive={overId === 'notes' && activeId !== 'notes'}
-          isPotential={activeId && activeId !== 'notes'}
-        >
+            );
+          } else if (columnId === 'notes' && !collapsedColumns.notes) {
+            return (
+              <SortableColumn 
+                key="notes"
+                id="notes"
+                style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}
+                isActive={overId === 'notes' && activeId !== 'notes'}
+                isPotential={activeId && activeId !== 'notes'}
+              >
           <Card style={{ flex: "1", display: "flex", flexDirection: "column" }}>
             {/* Fixed Header Section */}
             <div style={{ 
@@ -2825,27 +2827,28 @@ export default function Index() {
             </div>
           </Card>
         </SortableColumn>
-        )}
-
-        {/* NOTE EDITOR */}
-        <SortableColumn 
-          id="editor"
-          style={{ 
-            ...(collapsedColumns.folders && collapsedColumns.notes ? {
-              flex: "1",
-              width: "auto",
-              maxWidth: "none"
-            } : {
-              flex: "1",
-              minWidth: "400px"
-            }),
-            transition: "all 0.3s ease",
-            display: "flex",
-            flexDirection: "column"
-          }}
-          isActive={overId === 'editor' && activeId !== 'editor'}
-          isPotential={activeId && activeId !== 'editor'}
-        >
+            );
+          } else if (columnId === 'editor') {
+            return (
+              <SortableColumn 
+                key="editor"
+                id="editor"
+                style={{ 
+                  ...(collapsedColumns.folders && collapsedColumns.notes ? {
+                    flex: "1",
+                    width: "auto",
+                    maxWidth: "none"
+                  } : {
+                    flex: "1",
+                    minWidth: "400px"
+                  }),
+                  transition: "all 0.3s ease",
+                  display: "flex",
+                  flexDirection: "column"
+                }}
+                isActive={overId === 'editor' && activeId !== 'editor'}
+                isPotential={activeId && activeId !== 'editor'}
+              >
           <Card style={{ flex: "1", display: "flex", flexDirection: "column" }}>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
@@ -3125,6 +3128,10 @@ export default function Index() {
             </div>
           </Card>
         </SortableColumn>
+            );
+          }
+          return null;
+        })}
             </div>
           </SortableContext>
         
@@ -3757,18 +3764,32 @@ export default function Index() {
           <DragOverlay>
             {activeId ? (
               <div style={{
-                opacity: 0.6,
+                opacity: 0.8,
                 transform: 'rotate(2deg) scale(1.02)',
-                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+                boxShadow: '0 12px 32px rgba(0, 0, 0, 0.2)',
                 border: '2px solid #008060',
                 backgroundColor: '#fff',
                 borderRadius: '8px',
                 padding: '16px',
-                minWidth: '200px',
-                minHeight: '100px'
+                minWidth: '300px',
+                minHeight: '150px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}>
-                <Text variant="headingMd">
-                  {activeId === 'folders' ? 'Folders' : activeId === 'notes' ? 'Notes' : 'Editor'}
+                <div style={{ 
+                  fontSize: '16px', 
+                  color: '#6d7175',
+                  marginBottom: '8px'
+                }}>
+                  ⋮⋮
+                </div>
+                <Text variant="headingMd" style={{ fontWeight: '600' }}>
+                  {activeId === 'folders' ? 'Folders & Tags' : activeId === 'notes' ? 'Notes' : 'Editor'}
+                </Text>
+                <Text variant="bodyMd" style={{ color: '#6d7175', marginTop: '4px' }}>
+                  Dragging...
                 </Text>
               </div>
             ) : null}
