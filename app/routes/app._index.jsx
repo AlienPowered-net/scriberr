@@ -25,6 +25,7 @@ import {
   ActionList,
   TextContainer,
 } from "@shopify/polaris";
+import { SaveIcon, DragDropIcon } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef } from "react";
 import QuillEditor from "../components/LexicalEditor";
 import AdvancedRTE from "../components/AdvancedRTE";
@@ -95,6 +96,30 @@ function SortableColumn({ id, children, isActive, isPotential, ...props }) {
       {...attributes}
       {...props}
     >
+      {/* Drop Zone Overlay */}
+      {(isActive || isPotential) && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: isActive ? '#4ade80' : '#3b82f6',
+          borderRadius: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+        }}>
+          {isActive ? (
+            <SaveIcon style={{ width: '24px', height: '24px', color: 'white' }} />
+          ) : (
+            <DragDropIcon style={{ width: '24px', height: '24px', color: 'white' }} />
+          )}
+        </div>
+      )}
+      
       <div
         className="column-drag-handle"
         style={{ 
@@ -2056,33 +2081,9 @@ export default function Index() {
                 transform: rotate(2deg) scale(1.02);
                 box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
                 z-index: 1000;
-                border: 2px solid #008060 !important;
-                background-color: rgba(0, 128, 96, 0.05) !important;
               }
               
-              /* Active drop target - single green highlight */
-              .sortable-drag-over {
-                border: 3px solid #008060 !important;
-                background-color: rgba(0, 128, 96, 0.15) !important;
-                transform: scale(1.02);
-                box-shadow: 0 6px 20px rgba(0, 128, 96, 0.3);
-                border-radius: 8px !important;
-                position: relative;
-              }
-              
-              /* Potential drop targets - subtle blue outline */
-              .sortable-available {
-                border: 2px solid #5c6ac4 !important;
-                background-color: rgba(92, 106, 196, 0.08) !important;
-                border-radius: 8px !important;
-                position: relative;
-                transform: translateY(1px);
-              }
-              
-              /* Smooth space-making animation for other columns */
-              .sortable-available:not(.sortable-drag-over) {
-                transform: translateY(1px);
-              }
+              /* Drop zone overlays are handled by inline styles in SortableColumn */
               
               /* Drag handle hover effect */
               .column-drag-handle:hover {
@@ -3764,33 +3765,54 @@ export default function Index() {
           <DragOverlay>
             {activeId ? (
               <div style={{
-                opacity: 0.8,
+                opacity: 0.9,
                 transform: 'rotate(2deg) scale(1.02)',
-                boxShadow: '0 12px 32px rgba(0, 0, 0, 0.2)',
-                border: '2px solid #008060',
-                backgroundColor: '#fff',
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
                 borderRadius: '8px',
-                padding: '16px',
+                overflow: 'hidden',
                 minWidth: '300px',
-                minHeight: '150px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center'
+                minHeight: '200px',
+                backgroundColor: '#fff',
+                border: '2px solid #008060'
               }}>
+                {/* Column Header */}
                 <div style={{ 
-                  fontSize: '16px', 
-                  color: '#6d7175',
-                  marginBottom: '8px'
+                  padding: "8px 16px", 
+                  backgroundColor: "#f6f6f7", 
+                  borderBottom: "1px solid #e1e3e5",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between"
                 }}>
-                  ⋮⋮
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div style={{ 
+                      fontSize: "16px", 
+                      color: "#6d7175",
+                      userSelect: "none"
+                    }}>
+                      ⋮⋮
+                    </div>
+                    <Text variant="headingMd" as="h3">
+                      {activeId === 'folders' ? 'Folders & Tags' : activeId === 'notes' ? 'Notes' : 'Editor'}
+                    </Text>
+                  </div>
                 </div>
-                <Text variant="headingMd" style={{ fontWeight: '600' }}>
-                  {activeId === 'folders' ? 'Folders & Tags' : activeId === 'notes' ? 'Notes' : 'Editor'}
-                </Text>
-                <Text variant="bodyMd" style={{ color: '#6d7175', marginTop: '4px' }}>
-                  Dragging...
-                </Text>
+                
+                {/* Column Content Preview */}
+                <div style={{ 
+                  padding: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flex: 1,
+                  backgroundColor: '#fafafa'
+                }}>
+                  <Text variant="bodyMd" style={{ color: '#6d7175', fontStyle: 'italic' }}>
+                    {activeId === 'folders' ? 'Folder list content...' : 
+                     activeId === 'notes' ? 'Notes list content...' : 
+                     'Editor content...'}
+                  </Text>
+                </div>
               </div>
             ) : null}
           </DragOverlay>
