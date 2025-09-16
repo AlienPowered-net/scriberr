@@ -54,7 +54,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 /* ------------------ SortableColumn Component ------------------ */
-function SortableColumn({ id, children, isActive, isPotential, ...props }) {
+function SortableColumn({ id, children, ...props }) {
   const {
     attributes,
     listeners,
@@ -67,33 +67,19 @@ function SortableColumn({ id, children, isActive, isPotential, ...props }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.6 : 1,
+    opacity: isDragging ? 0.9 : 1,
+    backgroundColor: '#fff',
+    borderRadius: '8px',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+    border: '1px solid #e1e3e5',
     ...props.style,
-  };
-
-  // Determine CSS classes based on drag state
-  const getColumnClasses = () => {
-    const baseClasses = 'draggable-column';
-    const stateClasses = [];
-    
-    if (isDragging) {
-      stateClasses.push('sortable-dragging');
-    }
-    if (isActive) {
-      stateClasses.push('sortable-drag-over');
-    }
-    if (isPotential) {
-      stateClasses.push('sortable-available');
-    }
-    
-    return [baseClasses, ...stateClasses].join(' ');
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={getColumnClasses()}
+      className="draggable-column"
       {...attributes}
       {...props}
     >
@@ -157,16 +143,16 @@ function DropIndicator({
       }}
       id={`drop-${index}`}
       style={{
-        width: '48px',
-        height: '48px',
+        width: active ? '52px' : '44px',
+        height: active ? '52px' : '44px',
         borderRadius: '8px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        transition: 'all 0.15s ease-out',
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         backgroundColor: active ? '#4ade80' : '#3b82f6',
         transform: active ? 'scale(1.1)' : 'scale(1)',
-        boxShadow: active ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' : 'none',
+        boxShadow: active ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         cursor: 'pointer'
       }}
       role="button"
@@ -175,9 +161,9 @@ function DropIndicator({
     >
       {/* Use the project's Polaris icons. Show Save on active, DragDrop otherwise */}
       {active ? (
-        <SaveIcon style={{ width: '20px', height: '20px', color: 'white' }} />
+        <SaveIcon style={{ width: '22px', height: '22px', color: 'white' }} />
       ) : (
-        <DragDropIcon style={{ width: '20px', height: '20px', color: 'white' }} />
+        <DragDropIcon style={{ width: '18px', height: '18px', color: 'white' }} />
       )}
     </div>
   );
@@ -2312,7 +2298,7 @@ export default function Index() {
           )}
             {/* Drop Indicators and Columns */}
             {columnOrder.map((columnId, index) => (
-              <div key={`slot-${index}`} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div key={`slot-${index}`} style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                 <DropIndicator index={index} isActive={activeDropIndex === index} />
                 {columnId === 'folders' && !collapsedColumns.folders && (
                   <SortableColumn 
@@ -3219,7 +3205,9 @@ export default function Index() {
             ))}
 
             {/* Final drop indicator after last item */}
-            <DropIndicator index={columnOrder.length} isActive={activeDropIndex === columnOrder.length} />
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <DropIndicator index={columnOrder.length} isActive={activeDropIndex === columnOrder.length} />
+            </div>
           </div>
           </SortableContext>
         
@@ -3852,9 +3840,9 @@ export default function Index() {
           <DragOverlay>
             {activeId ? (
               <div style={{
-                opacity: 0.95,
+                opacity: 0.9,
                 transform: 'rotate(2deg) scale(1.02)',
-                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
                 borderRadius: '8px',
                 overflow: 'hidden',
                 minWidth: '300px',
