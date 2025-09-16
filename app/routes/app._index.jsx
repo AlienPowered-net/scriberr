@@ -160,9 +160,9 @@ function DropIndicator({
     >
       {/* Use the project's Polaris icons. Show Save on active, DragDrop otherwise */}
       {active ? (
-        <SaveIcon style={{ width: '256px', height: '256px', color: 'white' }} />
+        <SaveIcon style={{ width: '256px', height: '256px', color: 'white', opacity: 0.5 }} />
       ) : (
-        <DragDropIcon style={{ width: '256px', height: '256px', color: 'white' }} />
+        <DragDropIcon style={{ width: '256px', height: '256px', color: 'white', opacity: 0.5 }} />
       )}
     </div>
   );
@@ -2396,6 +2396,8 @@ export default function Index() {
               flex: "1",
               display: "flex",
               flexDirection: "column",
+              backgroundColor: "#fff",
+              height: "100%",
               ...(highlightFolders && {
                 backgroundColor: "#fff3cd",
                 border: "2px solid #ffc107",
@@ -2751,7 +2753,7 @@ export default function Index() {
                     id="notes"
                     style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}
                   >
-          <Card style={{ flex: "1", display: "flex", flexDirection: "column" }}>
+          <Card style={{ flex: "1", display: "flex", flexDirection: "column", backgroundColor: "#fff", height: "100%" }}>
             {/* Fixed Header Section */}
             <div style={{ 
               padding: "16px", 
@@ -3013,7 +3015,7 @@ export default function Index() {
                       flexDirection: "column"
                     }}
                   >
-          <Card style={{ flex: "1", display: "flex", flexDirection: "column" }}>
+          <Card style={{ flex: "1", display: "flex", flexDirection: "column", backgroundColor: "#fff", height: "100%" }}>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
