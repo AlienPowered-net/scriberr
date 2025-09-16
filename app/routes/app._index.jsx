@@ -25,7 +25,6 @@ import {
   ActionList,
   TextContainer,
 } from "@shopify/polaris";
-import { SaveIcon, DragDropIcon } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef } from "react";
 import QuillEditor from "../components/LexicalEditor";
 import AdvancedRTE from "../components/AdvancedRTE";
@@ -42,6 +41,7 @@ import {
   useSensor,
   useSensors,
   DragOverlay,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -61,7 +61,7 @@ function SortableColumn({ id, children, isActive, isPotential, ...props }) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id });
+  } = useSortable({ id: `col-${id}` });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -96,30 +96,6 @@ function SortableColumn({ id, children, isActive, isPotential, ...props }) {
       {...attributes}
       {...props}
     >
-      {/* Drop Zone Overlay */}
-      {(isActive || isPotential) && (
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: isActive ? '#4ade80' : '#3b82f6',
-          borderRadius: '8px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-        }}>
-          {isActive ? (
-            <SaveIcon style={{ width: '24px', height: '24px', color: 'white' }} />
-          ) : (
-            <DragDropIcon style={{ width: '24px', height: '24px', color: 'white' }} />
-          )}
-        </div>
-      )}
-      
       <div
         className="column-drag-handle"
         style={{ 
@@ -158,6 +134,50 @@ function SortableColumn({ id, children, isActive, isPotential, ...props }) {
         </Button>
       </div>
       {children}
+    </div>
+  );
+}
+
+// ---------------- DropIndicator ----------------
+function DropIndicator({
+  index,
+  isActive,
+  onRef,
+}) {
+  // expose a droppable so the DnD system recognizes this target
+  const { setNodeRef, isOver } = useDroppable({ id: `drop-${index}` });
+  const active = isActive || isOver;
+
+  return (
+    <div
+      ref={(el) => {
+        setNodeRef(el);
+        if (onRef) onRef(el);
+      }}
+      id={`drop-${index}`}
+      style={{
+        width: '48px',
+        height: '48px',
+        borderRadius: '8px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transition: 'all 0.15s ease-out',
+        backgroundColor: active ? '#4ade80' : '#3b82f6',
+        transform: active ? 'scale(1.1)' : 'scale(1)',
+        boxShadow: active ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' : 'none',
+        cursor: 'pointer'
+      }}
+      role="button"
+      aria-label={`Drop column at position ${index + 1}`}
+      aria-roledescription="Drop zone for column reordering"
+    >
+      {/* Use the project's Polaris icons. Show Save on active, DragDrop otherwise */}
+      {active ? (
+        <SaveIcon style={{ width: '20px', height: '20px', color: 'white' }} />
+      ) : (
+        <DragDropIcon style={{ width: '20px', height: '20px', color: 'white' }} />
+      )}
     </div>
   );
 }
@@ -492,31 +512,77 @@ export default function Index() {
   const [activeId, setActiveId] = useState(null);
   const [overId, setOverId] = useState(null);
 
-  // Drag and drop handlers
+  // Drag and drop handlers for drop indicator system
+  const [activeDropIndex, setActiveDropIndex] = useState(null);
+
   const handleDragStart = (event) => {
-    setActiveId(event.active.id);
+    const activeId = event.active?.id?.replace?.(/^col-/, "") ?? event.active?.id ?? null;
+    setActiveId(activeId);
+    // initialize drop index to current position
+    const idx = columnOrder.indexOf(activeId);
+    setActiveDropIndex(idx === -1 ? null : idx);
   };
 
   const handleDragOver = (event) => {
-    setOverId(event.over?.id || null);
+    const overId = event.over?.id;
+    if (!overId) return;
+    if (overId.startsWith("drop-")) {
+      const idx = parseInt(overId.replace("drop-", ""), 10);
+      if (!Number.isNaN(idx)) setActiveDropIndex(idx);
+    } else if (overId.startsWith("col-")) {
+      // If hovering a column itself, compute nearest insert point: before or after
+      const colId = overId.replace("col-", "");
+      const idx = columnOrder.indexOf(colId);
+      if (idx !== -1) {
+        // By default treat it as "insert before" that column
+        setActiveDropIndex(idx);
+      }
+    }
   };
 
   const handleDragEnd = (event) => {
-    const { active, over } = event;
-    
-    if (active.id !== over?.id) {
-      setColumnOrder((items) => {
-        const oldIndex = items.indexOf(active.id);
-        const newIndex = items.indexOf(over.id);
-        
-        const newOrder = arrayMove(items, oldIndex, newIndex);
-        saveColumnOrder(newOrder);
-        return newOrder;
-      });
-    }
-    
+    const overId = event.over?.id;
+    const active = activeId;
     setActiveId(null);
-    setOverId(null);
+
+    if (!active || !overId) {
+      setActiveDropIndex(null);
+      return;
+    }
+
+    // If over a drop indicator, insert at that index
+    if (overId.startsWith("drop-")) {
+      const dropIndex = parseInt(overId.replace("drop-", ""), 10);
+      if (!Number.isNaN(dropIndex)) {
+        setColumnOrder((prev) => {
+          const without = prev.filter((c) => c !== active);
+          const next = [...without];
+          next.splice(dropIndex, 0, active);
+          saveColumnOrder(next);
+          return next;
+        });
+      }
+    } else if (overId.startsWith("col-")) {
+      // fallback: if user dropped onto a column, insert before that column
+      const colId = overId.replace("col-", "");
+      const idx = columnOrder.indexOf(colId);
+      if (idx !== -1) {
+        setColumnOrder((prev) => {
+          const without = prev.filter((c) => c !== active);
+          const next = [...without];
+          next.splice(idx, 0, active);
+          saveColumnOrder(next);
+          return next;
+        });
+      }
+    }
+
+    setActiveDropIndex(null);
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
+    setActiveDropIndex(null);
   };
   
   const toggleColumnCollapse = (column) => {
@@ -2081,9 +2147,33 @@ export default function Index() {
                 transform: rotate(2deg) scale(1.02);
                 box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
                 z-index: 1000;
+                border: 2px solid #008060 !important;
+                background-color: rgba(0, 128, 96, 0.05) !important;
               }
               
-              /* Drop zone overlays are handled by inline styles in SortableColumn */
+              /* Active drop target - single green highlight */
+              .sortable-drag-over {
+                border: 3px solid #008060 !important;
+                background-color: rgba(0, 128, 96, 0.15) !important;
+                transform: scale(1.02);
+                box-shadow: 0 6px 20px rgba(0, 128, 96, 0.3);
+                border-radius: 8px !important;
+                position: relative;
+              }
+              
+              /* Potential drop targets - subtle blue outline */
+              .sortable-available {
+                border: 2px solid #5c6ac4 !important;
+                background-color: rgba(92, 106, 196, 0.08) !important;
+                border-radius: 8px !important;
+                position: relative;
+                transform: translateY(1px);
+              }
+              
+              /* Smooth space-making animation for other columns */
+              .sortable-available:not(.sortable-drag-over) {
+                transform: translateY(1px);
+              }
               
               /* Drag handle hover effect */
               .column-drag-handle:hover {
@@ -2169,8 +2259,9 @@ export default function Index() {
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
         >
-          <SortableContext items={columnOrder} strategy={verticalListSortingStrategy}>
+          <SortableContext items={columnOrder.map(c => `col-${c}`)} strategy={verticalListSortingStrategy}>
             <div className="app-layout" style={{ 
               display: "flex", 
               gap: "16px", 
@@ -2218,17 +2309,16 @@ export default function Index() {
               )}
             </div>
           )}
-                {/* DYNAMIC COLUMNS BASED ON ORDER */}
-        {columnOrder.map((columnId) => {
-          if (columnId === 'folders' && !collapsedColumns.folders) {
-            return (
-              <SortableColumn 
-                key="folders"
-                id="folders"
-                style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}
-                isActive={overId === 'folders' && activeId !== 'folders'}
-                isPotential={activeId && activeId !== 'folders'}
-              >
+            {/* Drop Indicators and Columns */}
+            {columnOrder.map((columnId, index) => (
+              <div key={`slot-${index}`} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <DropIndicator index={index} isActive={activeDropIndex === index} />
+                {columnId === 'folders' && !collapsedColumns.folders && (
+                  <SortableColumn 
+                    key="folders"
+                    id="folders"
+                    style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}
+                  >
           <Card
             style={{
               transition: "all 0.3s ease",
@@ -2578,17 +2668,14 @@ export default function Index() {
               </Button>
             </div>
           </Card>
-        </SortableColumn>
-            );
-          } else if (columnId === 'notes' && !collapsedColumns.notes) {
-            return (
-              <SortableColumn 
-                key="notes"
-                id="notes"
-                style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}
-                isActive={overId === 'notes' && activeId !== 'notes'}
-                isPotential={activeId && activeId !== 'notes'}
-              >
+                  </SortableColumn>
+                )}
+                {columnId === 'notes' && !collapsedColumns.notes && (
+                  <SortableColumn 
+                    key="notes"
+                    id="notes"
+                    style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}
+                  >
           <Card style={{ flex: "1", display: "flex", flexDirection: "column" }}>
             {/* Fixed Header Section */}
             <div style={{ 
@@ -2827,29 +2914,26 @@ export default function Index() {
               )}
             </div>
           </Card>
-        </SortableColumn>
-            );
-          } else if (columnId === 'editor') {
-            return (
-              <SortableColumn 
-                key="editor"
-                id="editor"
-                style={{ 
-                  ...(collapsedColumns.folders && collapsedColumns.notes ? {
-                    flex: "1",
-                    width: "auto",
-                    maxWidth: "none"
-                  } : {
-                    flex: "1",
-                    minWidth: "400px"
-                  }),
-                  transition: "all 0.3s ease",
-                  display: "flex",
-                  flexDirection: "column"
-                }}
-                isActive={overId === 'editor' && activeId !== 'editor'}
-                isPotential={activeId && activeId !== 'editor'}
-              >
+                  </SortableColumn>
+                )}
+                {columnId === 'editor' && (
+                  <SortableColumn 
+                    key="editor"
+                    id="editor"
+                    style={{ 
+                      ...(collapsedColumns.folders && collapsedColumns.notes ? {
+                        flex: "1",
+                        width: "auto",
+                        maxWidth: "none"
+                      } : {
+                        flex: "1",
+                        minWidth: "400px"
+                      }),
+                      transition: "all 0.3s ease",
+                      display: "flex",
+                      flexDirection: "column"
+                    }}
+                  >
           <Card style={{ flex: "1", display: "flex", flexDirection: "column" }}>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
@@ -3128,12 +3212,14 @@ export default function Index() {
              </BlockStack>
             </div>
           </Card>
-        </SortableColumn>
-            );
-          }
-          return null;
-        })}
-            </div>
+                  </SortableColumn>
+                )}
+              </div>
+            ))}
+
+            {/* Final drop indicator after last item */}
+            <DropIndicator index={columnOrder.length} isActive={activeDropIndex === columnOrder.length} />
+          </div>
           </SortableContext>
         
         {/* Delete Confirmation Modal */}
@@ -3765,7 +3851,7 @@ export default function Index() {
           <DragOverlay>
             {activeId ? (
               <div style={{
-                opacity: 0.9,
+                opacity: 0.95,
                 transform: 'rotate(2deg) scale(1.02)',
                 boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
                 borderRadius: '8px',
