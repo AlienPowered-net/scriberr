@@ -158,7 +158,7 @@ function DropIndicator({
         border: active ? '2px solid #345848' : '2px solid #00527c',
         cursor: 'pointer',
         zIndex: 10,
-        opacity: active ? 0.8 : 0.4,
+        opacity: active ? 0.8 : 0.25,
         transform: active ? 'scale(1.1)' : 'scale(1)',
         boxShadow: active ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
       }}
