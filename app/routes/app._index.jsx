@@ -158,7 +158,7 @@ function DropIndicator({
         border: active ? '2px solid #345848' : '2px solid #00527c',
         cursor: 'pointer',
         zIndex: 10,
-        opacity: active ? 0.8 : 0.6,
+        opacity: active ? 0.8 : 0.4,
         transform: active ? 'scale(1.1)' : 'scale(1)',
         boxShadow: active ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
       }}
@@ -168,9 +168,9 @@ function DropIndicator({
     >
       {/* Use the project's Polaris icons. Show Save on active, DragDrop otherwise */}
       {active ? (
-        <SaveIcon style={{ width: '24px', height: '24px', color: '#cdfee1' }} />
+        <SaveIcon style={{ width: '256px', height: '256px', color: 'white' }} />
       ) : (
-        <DragDropIcon style={{ width: '24px', height: '24px', color: '#afbfcc' }} />
+        <DragDropIcon style={{ width: '256px', height: '256px', color: 'white' }} />
       )}
     </div>
   );
