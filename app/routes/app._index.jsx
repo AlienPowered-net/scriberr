@@ -73,6 +73,9 @@ function SortableColumn({ id, children, ...props }) {
     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
     border: '1px solid #e1e3e5',
     position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
     ...props.style,
   };
 
@@ -84,32 +87,51 @@ function SortableColumn({ id, children, ...props }) {
       {...attributes}
       {...props}
     >
+      {/* Drag handle in top-left corner */}
       <div
-        className="column-drag-handle"
+        style={{
+          position: 'absolute',
+          top: '8px',
+          left: '8px',
+          zIndex: 10,
+          cursor: 'grab',
+          padding: '4px',
+          borderRadius: '4px',
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          border: '1px solid #e1e3e5',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '24px',
+          height: '24px'
+        }}
+        {...listeners}
+      >
+        <div style={{ 
+          fontSize: "12px", 
+          color: "#6d7175",
+          userSelect: "none",
+          cursor: "grab"
+        }}>
+          ⋮⋮
+        </div>
+      </div>
+
+      {/* Column header */}
+      <div
         style={{ 
           padding: "8px 16px", 
           backgroundColor: "#f6f6f7", 
           borderBottom: "1px solid #e1e3e5",
-          cursor: "grab",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between"
+          justifyContent: "space-between",
+          paddingLeft: "48px" // Add space for drag handle
         }}
-        {...listeners}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ 
-            fontSize: "16px", 
-            color: "#6d7175",
-            userSelect: "none",
-            cursor: "grab"
-          }}>
-            ⋮⋮
-          </div>
-          <Text variant="headingMd" as="h3">
-            {id === 'folders' ? 'Folders & Tags' : id === 'notes' ? 'Notes' : 'Editor'}
-          </Text>
-        </div>
+        <Text variant="headingMd" as="h3">
+          {id === 'folders' ? 'Folders & Tags' : id === 'notes' ? 'Notes' : 'Editor'}
+        </Text>
         <Button
           variant="tertiary"
           size="micro"
@@ -577,6 +599,104 @@ export default function Index() {
   const handleDragCancel = () => {
     setActiveId(null);
     setActiveDropIndex(null);
+  };
+
+  // Helper function to render column content for DragOverlay
+  const renderColumnContent = (columnId) => {
+    if (columnId === 'folders') {
+      return (
+        <div style={{ padding: '16px', backgroundColor: '#fafafa', minHeight: '200px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#6d7175' }}>⋮⋮</div>
+            <Text variant="headingMd" as="h3">Folders & Tags</Text>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {folders.slice(0, 3).map((folder) => (
+              <div key={folder.id} style={{ 
+                padding: '8px 12px', 
+                backgroundColor: '#fff', 
+                borderRadius: '4px', 
+                border: '1px solid #e1e3e5',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <div style={{ fontSize: '16px' }}>{folder.icon}</div>
+                <Text variant="bodyMd">{folder.name}</Text>
+              </div>
+            ))}
+            {folders.length > 3 && (
+              <Text variant="bodyMd" style={{ color: '#6d7175', fontStyle: 'italic' }}>
+                +{folders.length - 3} more folders...
+              </Text>
+            )}
+          </div>
+        </div>
+      );
+    } else if (columnId === 'notes') {
+      return (
+        <div style={{ padding: '16px', backgroundColor: '#fafafa', minHeight: '200px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#6d7175' }}>⋮⋮</div>
+            <Text variant="headingMd" as="h3">Notes</Text>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {notes.slice(0, 3).map((note) => (
+              <div key={note.id} style={{ 
+                padding: '8px 12px', 
+                backgroundColor: '#fff', 
+                borderRadius: '4px', 
+                border: '1px solid #e1e3e5'
+              }}>
+                <Text variant="bodyMd" style={{ fontWeight: '500' }}>{note.title}</Text>
+                {note.content && (
+                  <Text variant="bodySm" style={{ color: '#6d7175', marginTop: '4px' }}>
+                    {note.content.substring(0, 50)}...
+                  </Text>
+                )}
+              </div>
+            ))}
+            {notes.length > 3 && (
+              <Text variant="bodyMd" style={{ color: '#6d7175', fontStyle: 'italic' }}>
+                +{notes.length - 3} more notes...
+              </Text>
+            )}
+          </div>
+        </div>
+      );
+    } else if (columnId === 'editor') {
+      return (
+        <div style={{ padding: '16px', backgroundColor: '#fafafa', minHeight: '200px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ fontSize: '12px', color: '#6d7175' }}>⋮⋮</div>
+            <Text variant="headingMd" as="h3">Editor</Text>
+          </div>
+          <div style={{ 
+            padding: '12px', 
+            backgroundColor: '#fff', 
+            borderRadius: '4px', 
+            border: '1px solid #e1e3e5',
+            minHeight: '120px'
+          }}>
+            {selectedNote ? (
+              <div>
+                <Text variant="bodyMd" style={{ fontWeight: '500', marginBottom: '8px' }}>
+                  {selectedNote.title}
+                </Text>
+                <Text variant="bodySm" style={{ color: '#6d7175' }}>
+                  {selectedNote.content ? selectedNote.content.substring(0, 100) + '...' : 'No content'}
+                </Text>
+              </div>
+            ) : (
+              <Text variant="bodyMd" style={{ color: '#6d7175', fontStyle: 'italic' }}>
+                Select a note to edit
+              </Text>
+            )}
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
   
   const toggleColumnCollapse = (column) => {
@@ -3865,44 +3985,7 @@ export default function Index() {
                 border: '2px solid #008060',
                 zIndex: 50
               }}>
-                {/* Column Header */}
-                <div style={{ 
-                  padding: "8px 16px", 
-                  backgroundColor: "#f6f6f7", 
-                  borderBottom: "1px solid #e1e3e5",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between"
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <div style={{ 
-                      fontSize: "16px", 
-                      color: "#6d7175",
-                      userSelect: "none"
-                    }}>
-                      ⋮⋮
-                    </div>
-                    <Text variant="headingMd" as="h3">
-                      {activeId === 'folders' ? 'Folders & Tags' : activeId === 'notes' ? 'Notes' : 'Editor'}
-                    </Text>
-                  </div>
-                </div>
-                
-                {/* Column Content Preview */}
-                <div style={{ 
-                  padding: '16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flex: 1,
-                  backgroundColor: '#fafafa'
-                }}>
-                  <Text variant="bodyMd" style={{ color: '#6d7175', fontStyle: 'italic' }}>
-                    {activeId === 'folders' ? 'Folder list content...' : 
-                     activeId === 'notes' ? 'Notes list content...' : 
-                     'Editor content...'}
-                  </Text>
-                </div>
+                {renderColumnContent(activeId)}
               </div>
             ) : null}
           </DragOverlay>
