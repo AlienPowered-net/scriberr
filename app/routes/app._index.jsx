@@ -3219,12 +3219,6 @@ export default function Index() {
               </div>
             ))}
 
-            {/* Final drop indicator after last item - only show when dragging */}
-            {activeId && (
-              <div style={{ position: 'relative', height: '100px', minWidth: '380px' }}>
-                <DropIndicator index={columnOrder.length} isActive={activeDropIndex === columnOrder.length} />
-              </div>
-            )}
           </div>
           </SortableContext>
         
