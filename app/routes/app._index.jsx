@@ -1438,16 +1438,22 @@ export default function Index() {
 
         console.log('Container found, initializing Shopify Draggable Sortable');
         
-        // Initialize Sortable
+        // Initialize Sortable with smooth animations
         sortable = new Sortable(container, {
           draggable: '.draggable-column',
           handle: '.column-drag-handle', // Only the drag handle is draggable
           mirror: {
             constrainDimensions: true,
+            xAxis: false,
+            yAxis: false,
           },
           swapAnimation: {
+            duration: 300,
+            easingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+          },
+          sortAnimation: {
             duration: 200,
-            easingFunction: 'ease-in-out',
+            easingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
           },
           // Visual feedback classes
           classes: {
@@ -1458,44 +1464,40 @@ export default function Index() {
           },
         });
 
-        // Listen for sortable events
+        // Clean drag and drop event handling
         sortable.on('sortable:start', (evt) => {
-          console.log('Sortable started:', evt);
+          console.log('Drag started for:', evt.data.source);
           
-          // Show available drop zones for all other columns (blue)
+          // Show all other columns as potential drop targets (blue)
           const allColumns = container.querySelectorAll('.draggable-column');
           allColumns.forEach(column => {
             if (column !== evt.data.source) {
               column.classList.add('sortable-available');
-              console.log('Added sortable-available class to:', column);
             }
           });
-          
-          // Show the original column's space as a green drop zone (where it can return)
-          evt.data.source.classList.add('sortable-drag-over');
-          console.log('Added sortable-drag-over class to source:', evt.data.source);
         });
         
-        // Add hover effects for available drop zones
+        // Handle drag over events - show active drop target
         sortable.on('sortable:sort', (evt) => {
-          // Remove drag-over class from all elements first
+          // Remove active drop target from all elements
           const allColumns = container.querySelectorAll('.draggable-column');
           allColumns.forEach(column => {
             column.classList.remove('sortable-drag-over');
           });
           
-          // Add drag-over class to the element being hovered over
+          // Add active drop target to the element being hovered over
           const overElement = evt.data.over;
-          if (overElement) {
+          if (overElement && overElement !== evt.data.source) {
             overElement.classList.add('sortable-drag-over');
           }
         });
         
+        // Clean up when drag ends
         sortable.on('sortable:sort:stop', (evt) => {
-          // Remove drag-over class from all elements
+          // Remove all visual feedback classes
           const allColumns = container.querySelectorAll('.draggable-column');
           allColumns.forEach(column => {
-            column.classList.remove('sortable-drag-over');
+            column.classList.remove('sortable-drag-over', 'sortable-available');
           });
         });
 
@@ -2084,12 +2086,13 @@ export default function Index() {
                 border: 1px solid #c9cccf !important;
               }
               
-              /* Drag and Drop Visual Feedback */
+              /* Clean Drag and Drop Visual Feedback */
               .draggable-column {
-                transition: all 0.2s ease-in-out;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
               }
               
-              /* Placeholder styling - shows where the dragged column was */
+              /* Placeholder - shows where the dragged column was */
               .sortable-placeholder {
                 background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
                            linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
@@ -2097,111 +2100,76 @@ export default function Index() {
                            linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
                 background-size: 20px 20px;
                 background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-                border: 2px dashed #007ace;
-                border-radius: 8px !important;
+                border: 2px dashed #c9cccf;
+                border-radius: 8px;
                 opacity: 0.6;
                 min-height: 200px;
                 margin: 8px 0;
               }
               
-              /* Drop zone styling - shows where the column will be placed (Success color scheme) */
-              .draggable-column.sortable-drag-over {
+              /* Dragged element - clear visual indication */
+              .sortable-dragging {
+                opacity: 0.8 !important;
+                transform: rotate(3deg) scale(1.05);
+                box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+                z-index: 1000;
                 border: 2px solid #008060 !important;
                 background-color: rgba(0, 128, 96, 0.1) !important;
-                transform: scale(1.02);
-                box-shadow: 0 4px 12px rgba(0, 128, 96, 0.3);
-                border-radius: 8px !important;
-                opacity: 1 !important;
-                position: relative;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 200px;
               }
               
-              /* Make column content 50% transparent when it's a drop zone */
-              .sortable-drag-over * {
-                opacity: 0.5 !important;
-                pointer-events: none !important;
-              }
-              
-              /* Ensure the drop zone itself is visible */
+              /* Active drop target - green highlight */
               .sortable-drag-over {
-                opacity: 1 !important;
-              }
-              
-              /* Save icon overlay for drop zones (Success color scheme) */
-              .sortable-drag-over::before {
-                content: "";
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                width: 150px;
-                height: 150px;
-                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23008060'%3E%3Cpath d='M17 3H3v14h14V3zM3 2a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H3zm2 3h10v2H5V5zm0 4h6v2H5V9zm0 4h8v2H5v-2z'/%3E%3C/svg%3E");
-                background-size: contain;
-                background-repeat: no-repeat;
-                z-index: 1000;
-                pointer-events: none;
-                opacity: 1 !important;
-                filter: drop-shadow(0 4px 8px rgba(0, 128, 96, 0.3));
-              }
-              
-              /* Available drop spaces styling - shows all possible drop locations (Info color scheme) */
-              .draggable-column.sortable-available {
-                border: 2px solid #5c6ac4 !important;
-                background-color: rgba(92, 106, 196, 0.1) !important;
-                opacity: 0.5 !important;
-                position: relative;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 200px;
+                border: 3px solid #008060 !important;
+                background-color: rgba(0, 128, 96, 0.15) !important;
+                transform: scale(1.02);
+                box-shadow: 0 8px 24px rgba(0, 128, 96, 0.3);
                 border-radius: 8px !important;
+                position: relative;
               }
               
-              /* Make column content 50% transparent when it's an available drop space */
-              .sortable-available * {
-                opacity: 0.5 !important;
-                pointer-events: none !important;
-              }
-              
-              /* Ensure the available space itself is visible */
-              .sortable-available {
-                opacity: 1 !important;
-              }
-              
-              /* Drag icon overlay for available spaces (Info color scheme) */
-              .sortable-available::before {
-                content: "";
+              /* Active drop target indicator */
+              .sortable-drag-over::after {
+                content: "Drop here";
                 position: absolute;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                width: 150px;
-                height: 150px;
-                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%235c6ac4'%3E%3Cpath d='M3 7h14v2H3V7zm4-4h6v2H7V3zm0 14h6v2H7v-2zm-4-7h4v2H3v-2zm14 0h4v2h-4v-2z'/%3E%3C/svg%3E");
-                background-size: contain;
-                background-repeat: no-repeat;
-                z-index: 1000;
+                background: #008060;
+                color: white;
+                padding: 8px 16px;
+                border-radius: 6px;
+                font-size: 14px;
+                font-weight: 600;
+                z-index: 1001;
                 pointer-events: none;
-                opacity: 1 !important;
-                filter: drop-shadow(0 4px 8px rgba(92, 106, 196, 0.3));
+                box-shadow: 0 4px 12px rgba(0, 128, 96, 0.4);
               }
               
-              
-              /* Dragged element styling - completely invisible (picked up effect) */
-              .sortable-dragging {
-                opacity: 0 !important;
-                transform: rotate(2deg);
-                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-                z-index: 1000;
+              /* Potential drop targets - subtle blue highlight */
+              .sortable-available {
+                border: 2px solid #5c6ac4 !important;
+                background-color: rgba(92, 106, 196, 0.08) !important;
+                border-radius: 8px !important;
+                position: relative;
               }
               
-              /* Make the column content invisible when being dragged */
-              .sortable-dragging * {
-                opacity: 0 !important;
+              /* Potential drop target indicator */
+              .sortable-available::after {
+                content: "Can drop here";
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: #5c6ac4;
+                color: white;
+                padding: 6px 12px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 500;
+                z-index: 1001;
+                pointer-events: none;
+                opacity: 0.8;
+                box-shadow: 0 2px 8px rgba(92, 106, 196, 0.3);
               }
               
               /* Drag handle hover effect */
