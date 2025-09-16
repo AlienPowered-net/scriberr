@@ -69,8 +69,6 @@ function SortableColumn({ id, children, ...props }) {
     transition,
     opacity: isDragging ? 0.9 : 1,
     position: 'relative',
-    display: 'flex',
-    flexDirection: 'column',
     height: '100%',
     minHeight: '100%',
     ...props.style,
@@ -2385,7 +2383,7 @@ export default function Index() {
                   <SortableColumn 
                     key="folders"
                     id="folders"
-                    style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}
+                    style={{ width: "380px", minWidth: "380px", maxWidth: "380px", overflow: "hidden" }}
                   >
           <Card
             style={{
@@ -2754,7 +2752,7 @@ export default function Index() {
                   <SortableColumn 
                     key="notes"
                     id="notes"
-                    style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}
+                    style={{ width: "380px", minWidth: "380px", maxWidth: "380px", overflow: "hidden" }}
                   >
           <Card style={{ flex: "1", display: "flex", flexDirection: "column", backgroundColor: "#fff", height: "100%", minHeight: "100%", padding: "0", margin: "0", borderRadius: "8px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", border: "1px solid #e1e3e5" }}>
             {/* Fixed Header Section */}
@@ -3013,9 +3011,7 @@ export default function Index() {
                         flex: "1",
                         minWidth: "400px"
                       }),
-                      transition: "all 0.3s ease",
-                      display: "flex",
-                      flexDirection: "column"
+                      transition: "all 0.3s ease"
                     }}
                   >
           <Card style={{ flex: "1", display: "flex", flexDirection: "column", backgroundColor: "#fff", height: "100%", minHeight: "100%", padding: "0", margin: "0", borderRadius: "8px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", border: "1px solid #e1e3e5" }}>
