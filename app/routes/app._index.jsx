@@ -1464,11 +1464,11 @@ export default function Index() {
           },
         });
 
-        // Clean drag and drop event handling
+        // Clean, intuitive drag and drop event handling
         sortable.on('sortable:start', (evt) => {
           console.log('Drag started for:', evt.data.source);
           
-          // Show all other columns as potential drop targets (blue)
+          // Show all other columns as potential drop targets (blue outline)
           const allColumns = container.querySelectorAll('.draggable-column');
           allColumns.forEach(column => {
             if (column !== evt.data.source) {
@@ -1477,9 +1477,9 @@ export default function Index() {
           });
         });
         
-        // Handle drag over events - show active drop target
+        // Handle drag over events - show single active drop target
         sortable.on('sortable:sort', (evt) => {
-          // Remove active drop target from all elements
+          // Remove active drop target from all elements first
           const allColumns = container.querySelectorAll('.draggable-column');
           allColumns.forEach(column => {
             column.classList.remove('sortable-drag-over');
@@ -2086,9 +2086,9 @@ export default function Index() {
                 border: 1px solid #c9cccf !important;
               }
               
-              /* Clean Drag and Drop Visual Feedback */
+              /* Clean, Minimal Drag and Drop Visual Feedback */
               .draggable-column {
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
                 position: relative;
               }
               
@@ -2107,69 +2107,37 @@ export default function Index() {
                 margin: 8px 0;
               }
               
-              /* Dragged element - clear visual indication */
+              /* Dragged element - visually distinct */
               .sortable-dragging {
-                opacity: 0.8 !important;
-                transform: rotate(3deg) scale(1.05);
-                box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+                opacity: 0.6 !important;
+                transform: rotate(2deg) scale(1.02);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
                 z-index: 1000;
                 border: 2px solid #008060 !important;
-                background-color: rgba(0, 128, 96, 0.1) !important;
+                background-color: rgba(0, 128, 96, 0.05) !important;
               }
               
-              /* Active drop target - green highlight */
+              /* Active drop target - single green highlight */
               .sortable-drag-over {
-                border: 3px solid #008060 !important;
-                background-color: rgba(0, 128, 96, 0.15) !important;
-                transform: scale(1.02);
-                box-shadow: 0 8px 24px rgba(0, 128, 96, 0.3);
+                border: 2px solid #008060 !important;
+                background-color: rgba(0, 128, 96, 0.1) !important;
+                transform: scale(1.01);
+                box-shadow: 0 4px 16px rgba(0, 128, 96, 0.2);
                 border-radius: 8px !important;
                 position: relative;
               }
               
-              /* Active drop target indicator */
-              .sortable-drag-over::after {
-                content: "Drop here";
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: #008060;
-                color: white;
-                padding: 8px 16px;
-                border-radius: 6px;
-                font-size: 14px;
-                font-weight: 600;
-                z-index: 1001;
-                pointer-events: none;
-                box-shadow: 0 4px 12px rgba(0, 128, 96, 0.4);
-              }
-              
-              /* Potential drop targets - subtle blue highlight */
+              /* Potential drop targets - subtle blue outline */
               .sortable-available {
-                border: 2px solid #5c6ac4 !important;
-                background-color: rgba(92, 106, 196, 0.08) !important;
+                border: 1px solid #5c6ac4 !important;
+                background-color: rgba(92, 106, 196, 0.03) !important;
                 border-radius: 8px !important;
                 position: relative;
               }
               
-              /* Potential drop target indicator */
-              .sortable-available::after {
-                content: "Can drop here";
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: #5c6ac4;
-                color: white;
-                padding: 6px 12px;
-                border-radius: 4px;
-                font-size: 12px;
-                font-weight: 500;
-                z-index: 1001;
-                pointer-events: none;
-                opacity: 0.8;
-                box-shadow: 0 2px 8px rgba(92, 106, 196, 0.3);
+              /* Smooth space-making animation for other columns */
+              .sortable-available:not(.sortable-drag-over) {
+                transform: translateY(2px);
               }
               
               /* Drag handle hover effect */
