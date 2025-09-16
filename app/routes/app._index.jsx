@@ -41,13 +41,103 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  DragOverlay,
+  useDndMonitor,
 } from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
+  useSortable,
 } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+/* ------------------ SortableColumn Component ------------------ */
+function SortableColumn({ id, children, isActive, isPotential, ...props }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+    ...props.style,
+  };
+
+  // Determine CSS classes based on drag state
+  const getColumnClasses = () => {
+    const baseClasses = 'draggable-column';
+    const stateClasses = [];
+    
+    if (isDragging) {
+      stateClasses.push('sortable-dragging');
+    }
+    if (isActive) {
+      stateClasses.push('sortable-drag-over');
+    }
+    if (isPotential) {
+      stateClasses.push('sortable-available');
+    }
+    
+    return [baseClasses, ...stateClasses].join(' ');
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={getColumnClasses()}
+      {...attributes}
+      {...props}
+    >
+      <div
+        className="column-drag-handle"
+        style={{ 
+          padding: "8px 16px", 
+          backgroundColor: "#f6f6f7", 
+          borderBottom: "1px solid #e1e3e5",
+          cursor: "grab",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between"
+        }}
+        {...listeners}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ 
+            fontSize: "16px", 
+            color: "#6d7175",
+            userSelect: "none",
+            cursor: "grab"
+          }}>
+            ⋮⋮
+          </div>
+          <Text variant="headingMd" as="h3">
+            {id === 'folders' ? 'Folders & Tags' : id === 'notes' ? 'Notes' : 'Editor'}
+          </Text>
+        </div>
+        <Button
+          variant="tertiary"
+          size="micro"
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleColumnCollapse(id);
+          }}
+        >
+          −
+        </Button>
+      </div>
+      {children}
+    </div>
+  );
+}
 
 /* ------------------ Loader ------------------ */
 export async function loader({ request }) {
@@ -373,6 +463,37 @@ export default function Index() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('columnOrder', JSON.stringify(newOrder));
     }
+  };
+
+  // Drag and drop state
+  const [activeId, setActiveId] = useState(null);
+  const [overId, setOverId] = useState(null);
+
+  // Drag and drop handlers
+  const handleDragStart = (event) => {
+    setActiveId(event.active.id);
+  };
+
+  const handleDragOver = (event) => {
+    setOverId(event.over?.id || null);
+  };
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    
+    if (active.id !== over?.id) {
+      setColumnOrder((items) => {
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over.id);
+        
+        const newOrder = arrayMove(items, oldIndex, newIndex);
+        saveColumnOrder(newOrder);
+        return newOrder;
+      });
+    }
+    
+    setActiveId(null);
+    setOverId(null);
   };
   
   const toggleColumnCollapse = (column) => {
@@ -1416,168 +1537,7 @@ export default function Index() {
     return () => clearInterval(autoSaveInterval);
   }, [editingNoteId, hasUnsavedChanges, title, body, folderId, noteTags]);
 
-  // Initialize drag and drop for columns using Shopify Draggable Sortable
-  useEffect(() => {
-    // Only run on client side
-    if (typeof window === 'undefined') return;
-
-    let sortable = null;
-    let retryTimeout = null;
-
-    const initializeSortable = async () => {
-      try {
-        // Dynamically import Sortable to avoid SSR issues
-        const { Sortable } = await import('@shopify/draggable');
-        
-        const container = document.querySelector('.app-layout');
-        if (!container) {
-          console.log('Container not found, retrying in 500ms...');
-          retryTimeout = setTimeout(initializeSortable, 500);
-          return;
-        }
-
-        console.log('Container found, initializing Shopify Draggable Sortable');
-        
-        // Initialize Sortable with smooth animations
-        sortable = new Sortable(container, {
-          draggable: '.draggable-column',
-          handle: '.column-drag-handle', // Only the drag handle is draggable
-          mirror: {
-            constrainDimensions: true,
-            xAxis: false,
-            yAxis: false,
-          },
-          swapAnimation: {
-            duration: 300,
-            easingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
-          },
-          sortAnimation: {
-            duration: 200,
-            easingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
-          },
-          // Visual feedback classes
-          classes: {
-            'sortable-placeholder': 'sortable-placeholder',
-            'sortable-drag-over': 'sortable-drag-over',
-            'sortable-dragging': 'sortable-dragging',
-            'sortable-available': 'sortable-available',
-          },
-        });
-
-        // Clean, intuitive drag and drop event handling
-        sortable.on('sortable:start', (evt) => {
-          console.log('Drag started for:', evt.data.source);
-          
-          // Show all other columns as potential drop targets (blue outline)
-          const allColumns = container.querySelectorAll('.draggable-column');
-          allColumns.forEach(column => {
-            if (column !== evt.data.source) {
-              column.classList.add('sortable-available');
-            }
-          });
-        });
-        
-        // Handle drag over events - show single active drop target
-        sortable.on('sortable:sort', (evt) => {
-          // Remove active drop target from all elements first
-          const allColumns = container.querySelectorAll('.draggable-column');
-          allColumns.forEach(column => {
-            column.classList.remove('sortable-drag-over');
-          });
-          
-          // Add active drop target to the element being hovered over
-          const overElement = evt.data.over;
-          if (overElement && overElement !== evt.data.source) {
-            overElement.classList.add('sortable-drag-over');
-          }
-        });
-        
-        // Clean up when drag ends
-        sortable.on('sortable:sort:stop', (evt) => {
-          // Remove all visual feedback classes
-          const allColumns = container.querySelectorAll('.draggable-column');
-          allColumns.forEach(column => {
-            column.classList.remove('sortable-drag-over', 'sortable-available');
-          });
-        });
-
-        sortable.on('sortable:stop', (evt) => {
-          console.log('Sortable stopped:', evt);
-          
-          // Remove available drop zone styling from all columns
-          const allColumns = container.querySelectorAll('.draggable-column');
-          allColumns.forEach(column => {
-            column.classList.remove('sortable-available', 'sortable-drag-over');
-          });
-          
-          // Get the new order of columns
-          const columns = container.querySelectorAll('.draggable-column');
-          const newOrder = [];
-          
-          // Use a Set to track which columns we've already seen to prevent duplicates
-          const seenColumns = new Set();
-          
-          Array.from(columns).forEach(column => {
-            let columnType = null;
-            
-            // Map the column classes to our column order array
-            if (column.classList.contains('col-folders')) columnType = 'folders';
-            else if (column.classList.contains('col-notes')) columnType = 'notes';
-            else if (column.classList.contains('col-editor')) columnType = 'editor';
-            
-            // Only add if we haven't seen this column type yet
-            if (columnType && !seenColumns.has(columnType)) {
-              newOrder.push(columnType);
-              seenColumns.add(columnType);
-            }
-          });
-          
-          // Only update if the order actually changed and we have exactly 3 columns
-          if (newOrder.length === 3 && JSON.stringify(newOrder) !== JSON.stringify(columnOrderRef.current)) {
-            console.log('Column order changed:', newOrder);
-            saveColumnOrder(newOrder);
-          } else if (newOrder.length !== 3) {
-            console.warn('Invalid column order detected:', newOrder);
-          }
-        });
-
-        console.log('Shopify Draggable Sortable initialized successfully');
-      } catch (error) {
-        console.error('Error initializing Sortable:', error);
-        // Retry after a delay
-        retryTimeout = setTimeout(initializeSortable, 1000);
-      }
-    };
-
-    // Wait for DOM to be ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initializeSortable);
-    } else {
-      // DOM is already ready, but add a small delay to ensure React has rendered
-      setTimeout(initializeSortable, 100);
-    }
-
-    // Cleanup function
-    return () => {
-      // Clear any pending retry timeout
-      if (retryTimeout) {
-        clearTimeout(retryTimeout);
-      }
-      
-      // Remove any remaining visual feedback classes
-      const allColumns = document.querySelectorAll('.draggable-column');
-      allColumns.forEach(column => {
-        column.classList.remove('sortable-available', 'sortable-drag-over', 'sortable-dragging');
-      });
-      
-      // Destroy the sortable instance
-      if (sortable) {
-        sortable.destroy();
-        sortable = null;
-        console.log('Sortable instance destroyed');
-      }
-    };
-  }, []); // Empty dependency array - only run once on mount
+  // dnd-kit drag and drop is now handled by the DndContext wrapper
 
   // Handle auto-saving the entire note
   const handleAutoSaveNote = async () => {
@@ -2086,25 +2046,10 @@ export default function Index() {
                 border: 1px solid #c9cccf !important;
               }
               
-              /* Clean, Minimal Drag and Drop Visual Feedback */
+              /* dnd-kit Drag and Drop Visual Feedback */
               .draggable-column {
                 transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
                 position: relative;
-              }
-              
-              /* Placeholder - shows where the dragged column was */
-              .sortable-placeholder {
-                background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
-                           linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
-                           linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
-                           linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
-                background-size: 20px 20px;
-                background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-                border: 2px dashed #c9cccf;
-                border-radius: 8px;
-                opacity: 0.6;
-                min-height: 200px;
-                margin: 8px 0;
               }
               
               /* Dragged element - visually distinct */
@@ -2218,15 +2163,23 @@ export default function Index() {
           </Card>
         )}
 
-        <div className="app-layout" style={{ 
-          display: "flex", 
-          gap: "16px", 
-          minHeight: "calc(100vh - 80px)", // Account for fixed footer height
-          paddingBottom: "80px", // Space for fixed footer
-          alignItems: "stretch",
-          marginBottom: "0",
-          marginTop: "16px" // Add spacing after onboarding block
-        }}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={columnOrder} strategy={verticalListSortingStrategy}>
+            <div className="app-layout" style={{ 
+              display: "flex", 
+              gap: "16px", 
+              minHeight: "calc(100vh - 80px)", // Account for fixed footer height
+              paddingBottom: "80px", // Space for fixed footer
+              alignItems: "stretch",
+              marginBottom: "0",
+              marginTop: "16px" // Add spacing after onboarding block
+            }}>
           {/* Side Navigation for Collapsed Columns */}
           {(collapsedColumns.folders || collapsedColumns.notes) && (
             <div style={{ 
@@ -2267,21 +2220,12 @@ export default function Index() {
           )}
                 {/* FOLDERS */}
         {!collapsedColumns.folders && (
-        <div className="draggable-column col-folders" style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          <div className="column-drag-handle" style={{ 
-            padding: "8px 16px", 
-            backgroundColor: "#f6f6f7", 
-            borderBottom: "1px solid #e1e3e5",
-            cursor: "grab",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px"
-          }}>
-            <i className="fas fa-grip-vertical" style={{ color: "#6d7175", fontSize: "14px" }}></i>
-            <Text as="span" variant="bodyMd" style={{ fontWeight: "600", color: "#6d7175" }}>
-              Drag to reorder
-            </Text>
-          </div>
+        <SortableColumn 
+          id="folders"
+          style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}
+          isActive={overId === 'folders' && activeId !== 'folders'}
+          isPotential={activeId && activeId !== 'folders'}
+        >
           <Card
             style={{
               transition: "all 0.3s ease",
@@ -2631,28 +2575,19 @@ export default function Index() {
               </Button>
             </div>
           </Card>
-        </div>
+        </SortableColumn>
         )}
 
 
 
         {/* NOTES */}
         {!collapsedColumns.notes && (
-        <div className="draggable-column col-notes" style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-          <div className="column-drag-handle" style={{ 
-            padding: "8px 16px", 
-            backgroundColor: "#f6f6f7", 
-            borderBottom: "1px solid #e1e3e5",
-            cursor: "grab",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px"
-          }}>
-            <i className="fas fa-grip-vertical" style={{ color: "#6d7175", fontSize: "14px" }}></i>
-            <Text as="span" variant="bodyMd" style={{ fontWeight: "600", color: "#6d7175" }}>
-              Drag to reorder
-            </Text>
-          </div>
+        <SortableColumn 
+          id="notes"
+          style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}
+          isActive={overId === 'notes' && activeId !== 'notes'}
+          isPotential={activeId && activeId !== 'notes'}
+        >
           <Card style={{ flex: "1", display: "flex", flexDirection: "column" }}>
             {/* Fixed Header Section */}
             <div style={{ 
@@ -2891,37 +2826,28 @@ export default function Index() {
               )}
             </div>
           </Card>
-        </div>
+        </SortableColumn>
         )}
 
         {/* NOTE EDITOR */}
-        <div className="draggable-column col-editor" style={{ 
-          ...(collapsedColumns.folders && collapsedColumns.notes ? {
-            flex: "1",
-            width: "auto",
-            maxWidth: "none"
-          } : {
-            flex: "1",
-            minWidth: "400px"
-          }),
-          transition: "all 0.3s ease",
-          display: "flex",
-          flexDirection: "column"
-        }}>
-          <div className="column-drag-handle" style={{ 
-            padding: "8px 16px", 
-            backgroundColor: "#f6f6f7", 
-            borderBottom: "1px solid #e1e3e5",
-            cursor: "grab",
+        <SortableColumn 
+          id="editor"
+          style={{ 
+            ...(collapsedColumns.folders && collapsedColumns.notes ? {
+              flex: "1",
+              width: "auto",
+              maxWidth: "none"
+            } : {
+              flex: "1",
+              minWidth: "400px"
+            }),
+            transition: "all 0.3s ease",
             display: "flex",
-            alignItems: "center",
-            gap: "8px"
-          }}>
-            <i className="fas fa-grip-vertical" style={{ color: "#6d7175", fontSize: "14px" }}></i>
-            <Text as="span" variant="bodyMd" style={{ fontWeight: "600", color: "#6d7175" }}>
-              Drag to reorder
-            </Text>
-          </div>
+            flexDirection: "column"
+          }}
+          isActive={overId === 'editor' && activeId !== 'editor'}
+          isPotential={activeId && activeId !== 'editor'}
+        >
           <Card style={{ flex: "1", display: "flex", flexDirection: "column" }}>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
@@ -3827,6 +3753,32 @@ export default function Index() {
             </div>
           </div>
         )}
+        </SortableColumn>
+            </div>
+          </SortableContext>
+          
+          {/* DragOverlay for visual feedback */}
+          <DragOverlay>
+            {activeId ? (
+              <div style={{
+                opacity: 0.6,
+                transform: 'rotate(2deg) scale(1.02)',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+                border: '2px solid #008060',
+                backgroundColor: 'rgba(0, 128, 96, 0.05)',
+                borderRadius: '8px',
+                padding: '16px',
+                backgroundColor: '#fff',
+                minWidth: '200px',
+                minHeight: '100px'
+              }}>
+                <Text variant="headingMd">
+                  {activeId === 'folders' ? 'Folders' : activeId === 'notes' ? 'Notes' : 'Editor'}
+                </Text>
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
 
         {/* Copyright Footer */}
         <div style={{
