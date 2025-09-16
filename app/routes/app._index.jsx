@@ -672,13 +672,27 @@ export default function Index() {
   const [folderSelectorNoteId, setFolderSelectorNoteId] = useState(null);
   const [folderSelectorSearchQuery, setFolderSelectorSearchQuery] = useState("");
   
-  // Onboarding state - show only if user has no folders yet
-  const [showOnboarding, setShowOnboarding] = useState(folders.length === 0);
+  // Onboarding state - show only if user has no folders yet and hasn't completed onboarding
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const completed = localStorage.getItem('onboardingCompleted');
+      return folders.length === 0 && !completed;
+    }
+    return folders.length === 0;
+  });
+  const [onboardingStep, setOnboardingStep] = useState(1);
   
   // Update local folders when loader data changes
   useEffect(() => {
     setLocalFolders(folders);
   }, [folders]);
+
+  // Auto-advance onboarding when folder is created
+  useEffect(() => {
+    if (showOnboarding && onboardingStep === 1 && localFolders.length > 0) {
+      setOnboardingStep(2);
+    }
+  }, [localFolders.length, showOnboarding, onboardingStep]);
   
   // Drag and drop sensors
   const sensors = useSensors(
@@ -1105,6 +1119,12 @@ export default function Index() {
           // Store the note ID and folder ID in localStorage BEFORE reload
           localStorage.setItem('selectedNoteId', currentNoteId);
           localStorage.setItem('selectedFolderId', currentFolderId);
+          
+          // Auto-dismiss onboarding after first note save
+          if (showOnboarding) {
+            setShowOnboarding(false);
+            localStorage.setItem('onboardingCompleted', 'true');
+          }
           
           // Clear the form
           setEditingNoteId(null);
@@ -4006,6 +4026,209 @@ export default function Index() {
           onCreateFolder={handleCreateFolderFromModal}
           initialName=""
         />
+
+        {/* Onboarding Guide Modal */}
+        {showOnboarding && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}>
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '32px',
+              maxWidth: '500px',
+              width: '90%',
+              maxHeight: '80vh',
+              overflow: 'auto',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+            }}>
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <Text as="h2" variant="headingLg" style={{ margin: 0 }}>
+                  Welcome to Scriberr! 🎉
+                </Text>
+                <Button
+                  variant="plain"
+                  onClick={() => {
+                    setShowOnboarding(false);
+                    localStorage.setItem('onboardingCompleted', 'true');
+                  }}
+                  accessibilityLabel="Close onboarding"
+                >
+                  <i className="fas fa-times" style={{ fontSize: '16px' }}></i>
+                </Button>
+              </div>
+
+              {/* Progress Indicator */}
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {[1, 2, 3].map((step) => (
+                    <div
+                      key={step}
+                      style={{
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        backgroundColor: step <= onboardingStep ? '#008060' : '#e1e3e5',
+                        transition: 'background-color 0.3s ease'
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Step Content */}
+              {onboardingStep === 1 && (
+                <div>
+                  <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                    <div style={{
+                      width: '80px',
+                      height: '80px',
+                      backgroundColor: '#f0f9ff',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 16px',
+                      fontSize: '32px'
+                    }}>
+                      📁
+                    </div>
+                    <Text as="h3" variant="headingMd" style={{ marginBottom: '8px' }}>
+                      Step 1: Create Your First Folder
+                    </Text>
+                    <Text as="p" variant="bodyMd" style={{ color: '#6d7175' }}>
+                      Organize your notes by creating folders for different topics, projects, or categories.
+                    </Text>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        setShowNewFolderModal(true);
+                        setOnboardingStep(2);
+                      }}
+                    >
+                      Create Folder
+                    </Button>
+                    <Button
+                      variant="plain"
+                      onClick={() => setOnboardingStep(2)}
+                    >
+                      Skip for now
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {onboardingStep === 2 && (
+                <div>
+                  <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                    <div style={{
+                      width: '80px',
+                      height: '80px',
+                      backgroundColor: '#f0fdf4',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 16px',
+                      fontSize: '32px'
+                    }}>
+                      📝
+                    </div>
+                    <Text as="h3" variant="headingMd" style={{ marginBottom: '8px' }}>
+                      Step 2: Create Your First Note
+                    </Text>
+                    <Text as="p" variant="bodyMd" style={{ color: '#6d7175' }}>
+                      Select a folder and create your first note. You can write anything - ideas, thoughts, or reminders.
+                    </Text>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        if (localFolders.length > 0) {
+                          setSelectedFolder(localFolders[0].id);
+                          handleNewNote();
+                        }
+                        setOnboardingStep(3);
+                      }}
+                      disabled={localFolders.length === 0}
+                    >
+                      Create Note
+                    </Button>
+                    <Button
+                      variant="plain"
+                      onClick={() => setOnboardingStep(3)}
+                    >
+                      Skip for now
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {onboardingStep === 3 && (
+                <div>
+                  <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                    <div style={{
+                      width: '80px',
+                      height: '80px',
+                      backgroundColor: '#fef3c7',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 16px',
+                      fontSize: '32px'
+                    }}>
+                      💾
+                    </div>
+                    <Text as="h3" variant="headingMd" style={{ marginBottom: '8px' }}>
+                      Step 3: Don't Forget to Save!
+                    </Text>
+                    <Text as="p" variant="bodyMd" style={{ color: '#6d7175' }}>
+                      Always remember to save your notes. Your changes are automatically saved, but you can also manually save anytime.
+                    </Text>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        setShowOnboarding(false);
+                        localStorage.setItem('onboardingCompleted', 'true');
+                      }}
+                    >
+                      Got it! Let's start
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Navigation */}
+              {onboardingStep > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '24px' }}>
+                  <Button
+                    variant="plain"
+                    onClick={() => setOnboardingStep(onboardingStep - 1)}
+                  >
+                    <i className="fas fa-arrow-left" style={{ marginRight: '8px' }}></i>
+                    Back
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Folder Icon Picker Modal */}
         {showIconPicker && (
