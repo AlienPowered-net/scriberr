@@ -157,7 +157,8 @@ function DropIndicator({
         backgroundColor: active ? '#abcbbc' : '#eaf4ff',
         border: active ? '2px solid #345848' : '2px solid #00527c',
         cursor: 'pointer',
-        zIndex: 1000,
+        zIndex: 10,
+        opacity: 0.8,
         transform: active ? 'scale(1.1)' : 'scale(1)',
         boxShadow: active ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
       }}
@@ -3853,7 +3854,7 @@ export default function Index() {
           <DragOverlay>
             {activeId ? (
               <div style={{
-                opacity: 0.9,
+                opacity: 0.95,
                 transform: 'rotate(2deg) scale(1.02)',
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
                 borderRadius: '8px',
@@ -3861,7 +3862,8 @@ export default function Index() {
                 minWidth: '300px',
                 minHeight: '200px',
                 backgroundColor: '#fff',
-                border: '2px solid #008060'
+                border: '2px solid #008060',
+                zIndex: 50
               }}>
                 {/* Column Header */}
                 <div style={{ 
