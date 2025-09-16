@@ -25,7 +25,6 @@ import {
   ActionList,
   TextContainer,
 } from "@shopify/polaris";
-import { SaveIcon, DragDropIcon } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef } from "react";
 import QuillEditor from "../components/LexicalEditor";
 import AdvancedRTE from "../components/AdvancedRTE";
@@ -42,7 +41,6 @@ import {
   useSensor,
   useSensors,
   DragOverlay,
-  useDndMonitor,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -535,7 +533,7 @@ export default function Index() {
 
 
   // Handle drag end for folders
-  const handleDragEnd = async (event) => {
+  const handleFolderDragEnd = async (event) => {
     const { active, over } = event;
 
     if (!over || active.id === over.id) {
@@ -2529,7 +2527,7 @@ export default function Index() {
                 <DndContext
                   sensors={sensors}
                   collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
+                  onDragEnd={handleFolderDragEnd}
                 >
                   <SortableContext
                     items={localFolders.map(f => f.id)}
@@ -3126,8 +3124,9 @@ export default function Index() {
              </BlockStack>
             </div>
           </Card>
-        </div>
-        </div>
+        </SortableColumn>
+            </div>
+          </SortableContext>
         
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
@@ -3753,9 +3752,6 @@ export default function Index() {
             </div>
           </div>
         )}
-        </SortableColumn>
-            </div>
-          </SortableContext>
           
           {/* DragOverlay for visual feedback */}
           <DragOverlay>
@@ -3765,10 +3761,9 @@ export default function Index() {
                 transform: 'rotate(2deg) scale(1.02)',
                 boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
                 border: '2px solid #008060',
-                backgroundColor: 'rgba(0, 128, 96, 0.05)',
+                backgroundColor: '#fff',
                 borderRadius: '8px',
                 padding: '16px',
-                backgroundColor: '#fff',
                 minWidth: '200px',
                 minHeight: '100px'
               }}>
