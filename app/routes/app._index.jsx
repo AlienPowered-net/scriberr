@@ -25,6 +25,7 @@ import {
   ActionList,
   TextContainer,
 } from "@shopify/polaris";
+import { SaveIcon, DragDropIcon } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef } from "react";
 import QuillEditor from "../components/LexicalEditor";
 import AdvancedRTE from "../components/AdvancedRTE";
