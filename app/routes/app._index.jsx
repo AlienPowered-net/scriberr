@@ -88,25 +88,25 @@ function SortableColumn({ id, children, ...props }) {
       {...attributes}
       {...props}
     >
-      {/* Drag handle at the very top of the column */}
+      {/* Drag handle positioned lower with more space from top */}
       <div
         style={{
           position: 'absolute',
-          top: '0',
-          left: '0',
+          top: '8px',
+          left: '8px',
           zIndex: 10,
           cursor: 'grab',
-          padding: '4px',
+          padding: '6px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: '24px',
-          height: '24px'
+          width: '28px',
+          height: '28px'
         }}
         {...listeners}
       >
         <div style={{ 
-          fontSize: "12px", 
+          fontSize: "14px", 
           color: "#6d7175",
           userSelect: "none",
           cursor: "grab"
