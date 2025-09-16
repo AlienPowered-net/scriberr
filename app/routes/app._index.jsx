@@ -87,18 +87,20 @@ function SortableColumn({ id, children, ...props }) {
       {...attributes}
       {...props}
     >
-      {/* Drag handle in top-left corner */}
+      {/* Drag handle at the very top of the column */}
       <div
         style={{
           position: 'absolute',
-          top: '8px',
-          left: '8px',
+          top: '0',
+          left: '0',
           zIndex: 10,
           cursor: 'grab',
           padding: '4px',
-          borderRadius: '4px',
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          borderRadius: '0 0 4px 0',
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
           border: '1px solid #e1e3e5',
+          borderTop: 'none',
+          borderLeft: 'none',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -115,33 +117,6 @@ function SortableColumn({ id, children, ...props }) {
         }}>
           ⋮⋮
         </div>
-      </div>
-
-      {/* Column header */}
-      <div
-        style={{ 
-          padding: "8px 16px", 
-          backgroundColor: "#f6f6f7", 
-          borderBottom: "1px solid #e1e3e5",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingLeft: "48px" // Add space for drag handle
-        }}
-      >
-        <Text variant="headingMd" as="h3">
-          {id === 'folders' ? 'Folders & Tags' : id === 'notes' ? 'Notes' : 'Editor'}
-        </Text>
-        <Button
-          variant="tertiary"
-          size="micro"
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleColumnCollapse(id);
-          }}
-        >
-          −
-        </Button>
       </div>
       {children}
     </div>
@@ -606,10 +581,6 @@ export default function Index() {
     if (columnId === 'folders') {
       return (
         <div style={{ padding: '16px', backgroundColor: '#fafafa', minHeight: '200px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <div style={{ fontSize: '12px', color: '#6d7175' }}>⋮⋮</div>
-            <Text variant="headingMd" as="h3">Folders & Tags</Text>
-          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {folders.slice(0, 3).map((folder) => (
               <div key={folder.id} style={{ 
@@ -636,10 +607,6 @@ export default function Index() {
     } else if (columnId === 'notes') {
       return (
         <div style={{ padding: '16px', backgroundColor: '#fafafa', minHeight: '200px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <div style={{ fontSize: '12px', color: '#6d7175' }}>⋮⋮</div>
-            <Text variant="headingMd" as="h3">Notes</Text>
-          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {notes.slice(0, 3).map((note) => (
               <div key={note.id} style={{ 
@@ -667,10 +634,6 @@ export default function Index() {
     } else if (columnId === 'editor') {
       return (
         <div style={{ padding: '16px', backgroundColor: '#fafafa', minHeight: '200px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <div style={{ fontSize: '12px', color: '#6d7175' }}>⋮⋮</div>
-            <Text variant="headingMd" as="h3">Editor</Text>
-          </div>
           <div style={{ 
             padding: '12px', 
             backgroundColor: '#fff', 
