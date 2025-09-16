@@ -2400,6 +2400,8 @@ export default function Index() {
               backgroundColor: "#fff",
               height: "100%",
               minHeight: "100%",
+              padding: "0",
+              margin: "0",
               ...(highlightFolders && {
                 backgroundColor: "#fff3cd",
                 border: "2px solid #ffc107",
@@ -2755,7 +2757,7 @@ export default function Index() {
                     id="notes"
                     style={{ width: "380px", minWidth: "380px", maxWidth: "380px", display: "flex", flexDirection: "column", overflow: "hidden" }}
                   >
-          <Card style={{ flex: "1", display: "flex", flexDirection: "column", backgroundColor: "#fff", height: "100%", minHeight: "100%" }}>
+          <Card style={{ flex: "1", display: "flex", flexDirection: "column", backgroundColor: "#fff", height: "100%", minHeight: "100%", padding: "0", margin: "0" }}>
             {/* Fixed Header Section */}
             <div style={{ 
               padding: "16px", 
@@ -3017,7 +3019,7 @@ export default function Index() {
                       flexDirection: "column"
                     }}
                   >
-          <Card style={{ flex: "1", display: "flex", flexDirection: "column", backgroundColor: "#fff", height: "100%", minHeight: "100%" }}>
+          <Card style={{ flex: "1", display: "flex", flexDirection: "column", backgroundColor: "#fff", height: "100%", minHeight: "100%", padding: "0", margin: "0" }}>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
