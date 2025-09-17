@@ -672,13 +672,13 @@ export default function Index() {
   const [folderSelectorNoteId, setFolderSelectorNoteId] = useState(null);
   const [folderSelectorSearchQuery, setFolderSelectorSearchQuery] = useState("");
   
-  // Onboarding state - show only if user has no folders yet and hasn't completed onboarding
+  // Onboarding state - show only if user has no folders AND no notes, and hasn't permanently dismissed it
   const [showOnboarding, setShowOnboarding] = useState(() => {
     if (typeof window !== 'undefined') {
-      const completed = localStorage.getItem('onboardingCompleted');
-      return folders.length === 0 && !completed;
+      const permanentlyDismissed = localStorage.getItem('onboardingPermanentlyDismissed');
+      return folders.length === 0 && notes.length === 0 && !permanentlyDismissed;
     }
-    return folders.length === 0;
+    return folders.length === 0 && notes.length === 0;
   });
   const [onboardingStep, setOnboardingStep] = useState(1);
   
@@ -693,6 +693,15 @@ export default function Index() {
       setOnboardingStep(2);
     }
   }, [localFolders.length, showOnboarding, onboardingStep]);
+
+  // Update onboarding visibility based on content
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const permanentlyDismissed = localStorage.getItem('onboardingPermanentlyDismissed');
+      const shouldShow = localFolders.length === 0 && localNotes.length === 0 && !permanentlyDismissed;
+      setShowOnboarding(shouldShow);
+    }
+  }, [localFolders.length, localNotes.length]);
   
   // Drag and drop sensors
   const sensors = useSensors(
@@ -1123,7 +1132,7 @@ export default function Index() {
           // Auto-dismiss onboarding after first note save
           if (showOnboarding) {
             setShowOnboarding(false);
-            localStorage.setItem('onboardingCompleted', 'true');
+            // Don't set permanently dismissed here - let it reappear if user deletes all content
           }
           
           // Clear the form
@@ -2701,7 +2710,7 @@ export default function Index() {
               padding: "16px 20px 16px 16px",
               maxHeight: localFolders.length > 9 ? "500px" : "none"
             }}>
-              {localFolders.length === 0 ? (
+              {localFolders.length === 0 && localNotes.length === 0 ? (
                 showOnboarding ? (
                   <div style={{
                     backgroundColor: '#f8f9fa',
@@ -2713,9 +2722,22 @@ export default function Index() {
                   }}>
                     {/* Header */}
                     <div style={{ marginBottom: '24px' }}>
-                      <Text as="h2" variant="headingLg" style={{ marginBottom: '8px' }}>
-                        Welcome to Scriberr! 🎉
-                      </Text>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                        <Text as="h2" variant="headingLg" style={{ margin: 0 }}>
+                          Welcome to Scriberr! 🎉
+                        </Text>
+                        <Button
+                          variant="plain"
+                          size="slim"
+                          onClick={() => {
+                            setShowOnboarding(false);
+                            localStorage.setItem('onboardingPermanentlyDismissed', 'true');
+                          }}
+                          accessibilityLabel="Skip onboarding"
+                        >
+                          Skip
+                        </Button>
+                      </div>
                       <Text as="p" variant="bodyMd" style={{ color: '#6d7175' }}>
                         Let's get you started with your first folder and note
                       </Text>
@@ -2858,7 +2880,7 @@ export default function Index() {
                             variant="primary"
                             onClick={() => {
                               setShowOnboarding(false);
-                              localStorage.setItem('onboardingCompleted', 'true');
+                              localStorage.setItem('onboardingPermanentlyDismissed', 'true');
                             }}
                           >
                             Got it! Let's start
@@ -2886,7 +2908,7 @@ export default function Index() {
                         variant="plain"
                         onClick={() => {
                           setShowOnboarding(false);
-                          localStorage.setItem('onboardingCompleted', 'true');
+                          localStorage.setItem('onboardingPermanentlyDismissed', 'true');
                         }}
                         accessibilityLabel="Close onboarding"
                       >
