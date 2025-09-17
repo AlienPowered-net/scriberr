@@ -672,13 +672,13 @@ export default function Index() {
   const [folderSelectorNoteId, setFolderSelectorNoteId] = useState(null);
   const [folderSelectorSearchQuery, setFolderSelectorSearchQuery] = useState("");
   
-  // Onboarding state - show only if user has no folders AND no notes, and hasn't permanently dismissed it
+  // Onboarding state - show whenever user has no folders, and hasn't permanently dismissed it
   const [showOnboarding, setShowOnboarding] = useState(() => {
     if (typeof window !== 'undefined') {
       const permanentlyDismissed = localStorage.getItem('onboardingPermanentlyDismissed');
-      return folders.length === 0 && notes.length === 0 && !permanentlyDismissed;
+      return folders.length === 0 && !permanentlyDismissed;
     }
-    return folders.length === 0 && notes.length === 0;
+    return folders.length === 0;
   });
   const [onboardingStep, setOnboardingStep] = useState(1);
   
@@ -694,14 +694,14 @@ export default function Index() {
     }
   }, [localFolders.length, showOnboarding, onboardingStep]);
 
-  // Update onboarding visibility based on content
+  // Update onboarding visibility based on folders
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const permanentlyDismissed = localStorage.getItem('onboardingPermanentlyDismissed');
-      const shouldShow = localFolders.length === 0 && localNotes.length === 0 && !permanentlyDismissed;
+      const shouldShow = localFolders.length === 0 && !permanentlyDismissed;
       setShowOnboarding(shouldShow);
     }
-  }, [localFolders.length, localNotes.length]);
+  }, [localFolders.length]);
   
   // Drag and drop sensors
   const sensors = useSensors(
