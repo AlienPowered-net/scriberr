@@ -2720,6 +2720,89 @@ export default function Index() {
                     border: '2px solid #e1e3e5',
                     position: 'relative'
                   }}>
+                    {/* Step Progress Section */}
+                    <div style={{ 
+                      marginBottom: '32px',
+                      padding: '20px',
+                      backgroundColor: '#ffffff',
+                      borderRadius: '8px',
+                      border: '1px solid #e1e3e5'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <Text as="h3" variant="headingMd" style={{ margin: 0, color: '#202223' }}>
+                          Getting started
+                        </Text>
+                        <Text as="p" variant="bodySm" style={{ margin: 0, color: '#6d7175' }}>
+                          Step {onboardingStep} of 3
+                        </Text>
+                      </div>
+                      
+                      {/* Step Indicators */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        {[1, 2, 3].map((step) => (
+                          <div key={step} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                            {/* Step Circle */}
+                            <div style={{
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '50%',
+                              backgroundColor: step <= onboardingStep ? '#008060' : '#e1e3e5',
+                              color: step <= onboardingStep ? '#ffffff' : '#6d7175',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '14px',
+                              fontWeight: '600',
+                              transition: 'all 0.3s ease',
+                              border: step === onboardingStep ? '2px solid #008060' : '2px solid transparent'
+                            }}>
+                              {step}
+                            </div>
+                            
+                            {/* Step Label */}
+                            <div style={{ marginLeft: '12px', flex: 1 }}>
+                              <Text as="p" variant="bodySm" style={{ 
+                                margin: 0, 
+                                fontWeight: step === onboardingStep ? '600' : '400',
+                                color: step <= onboardingStep ? '#202223' : '#6d7175'
+                              }}>
+                                {step === 1 && 'Create folder'}
+                                {step === 2 && 'Add note'}
+                                {step === 3 && 'Save & organize'}
+                              </Text>
+                            </div>
+                            
+                            {/* Connector Line */}
+                            {step < 3 && (
+                              <div style={{
+                                flex: 1,
+                                height: '2px',
+                                backgroundColor: step < onboardingStep ? '#008060' : '#e1e3e5',
+                                margin: '0 16px',
+                                transition: 'background-color 0.3s ease'
+                              }} />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Progress Bar */}
+                      <div style={{
+                        width: '100%',
+                        height: '4px',
+                        backgroundColor: '#e1e3e5',
+                        borderRadius: '2px',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{
+                          width: `${(onboardingStep / 3) * 100}%`,
+                          height: '100%',
+                          backgroundColor: '#008060',
+                          transition: 'width 0.3s ease'
+                        }} />
+                      </div>
+                    </div>
+
                     {/* Header */}
                     <div style={{ marginBottom: '24px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
@@ -2741,24 +2824,6 @@ export default function Index() {
                       <Text as="p" variant="bodyMd" style={{ color: '#6d7175' }}>
                         Let's get you started with your first folder and note
                       </Text>
-                    </div>
-
-                    {/* Progress Indicator */}
-                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '32px' }}>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        {[1, 2, 3].map((step) => (
-                          <div
-                            key={step}
-                            style={{
-                              width: '12px',
-                              height: '12px',
-                              borderRadius: '50%',
-                              backgroundColor: step <= onboardingStep ? '#008060' : '#e1e3e5',
-                              transition: 'background-color 0.3s ease'
-                            }}
-                          />
-                        ))}
-                      </div>
                     </div>
 
                     {/* Step Content */}
