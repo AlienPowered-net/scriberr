@@ -676,7 +676,13 @@ export default function Index() {
   const [showOnboarding, setShowOnboarding] = useState(() => {
     if (typeof window !== 'undefined') {
       const permanentlyDismissed = localStorage.getItem('onboardingPermanentlyDismissed');
-      return folders.length === 0 && !permanentlyDismissed;
+      const shouldShow = folders.length === 0 && !permanentlyDismissed;
+      console.log('Initial Onboarding State:', {
+        foldersLength: folders.length,
+        permanentlyDismissed,
+        shouldShow
+      });
+      return shouldShow;
     }
     return folders.length === 0;
   });
@@ -699,6 +705,12 @@ export default function Index() {
     if (typeof window !== 'undefined') {
       const permanentlyDismissed = localStorage.getItem('onboardingPermanentlyDismissed');
       const shouldShow = localFolders.length === 0 && !permanentlyDismissed;
+      console.log('Onboarding Debug:', {
+        localFoldersLength: localFolders.length,
+        permanentlyDismissed,
+        shouldShow,
+        currentShowOnboarding: showOnboarding
+      });
       setShowOnboarding(shouldShow);
     }
   }, [localFolders.length]);
@@ -2303,51 +2315,6 @@ export default function Index() {
           </div>
         )}
         
-        {/* Onboarding Block */}
-        {showOnboarding && (
-          <Card sectioned>
-            <div className="onboarding-content" style={{ 
-              display: "flex", 
-              alignItems: "center", 
-              justifyContent: "space-between",
-              gap: "16px"
-            }}>
-              <div style={{ flex: 1 }}>
-                <Text variant="headingMd" as="h2">
-                  Welcome to Scriberr! 🎉
-                </Text>
-                <Text variant="bodyMd" color="subdued" as="p" style={{ marginTop: "4px" }}>
-                  Your intelligent note-taking assistant. Create folders to organize your thoughts, write notes with our powerful editor, and use AI to enhance your writing.
-                </Text>
-              </div>
-              <div className="onboarding-buttons" style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <ButtonGroup>
-                  <Button onClick={() => setShowNewFolderModal(true)}>
-                    Create Your First Folder
-                  </Button>
-                  <Button variant="plain" url="https://scriberr.app/docs" external>
-                    View Documentation
-                  </Button>
-                </ButtonGroup>
-                <Button 
-                  variant="tertiary" 
-                  icon={<span className="material-symbols-rounded">close</span>}
-                  onClick={() => setShowOnboarding(false)}
-                  accessibilityLabel="Dismiss onboarding"
-                />
-              </div>
-            </div>
-            <div style={{ 
-              marginTop: "12px", 
-              display: "flex", 
-              gap: "12px",
-              flexWrap: "wrap"
-            }}>
-              <Badge status="info">✨ Tip: Use "/" in the editor to access quick commands</Badge>
-              <Badge status="success">🤖 AI-powered writing assistance available</Badge>
-            </div>
-          </Card>
-        )}
 
         {/* Onboarding Header - Above Columns */}
         {showOnboarding && (
