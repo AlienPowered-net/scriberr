@@ -2712,17 +2712,10 @@ export default function Index() {
             }}>
               {localFolders.length === 0 && localNotes.length === 0 ? (
                 showOnboarding ? (
-                  <div style={{
-                    backgroundColor: '#f8f9fa',
-                    borderRadius: '12px',
-                    padding: '32px',
-                    textAlign: 'center',
-                    border: '2px solid #e1e3e5',
-                    position: 'relative'
-                  }}>
-                    {/* Step Progress Section */}
+                  <div>
+                    {/* Step Progress Section - Above Welcome Block */}
                     <div style={{ 
-                      marginBottom: '32px',
+                      marginBottom: '24px',
                       padding: '20px',
                       backgroundColor: '#ffffff',
                       borderRadius: '8px',
@@ -2803,28 +2796,37 @@ export default function Index() {
                       </div>
                     </div>
 
-                    {/* Header */}
-                    <div style={{ marginBottom: '24px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                        <Text as="h2" variant="headingLg" style={{ margin: 0 }}>
-                          Welcome to Scriberr! 🎉
+                    {/* Main Onboarding Content */}
+                    <div style={{
+                      backgroundColor: '#f8f9fa',
+                      borderRadius: '12px',
+                      padding: '32px',
+                      textAlign: 'center',
+                      border: '2px solid #e1e3e5',
+                      position: 'relative'
+                    }}>
+                      {/* Header */}
+                      <div style={{ marginBottom: '24px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                          <Text as="h2" variant="headingLg" style={{ margin: 0 }}>
+                            Welcome to Scriberr! 🎉
+                          </Text>
+                          <Button
+                            variant="plain"
+                            size="slim"
+                            onClick={() => {
+                              setShowOnboarding(false);
+                              localStorage.setItem('onboardingPermanentlyDismissed', 'true');
+                            }}
+                            accessibilityLabel="Skip onboarding"
+                          >
+                            Skip
+                          </Button>
+                        </div>
+                        <Text as="p" variant="bodyMd" style={{ color: '#6d7175' }}>
+                          Let's get you started with your first folder and note
                         </Text>
-                        <Button
-                          variant="plain"
-                          size="slim"
-                          onClick={() => {
-                            setShowOnboarding(false);
-                            localStorage.setItem('onboardingPermanentlyDismissed', 'true');
-                          }}
-                          accessibilityLabel="Skip onboarding"
-                        >
-                          Skip
-                        </Button>
                       </div>
-                      <Text as="p" variant="bodyMd" style={{ color: '#6d7175' }}>
-                        Let's get you started with your first folder and note
-                      </Text>
-                    </div>
 
                     {/* Step Content */}
                     {onboardingStep === 1 && (
@@ -2967,18 +2969,19 @@ export default function Index() {
                       </div>
                     )}
 
-                    {/* Close Button */}
-                    <div style={{ position: 'absolute', top: '16px', right: '16px' }}>
-                      <Button
-                        variant="plain"
-                        onClick={() => {
-                          setShowOnboarding(false);
-                          localStorage.setItem('onboardingPermanentlyDismissed', 'true');
-                        }}
-                        accessibilityLabel="Close onboarding"
-                      >
-                        <i className="fas fa-times" style={{ fontSize: '16px' }}></i>
-                      </Button>
+                      {/* Close Button */}
+                      <div style={{ position: 'absolute', top: '16px', right: '16px' }}>
+                        <Button
+                          variant="plain"
+                          onClick={() => {
+                            setShowOnboarding(false);
+                            localStorage.setItem('onboardingPermanentlyDismissed', 'true');
+                          }}
+                          accessibilityLabel="Close onboarding"
+                        >
+                          <i className="fas fa-times" style={{ fontSize: '16px' }}></i>
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ) : (
