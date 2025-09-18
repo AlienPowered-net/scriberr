@@ -26,7 +26,7 @@ import {
   TextContainer,
 } from "@shopify/polaris";
 import { SaveIcon, DragDropIcon } from "@shopify/polaris-icons";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import QuillEditor from "../components/LexicalEditor";
 import AdvancedRTE from "../components/AdvancedRTE";
 import FolderIconPicker from "../components/FolderIconPicker";
@@ -1033,7 +1033,7 @@ export default function Index() {
       JSON.stringify(noteTags) !== JSON.stringify(currentNote.tags || []);
 
     setHasUnsavedChanges(hasChanges);
-  }, [title, body, noteTags, editingNoteId, notes]);
+  }, [title, body, noteTags, editingNoteId, localNotes]);
 
   // Restore selected note and folder from localStorage on page load
   useEffect(() => {
@@ -1753,12 +1753,12 @@ export default function Index() {
     }, 30000); // 30 seconds
 
     return () => clearInterval(autoSaveInterval);
-  }, [editingNoteId, hasUnsavedChanges, title, body, folderId, noteTags]);
+  }, [editingNoteId, hasUnsavedChanges, handleAutoSaveNote]);
 
   // dnd-kit drag and drop is now handled by the DndContext wrapper
 
   // Handle auto-saving the entire note
-  const handleAutoSaveNote = async () => {
+  const handleAutoSaveNote = useCallback(async () => {
     if (!editingNoteId) return;
 
     try {
@@ -1791,7 +1791,7 @@ export default function Index() {
     } catch (error) {
       console.error('Auto-save failed:', error);
     }
-  };
+  }, [editingNoteId, title, body, folderId, noteTags]);
 
   // Handle auto-saving tags when they are added or removed
   const handleAutoSaveTags = async (newTags) => {
