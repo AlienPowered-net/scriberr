@@ -116,11 +116,12 @@
 /* Draggable columns */
 .draggable-column {
   position: relative;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .draggable-column.dragging {
-  z-index: 100;
+  z-index: 1000;
+  transform: scale(1.02);
 }
 
 .drag-handle {
@@ -128,18 +129,19 @@
   top: 8px;
   left: 50%;
   transform: translateX(-50%);
-  width: 32px;
-  height: 24px;
+  width: 40px;
+  height: 32px;
   background: #f3f4f6;
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: grab;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .drag-handle:active {
@@ -147,7 +149,9 @@
 }
 
 .draggable-column:hover .drag-handle {
-  opacity: 1;
+  opacity: 0.8;
+  background: #e5e7eb;
+  transform: translateX(-50%) scale(1.05);
 }
 
 .drag-handle svg {
@@ -157,13 +161,34 @@
 
 /* Drag overlay styling */
 .drag-overlay {
-  opacity: 0.9;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  border-radius: 14px;
+  opacity: 0.95;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+  border: 2px solid #3b82f6;
+  background: white;
+  overflow: hidden;
+  transform: rotate(2deg);
 }
 
 .drag-overlay .pane {
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: none;
+  border: none;
+  border-radius: 14px;
+}
+
+/* Enhanced drag feedback */
+.draggable-column.dragging .pane {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: #3b82f6;
+}
+
+/* Drop zone indicators */
+.draggable-column:not(.dragging) {
+  transition: all 0.2s ease;
+}
+
+.draggable-column:not(.dragging):hover {
+  transform: translateY(-2px);
 }
 
 /* Responsive grid for dynamic columns */

@@ -64,8 +64,9 @@ function DraggableColumn({ id, children }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.3 : 1,
     position: 'relative',
+    zIndex: isDragging ? 1000 : 'auto',
   };
 
   return (
@@ -74,8 +75,31 @@ function DraggableColumn({ id, children }) {
       style={style}
       className={`draggable-column ${isDragging ? 'dragging' : ''}`}
     >
-      <div className="drag-handle" {...attributes} {...listeners}>
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <div 
+        className="drag-handle" 
+        {...attributes} 
+        {...listeners}
+        style={{
+          position: 'absolute',
+          top: '8px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '40px',
+          height: '32px',
+          background: isDragging ? '#3b82f6' : '#f3f4f6',
+          border: isDragging ? '2px solid #1d4ed8' : '1px solid #e5e7eb',
+          borderRadius: '8px',
+          cursor: isDragging ? 'grabbing' : 'grab',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10,
+          opacity: isDragging ? 1 : 0,
+          transition: 'all 0.2s ease',
+          boxShadow: isDragging ? '0 4px 12px rgba(59, 130, 246, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 16 16" fill={isDragging ? 'white' : '#6b7280'}>
           <path d="M5 3a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm6 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2zM5 7a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm6 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2zM5 11a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm6 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
         </svg>
       </div>
@@ -474,7 +498,40 @@ export default function Notepad() {
         </SortableContext>
         <DragOverlay>
           {activeId ? (
-            <div className="drag-overlay">
+            <div 
+              className="drag-overlay"
+              style={{
+                transform: 'rotate(2deg)',
+                opacity: 0.95,
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+                border: '2px solid #3b82f6',
+                borderRadius: '16px',
+                background: 'white',
+                overflow: 'hidden',
+              }}
+            >
+              <div 
+                style={{
+                  position: 'absolute',
+                  top: '8px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '40px',
+                  height: '32px',
+                  background: '#3b82f6',
+                  border: '2px solid #1d4ed8',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 10,
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="white">
+                  <path d="M5 3a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm6 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2zM5 7a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm6 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2zM5 11a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm6 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                </svg>
+              </div>
               {columnComponents[activeId]}
             </div>
           ) : null}
