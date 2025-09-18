@@ -277,8 +277,8 @@ export default function Notepad() {
     setActiveId(null);
   };
 
-  // Create column components mapping
-  const columnComponents = {
+  // Create column components mapping with current state
+  const getColumnComponents = () => ({
     [COLUMNS.FOLDERS]: (
       <aside className="pane folders" key={COLUMNS.FOLDERS}>
 
@@ -474,7 +474,7 @@ export default function Notepad() {
         </div>
       </section>
     )
-  };
+  });
 
   // UI
   return (
@@ -491,7 +491,7 @@ export default function Notepad() {
         >
           {columnOrder.map((columnId) => (
             <DraggableColumn key={columnId} id={columnId}>
-              {columnComponents[columnId]}
+              {getColumnComponents()[columnId]}
             </DraggableColumn>
           ))}
         </SortableContext>
@@ -499,7 +499,7 @@ export default function Notepad() {
           {activeId ? (
             <div className="drag-overlay">
               <div className="draggable-column">
-                {columnComponents[activeId]}
+                {getColumnComponents()[activeId]}
               </div>
             </div>
           ) : null}
