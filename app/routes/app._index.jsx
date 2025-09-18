@@ -67,7 +67,7 @@ function SortableColumn({ id, children, ...props }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.9 : 1,
+    opacity: isDragging ? 0.3 : 1,
     position: 'relative',
     height: '100%',
     minHeight: '100%',
@@ -566,87 +566,359 @@ export default function Index() {
     setActiveDropIndex(null);
   };
 
-  // Helper function to render column content for DragOverlay
+  // Helper function to render full column content for DragOverlay
   const renderColumnContent = (columnId) => {
     if (columnId === 'folders') {
       return (
-        <div style={{ padding: '16px', backgroundColor: '#fafafa', minHeight: '200px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {folders.slice(0, 3).map((folder) => (
-              <div key={folder.id} style={{ 
-                padding: '8px 12px', 
-                backgroundColor: '#fff', 
-                borderRadius: '4px', 
-                border: '1px solid #e1e3e5',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <div style={{ fontSize: '16px' }}>{folder.icon}</div>
-                <Text variant="bodyMd">{folder.name}</Text>
-              </div>
-            ))}
-            {folders.length > 3 && (
-              <Text variant="bodyMd" style={{ color: '#6d7175', fontStyle: 'italic' }}>
-                +{folders.length - 3} more folders...
+        <Card
+          style={{
+            transition: "all 0.3s ease",
+            flex: "1",
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: "#fff",
+            height: "100%",
+            minHeight: "100%",
+            padding: "0",
+            margin: "0",
+            borderRadius: "8px",
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+            border: "1px solid #e1e3e5",
+            width: "380px",
+            minWidth: "380px",
+            maxWidth: "380px",
+            overflow: "hidden"
+          }}
+        >
+          {/* Fixed Header Section */}
+          <div style={{ 
+            padding: "16px", 
+            borderBottom: "1px solid #e1e3e5",
+            backgroundColor: "white",
+            flexShrink: 0
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <i className="far fa-folder-open"></i>
+                Folders & Tags
               </Text>
-            )}
+            </div>
+            
+            {/* Search Bar */}
+            <div style={{ marginBottom: "16px" }}>
+              <TextField
+                label="Search folders..."
+                labelHidden
+                placeholder="Search folders..."
+                value={folderSearchQuery}
+                onChange={setFolderSearchQuery}
+                prefix={<i className="fas fa-search" style={{ color: "#6d7175" }}></i>}
+              />
+            </div>
           </div>
-        </div>
+
+          {/* Scrollable Content */}
+          <div style={{ 
+            flex: "1", 
+            overflowY: "auto", 
+            padding: "16px",
+            paddingTop: "0"
+          }}>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleFolderDragEnd}
+            >
+              <SortableContext
+                items={localFolders.map(f => f.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div>
+                {localFolders.map((folder) => (
+                  <DraggableFolder 
+                    key={folder.id} 
+                    folder={folder}
+                    selectedFolder={selectedFolder}
+                    onSelect={handleFolderSelect}
+                    onEdit={handleEditFolder}
+                    onDelete={handleDeleteFolder}
+                    onTogglePin={handleToggleFolderPin}
+                    onUpdateIcon={handleUpdateFolderIcon}
+                    onUpdateColor={handleUpdateFolderColor}
+                    isHighlighted={highlightFolders}
+                    showDragHandle={true}
+                    isDragging={false}
+                    dragOverlay={true}
+                  />
+                ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          </div>
+
+          {/* Fixed Footer */}
+          <div style={{ 
+            padding: "16px", 
+            borderTop: "1px solid #e1e3e5",
+            backgroundColor: "white",
+            flexShrink: 0
+          }}>
+            <Button
+              fullWidth
+              onClick={() => setShowNewFolderModal(true)}
+              icon={AddIcon}
+            >
+              Add new folder
+            </Button>
+          </div>
+        </Card>
       );
     } else if (columnId === 'notes') {
       return (
-        <div style={{ padding: '16px', backgroundColor: '#fafafa', minHeight: '200px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {notes.slice(0, 3).map((note) => (
-              <div key={note.id} style={{ 
-                padding: '8px 12px', 
-                backgroundColor: '#fff', 
-                borderRadius: '4px', 
-                border: '1px solid #e1e3e5'
+        <Card
+          style={{
+            transition: "all 0.3s ease",
+            flex: "1",
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: "#fff",
+            height: "100%",
+            minHeight: "100%",
+            padding: "0",
+            margin: "0",
+            borderRadius: "8px",
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+            border: "1px solid #e1e3e5",
+            width: "380px",
+            minWidth: "380px",
+            maxWidth: "380px",
+            overflow: "hidden"
+          }}
+        >
+          {/* Fixed Header Section */}
+          <div style={{ 
+            padding: "16px", 
+            borderBottom: "1px solid #e1e3e5",
+            backgroundColor: "white",
+            flexShrink: 0
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <i className="far fa-note-sticky"></i>
+                Notes
+              </Text>
+            </div>
+            
+            {/* Search Bar */}
+            <div style={{ marginBottom: "16px" }}>
+              <TextField
+                label="Search notes..."
+                labelHidden
+                placeholder="Search notes..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+                prefix={<i className="fas fa-search" style={{ color: "#6d7175" }}></i>}
+              />
+            </div>
+          </div>
+
+          {/* Scrollable Content */}
+          <div style={{ 
+            flex: "1", 
+            overflowY: "auto", 
+            padding: "16px",
+            paddingTop: "0"
+          }}>
+            {filteredNotes.length === 0 ? (
+              <div style={{ 
+                textAlign: "center", 
+                padding: "40px 20px",
+                color: "#6d7175"
               }}>
-                <Text variant="bodyMd" style={{ fontWeight: '500' }}>{note.title}</Text>
-                {note.content && (
-                  <Text variant="bodySm" style={{ color: '#6d7175', marginTop: '4px' }}>
-                    {note.content.substring(0, 50)}...
-                  </Text>
+                <i className="far fa-note-sticky" style={{ fontSize: "48px", marginBottom: "16px", opacity: 0.3 }}></i>
+                <Text as="p" variant="bodyMd">
+                  {searchQuery ? "No notes match your search" : "No notes yet"}
+                </Text>
+                {!searchQuery && (
+                  <Button
+                    variant="primary"
+                    size="slim"
+                    onClick={handleNewNote}
+                    style={{ marginTop: "16px" }}
+                  >
+                    Create your first note
+                  </Button>
                 )}
               </div>
-            ))}
-            {notes.length > 3 && (
-              <Text variant="bodyMd" style={{ color: '#6d7175', fontStyle: 'italic' }}>
-                +{notes.length - 3} more notes...
-              </Text>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                {filteredNotes.map((note) => (
+                  <NoteCard
+                    key={note.id}
+                    note={note}
+                    isSelected={editingNoteId === note.id}
+                    onSelect={() => handleNoteSelect(note.id)}
+                    onEdit={() => handleEditNote(note.id)}
+                    onDelete={() => handleDeleteNote(note.id)}
+                    onDuplicate={() => handleDuplicateNote(note.id)}
+                    onMove={() => handleMoveNote(note.id)}
+                    onTogglePin={() => handleToggleNotePin(note.id)}
+                    onUpdateTags={handleUpdateNoteTags}
+                    isHighlighted={highlightNotes}
+                    showDragHandle={true}
+                    isDragging={false}
+                    dragOverlay={true}
+                  />
+                ))}
+              </div>
             )}
           </div>
-        </div>
+
+          {/* Fixed Footer */}
+          <div style={{ 
+            padding: "16px", 
+            borderTop: "1px solid #e1e3e5",
+            backgroundColor: "white",
+            flexShrink: 0
+          }}>
+            <Button
+              fullWidth
+              onClick={handleNewNote}
+              icon={AddIcon}
+            >
+              Add new note
+            </Button>
+          </div>
+        </Card>
       );
     } else if (columnId === 'editor') {
       return (
-        <div style={{ padding: '16px', backgroundColor: '#fafafa', minHeight: '200px' }}>
+        <Card
+          style={{
+            transition: "all 0.3s ease",
+            flex: "1",
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: "#fff",
+            height: "100%",
+            minHeight: "100%",
+            padding: "0",
+            margin: "0",
+            borderRadius: "8px",
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+            border: "1px solid #e1e3e5",
+            width: "100%",
+            minWidth: "400px",
+            overflow: "hidden"
+          }}
+        >
+          {/* Fixed Header Section */}
           <div style={{ 
-            padding: '12px', 
-            backgroundColor: '#fff', 
-            borderRadius: '4px', 
-            border: '1px solid #e1e3e5',
-            minHeight: '120px'
+            padding: "16px", 
+            borderBottom: "1px solid #e1e3e5",
+            backgroundColor: "white",
+            flexShrink: 0
           }}>
-            {selectedNote ? (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <i className="far fa-edit"></i>
+                Note Editor
+              </Text>
+            </div>
+          </div>
+
+          {/* Scrollable Content */}
+          <div style={{ 
+            flex: "1", 
+            overflowY: "auto", 
+            padding: "16px"
+          }}>
+            {editingNoteId ? (
               <div>
-                <Text variant="bodyMd" style={{ fontWeight: '500', marginBottom: '8px' }}>
-                  {selectedNote.title}
-                </Text>
-                <Text variant="bodySm" style={{ color: '#6d7175' }}>
-                  {selectedNote.content ? selectedNote.content.substring(0, 100) + '...' : 'No content'}
-                </Text>
+                {/* Title Input */}
+                <div style={{ marginBottom: "16px" }}>
+                  <TextField
+                    label="Note Title"
+                    labelHidden
+                    value={title}
+                    onChange={setTitle}
+                    placeholder="Enter note title..."
+                    autoComplete="off"
+                  />
+                </div>
+
+                {/* Tags Input */}
+                <div style={{ marginBottom: "16px" }}>
+                  <TextField
+                    label="Tags (comma-separated)"
+                    labelHidden
+                    value={noteTags.join(', ')}
+                    onChange={(value) => setNoteTags(value.split(',').map(tag => tag.trim()).filter(tag => tag))}
+                    placeholder="Enter tags..."
+                    autoComplete="off"
+                  />
+                </div>
+
+                {/* Editor */}
+                <div style={{ marginBottom: "16px" }}>
+                  <AdvancedRTE
+                    value={body}
+                    onChange={setBody}
+                    placeholder="Start writing your note..."
+                  />
+                </div>
               </div>
             ) : (
-              <Text variant="bodyMd" style={{ color: '#6d7175', fontStyle: 'italic' }}>
-                Select a note to edit
-              </Text>
+              <div style={{ 
+                textAlign: "center", 
+                padding: "40px 20px",
+                color: "#6d7175"
+              }}>
+                <i className="far fa-edit" style={{ fontSize: "48px", marginBottom: "16px", opacity: 0.3 }}></i>
+                <Text as="p" variant="bodyMd">
+                  Select a note to start editing
+                </Text>
+              </div>
             )}
           </div>
-        </div>
+
+          {/* Fixed Footer */}
+          <div style={{ 
+            padding: "16px", 
+            borderTop: "1px solid #e1e3e5",
+            backgroundColor: "white",
+            flexShrink: 0
+          }}>
+            <InlineStack gap="200" align="space-between">
+              <div>
+                {editingNoteId && (
+                  <Text as="p" variant="bodySm" style={{ color: "#6d7175" }}>
+                    {hasUnsavedChanges ? "Unsaved changes" : "All changes saved"}
+                  </Text>
+                )}
+              </div>
+              <InlineStack gap="200">
+                {editingNoteId && (
+                  <Button
+                    variant="secondary"
+                    onClick={handleNewNote}
+                  >
+                    New Note
+                  </Button>
+                )}
+                {editingNoteId && (
+                  <Button
+                    variant="primary"
+                    onClick={handleSaveNote}
+                    disabled={!hasUnsavedChanges}
+                  >
+                    Save Note
+                  </Button>
+                )}
+              </InlineStack>
+            </InlineStack>
+          </div>
+        </Card>
       );
     }
     return null;
@@ -3877,16 +4149,17 @@ export default function Index() {
           <DragOverlay>
             {activeId ? (
               <div style={{
-                opacity: 0.95,
-                transform: 'rotate(2deg) scale(1.02)',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                borderRadius: '8px',
+                opacity: 0.98,
+                transform: 'rotate(3deg) scale(1.05)',
+                boxShadow: '0 32px 64px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 128, 96, 0.2)',
+                borderRadius: '12px',
                 overflow: 'hidden',
-                minWidth: '300px',
-                minHeight: '200px',
                 backgroundColor: '#fff',
-                border: '2px solid #008060',
-                zIndex: 50
+                border: '3px solid #008060',
+                zIndex: 9999,
+                cursor: 'grabbing',
+                maxHeight: '80vh',
+                maxWidth: '90vw'
               }}>
                 {renderColumnContent(activeId)}
               </div>
