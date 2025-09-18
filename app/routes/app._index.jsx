@@ -2368,7 +2368,7 @@ export default function Index() {
                 Welcome to Scriberr!
               </Text>
               <Text as="p" variant="bodyMd" style={{ color: '#667085', margin: 0, maxWidth: '500px', margin: '0 auto' }}>
-                Get started in 3 simple steps. First, create a folder to organize your notes, then select it before creating your first note.
+                Get started in 3 simple steps. Create a folder, select it and create a note, then write and save your content.
               </Text>
             </div>
 
@@ -2407,10 +2407,10 @@ export default function Index() {
                   📁
                 </div>
                 <Text as="h3" variant="headingMd" style={{ margin: 0, marginBottom: '8px', color: '#111827' }}>
-                  Create Your First Folder
+                  Step 1: Create a New Folder
                 </Text>
                 <Text as="p" variant="bodySm" style={{ color: '#667085', margin: 0, marginBottom: '16px' }}>
-                  Folders help you organize your notes. You must create a folder before you can add notes.
+                  Organize your notes by creating folders. Click the button below to create your first folder.
                 </Text>
                 {onboardingStep === 1 && (
                   <Button
@@ -2474,23 +2474,23 @@ export default function Index() {
                   🎯
                 </div>
                 <Text as="h3" variant="headingMd" style={{ margin: 0, marginBottom: '8px', color: '#111827' }}>
-                  Select Your Folder
+                  Step 2: Select a Folder and Create a New Note
                 </Text>
                 <Text as="p" variant="bodySm" style={{ color: '#667085', margin: 0, marginBottom: '16px' }}>
-                  Click on a folder in the left panel to select it. You need to select a folder before creating notes.
+                  Select a folder from the left panel, then create your first note to start writing.
                 </Text>
                 {onboardingStep === 2 && localFolders.length > 0 && (
-                  <Button
-                    variant="primary"
-                    size="medium"
-                    onClick={() => {
-                      setSelectedFolder(localFolders[0].id);
-                      setOnboardingStep(3);
-                    }}
-                    style={{ backgroundColor: '#15B79E' }}
-                  >
-                    Select Folder
-                  </Button>
+                    <Button
+                      variant="primary"
+                      size="medium"
+                      onClick={() => {
+                        setSelectedFolder(localFolders[0].id);
+                        setOnboardingStep(3);
+                      }}
+                      style={{ backgroundColor: '#15B79E' }}
+                    >
+                      Select & Create Note
+                    </Button>
                 )}
                 {onboardingStep === 2 && localFolders.length === 0 && (
                   <Text as="p" variant="bodySm" style={{ color: '#d82c0d', margin: 0, fontStyle: 'italic' }}>
@@ -2546,10 +2546,10 @@ export default function Index() {
                   📝
                 </div>
                 <Text as="h3" variant="headingMd" style={{ margin: 0, marginBottom: '8px', color: '#111827' }}>
-                  Create Your First Note
+                  Step 3: Write Your Note in the Note Editor and Save
                 </Text>
                 <Text as="p" variant="bodySm" style={{ color: '#667085', margin: 0, marginBottom: '16px' }}>
-                  Now you can create notes! Click "New Note" to start writing. Remember to save your work.
+                  Use the rich text editor to write your note content. Don't forget to save your work when you're done!
                 </Text>
                 {onboardingStep === 3 && (
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
@@ -2564,7 +2564,7 @@ export default function Index() {
                       disabled={!selectedFolder}
                       style={{ backgroundColor: '#15B79E' }}
                     >
-                      Create Note
+                      Start Writing
                     </Button>
                     <Button
                       variant="secondary"
