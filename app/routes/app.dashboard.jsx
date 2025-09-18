@@ -1744,19 +1744,6 @@ export default function Index() {
     }
   };
 
-  // Auto-save note every 30 seconds
-  useEffect(() => {
-    if (!editingNoteId || !hasUnsavedChanges) return;
-
-    const autoSaveInterval = setInterval(async () => {
-      await handleAutoSaveNote();
-    }, 30000); // 30 seconds
-
-    return () => clearInterval(autoSaveInterval);
-  }, [editingNoteId, hasUnsavedChanges, handleAutoSaveNote]);
-
-  // dnd-kit drag and drop is now handled by the DndContext wrapper
-
   // Handle auto-saving the entire note
   const handleAutoSaveNote = useCallback(async () => {
     if (!editingNoteId) return;
@@ -1792,6 +1779,19 @@ export default function Index() {
       console.error('Auto-save failed:', error);
     }
   }, [editingNoteId, title, body, folderId, noteTags]);
+
+  // Auto-save note every 30 seconds
+  useEffect(() => {
+    if (!editingNoteId || !hasUnsavedChanges) return;
+
+    const autoSaveInterval = setInterval(async () => {
+      await handleAutoSaveNote();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(autoSaveInterval);
+  }, [editingNoteId, hasUnsavedChanges, handleAutoSaveNote]);
+
+  // dnd-kit drag and drop is now handled by the DndContext wrapper
 
   // Handle auto-saving tags when they are added or removed
   const handleAutoSaveTags = async (newTags) => {
