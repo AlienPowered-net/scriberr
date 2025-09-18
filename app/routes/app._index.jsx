@@ -700,6 +700,13 @@ export default function Index() {
     }
   }, [localFolders.length, showOnboarding, onboardingStep]);
 
+  // Auto-advance onboarding when note is created
+  useEffect(() => {
+    if (showOnboarding && onboardingStep === 2 && localNotes.length > 0) {
+      setOnboardingStep(3);
+    }
+  }, [localNotes.length, showOnboarding, onboardingStep]);
+
   // Update onboarding visibility based on folders
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -2315,290 +2322,300 @@ export default function Index() {
         )}
         
 
-        {/* New Onboarding Block - Above Columns */}
+        {/* Onboarding Setup Guide */}
         {showOnboarding && (
-          <div style={{
-            marginBottom: '24px',
-            padding: '32px',
-            backgroundColor: '#ffffff',
-            borderRadius: '14px',
-            border: '1px solid #EAECF0',
-            boxShadow: '0 1px 2px rgba(16,24,40,.06)',
-            position: 'relative'
-          }}>
-            {/* Close Button */}
-            <Button
-              variant="plain"
-              size="slim"
-              onClick={() => {
-                setShowOnboarding(false);
-                localStorage.setItem('onboardingPermanentlyDismissed', 'true');
-              }}
-              accessibilityLabel="Dismiss onboarding"
-              style={{
-                position: 'absolute',
-                top: '16px',
-                right: '16px',
-                color: '#6d7175'
-              }}
-            >
-              <i className="fas fa-times" style={{ fontSize: '16px' }}></i>
-            </Button>
-
-            {/* Header */}
-            <div style={{ 
-              textAlign: 'center',
-              marginBottom: '32px',
-              paddingRight: '40px' // Space for close button
-            }}>
-              <div style={{
-                width: '64px',
-                height: '64px',
-                backgroundColor: '#15B79E',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 16px',
-                fontSize: '28px'
-              }}>
-                🚀
-              </div>
-              <Text as="h2" variant="headingLg" style={{ margin: 0, marginBottom: '8px', color: '#111827' }}>
-                Welcome to Scriberr!
-              </Text>
-              <Text as="p" variant="bodyMd" style={{ color: '#667085', margin: 0, maxWidth: '500px', margin: '0 auto' }}>
-                Get started in 3 simple steps. Create a folder, select it and create a note, then write and save your content.
-              </Text>
-            </div>
-
-            {/* Three Step Cards */}
-            <div className="onboarding-step-cards" style={{ 
-              display: 'flex', 
-              gap: '20px', 
-              marginBottom: '32px',
-              flexWrap: 'wrap'
-            }}>
-              {/* Step 1: Create Folder */}
-              <div className="onboarding-step-card" style={{
-                flex: '1',
-                minWidth: '280px',
-                padding: '24px',
-                backgroundColor: onboardingStep >= 1 ? '#F6FEF9' : '#F9FAFB',
-                borderRadius: '12px',
-                border: onboardingStep === 1 ? '2px solid #15B79E' : '1px solid #EEF2F7',
-                textAlign: 'center',
-                transition: 'all 0.3s ease',
-                position: 'relative'
+          <Card>
+            <div style={{ position: 'relative' }}>
+              {/* Header Section */}
+              <div style={{ 
+                padding: '24px 24px 0 24px',
+                textAlign: 'center'
               }}>
                 <div style={{
-                  width: '56px',
-                  height: '56px',
-                  backgroundColor: onboardingStep >= 1 ? '#15B79E' : '#E5E7EB',
-                  borderRadius: '12px',
+                  width: '48px',
+                  height: '48px',
+                  backgroundColor: '#008060',
+                  borderRadius: '8px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   margin: '0 auto 16px',
-                  fontSize: '24px',
-                  color: '#ffffff',
-                  transition: 'all 0.3s ease'
-                }}>
-                  📁
-                </div>
-                <Text as="h3" variant="headingMd" style={{ margin: 0, marginBottom: '8px', color: '#111827' }}>
-                  Step 1: Create a New Folder
-                </Text>
-                <Text as="p" variant="bodySm" style={{ color: '#667085', margin: 0, marginBottom: '16px' }}>
-                  Organize your notes by creating folders. Click the button below to create your first folder.
-                </Text>
-                {onboardingStep === 1 && (
-                  <Button
-                    variant="primary"
-                    size="medium"
-                    onClick={() => {
-                      setShowNewFolderModal(true);
-                      setOnboardingStep(2);
-                    }}
-                    style={{ backgroundColor: '#15B79E' }}
-                  >
-                    Create Folder
-                  </Button>
-                )}
-                {onboardingStep > 1 && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '16px',
-                    right: '16px',
-                    width: '24px',
-                    height: '24px',
-                    backgroundColor: '#15B79E',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontSize: '12px',
-                    fontWeight: 'bold'
-                  }}>
-                    ✓
-                  </div>
-                )}
-              </div>
-
-              {/* Step 2: Select Folder */}
-              <div className="onboarding-step-card" style={{
-                flex: '1',
-                minWidth: '280px',
-                padding: '24px',
-                backgroundColor: onboardingStep >= 2 ? '#F6FEF9' : '#F9FAFB',
-                borderRadius: '12px',
-                border: onboardingStep === 2 ? '2px solid #15B79E' : '1px solid #EEF2F7',
-                textAlign: 'center',
-                transition: 'all 0.3s ease',
-                position: 'relative'
-              }}>
-                <div style={{
-                  width: '56px',
-                  height: '56px',
-                  backgroundColor: onboardingStep >= 2 ? '#15B79E' : '#E5E7EB',
-                  borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 16px',
-                  fontSize: '24px',
-                  color: '#ffffff',
-                  transition: 'all 0.3s ease'
-                }}>
-                  🎯
-                </div>
-                <Text as="h3" variant="headingMd" style={{ margin: 0, marginBottom: '8px', color: '#111827' }}>
-                  Step 2: Select a Folder and Create a New Note
-                </Text>
-                <Text as="p" variant="bodySm" style={{ color: '#667085', margin: 0, marginBottom: '16px' }}>
-                  Select a folder from the left panel, then create your first note to start writing.
-                </Text>
-                {onboardingStep === 2 && localFolders.length > 0 && (
-                  <Button
-                    variant="primary"
-                    size="medium"
-                    onClick={() => {
-                      setSelectedFolder(localFolders[0].id);
-                      setOnboardingStep(3);
-                    }}
-                    style={{ backgroundColor: '#15B79E' }}
-                  >
-                    Select & Create Note
-                  </Button>
-                )}
-                {onboardingStep === 2 && localFolders.length === 0 && (
-                  <Text as="p" variant="bodySm" style={{ color: '#d82c0d', margin: 0, fontStyle: 'italic' }}>
-                    Complete step 1 first
-                  </Text>
-                )}
-                {onboardingStep > 2 && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '16px',
-                    right: '16px',
-                    width: '24px',
-                    height: '24px',
-                    backgroundColor: '#15B79E',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontSize: '12px',
-                    fontWeight: 'bold'
-                  }}>
-                    ✓
-                  </div>
-                )}
-              </div>
-
-              {/* Step 3: Create Note */}
-              <div className="onboarding-step-card" style={{
-                flex: '1',
-                minWidth: '280px',
-                padding: '24px',
-                backgroundColor: onboardingStep >= 3 ? '#F6FEF9' : '#F9FAFB',
-                borderRadius: '12px',
-                border: onboardingStep === 3 ? '2px solid #15B79E' : '1px solid #EEF2F7',
-                textAlign: 'center',
-                transition: 'all 0.3s ease',
-                position: 'relative'
-              }}>
-                <div style={{
-                  width: '56px',
-                  height: '56px',
-                  backgroundColor: onboardingStep >= 3 ? '#15B79E' : '#E5E7EB',
-                  borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 16px',
-                  fontSize: '24px',
-                  color: '#ffffff',
-                  transition: 'all 0.3s ease'
+                  fontSize: '20px'
                 }}>
                   📝
                 </div>
-                <Text as="h3" variant="headingMd" style={{ margin: 0, marginBottom: '8px', color: '#111827' }}>
-                  Step 3: Write Your Note in the Note Editor and Save
+                <Text as="h2" variant="headingLg" style={{ margin: 0, marginBottom: '8px' }}>
+                  Welcome to Scriberr
                 </Text>
-                <Text as="p" variant="bodySm" style={{ color: '#667085', margin: 0, marginBottom: '16px' }}>
-                  Use the rich text editor to write your note content. Don't forget to save your work when you're done!
+                <Text as="p" variant="bodyMd" style={{ color: '#6d7175', margin: 0, marginBottom: '24px' }}>
+                  Let's get you set up in just a few steps
                 </Text>
-                {onboardingStep === 3 && (
-                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+              </div>
+
+              {/* Progress Bar */}
+              <div style={{ 
+                padding: '0 24px 24px 24px',
+                borderBottom: '1px solid #e1e3e5'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '8px'
+                }}>
+                  <Text as="p" variant="bodySm" style={{ color: '#6d7175', margin: 0 }}>
+                    Progress
+                  </Text>
+                  <Text as="p" variant="bodySm" style={{ color: '#6d7175', margin: 0 }}>
+                    {onboardingStep} of 3 steps
+                  </Text>
+                </div>
+                <div style={{
+                  width: '100%',
+                  height: '4px',
+                  backgroundColor: '#e1e3e5',
+                  borderRadius: '2px',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    width: `${(onboardingStep / 3) * 100}%`,
+                    height: '100%',
+                    backgroundColor: '#008060',
+                    transition: 'width 0.3s ease'
+                  }} />
+                </div>
+              </div>
+
+              {/* Steps Section */}
+              <div style={{ padding: '24px' }}>
+                <BlockStack gap="400">
+                  {/* Step 1: Create Folder */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '16px',
+                    padding: '16px',
+                    backgroundColor: onboardingStep === 1 ? '#f6f6f7' : 'transparent',
+                    borderRadius: '8px',
+                    border: onboardingStep === 1 ? '1px solid #008060' : '1px solid transparent',
+                    transition: 'all 0.2s ease'
+                  }}>
+                    <div style={{
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      backgroundColor: onboardingStep >= 1 ? '#008060' : '#e1e3e5',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      flexShrink: 0,
+                      marginTop: '2px'
+                    }}>
+                      {onboardingStep > 1 ? '✓' : '1'}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <Text as="h3" variant="headingMd" style={{ margin: 0, marginBottom: '4px' }}>
+                        Create your first folder
+                      </Text>
+                      <Text as="p" variant="bodyMd" style={{ color: '#6d7175', margin: 0, marginBottom: '12px' }}>
+                        Folders help you organize your notes. Create one to get started.
+                      </Text>
+                      {onboardingStep === 1 && (
+                        <Button
+                          variant="primary"
+                          size="slim"
+                          onClick={() => {
+                            setShowNewFolderModal(true);
+                          }}
+                        >
+                          Create folder
+                        </Button>
+                      )}
+                      {onboardingStep > 1 && (
+                        <Text as="p" variant="bodySm" style={{ color: '#008060', margin: 0, fontWeight: '500' }}>
+                          ✓ Completed
+                        </Text>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Step 2: Select Folder and Create Note */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '16px',
+                    padding: '16px',
+                    backgroundColor: onboardingStep === 2 ? '#f6f6f7' : 'transparent',
+                    borderRadius: '8px',
+                    border: onboardingStep === 2 ? '1px solid #008060' : '1px solid transparent',
+                    transition: 'all 0.2s ease'
+                  }}>
+                    <div style={{
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      backgroundColor: onboardingStep >= 2 ? '#008060' : '#e1e3e5',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      flexShrink: 0,
+                      marginTop: '2px'
+                    }}>
+                      {onboardingStep > 2 ? '✓' : '2'}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <Text as="h3" variant="headingMd" style={{ margin: 0, marginBottom: '4px' }}>
+                        Select a folder and create your first note
+                      </Text>
+                      <Text as="p" variant="bodyMd" style={{ color: '#6d7175', margin: 0, marginBottom: '12px' }}>
+                        Choose a folder from the sidebar, then create a note to start writing.
+                      </Text>
+                      {onboardingStep === 2 && localFolders.length > 0 && (
+                        <InlineStack gap="200">
+                          <Button
+                            variant="primary"
+                            size="slim"
+                            onClick={() => {
+                              setSelectedFolder(localFolders[0].id);
+                            }}
+                          >
+                            Select folder
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="slim"
+                            onClick={() => {
+                              if (localFolders.length > 0) {
+                                setSelectedFolder(localFolders[0].id);
+                                handleNewNote();
+                              }
+                            }}
+                          >
+                            Create note
+                          </Button>
+                        </InlineStack>
+                      )}
+                      {onboardingStep === 2 && localFolders.length === 0 && (
+                        <Text as="p" variant="bodySm" style={{ color: '#d82c0d', margin: 0 }}>
+                          Complete step 1 first
+                        </Text>
+                      )}
+                      {onboardingStep > 2 && (
+                        <Text as="p" variant="bodySm" style={{ color: '#008060', margin: 0, fontWeight: '500' }}>
+                          ✓ Completed
+                        </Text>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Step 3: Write and Save */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '16px',
+                    padding: '16px',
+                    backgroundColor: onboardingStep === 3 ? '#f6f6f7' : 'transparent',
+                    borderRadius: '8px',
+                    border: onboardingStep === 3 ? '1px solid #008060' : '1px solid transparent',
+                    transition: 'all 0.2s ease'
+                  }}>
+                    <div style={{
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      backgroundColor: onboardingStep >= 3 ? '#008060' : '#e1e3e5',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      flexShrink: 0,
+                      marginTop: '2px'
+                    }}>
+                      {onboardingStep > 3 ? '✓' : '3'}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <Text as="h3" variant="headingMd" style={{ margin: 0, marginBottom: '4px' }}>
+                        Write your note and save it
+                      </Text>
+                      <Text as="p" variant="bodyMd" style={{ color: '#6d7175', margin: 0, marginBottom: '12px' }}>
+                        Use the editor to write your content. Remember to save your work when you're done.
+                      </Text>
+                      {onboardingStep === 3 && (
+                        <InlineStack gap="200">
+                          <Button
+                            variant="primary"
+                            size="slim"
+                            onClick={() => {
+                              if (localFolders.length > 0 && selectedFolder) {
+                                handleNewNote();
+                              }
+                            }}
+                            disabled={!selectedFolder}
+                          >
+                            Start writing
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="slim"
+                            onClick={() => {
+                              setShowOnboarding(false);
+                              localStorage.setItem('onboardingPermanentlyDismissed', 'true');
+                            }}
+                          >
+                            Skip for now
+                          </Button>
+                        </InlineStack>
+                      )}
+                      {onboardingStep > 3 && (
+                        <Text as="p" variant="bodySm" style={{ color: '#008060', margin: 0, fontWeight: '500' }}>
+                          ✓ Completed
+                        </Text>
+                      )}
+                    </div>
+                  </div>
+                </BlockStack>
+
+                {/* Footer Actions */}
+                <div style={{ 
+                  marginTop: '24px',
+                  paddingTop: '24px',
+                  borderTop: '1px solid #e1e3e5',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <Button
+                    variant="plain"
+                    onClick={() => {
+                      setShowOnboarding(false);
+                      localStorage.setItem('onboardingPermanentlyDismissed', 'true');
+                    }}
+                  >
+                    Dismiss
+                  </Button>
+                  {onboardingStep >= 3 && (
                     <Button
                       variant="primary"
-                      size="medium"
-                      onClick={() => {
-                        if (localFolders.length > 0 && selectedFolder) {
-                          handleNewNote();
-                        }
-                      }}
-                      disabled={!selectedFolder}
-                      style={{ backgroundColor: '#15B79E' }}
-                    >
-                      Start Writing
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="medium"
                       onClick={() => {
                         setShowOnboarding(false);
                         localStorage.setItem('onboardingPermanentlyDismissed', 'true');
                       }}
                     >
-                      Got it!
+                      Get started
                     </Button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
-
-            {/* Progress Indicator */}
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              alignItems: 'center', 
-              gap: '12px' 
-            }}>
-              {[1, 2, 3].map((step) => (
-                <div key={step} style={{
-                  width: '12px',
-                  height: '12px',
-                  borderRadius: '50%',
-                  backgroundColor: step <= onboardingStep ? '#15B79E' : '#E5E7EB',
-                  transition: 'background-color 0.3s ease'
-                }} />
-              ))}
-            </div>
-          </div>
+          </Card>
         )}
 
         <DndContext
