@@ -497,16 +497,9 @@ export default function Notepad() {
         </SortableContext>
         <DragOverlay>
           {activeId ? (
-            <div style={{
-              opacity: 0.9,
-              boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
-              borderRadius: '14px',
-              maxWidth: '400px',
-              minHeight: '640px',
-              transform: 'rotate(1deg)',
-            }}>
+            <DraggableColumn id={activeId}>
               {getColumnComponents()[activeId]}
-            </div>
+            </DraggableColumn>
           ) : null}
         </DragOverlay>
       </div>
