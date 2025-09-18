@@ -498,7 +498,9 @@ export default function Notepad() {
         <DragOverlay>
           {activeId ? (
             <div className="drag-overlay">
-              {columnComponents[activeId]}
+              <div className="draggable-column">
+                {columnComponents[activeId]}
+              </div>
             </div>
           ) : null}
         </DragOverlay>

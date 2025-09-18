@@ -162,6 +162,20 @@
   opacity: 0.9;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   border-radius: 14px;
+  max-width: 400px;
+  min-height: 640px;
+}
+
+.drag-overlay .draggable-column {
+  width: 100%;
+  height: 100%;
+}
+
+.drag-overlay .pane {
+  width: 100%;
+  min-height: 640px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Enhanced drag feedback */
