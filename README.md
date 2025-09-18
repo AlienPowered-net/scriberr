@@ -11,3 +11,4 @@ It features folders, note management, and autosave so you never lose your work.
 - 💾 **Autosave** – notes automatically save every 30 seconds.  
 - 🎨 **Clean UI** – simple, minimal design inspired by productivity tools.  
 - 🔗 **Shopify Embedded App** – runs directly inside the Shopify Admin.
+# Restored to commit 3c87c61 - Thu Sep 18 04:48:01 PM UTC 2025
