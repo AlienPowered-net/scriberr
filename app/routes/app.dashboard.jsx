@@ -2079,7 +2079,7 @@ export default function Index() {
   }
 
       return (
-              <Page title="Scriberr" style={{ paddingBottom: "160px", marginBottom: "10%", paddingTop: "0", marginTop: "0" }}>
+              <Page title="Scriberr" style={{ paddingBottom: "160px", marginBottom: "10%", paddingTop: "0", marginTop: "-60px" }}>
         {/* Material Symbols Rounded CDN */}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
@@ -2198,8 +2198,63 @@ export default function Index() {
             padding: 0 !important;
           }
           
+          /* Ensure viewport starts from top */
+          * {
+            box-sizing: border-box;
+          }
+          
+          /* Remove any default spacing from Shopify embedded app */
+          .Polaris-Frame {
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          
+          .Polaris-Frame__Main {
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          
           /* Remove any top spacing from the main container */
           #app, .app, main, .main {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+          }
+          
+          /* Target Shopify embedded app navigation */
+          ui-nav-menu {
+            display: none !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          
+          /* Alternative targeting for Shopify nav */
+          [data-shopify-app-nav] {
+            display: none !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          
+          /* Target any Shopify navigation elements */
+          .Polaris-Navigation,
+          .Polaris-Frame__Navigation,
+          .Polaris-Frame__TopBar {
+            display: none !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          
+          /* Target Shopify embedded app iframe spacing */
+          iframe[src*="shopify"] {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+          }
+          
+          /* Remove any spacing from Shopify app container */
+          .shopify-app-embed,
+          .shopify-app-frame {
             margin-top: 0 !important;
             padding-top: 0 !important;
           }
@@ -2357,7 +2412,7 @@ export default function Index() {
               minHeight: "calc(100vh - 80px)", // Account for fixed footer height
               paddingBottom: "80px", // Space for fixed footer
               paddingTop: "0", // Remove top padding
-              marginTop: "0", // Remove top margin
+              marginTop: "-20px", // Pull up to remove gap
               alignItems: "stretch",
               marginBottom: "0",
             }}>
