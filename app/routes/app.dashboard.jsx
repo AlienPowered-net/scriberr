@@ -2079,7 +2079,7 @@ export default function Index() {
   }
 
       return (
-              <Page title="Scriberr" style={{ paddingBottom: "160px", marginBottom: "10%" }}>
+              <Page title="Scriberr" style={{ paddingBottom: "160px", marginBottom: "10%", paddingTop: "0", marginTop: "0" }}>
         {/* Material Symbols Rounded CDN */}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
@@ -2198,6 +2198,12 @@ export default function Index() {
             padding: 0 !important;
           }
           
+          /* Remove any top spacing from the main container */
+          #app, .app, main, .main {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+          }
+          
           body {
             padding-bottom: 40px !important;
           }
@@ -2206,12 +2212,21 @@ export default function Index() {
             max-width: none !important;
             margin: 0 !important;
             width: 100% !important;
+            padding-top: 0 !important;
+            margin-top: 0 !important;
           }
           
           .Polaris-Page__Content {
             max-width: none !important;
             margin: 0 !important;
             width: 100% !important;
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+          }
+          
+          .Polaris-Page__Header {
+            padding-top: 0 !important;
+            margin-top: 0 !important;
           }
           
           .Polaris-Layout {
@@ -2341,6 +2356,8 @@ export default function Index() {
               gap: "16px", 
               minHeight: "calc(100vh - 80px)", // Account for fixed footer height
               paddingBottom: "80px", // Space for fixed footer
+              paddingTop: "0", // Remove top padding
+              marginTop: "0", // Remove top margin
               alignItems: "stretch",
               marginBottom: "0",
             }}>
