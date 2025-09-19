@@ -25,7 +25,17 @@ import {
   ActionList,
   TextContainer,
 } from "@shopify/polaris";
-import { SaveIcon, DragDropIcon } from "@shopify/polaris-icons";
+import { 
+  SaveIcon, 
+  DragDropIcon, 
+  FolderIcon, 
+  TagIcon, 
+  EditIcon, 
+  DeleteIcon, 
+  ViewIcon,
+  AddIcon,
+  MoreIcon
+} from "@shopify/polaris-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
 import QuillEditor from "../components/LexicalEditor";
 import AdvancedRTE from "../components/AdvancedRTE";
@@ -739,6 +749,7 @@ export default function Index() {
   const [mobileActiveSection, setMobileActiveSection] = useState('notes'); // 'folders', 'notes', 'editor'
   const [showMobileTags, setShowMobileTags] = useState(false);
   const [mobileOpenFolderMenu, setMobileOpenFolderMenu] = useState(null);
+  const [mobileDraggedFolder, setMobileDraggedFolder] = useState(null);
   
   
   // Update local folders when loader data changes
@@ -757,6 +768,62 @@ export default function Index() {
     
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Mobile folder drag handlers
+  const handleMobileFolderDragStart = (e, folderId) => {
+    setMobileDraggedFolder(folderId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', folderId);
+  };
+
+  const handleMobileFolderDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleMobileFolderDrop = async (e, targetFolderId) => {
+    e.preventDefault();
+    if (!mobileDraggedFolder || mobileDraggedFolder === targetFolderId) {
+      setMobileDraggedFolder(null);
+      return;
+    }
+
+    const draggedIndex = localFolders.findIndex(f => f.id === mobileDraggedFolder);
+    const targetIndex = localFolders.findIndex(f => f.id === targetFolderId);
+    
+    if (draggedIndex === -1 || targetIndex === -1) {
+      setMobileDraggedFolder(null);
+      return;
+    }
+
+    const newFolders = [...localFolders];
+    const draggedFolder = newFolders.splice(draggedIndex, 1)[0];
+    newFolders.splice(targetIndex, 0, draggedFolder);
+    
+    setLocalFolders(newFolders);
+    setMobileDraggedFolder(null);
+
+    // Update server order
+    try {
+      const response = await fetch('/api/reorder-folders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          folderIds: newFolders.map(f => f.id)
+        })
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to reorder folders');
+        // Revert on error
+        setLocalFolders(localFolders);
+      }
+    } catch (error) {
+      console.error('Error reordering folders:', error);
+      // Revert on error
+      setLocalFolders(localFolders);
+    }
+  };
 
   
   // Drag and drop sensors
@@ -4219,16 +4286,18 @@ export default function Index() {
             {mobileActiveSection !== 'notes' && (
               <button
                 style={{
-                  background: 'none',
+                  background: '#008060',
                   border: 'none',
-                  fontSize: '18px',
+                  color: 'white',
+                  fontSize: '14px',
+                  fontWeight: '500',
                   cursor: 'pointer',
-                  padding: '8px',
-                  borderRadius: '4px'
+                  padding: '8px 16px',
+                  borderRadius: '6px'
                 }}
                 onClick={() => setMobileActiveSection('notes')}
               >
-                <i className="fas fa-arrow-left"></i>
+                Notes
               </button>
             )}
           </div>
@@ -4277,6 +4346,10 @@ export default function Index() {
                     {localFolders.map((folder) => (
                       <div
                         key={folder.id}
+                        draggable
+                        onDragStart={(e) => handleMobileFolderDragStart(e, folder.id)}
+                        onDragOver={handleMobileFolderDragOver}
+                        onDrop={(e) => handleMobileFolderDrop(e, folder.id)}
                         style={{
                           padding: '12px',
                           border: '1px solid #e1e3e5',
@@ -4287,7 +4360,10 @@ export default function Index() {
                           gap: '12px',
                           backgroundColor: selectedFolder === folder.id ? '#f6fff8' : 'white',
                           borderColor: selectedFolder === folder.id ? '#008060' : '#e1e3e5',
-                          position: 'relative'
+                          position: 'relative',
+                          opacity: mobileDraggedFolder === folder.id ? 0.5 : 1,
+                          transform: mobileDraggedFolder === folder.id ? 'scale(0.95)' : 'scale(1)',
+                          transition: 'all 0.2s ease'
                         }}
                         onClick={() => {
                           setSelectedFolder(selectedFolder === folder.id ? null : folder.id);
@@ -4316,7 +4392,17 @@ export default function Index() {
                           <div style={{ width: '3px', height: '3px', backgroundColor: 'currentColor', borderRadius: '50%' }}></div>
                         </div>
                         
-                        <i className="far fa-folder-open" style={{ fontSize: "20px", color: "#008060" }}></i>
+                        <div style={{ 
+                          fontSize: "20px", 
+                          color: folder.iconColor || "#008060",
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '24px',
+                          height: '24px'
+                        }}>
+                          {folder.icon || '📁'}
+                        </div>
                         <span style={{ fontWeight: '500', flex: 1 }}>{folder.name}</span>
                         
                         {/* Three Dots Menu */}
@@ -4333,7 +4419,7 @@ export default function Index() {
                             setMobileOpenFolderMenu(mobileOpenFolderMenu === folder.id ? null : folder.id);
                           }}
                         >
-                          <i className="fas fa-ellipsis-v" style={{ fontSize: '16px', color: '#6d7175' }}></i>
+                          <MoreIcon style={{ width: '16px', height: '16px', color: '#6d7175' }} />
                           
                           {/* Dropdown Menu */}
                           {mobileOpenFolderMenu === folder.id && (
@@ -4361,12 +4447,12 @@ export default function Index() {
                                   borderBottom: '1px solid #e1e3e5'
                                 }}
                                 onClick={() => {
-                                  setEditingFolderId(folder.id);
+                                  setShowRenameFolderModal(folder.id);
                                   setEditingFolderName(folder.name);
                                   setMobileOpenFolderMenu(null);
                                 }}
                               >
-                                <i className="fas fa-edit" style={{ marginRight: '8px', color: '#008060' }}></i>
+                                <EditIcon style={{ width: '14px', height: '14px', marginRight: '8px', color: '#008060' }} />
                                 Rename
                               </button>
                               <button
@@ -4385,7 +4471,7 @@ export default function Index() {
                                   setMobileOpenFolderMenu(null);
                                 }}
                               >
-                                <i className="fas fa-palette" style={{ marginRight: '8px', color: '#008060' }}></i>
+                                <ViewIcon style={{ width: '14px', height: '14px', marginRight: '8px', color: '#008060' }} />
                                 Change Icon
                               </button>
                               <button
@@ -4404,7 +4490,7 @@ export default function Index() {
                                   setMobileOpenFolderMenu(null);
                                 }}
                               >
-                                <i className="fas fa-trash" style={{ marginRight: '8px' }}></i>
+                                <DeleteIcon style={{ width: '14px', height: '14px', marginRight: '8px' }} />
                                 Delete
                               </button>
                             </div>
@@ -4412,6 +4498,31 @@ export default function Index() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                  
+                  {/* Create New Folder Button */}
+                  <div style={{ marginTop: '16px' }}>
+                    <button
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        backgroundColor: '#f6fff8',
+                        color: '#008060',
+                        border: '1px solid #008060',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                      }}
+                      onClick={() => setShowNewFolderModal(true)}
+                    >
+                      <AddIcon style={{ width: '16px', height: '16px' }} />
+                      Create New Folder
+                    </button>
                   </div>
                 </>
               ) : (
@@ -4450,10 +4561,9 @@ export default function Index() {
                             setSelectedTags(newTags);
                             setGlobalSearchQuery(`tag:${newTags.join(' tag:')}`);
                           }
-                          setMobileActiveSection('notes');
                         }}
                       >
-                        <i className="fas fa-tag" style={{ fontSize: '12px' }}></i>
+                        <TagIcon style={{ width: '12px', height: '12px' }} />
                         {tag}
                         {selectedTags.includes(tag) && (
                           <i className="fas fa-times" style={{ fontSize: '10px', marginLeft: '4px' }}></i>
@@ -4470,6 +4580,28 @@ export default function Index() {
                       fontStyle: 'italic'
                     }}>
                       No tags found. Create notes with tags to see them here.
+                    </div>
+                  )}
+                  
+                  {/* Go to Notes Button */}
+                  {selectedTags.length > 0 && (
+                    <div style={{ marginTop: '20px' }}>
+                      <button
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          backgroundColor: '#008060',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '16px',
+                          fontWeight: '600',
+                          cursor: 'pointer'
+                        }}
+                        onClick={() => setMobileActiveSection('notes')}
+                      >
+                        View Notes ({selectedTags.length} tag{selectedTags.length > 1 ? 's' : ''} selected)
+                      </button>
                     </div>
                   )}
                 </>
