@@ -437,7 +437,7 @@ export default function Index() {
   
   // Mobile layout state
   const [mobileActiveSection, setMobileActiveSection] = useState('notes'); // 'folders', 'notes', 'editor'
-  const [isMobile, setIsMobile] = useState(true); // Temporarily force mobile for testing
+  const [isMobile, setIsMobile] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [highlightFolders, setHighlightFolders] = useState(false);
   const [globalSearchQuery, setGlobalSearchQuery] = useState("");
@@ -1026,10 +1026,21 @@ export default function Index() {
       setIsMobile(isMobileWidth);
     };
     
+    // Check immediately
     checkMobile();
+    
+    // Add event listener
     window.addEventListener('resize', checkMobile);
     
-    return () => window.removeEventListener('resize', checkMobile);
+    // Also check on orientation change for mobile devices
+    window.addEventListener('orientationchange', () => {
+      setTimeout(checkMobile, 100);
+    });
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('orientationchange', checkMobile);
+    };
   }, []);
 
   // Track unsaved changes
@@ -2536,7 +2547,7 @@ export default function Index() {
         
 
 
-        <div className="desktop-layout">
+        <div className="desktop-layout" style={{ display: isMobile ? 'none' : 'block' }}>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -4168,6 +4179,22 @@ export default function Index() {
             ) : null}
           </DragOverlay>
         </DndContext>
+        </div>
+
+        {/* Debug Info */}
+        <div style={{
+          position: 'fixed',
+          top: '10px',
+          left: '10px',
+          background: 'rgba(0,0,0,0.8)',
+          color: 'white',
+          padding: '8px',
+          borderRadius: '4px',
+          fontSize: '12px',
+          zIndex: 10001,
+          fontFamily: 'monospace'
+        }}>
+          Width: {typeof window !== 'undefined' ? window.innerWidth : 'N/A'}px | Mobile: {isMobile ? 'YES' : 'NO'}
         </div>
 
         {/* Mobile Layout */}
