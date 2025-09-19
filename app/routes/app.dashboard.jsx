@@ -1022,7 +1022,6 @@ export default function Index() {
   useEffect(() => {
     const checkMobile = () => {
       const isMobileWidth = window.innerWidth <= 768;
-      console.log('Screen width:', window.innerWidth, 'Is mobile:', isMobileWidth);
       setIsMobile(isMobileWidth);
     };
     
@@ -4181,21 +4180,6 @@ export default function Index() {
         </DndContext>
         </div>
 
-        {/* Debug Info */}
-        <div style={{
-          position: 'fixed',
-          top: '10px',
-          left: '10px',
-          background: 'rgba(0,0,0,0.8)',
-          color: 'white',
-          padding: '8px',
-          borderRadius: '4px',
-          fontSize: '12px',
-          zIndex: 10001,
-          fontFamily: 'monospace'
-        }}>
-          Width: {typeof window !== 'undefined' ? window.innerWidth : 'N/A'}px | Mobile: {isMobile ? 'YES' : 'NO'}
-        </div>
 
         {/* Mobile Layout */}
         {isMobile && (
@@ -4224,7 +4208,11 @@ export default function Index() {
             }}>
               <div style={{ fontSize: '18px', fontWeight: '600', color: '#202223' }}>
                 {mobileActiveSection === 'folders' && 'Folders & Tags'}
-                {mobileActiveSection === 'notes' && 'Notes'}
+                {mobileActiveSection === 'notes' && (
+                  selectedFolder ? 
+                    `${localFolders.find(f => f.id === selectedFolder)?.name || 'Selected Folder'}` : 
+                    'All Notes'
+                )}
                 {mobileActiveSection === 'editor' && 'Note Editor'}
               </div>
               {mobileActiveSection !== 'notes' && (
@@ -4251,7 +4239,8 @@ export default function Index() {
               flex: 1,
               overflowY: 'auto',
               padding: '16px',
-              paddingBottom: '80px'
+              paddingBottom: '80px',
+              WebkitOverflowScrolling: 'touch'
             }}>
               <div style={{ 
                 backgroundColor: 'white',
@@ -4508,6 +4497,38 @@ export default function Index() {
                 padding: '20px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
               }}>
+                {/* Folder Indicator */}
+                {selectedFolder && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px 16px',
+                    backgroundColor: '#f6fff8',
+                    border: '1px solid #008060',
+                    borderRadius: '8px',
+                    marginBottom: '16px'
+                  }}>
+                    <i className="far fa-folder-open" style={{ color: '#008060', fontSize: '16px' }}></i>
+                    <span style={{ color: '#008060', fontWeight: '500', fontSize: '14px' }}>
+                      Viewing: {localFolders.find(f => f.id === selectedFolder)?.name}
+                    </span>
+                    <button
+                      onClick={() => setSelectedFolder(null)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#008060',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        marginLeft: 'auto'
+                      }}
+                    >
+                      <i className="fas fa-times"></i>
+                    </button>
+                  </div>
+                )}
+
                 {/* Search Notes Input */}
                 <div style={{ marginBottom: "20px", position: "relative" }}>
                   <input
@@ -4997,14 +5018,14 @@ export default function Index() {
                   borderRadius: '8px',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  minWidth: '60px',
+                  minWidth: '80px',
                   backgroundColor: mobileActiveSection === 'folders' ? '#f6fff8' : 'transparent',
                   color: mobileActiveSection === 'folders' ? '#008060' : '#6d7175'
                 }}
                 onClick={() => setMobileActiveSection('folders')}
               >
                 <i className="far fa-folder-open" style={{ fontSize: '20px' }}></i>
-                <span style={{ fontSize: '12px', fontWeight: '500' }}>Folders</span>
+                <span style={{ fontSize: '11px', fontWeight: '500', textAlign: 'center' }}>Folders & Tags</span>
               </div>
               <div 
                 style={{
@@ -5024,25 +5045,6 @@ export default function Index() {
               >
                 <i className="far fa-note-sticky" style={{ fontSize: '20px' }}></i>
                 <span style={{ fontSize: '12px', fontWeight: '500' }}>Notes</span>
-              </div>
-              <div 
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  minWidth: '60px',
-                  backgroundColor: mobileActiveSection === 'editor' ? '#f6fff8' : 'transparent',
-                  color: mobileActiveSection === 'editor' ? '#008060' : '#6d7175'
-                }}
-                onClick={() => setMobileActiveSection('editor')}
-              >
-                <i className="far fa-edit" style={{ fontSize: '20px' }}></i>
-                <span style={{ fontSize: '12px', fontWeight: '500' }}>Editor</span>
               </div>
             </div>
           </div>
