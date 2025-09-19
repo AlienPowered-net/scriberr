@@ -1237,6 +1237,17 @@ export default function Index() {
       return;
     }
 
+  // Handle creating a new note for mobile (includes editor switch)
+  const handleMobileNewNote = async () => {
+    const currentFolderId = selectedFolder || "";
+    
+    if (!currentFolderId) {
+      setAlertMessage('Please select a folder first');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
     // If there's an open note being edited, save it first
     if (editingNoteId && (title.trim() || body.trim())) {
       const trimmedTitle = removeEmojis(title.trim());
@@ -1256,8 +1267,6 @@ export default function Index() {
       formData.append('body', trimmedBody);
       formData.append('folderId', trimmedFolderId);
       formData.append('tags', JSON.stringify(noteTags.map(tag => removeEmojis(tag))));
-      
-
       
       try {
         const response = await fetch('/api/update-note', {
@@ -1292,8 +1301,6 @@ export default function Index() {
     formData.append('folderId', currentFolderId);
     formData.append('tags', JSON.stringify([]));
     
-
-    
     try {
       const response = await fetch('/api/create-note', {
         method: 'POST',
@@ -1316,6 +1323,9 @@ export default function Index() {
           setAlertMessage('New note created successfully!');
           setAlertType('success');
           setTimeout(() => setAlertMessage(''), 3000);
+          
+          // Switch to editor for mobile
+          setMobileActiveSection('editor');
         } else {
           setAlertMessage(result.error || 'Failed to create new note');
           setAlertType('error');
@@ -4212,66 +4222,10 @@ export default function Index() {
             }}>
               <div style={{ fontSize: '18px', fontWeight: '600', color: '#202223' }}>
                 {mobileActiveSection === 'folders' && 'Folders & Tags'}
-                {mobileActiveSection === 'notes' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <div>
-                      {selectedFolder ? 
-                        `${localFolders.find(f => f.id === selectedFolder)?.name || 'Selected Folder'}` : 
-                        'All Notes'
-                      }
-                    </div>
-                    {selectedTags.length > 0 && (
-                      <div style={{ 
-                        display: 'flex', 
-                        flexWrap: 'wrap', 
-                        gap: '4px',
-                        fontSize: '12px',
-                        fontWeight: '500'
-                      }}>
-                        {selectedTags.map((tag, index) => (
-                          <div
-                            key={index}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              padding: '2px 8px',
-                              backgroundColor: '#008060',
-                              color: 'white',
-                              borderRadius: '12px',
-                              fontSize: '11px',
-                              fontWeight: '500'
-                            }}
-                          >
-                            <i className="fas fa-tag" style={{ fontSize: '8px' }}></i>
-                            <span>{tag}</span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleTagClick(tag);
-                              }}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                color: 'rgba(255, 255, 255, 0.8)',
-                                cursor: 'pointer',
-                                fontSize: '10px',
-                                padding: '0',
-                                marginLeft: '2px',
-                                display: 'flex',
-                                alignItems: 'center'
-                              }}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
+                {mobileActiveSection === 'notes' && 'Notes'}
+                {mobileActiveSection === 'editor' && 'Note Editor'}
               </div>
-              {mobileActiveSection === 'folders' && (
+              {(mobileActiveSection === 'folders' || mobileActiveSection === 'editor') && (
                 <button 
                   style={{
                     background: 'none',
@@ -4553,104 +4507,89 @@ export default function Index() {
                 padding: '20px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
               }}>
-              {/* Active Filters Indicator */}
-              {(selectedFolder || selectedTags.length > 0) && (
+              {/* Current View Display */}
+              <div style={{
+                padding: '12px 16px',
+                backgroundColor: '#f6fff8',
+                border: '1px solid #008060',
+                borderRadius: '8px',
+                marginBottom: '16px'
+              }}>
+                {/* Folder Display */}
                 <div style={{
-                  padding: '12px 16px',
-                  backgroundColor: '#f6fff8',
-                  border: '1px solid #008060',
-                  borderRadius: '8px',
-                  marginBottom: '16px'
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginBottom: selectedTags.length > 0 ? '8px' : '0'
                 }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '8px', 
-                    marginBottom: selectedTags.length > 0 ? '8px' : '0'
-                  }}>
-                    <i className="far fa-filter" style={{ color: '#008060', fontSize: '16px' }}></i>
-                    <span style={{ color: '#008060', fontWeight: '500', fontSize: '14px' }}>
-                      Active Filters:
-                    </span>
-                  </div>
-                  
-                  {/* Folder Filter */}
+                  <i className="far fa-folder-open" style={{ color: '#008060', fontSize: '16px' }}></i>
+                  <span style={{ color: '#008060', fontWeight: '500', fontSize: '14px' }}>
+                    {selectedFolder ? 
+                      localFolders.find(f => f.id === selectedFolder)?.name : 
+                      'All Notes'
+                    }
+                  </span>
                   {selectedFolder && (
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '6px 12px',
-                      backgroundColor: 'white',
-                      border: '1px solid #008060',
-                      borderRadius: '6px',
-                      marginBottom: selectedTags.length > 0 ? '8px' : '0'
-                    }}>
-                      <i className="far fa-folder-open" style={{ color: '#008060', fontSize: '14px' }}></i>
-                      <span style={{ color: '#008060', fontWeight: '500', fontSize: '13px' }}>
-                        {localFolders.find(f => f.id === selectedFolder)?.name}
-                      </span>
-                      <button
-                        onClick={() => setSelectedFolder(null)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: '#008060',
-                          cursor: 'pointer',
-                          fontSize: '12px',
-                          marginLeft: 'auto',
-                          padding: '2px'
-                        }}
-                      >
-                        <i className="fas fa-times"></i>
-                      </button>
-                    </div>
-                  )}
-                  
-                  {/* Tag Filters */}
-                  {selectedTags.length > 0 && (
-                    <div style={{ 
-                      display: 'flex', 
-                      flexWrap: 'wrap', 
-                      gap: '6px'
-                    }}>
-                      {selectedTags.map((tag, index) => (
-                        <div
-                          key={index}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            padding: '4px 8px',
-                            backgroundColor: 'white',
-                            border: '1px solid #008060',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: '500'
-                          }}
-                        >
-                          <i className="fas fa-tag" style={{ color: '#008060', fontSize: '10px' }}></i>
-                          <span style={{ color: '#008060' }}>{tag}</span>
-                          <button
-                            onClick={() => handleTagClick(tag)}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              color: '#008060',
-                              cursor: 'pointer',
-                              fontSize: '10px',
-                              padding: '0',
-                              marginLeft: '2px'
-                            }}
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+                    <button
+                      onClick={() => setSelectedFolder(null)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#008060',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        marginLeft: 'auto',
+                        padding: '2px'
+                      }}
+                    >
+                      <i className="fas fa-times"></i>
+                    </button>
                   )}
                 </div>
-              )}
+                
+                {/* Tags Display */}
+                {selectedTags.length > 0 && (
+                  <div style={{ 
+                    display: 'flex', 
+                    flexWrap: 'wrap', 
+                    gap: '6px'
+                  }}>
+                    {selectedTags.map((tag, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 8px',
+                          backgroundColor: 'white',
+                          border: '1px solid #008060',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          fontWeight: '500'
+                        }}
+                      >
+                        <i className="fas fa-tag" style={{ color: '#008060', fontSize: '10px' }}></i>
+                        <span style={{ color: '#008060' }}>{tag}</span>
+                        <button
+                          onClick={() => handleTagClick(tag)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#008060',
+                            cursor: 'pointer',
+                            fontSize: '10px',
+                            padding: '0',
+                            marginLeft: '2px'
+                          }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
                 {/* Search Notes Input */}
                 <div style={{ marginBottom: "20px", position: "relative" }}>
@@ -4700,7 +4639,7 @@ export default function Index() {
                 
                 {/* New Note Button */}
                 <Button 
-                  onClick={handleNewNote}
+                  onClick={handleMobileNewNote}
                   variant="primary"
                   tone="warning"
                   icon={<i className="fas fa-plus"></i>}
@@ -4769,6 +4708,7 @@ export default function Index() {
                           }}
                           onClick={() => {
                             handleEditNote(note);
+                            setMobileActiveSection('editor');
                           }}
                         >
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
@@ -4839,6 +4779,282 @@ export default function Index() {
               </div>
             </div>
 
+            {/* Mobile Editor Section */}
+            <div style={{ 
+              display: mobileActiveSection === 'editor' ? 'block' : 'none',
+              flex: 1,
+              overflowY: 'auto',
+              padding: '16px',
+              paddingBottom: '80px'
+            }}>
+              <div style={{ 
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                padding: '20px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                {/* Editor Header */}
+                <div style={{ 
+                  padding: "16px", 
+                  borderBottom: "1px solid #e1e3e5",
+                  backgroundColor: "white",
+                  flexShrink: 0
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                    <div>
+                      <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <i className="far fa-edit" style={{ fontSize: "20px" }}></i>
+                        Note Editor
+                      </Text>
+                      {(autoSaveNotification || hasUnsavedChanges) && (
+                        <div style={{ marginTop: "8px" }}>
+                          {autoSaveNotification && (
+                            <Text as="p" style={{ 
+                              fontSize: "14px", 
+                              color: "#008060", 
+                              fontWeight: "500", 
+                              marginBottom: hasUnsavedChanges ? "4px" : "0",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px"
+                            }}>
+                              <i className="fas fa-check-circle" style={{ fontSize: "16px", color: "#008060" }}></i>
+                              {autoSaveNotification}
+                            </Text>
+                          )}
+                          {hasUnsavedChanges && (
+                            <Text as="p" style={{ 
+                              fontSize: "14px", 
+                              color: "rgba(199, 10, 36, 1)", 
+                              fontWeight: "600", 
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px"
+                            }}>
+                              <i className="fas fa-exclamation-triangle" style={{ fontSize: "16px", color: "rgba(199, 10, 36, 1)" }}></i>
+                              You have unsaved changes
+                            </Text>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div style={{ display: "flex", gap: "12px" }}>
+                    {editingNoteId ? (
+                      <>
+                        <Button 
+                          onClick={handleSaveNote}
+                          variant="primary"
+                          tone="success"
+                          size="large"
+                          style={{ flex: 1 }}
+                        >
+                          Save Note
+                        </Button>
+                        <Button 
+                          onClick={handleCancelEdit}
+                          variant="primary"
+                          tone="base"
+                          size="large"
+                        >
+                          Cancel
+                        </Button>
+                      </>
+                    ) : (
+                      <Button 
+                        onClick={handleCreateNote}
+                        variant="primary"
+                        tone="success"
+                        size="large"
+                        fullWidth
+                      >
+                        Save Note
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Editor Content */}
+                <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
+                  <BlockStack gap="400">
+                    {/* Folder Path */}
+                    <div>
+                      <div style={{ 
+                        display: "flex", 
+                        alignItems: "center", 
+                        gap: "8px", 
+                        fontSize: "14px", 
+                        color: "#6d7175",
+                        marginBottom: "16px"
+                      }}>
+                        {folderId ? (
+                          <>
+                            <span style={{ fontWeight: "500" }}>
+                              {folders.find(f => f.id === folderId)?.name}
+                            </span>
+                            <span>/</span>
+                            <span style={{ fontWeight: "600", color: "#202223" }}>
+                              {title || "(untitled)"}
+                            </span>
+                          </>
+                        ) : (
+                          <span style={{ fontStyle: "italic", color: "#8c9196" }}>
+                            Select a folder to start
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Tags */}
+                    <div>
+                      <label style={{ display: "block", marginBottom: "8px", fontWeight: "600", fontSize: "16px" }}>
+                        Tags
+                      </label>
+                      <div style={{ marginBottom: "12px" }}>
+                        <input
+                          type="text"
+                          style={{
+                            border: "none",
+                            outline: "none",
+                            fontSize: "16px",
+                            color: "#202223",
+                            padding: "12px 0",
+                            borderBottom: "2px solid #e1e3e5",
+                            cursor: "text",
+                            width: "100%",
+                            backgroundColor: "transparent",
+                            fontFamily: "inherit",
+                            transition: "border-color 0.2s ease"
+                          }}
+                          value={newTagInput}
+                          onChange={(e) => {
+                            const newValue = e.target.value;
+                            const cleanValue = removeEmojis(newValue);
+                            if (cleanValue.length <= 32) {
+                              setNewTagInput(cleanValue);
+                            } else {
+                              setAlertMessage('Tag cannot exceed 32 characters');
+                              setAlertType('error');
+                              setTimeout(() => setAlertMessage(''), 3000);
+                            }
+                          }}
+                          placeholder="Add a tag and press Enter..."
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && newTagInput.trim()) {
+                              const cleanTag = removeEmojis(newTagInput.trim());
+                              if (!noteTags.includes(cleanTag)) {
+                                const newTags = [...noteTags, cleanTag];
+                                setNoteTags(newTags);
+                                handleAutoSaveTags(newTags);
+                              }
+                              setNewTagInput("");
+                            }
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderBottomColor = "#008060";
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderBottomColor = "#e1e3e5";
+                          }}
+                        />
+                      </div>
+                      {noteTags.length > 0 && (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                          {noteTags.map((tag, index) => (
+                            <div
+                              key={index}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                padding: "6px 12px",
+                                backgroundColor: "#f6fff8",
+                                border: "1px solid #008060",
+                                borderRadius: "20px",
+                                fontSize: "14px",
+                                color: "#008060"
+                              }}
+                            >
+                              <span>{tag}</span>
+                              <button
+                                onClick={() => {
+                                  const newTags = noteTags.filter((_, i) => i !== index);
+                                  setNoteTags(newTags);
+                                  handleAutoSaveTags(newTags);
+                                }}
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  fontSize: "16px",
+                                  color: "rgba(199, 10, 36, 1)",
+                                  padding: "0",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  fontWeight: "bold"
+                                }}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Title */}
+                    <div>
+                      <input
+                        type="text"
+                        value={title}
+                        onChange={(e) => setTitle(removeEmojis(e.target.value))}
+                        placeholder="Add a title to your note here..."
+                        maxLength={35}
+                        style={{
+                          border: "none",
+                          outline: "none",
+                          fontSize: "24px",
+                          fontWeight: "600",
+                          color: "#202223",
+                          padding: "12px 0",
+                          borderBottom: "2px solid #e1e3e5",
+                          cursor: "text",
+                          width: "100%",
+                          backgroundColor: "transparent",
+                          fontFamily: "inherit",
+                          transition: "border-color 0.2s ease"
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderBottomColor = "#008060";
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderBottomColor = "#e1e3e5";
+                        }}
+                      />
+                    </div>
+
+                    {/* Body */}
+                    <div>
+                      <label style={{ display: "block", marginBottom: "8px", fontWeight: "600", fontSize: "16px" }}>
+                        Content
+                      </label>
+                      <div style={{ minHeight: "300px" }}>
+                        <AdvancedRTE
+                          value={body}
+                          onChange={setBody}
+                          placeholder="Type your note here..."
+                        />
+                      </div>
+                    </div>
+                  </BlockStack>
+                </div>
+              </div>
+            </div>
 
             {/* Mobile Bottom Navigation */}
             <div style={{
@@ -4891,6 +5107,25 @@ export default function Index() {
               >
                 <i className="far fa-note-sticky" style={{ fontSize: '20px' }}></i>
                 <span style={{ fontSize: '12px', fontWeight: '500' }}>Notes</span>
+              </div>
+              <div 
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  minWidth: '60px',
+                  backgroundColor: mobileActiveSection === 'editor' ? '#f6fff8' : 'transparent',
+                  color: mobileActiveSection === 'editor' ? '#008060' : '#6d7175'
+                }}
+                onClick={() => setMobileActiveSection('editor')}
+              >
+                <i className="far fa-edit" style={{ fontSize: '20px' }}></i>
+                <span style={{ fontSize: '12px', fontWeight: '500' }}>Editor</span>
               </div>
             </div>
           </div>
