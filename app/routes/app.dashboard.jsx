@@ -34,7 +34,7 @@ import {
   DeleteIcon, 
   ViewIcon,
   AddIcon,
-  MoreIcon
+  HorizontalDotsIcon
 } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
 import QuillEditor from "../components/LexicalEditor";
@@ -4419,7 +4419,7 @@ export default function Index() {
                             setMobileOpenFolderMenu(mobileOpenFolderMenu === folder.id ? null : folder.id);
                           }}
                         >
-                          <MoreIcon style={{ width: '16px', height: '16px', color: '#6d7175' }} />
+                          <HorizontalDotsIcon style={{ width: '16px', height: '16px', color: '#6d7175' }} />
                           
                           {/* Dropdown Menu */}
                           {mobileOpenFolderMenu === folder.id && (
