@@ -27,13 +27,7 @@ import {
 } from "@shopify/polaris";
 import { 
   SaveIcon, 
-  DragDropIcon, 
-  FolderIcon, 
-  TagIcon, 
-  EditIcon, 
-  DeleteIcon, 
-  ViewIcon,
-  AddIcon
+  DragDropIcon
 } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
 import QuillEditor from "../components/LexicalEditor";
@@ -4451,7 +4445,7 @@ export default function Index() {
                                   setMobileOpenFolderMenu(null);
                                 }}
                               >
-                                <EditIcon style={{ width: '14px', height: '14px', marginRight: '8px', color: '#008060' }} />
+                                <span style={{ fontSize: '14px', marginRight: '8px', color: '#008060' }}>✏️</span>
                                 Rename
                               </button>
                               <button
@@ -4470,7 +4464,7 @@ export default function Index() {
                                   setMobileOpenFolderMenu(null);
                                 }}
                               >
-                                <ViewIcon style={{ width: '14px', height: '14px', marginRight: '8px', color: '#008060' }} />
+                                <span style={{ fontSize: '14px', marginRight: '8px', color: '#008060' }}>🎨</span>
                                 Change Icon
                               </button>
                               <button
@@ -4489,7 +4483,7 @@ export default function Index() {
                                   setMobileOpenFolderMenu(null);
                                 }}
                               >
-                                <DeleteIcon style={{ width: '14px', height: '14px', marginRight: '8px' }} />
+                                <span style={{ fontSize: '14px', marginRight: '8px' }}>🗑️</span>
                                 Delete
                               </button>
                             </div>
@@ -4519,7 +4513,7 @@ export default function Index() {
                       }}
                       onClick={() => setShowNewFolderModal(true)}
                     >
-                      <AddIcon style={{ width: '16px', height: '16px' }} />
+                      <span style={{ fontSize: '16px' }}>➕</span>
                       Create New Folder
                     </button>
                   </div>
@@ -4562,7 +4556,7 @@ export default function Index() {
                           }
                         }}
                       >
-                        <TagIcon style={{ width: '12px', height: '12px' }} />
+                        <span style={{ fontSize: '12px' }}>🏷️</span>
                         {tag}
                         {selectedTags.includes(tag) && (
                           <i className="fas fa-times" style={{ fontSize: '10px', marginLeft: '4px' }}></i>
