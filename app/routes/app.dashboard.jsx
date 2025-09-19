@@ -437,7 +437,7 @@ export default function Index() {
   
   // Mobile layout state
   const [mobileActiveSection, setMobileActiveSection] = useState('notes'); // 'folders', 'notes', 'editor'
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(true); // Temporarily force mobile for testing
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [highlightFolders, setHighlightFolders] = useState(false);
   const [globalSearchQuery, setGlobalSearchQuery] = useState("");
@@ -1021,7 +1021,9 @@ export default function Index() {
   // Mobile detection
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      const isMobileWidth = window.innerWidth <= 768;
+      console.log('Screen width:', window.innerWidth, 'Is mobile:', isMobileWidth);
+      setIsMobile(isMobileWidth);
     };
     
     checkMobile();
@@ -2143,10 +2145,17 @@ export default function Index() {
             }
             
             .mobile-layout {
-              display: flex;
+              display: flex !important;
               flex-direction: column;
               height: 100vh;
               overflow: hidden;
+              position: fixed;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              z-index: 1000;
+              background: white;
             }
             
             .mobile-section {
@@ -4163,7 +4172,11 @@ export default function Index() {
 
         {/* Mobile Layout */}
         {isMobile && (
-          <div className="mobile-layout">
+          <div className="mobile-layout" style={{ backgroundColor: 'red', zIndex: 9999 }}>
+            {/* Debug indicator */}
+            <div style={{ position: 'fixed', top: '10px', right: '10px', background: 'yellow', padding: '5px', zIndex: 10000 }}>
+              MOBILE LAYOUT ACTIVE
+            </div>
             {/* Mobile Header */}
             <div className="mobile-header">
               <div className="mobile-title">
