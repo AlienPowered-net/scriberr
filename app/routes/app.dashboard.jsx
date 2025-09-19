@@ -2165,7 +2165,8 @@ export default function Index() {
               right: 0;
               bottom: 0;
               z-index: 1000;
-              background: white;
+              background: white !important;
+              background-color: white !important;
             }
             
             .mobile-section {
@@ -4183,17 +4184,20 @@ export default function Index() {
 
         {/* Mobile Layout */}
         {isMobile && (
-          <div style={{ 
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'white',
-            zIndex: 10000,
-            display: 'flex',
-            flexDirection: 'column'
-          }}>
+          <div 
+            className="mobile-layout"
+            style={{ 
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'white !important',
+              background: 'white !important',
+              zIndex: 10000,
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
             {/* Mobile Header */}
             <div style={{
               display: 'flex',
