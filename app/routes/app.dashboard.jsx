@@ -2116,8 +2116,11 @@ export default function Index() {
     );
   }
 
-      return (
-              <Page title="Scriberr" style={{ paddingBottom: "160px", marginBottom: "10%", paddingTop: "0", marginTop: "-60px" }}>
+  return (
+    <>
+      {/* Desktop Layout */}
+      {!isMobile && (
+        <Page title="Scriberr" style={{ paddingBottom: "160px", marginBottom: "10%", paddingTop: "0", marginTop: "-60px" }}>
         {/* Material Symbols Rounded CDN */}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
@@ -4190,9 +4193,10 @@ export default function Index() {
           </DragOverlay>
         </DndContext>
         </div>
+        </Page>
+      )}
 
-
-        {/* Mobile Layout */}
+      {/* Mobile Layout */}
         {isMobile && (
           <div 
             className="mobile-layout"
@@ -5130,128 +5134,5 @@ export default function Index() {
             </div>
           </div>
         )}
-
-        {/* Copyright Footer */}
-        <div style={{
-          position: "fixed",
-          bottom: "0",
-          left: "0",
-          right: "0",
-          backgroundColor: "#f8f9fa",
-          borderTop: "1px solid #e1e3e5",
-          padding: "12px 24px",
-          marginTop: "10px",
-          fontSize: "14px",
-          color: "#6d7175",
-          zIndex: 100,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}>
-          <div>
-            © 2025, Scriberr Powered by{" "}
-            <a 
-              href="https://www.alienpowered.net" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              style={{
-                color: "#008060",
-                textDecoration: "none",
-                fontWeight: "600",
-                transition: "color 0.2s ease"
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.color = "#008000";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.color = "#008060";
-              }}
-            >
-              Aliens
-            </a>
-          </div>
-          <div style={{ 
-            fontStyle: "italic", 
-            fontSize: "12px", 
-            color: "#9ca3af",
-            marginLeft: "24px"
-          }}>
-            {version}
-          </div>
-        </div>
-
-        {/* New Folder Modal */}
-        <NewFolderModal
-          isOpen={showNewFolderModal}
-          onClose={() => setShowNewFolderModal(false)}
-          onCreateFolder={handleCreateFolderFromModal}
-          initialName=""
-        />
-
-
-        {/* Folder Icon Picker Modal */}
-        {showIconPicker && (
-          <FolderIconPicker
-            isOpen={true}
-            onClose={() => setShowIconPicker(null)}
-            onSelectIcon={(iconData) => {
-              handleIconChange(showIconPicker, iconData);
-            }}
-            currentIcon="folder"
-            currentColor="rgba(255, 184, 0, 1)"
-            folderName={localFolders.find(f => f.id === showIconPicker)?.name || "Folder"}
-          />
-        )}
-
-        {/* Folder Selector Popover */}
-        <Popover
-          active={showFolderSelector}
-          activator={
-            <div style={{ display: 'none' }} />
-          }
-          onClose={() => {
-            setShowFolderSelector(false);
-            setFolderSelectorAction(null);
-            setFolderSelectorNoteId(null);
-            setFolderSelectorSearchQuery("");
-          }}
-          preferredPosition="below"
-          preferredAlignment="left"
-        >
-          <Popover.Pane>
-            <div style={{ padding: '16px', minWidth: '280px' }}>
-              <TextContainer>
-                <Text variant="headingMd" as="h3">
-                  {folderSelectorAction === 'duplicate' ? 'Duplicate to folder' : 'Move to folder'}
-                </Text>
-                <div style={{ marginTop: '12px' }}>
-                  <TextField
-                    label="Search folders"
-                    value={folderSelectorSearchQuery}
-                    onChange={setFolderSelectorSearchQuery}
-                    placeholder="Type to search folders..."
-                    autoComplete="off"
-                  />
-                </div>
-                <div style={{ marginTop: '12px', maxHeight: '200px', overflowY: 'auto' }}>
-                  <ActionList
-                    items={localFolders
-                      .filter(folder => 
-                        folder.name.toLowerCase().includes(folderSelectorSearchQuery.toLowerCase())
-                      )
-                      .map(folder => ({
-                        content: folder.name,
-                        onAction: () => handleFolderSelection(folder.id),
-                        icon: 'folder'
-                      }))
-                    }
-                  />
-                </div>
-              </TextContainer>
-            </div>
-          </Popover.Pane>
-        </Popover>
-      </Page>
-    );
-  }
-}
+    </>
+  );
