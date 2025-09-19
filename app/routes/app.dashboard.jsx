@@ -737,6 +737,8 @@ export default function Index() {
   // Mobile layout state
   const [isMobile, setIsMobile] = useState(false);
   const [mobileActiveSection, setMobileActiveSection] = useState('notes'); // 'folders', 'notes', 'editor'
+  const [showMobileTags, setShowMobileTags] = useState(false);
+  const [mobileOpenFolderMenu, setMobileOpenFolderMenu] = useState(null);
   
   
   // Update local folders when loader data changes
@@ -883,13 +885,18 @@ export default function Index() {
       if (openNoteMenu && !event.target.closest('.note-card-container')) {
         setOpenNoteMenu(null);
       }
+      
+      // Close mobile folder menu if clicking outside
+      if (mobileOpenFolderMenu && !event.target.closest('[data-mobile-folder-menu]')) {
+        setMobileOpenFolderMenu(null);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [openFolderMenu, openNoteMenu]);
+  }, [openFolderMenu, openNoteMenu, mobileOpenFolderMenu]);
 
   // Create portal dropdown when folder menu opens
   useEffect(() => {
@@ -4242,35 +4249,231 @@ export default function Index() {
               padding: '20px',
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
             }}>
-              <h2 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: '600' }}>Folders & Tags</h2>
-              <p style={{ color: '#6d7175', margin: '0 0 16px 0' }}>Select a folder to view its notes</p>
-              
-              {/* Folders List */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {localFolders.map((folder) => (
-                  <div
-                    key={folder.id}
-                    style={{
-                      padding: '12px',
-                      border: '1px solid #e1e3e5',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      backgroundColor: selectedFolder === folder.id ? '#f6fff8' : 'white',
-                      borderColor: selectedFolder === folder.id ? '#008060' : '#e1e3e5'
-                    }}
-                    onClick={() => {
-                      setSelectedFolder(selectedFolder === folder.id ? null : folder.id);
-                      setMobileActiveSection('notes');
-                    }}
-                  >
-                    <i className="far fa-folder-open" style={{ fontSize: "20px", color: "#008060" }}></i>
-                    <span style={{ fontWeight: '500' }}>{folder.name}</span>
-                  </div>
-                ))}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Folders & Tags</h2>
+                <button
+                  style={{
+                    background: 'none',
+                    border: '1px solid #e1e3e5',
+                    borderRadius: '6px',
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    color: showMobileTags ? '#008060' : '#6d7175',
+                    backgroundColor: showMobileTags ? '#f6fff8' : 'white'
+                  }}
+                  onClick={() => setShowMobileTags(!showMobileTags)}
+                >
+                  {showMobileTags ? '📁 Folders' : '🏷️ Tags'}
+                </button>
               </div>
+              
+              {!showMobileTags ? (
+                <>
+                  <p style={{ color: '#6d7175', margin: '0 0 16px 0' }}>Select a folder to view its notes</p>
+                  
+                  {/* Folders List */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {localFolders.map((folder) => (
+                      <div
+                        key={folder.id}
+                        style={{
+                          padding: '12px',
+                          border: '1px solid #e1e3e5',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          backgroundColor: selectedFolder === folder.id ? '#f6fff8' : 'white',
+                          borderColor: selectedFolder === folder.id ? '#008060' : '#e1e3e5',
+                          position: 'relative'
+                        }}
+                        onClick={() => {
+                          setSelectedFolder(selectedFolder === folder.id ? null : folder.id);
+                          setMobileActiveSection('notes');
+                        }}
+                      >
+                        {/* Drag Handle */}
+                        <div
+                          style={{
+                            cursor: 'grab',
+                            padding: '4px',
+                            color: '#6d7175',
+                            fontSize: '12px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1px'
+                          }}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onTouchStart={(e) => e.stopPropagation()}
+                        >
+                          <div style={{ width: '3px', height: '3px', backgroundColor: 'currentColor', borderRadius: '50%' }}></div>
+                          <div style={{ width: '3px', height: '3px', backgroundColor: 'currentColor', borderRadius: '50%' }}></div>
+                          <div style={{ width: '3px', height: '3px', backgroundColor: 'currentColor', borderRadius: '50%' }}></div>
+                          <div style={{ width: '3px', height: '3px', backgroundColor: 'currentColor', borderRadius: '50%' }}></div>
+                          <div style={{ width: '3px', height: '3px', backgroundColor: 'currentColor', borderRadius: '50%' }}></div>
+                          <div style={{ width: '3px', height: '3px', backgroundColor: 'currentColor', borderRadius: '50%' }}></div>
+                        </div>
+                        
+                        <i className="far fa-folder-open" style={{ fontSize: "20px", color: "#008060" }}></i>
+                        <span style={{ fontWeight: '500', flex: 1 }}>{folder.name}</span>
+                        
+                        {/* Three Dots Menu */}
+                        <div
+                          data-mobile-folder-menu
+                          style={{
+                            position: 'relative',
+                            padding: '4px',
+                            cursor: 'pointer',
+                            borderRadius: '4px'
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMobileOpenFolderMenu(mobileOpenFolderMenu === folder.id ? null : folder.id);
+                          }}
+                        >
+                          <i className="fas fa-ellipsis-v" style={{ fontSize: '16px', color: '#6d7175' }}></i>
+                          
+                          {/* Dropdown Menu */}
+                          {mobileOpenFolderMenu === folder.id && (
+                            <div style={{
+                              position: 'absolute',
+                              top: '100%',
+                              right: 0,
+                              backgroundColor: 'white',
+                              border: '1px solid #e1e3e5',
+                              borderRadius: '8px',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                              zIndex: 1000,
+                              minWidth: '150px',
+                              marginTop: '4px'
+                            }}>
+                              <button
+                                style={{
+                                  width: '100%',
+                                  padding: '12px 16px',
+                                  border: 'none',
+                                  background: 'none',
+                                  textAlign: 'left',
+                                  cursor: 'pointer',
+                                  fontSize: '14px',
+                                  borderBottom: '1px solid #e1e3e5'
+                                }}
+                                onClick={() => {
+                                  setEditingFolderId(folder.id);
+                                  setEditingFolderName(folder.name);
+                                  setMobileOpenFolderMenu(null);
+                                }}
+                              >
+                                <i className="fas fa-edit" style={{ marginRight: '8px', color: '#008060' }}></i>
+                                Rename
+                              </button>
+                              <button
+                                style={{
+                                  width: '100%',
+                                  padding: '12px 16px',
+                                  border: 'none',
+                                  background: 'none',
+                                  textAlign: 'left',
+                                  cursor: 'pointer',
+                                  fontSize: '14px',
+                                  borderBottom: '1px solid #e1e3e5'
+                                }}
+                                onClick={() => {
+                                  setShowIconPicker(folder.id);
+                                  setMobileOpenFolderMenu(null);
+                                }}
+                              >
+                                <i className="fas fa-palette" style={{ marginRight: '8px', color: '#008060' }}></i>
+                                Change Icon
+                              </button>
+                              <button
+                                style={{
+                                  width: '100%',
+                                  padding: '12px 16px',
+                                  border: 'none',
+                                  background: 'none',
+                                  textAlign: 'left',
+                                  cursor: 'pointer',
+                                  fontSize: '14px',
+                                  color: '#d32f2f'
+                                }}
+                                onClick={() => {
+                                  setShowDeleteConfirm(folder.id);
+                                  setMobileOpenFolderMenu(null);
+                                }}
+                              >
+                                <i className="fas fa-trash" style={{ marginRight: '8px' }}></i>
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p style={{ color: '#6d7175', margin: '0 0 16px 0' }}>Select tags to filter notes</p>
+                  
+                  {/* Tags List */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {Array.from(new Set(localNotes.flatMap(note => note.tags || []))).map((tag) => (
+                      <button
+                        key={tag}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '8px 12px',
+                          border: '1px solid #e1e3e5',
+                          borderRadius: '20px',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          backgroundColor: selectedTags.includes(tag) ? '#008060' : 'white',
+                          color: selectedTags.includes(tag) ? 'white' : '#6d7175',
+                          borderColor: selectedTags.includes(tag) ? '#008060' : '#e1e3e5'
+                        }}
+                        onClick={() => {
+                          if (selectedTags.includes(tag)) {
+                            const newTags = selectedTags.filter(t => t !== tag);
+                            setSelectedTags(newTags);
+                            if (newTags.length === 0) {
+                              setGlobalSearchQuery("");
+                            } else {
+                              setGlobalSearchQuery(`tag:${newTags.join(' tag:')}`);
+                            }
+                          } else {
+                            const newTags = [...selectedTags, tag];
+                            setSelectedTags(newTags);
+                            setGlobalSearchQuery(`tag:${newTags.join(' tag:')}`);
+                          }
+                          setMobileActiveSection('notes');
+                        }}
+                      >
+                        <i className="fas fa-tag" style={{ fontSize: '12px' }}></i>
+                        {tag}
+                        {selectedTags.includes(tag) && (
+                          <i className="fas fa-times" style={{ fontSize: '10px', marginLeft: '4px' }}></i>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  {Array.from(new Set(localNotes.flatMap(note => note.tags || []))).length === 0 && (
+                    <div style={{ 
+                      textAlign: 'center', 
+                      padding: '20px', 
+                      color: '#6d7175',
+                      fontStyle: 'italic'
+                    }}>
+                      No tags found. Create notes with tags to see them here.
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
 
