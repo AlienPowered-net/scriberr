@@ -733,12 +733,28 @@ export default function Index() {
   const [folderSelectorAction, setFolderSelectorAction] = useState(null); // 'duplicate' or 'move'
   const [folderSelectorNoteId, setFolderSelectorNoteId] = useState(null);
   const [folderSelectorSearchQuery, setFolderSelectorSearchQuery] = useState("");
+
+  // Mobile layout state
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileActiveSection, setMobileActiveSection] = useState('notes'); // 'folders', 'notes', 'editor'
   
   
   // Update local folders when loader data changes
   useEffect(() => {
     setLocalFolders(folders);
   }, [folders]);
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   
   // Drag and drop sensors
@@ -2078,8 +2094,11 @@ export default function Index() {
     );
   }
 
-      return (
-              <Page title="Scriberr" style={{ paddingBottom: "160px", marginBottom: "10%" }}>
+  return (
+    <>
+      {/* Desktop Layout */}
+      {!isMobile && (
+        <Page title="Scriberr" style={{ paddingBottom: "160px", marginBottom: "10%" }}>
         {/* Material Symbols Rounded CDN */}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
@@ -2302,6 +2321,87 @@ export default function Index() {
               .column-drag-handle:active {
                 cursor: grabbing;
               }
+        `}</style>
+
+        {/* Mobile Styles */}
+        <style>{`
+          @media (max-width: 768px) {
+            .mobile-layout {
+              display: flex !important;
+              flex-direction: column;
+              height: 100vh;
+              overflow: hidden;
+              position: fixed;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background-color: white !important;
+              z-index: 10000;
+            }
+            
+            .mobile-section {
+              flex: 1;
+              overflow-y: auto;
+              -webkit-overflow-scrolling: touch;
+            }
+            
+            .mobile-bottom-nav {
+              position: fixed;
+              bottom: 0;
+              left: 0;
+              right: 0;
+              background-color: white;
+              border-top: 1px solid #e1e3e5;
+              display: flex;
+              justify-content: space-around;
+              padding: 12px 0;
+              z-index: 1000;
+              box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            }
+            
+            .mobile-nav-item {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 4px;
+              padding: 8px 12px;
+              cursor: pointer;
+              border-radius: 8px;
+              min-width: 60px;
+            }
+            
+            .mobile-header {
+              padding: 16px;
+              border-bottom: 1px solid #e1e3e5;
+              background-color: white;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            }
+            
+            .mobile-title {
+              margin: 0;
+              font-size: 20px;
+              font-weight: 600;
+            }
+            
+            .mobile-back-btn {
+              background: none;
+              border: none;
+              font-size: 18px;
+              cursor: pointer;
+              padding: 8px;
+              border-radius: 4px;
+            }
+          }
+          
+          /* Desktop layout - hide mobile elements */
+          @media (min-width: 769px) {
+            .mobile-layout {
+              display: none !important;
+            }
+          }
         `}</style>
 
         {/* Custom Alert */}
@@ -4077,6 +4177,527 @@ export default function Index() {
             </div>
           </Popover.Pane>
         </Popover>
-      </Page>
-    );
-  }
+        </Page>
+      )}
+
+      {/* Mobile Layout */}
+      {isMobile && (
+        <div 
+          className="mobile-layout"
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'white',
+            zIndex: 10000,
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+          {/* Mobile Header */}
+          <div style={{
+            padding: '16px',
+            borderBottom: '1px solid #e1e3e5',
+            backgroundColor: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
+              {mobileActiveSection === 'folders' && 'Folders & Tags'}
+              {mobileActiveSection === 'notes' && 'Notes'}
+              {mobileActiveSection === 'editor' && 'Note Editor'}
+            </h1>
+            {mobileActiveSection !== 'notes' && (
+              <button
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '18px',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '4px'
+                }}
+                onClick={() => setMobileActiveSection('notes')}
+              >
+                <i className="fas fa-arrow-left"></i>
+              </button>
+            )}
+          </div>
+
+          {/* Mobile Sections */}
+          <div style={{ 
+            display: mobileActiveSection === 'folders' ? 'block' : 'none',
+            flex: 1,
+            overflowY: 'auto',
+            padding: '16px',
+            paddingBottom: '80px',
+            WebkitOverflowScrolling: 'touch'
+          }}>
+            {/* Folders Section Content */}
+            <div style={{ 
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '20px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}>
+              <h2 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: '600' }}>Folders & Tags</h2>
+              <p style={{ color: '#6d7175', margin: '0 0 16px 0' }}>Select a folder to view its notes</p>
+              
+              {/* Folders List */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {localFolders.map((folder) => (
+                  <div
+                    key={folder.id}
+                    style={{
+                      padding: '12px',
+                      border: '1px solid #e1e3e5',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      backgroundColor: selectedFolder === folder.id ? '#f6fff8' : 'white',
+                      borderColor: selectedFolder === folder.id ? '#008060' : '#e1e3e5'
+                    }}
+                    onClick={() => {
+                      setSelectedFolder(selectedFolder === folder.id ? null : folder.id);
+                      setMobileActiveSection('notes');
+                    }}
+                  >
+                    <i className="far fa-folder-open" style={{ fontSize: "20px", color: "#008060" }}></i>
+                    <span style={{ fontWeight: '500' }}>{folder.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ 
+            display: mobileActiveSection === 'notes' ? 'block' : 'none',
+            flex: 1,
+            overflowY: 'auto',
+            padding: '16px',
+            paddingBottom: '80px',
+            WebkitOverflowScrolling: 'touch'
+          }}>
+            {/* Notes Section Content */}
+            <div style={{ 
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '20px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}>
+              <h2 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: '600' }}>Notes</h2>
+              
+              {/* Current View Display */}
+              <div style={{
+                padding: '12px',
+                backgroundColor: '#f6fff8',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                border: '1px solid #008060'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <i className="far fa-folder-open" style={{ color: '#008060' }}></i>
+                  <span style={{ fontWeight: '500' }}>
+                    {selectedFolder ? localFolders.find(f => f.id === selectedFolder)?.name : 'All Notes'}
+                  </span>
+                  {selectedFolder && (
+                    <button
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#008060',
+                        cursor: 'pointer',
+                        marginLeft: 'auto'
+                      }}
+                      onClick={() => setSelectedFolder(null)}
+                    >
+                      <i className="fas fa-times"></i>
+                    </button>
+                  )}
+                </div>
+                {selectedTags.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                    {selectedTags.map((tag, index) => (
+                      <span
+                        key={index}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          backgroundColor: '#008060',
+                          color: 'white',
+                          padding: '4px 8px',
+                          borderRadius: '12px',
+                          fontSize: '12px'
+                        }}
+                      >
+                        <i className="fas fa-tag" style={{ fontSize: '10px' }}></i>
+                        {tag}
+                        <button
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'white',
+                            cursor: 'pointer',
+                            padding: '0',
+                            marginLeft: '4px'
+                          }}
+                          onClick={() => {
+                            const newTags = selectedTags.filter((_, i) => i !== index);
+                            setSelectedTags(newTags);
+                            if (newTags.length === 0) {
+                              setGlobalSearchQuery("");
+                            } else {
+                              setGlobalSearchQuery(`tag:${newTags.join(' tag:')}`);
+                            }
+                          }}
+                        >
+                          <i className="fas fa-times" style={{ fontSize: '10px' }}></i>
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Notes List */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {localNotes
+                  .filter(note => {
+                    if (selectedFolder && note.folderId !== selectedFolder) return false;
+                    if (selectedTags.length > 0) {
+                      const noteTags = note.tags || [];
+                      return selectedTags.some(tag => noteTags.includes(tag));
+                    }
+                    return true;
+                  })
+                  .map((note) => (
+                    <div
+                      key={note.id}
+                      style={{
+                        padding: '16px',
+                        border: '1px solid #e1e3e5',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        backgroundColor: 'white'
+                      }}
+                      onClick={() => {
+                        handleEditNote(note);
+                        setMobileActiveSection('editor');
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>
+                          {note.title || 'Untitled'}
+                        </h3>
+                      </div>
+                      {note.content && (
+                        <p style={{ 
+                          margin: '0 0 8px 0', 
+                          color: '#6d7175', 
+                          fontSize: '14px',
+                          lineHeight: '1.4',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden'
+                        }}>
+                          {note.content.replace(/<[^>]*>/g, '').substring(0, 100)}...
+                        </p>
+                      )}
+                      {note.tags && note.tags.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {note.tags.slice(0, 3).map((tag, index) => (
+                            <span
+                              key={index}
+                              style={{
+                                backgroundColor: '#008060',
+                                color: 'white',
+                                padding: '2px 6px',
+                                borderRadius: '8px',
+                                fontSize: '10px'
+                              }}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                          {note.tags.length > 3 && (
+                            <span style={{ fontSize: '10px', color: '#6d7175' }}>
+                              +{note.tags.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+              </div>
+
+              {/* New Note Button */}
+              <div style={{ marginTop: '20px' }}>
+                <button
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: '#008060',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => {
+                    if (!selectedFolder) {
+                      alert('Please select a folder first');
+                      return;
+                    }
+                    handleNewNote();
+                    setMobileActiveSection('editor');
+                  }}
+                >
+                  New Note
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ 
+            display: mobileActiveSection === 'editor' ? 'block' : 'none',
+            flex: 1,
+            overflowY: 'auto',
+            padding: '16px',
+            paddingBottom: '80px',
+            WebkitOverflowScrolling: 'touch'
+          }}>
+            {/* Editor Section Content */}
+            <div style={{ 
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '20px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              {/* Editor Header */}
+              <div style={{ 
+                padding: "16px", 
+                borderBottom: "1px solid #e1e3e5",
+                marginBottom: "16px"
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Note Editor</h2>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      style={{
+                        padding: "8px 16px",
+                        backgroundColor: "#008060",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "14px"
+                      }}
+                      onClick={handleSaveNote}
+                    >
+                      Save
+                    </button>
+                    <button
+                      style={{
+                        padding: "8px 16px",
+                        backgroundColor: "#6d7175",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "14px"
+                      }}
+                      onClick={() => setMobileActiveSection('notes')}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Folder Path */}
+                {selectedFolder && (
+                  <div style={{ 
+                    fontSize: "14px", 
+                    color: "#6d7175",
+                    marginBottom: "8px"
+                  }}>
+                    📁 {localFolders.find(f => f.id === selectedFolder)?.name}
+                  </div>
+                )}
+              </div>
+
+              {/* Title Input */}
+              <div style={{ marginBottom: "16px" }}>
+                <input
+                  type="text"
+                  placeholder="Note title..."
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    border: "1px solid #e1e3e5",
+                    borderRadius: "4px",
+                    fontSize: "16px",
+                    fontWeight: "600"
+                  }}
+                />
+              </div>
+
+              {/* Tags Input */}
+              <div style={{ marginBottom: "16px" }}>
+                <input
+                  type="text"
+                  placeholder="Add tags (comma separated)..."
+                  value={newTagInput}
+                  onChange={(e) => setNewTagInput(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      const tags = newTagInput.split(',').map(tag => tag.trim()).filter(tag => tag);
+                      setNoteTags([...noteTags, ...tags]);
+                      setNewTagInput('');
+                    }
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    border: "1px solid #e1e3e5",
+                    borderRadius: "4px",
+                    fontSize: "14px"
+                  }}
+                />
+                {noteTags.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "8px" }}>
+                    {noteTags.map((tag, index) => (
+                      <span
+                        key={index}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          backgroundColor: "#008060",
+                          color: "white",
+                          padding: "4px 8px",
+                          borderRadius: "12px",
+                          fontSize: "12px"
+                        }}
+                      >
+                        {tag}
+                        <button
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "white",
+                            cursor: "pointer",
+                            padding: "0",
+                            marginLeft: "4px"
+                          }}
+                          onClick={() => {
+                            const newTags = noteTags.filter((_, i) => i !== index);
+                            setNoteTags(newTags);
+                          }}
+                        >
+                          <i className="fas fa-times" style={{ fontSize: "10px" }}></i>
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Rich Text Editor */}
+              <div style={{ flex: 1, minHeight: "300px" }}>
+                <AdvancedRTE
+                  value={body}
+                  onChange={setBody}
+                  placeholder="Type your note here..."
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Bottom Navigation */}
+          <div style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'white',
+            borderTop: '1px solid #e1e3e5',
+            display: 'flex',
+            justifyContent: 'space-around',
+            padding: '12px 0',
+            zIndex: 1000,
+            boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+          }}>
+            <div 
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '8px 12px',
+                cursor: 'pointer',
+                borderRadius: '8px',
+                minWidth: '60px',
+                backgroundColor: mobileActiveSection === 'folders' ? '#f6fff8' : 'transparent',
+                color: mobileActiveSection === 'folders' ? '#008060' : '#6d7175'
+              }}
+              onClick={() => setMobileActiveSection('folders')}
+            >
+              <i className="far fa-folder-open" style={{ fontSize: '20px' }}></i>
+              <span style={{ fontSize: '11px', fontWeight: '500', textAlign: 'center' }}>Folders & Tags</span>
+            </div>
+            
+            <div 
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '8px 12px',
+                cursor: 'pointer',
+                borderRadius: '8px',
+                minWidth: '60px',
+                backgroundColor: mobileActiveSection === 'notes' ? '#f6fff8' : 'transparent',
+                color: mobileActiveSection === 'notes' ? '#008060' : '#6d7175'
+              }}
+              onClick={() => setMobileActiveSection('notes')}
+            >
+              <i className="far fa-note-sticky" style={{ fontSize: '20px' }}></i>
+              <span style={{ fontSize: '12px', fontWeight: '500' }}>Notes</span>
+            </div>
+            
+            <div 
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '8px 12px',
+                cursor: 'pointer',
+                borderRadius: '8px',
+                minWidth: '60px',
+                backgroundColor: mobileActiveSection === 'editor' ? '#f6fff8' : 'transparent',
+                color: mobileActiveSection === 'editor' ? '#008060' : '#6d7175'
+              }}
+              onClick={() => setMobileActiveSection('editor')}
+            >
+              <i className="far fa-edit" style={{ fontSize: '20px' }}></i>
+              <span style={{ fontSize: '12px', fontWeight: '500' }}>Editor</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
