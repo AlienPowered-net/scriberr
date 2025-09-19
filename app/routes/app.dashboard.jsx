@@ -4277,21 +4277,13 @@ export default function Index() {
               {mobileActiveSection === 'editor' && 'Note Editor'}
             </h1>
             {mobileActiveSection !== 'notes' && (
-              <button
-                style={{
-                  background: '#008060',
-                  border: 'none',
-                  color: 'white',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  padding: '8px 16px',
-                  borderRadius: '6px'
-                }}
+              <Button
+                variant="primary"
+                size="slim"
                 onClick={() => setMobileActiveSection('notes')}
               >
                 Notes
-              </button>
+              </Button>
             )}
           </div>
 
@@ -4360,7 +4352,6 @@ export default function Index() {
                         }}
                         onClick={() => {
                           setSelectedFolder(selectedFolder === folder.id ? null : folder.id);
-                          setMobileActiveSection('notes');
                         }}
                       >
                         {/* Drag Handle */}
@@ -4385,17 +4376,18 @@ export default function Index() {
                           <div style={{ width: '3px', height: '3px', backgroundColor: 'currentColor', borderRadius: '50%' }}></div>
                         </div>
                         
-                        <div style={{ 
-                          fontSize: "20px", 
-                          color: folder.iconColor || "#008060",
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          width: '24px',
-                          height: '24px'
-                        }}>
-                          {folder.icon || '📁'}
-                        </div>
+                        <i 
+                          className={`far fa-${folder.icon || 'folder'}`} 
+                          style={{ 
+                            fontSize: "20px", 
+                            color: folder.iconColor || "#008060",
+                            width: '24px',
+                            height: '24px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        ></i>
                         <span style={{ fontWeight: '500', flex: 1 }}>{folder.name}</span>
                         
                         {/* Three Dots Menu */}
@@ -4495,28 +4487,28 @@ export default function Index() {
                   
                   {/* Create New Folder Button */}
                   <div style={{ marginTop: '16px' }}>
-                    <button
-                      style={{
-                        width: '100%',
-                        padding: '12px',
-                        backgroundColor: '#f6fff8',
-                        color: '#008060',
-                        border: '1px solid #008060',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px'
-                      }}
+                    <Button
+                      variant="secondary"
+                      fullWidth
                       onClick={() => setShowNewFolderModal(true)}
                     >
-                      <span style={{ fontSize: '16px' }}>➕</span>
+                      <span style={{ fontSize: '16px', marginRight: '8px' }}>➕</span>
                       Create New Folder
-                    </button>
+                    </Button>
                   </div>
+                  
+                  {/* Go to Notes Button */}
+                  {selectedFolder && (
+                    <div style={{ marginTop: '16px' }}>
+                      <Button
+                        variant="primary"
+                        fullWidth
+                        onClick={() => setMobileActiveSection('notes')}
+                      >
+                        View Notes in {localFolders.find(f => f.id === selectedFolder)?.name || 'Selected Folder'}
+                      </Button>
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
@@ -4579,22 +4571,13 @@ export default function Index() {
                   {/* Go to Notes Button */}
                   {selectedTags.length > 0 && (
                     <div style={{ marginTop: '20px' }}>
-                      <button
-                        style={{
-                          width: '100%',
-                          padding: '12px',
-                          backgroundColor: '#008060',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '8px',
-                          fontSize: '16px',
-                          fontWeight: '600',
-                          cursor: 'pointer'
-                        }}
+                      <Button
+                        variant="primary"
+                        fullWidth
                         onClick={() => setMobileActiveSection('notes')}
                       >
                         View Notes ({selectedTags.length} tag{selectedTags.length > 1 ? 's' : ''} selected)
-                      </button>
+                      </Button>
                     </div>
                   )}
                 </>
@@ -4703,92 +4686,207 @@ export default function Index() {
                     }
                     return true;
                   })
-                  .map((note) => (
-                    <div
-                      key={note.id}
-                      style={{
-                        padding: '16px',
-                        border: '1px solid #e1e3e5',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        backgroundColor: 'white'
-                      }}
-                      onClick={() => {
-                        handleEditNote(note);
-                        setMobileActiveSection('editor');
-                      }}
-                    >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>
-                          {note.title || 'Untitled'}
-                        </h3>
-                      </div>
-                      {note.content && (
-                        <p style={{ 
-                          margin: '0 0 8px 0', 
-                          color: '#6d7175', 
-                          fontSize: '14px',
-                          lineHeight: '1.4',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden'
-                        }}>
-                          {note.content.replace(/<[^>]*>/g, '').substring(0, 100)}...
-                        </p>
-                      )}
-                      {note.tags && note.tags.length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                          {note.tags.slice(0, 3).map((tag, index) => (
-                            <span
-                              key={index}
+                  .map((note) => {
+                    const createdDate = new Date(note.createdAt);
+                    const updatedDate = new Date(note.updatedAt);
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    
+                    // Format dates with exact time like "9 Sep 2024, 2:30 PM"
+                    const formatDateTime = (date) => {
+                      const day = date.getDate();
+                      const month = monthNames[date.getMonth()];
+                      const year = date.getFullYear();
+                      const hours = date.getHours();
+                      const minutes = date.getMinutes().toString().padStart(2, '0');
+                      const ampm = hours >= 12 ? 'PM' : 'AM';
+                      const displayHours = hours % 12 || 12;
+                      return `${day} ${month} ${year}, ${displayHours}:${minutes} ${ampm}`;
+                    };
+                    
+                    const createdAt = formatDateTime(createdDate);
+                    const updatedAt = formatDateTime(updatedDate);
+                    const wasEdited = note.updatedAt !== note.createdAt;
+                    
+                    return (
+                      <div
+                        key={note.id}
+                        style={{
+                          padding: '16px',
+                          border: '1px solid #e1e3e5',
+                          borderRadius: '8px',
+                          backgroundColor: 'white',
+                          position: 'relative'
+                        }}
+                      >
+                        {/* Note Header */}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+                          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', flex: 1 }}>
+                            {note.title || 'Untitled'}
+                          </h3>
+                          
+                          {/* Action Buttons */}
+                          <div style={{ display: 'flex', gap: '4px', marginLeft: '8px' }}>
+                            {/* Select Button */}
+                            <button
                               style={{
-                                backgroundColor: '#008060',
-                                color: 'white',
-                                padding: '2px 6px',
-                                borderRadius: '8px',
-                                fontSize: '10px'
+                                padding: '4px 8px',
+                                border: '1px solid #e1e3e5',
+                                borderRadius: '4px',
+                                backgroundColor: selectedNotes.includes(note.id) ? '#008060' : 'white',
+                                color: selectedNotes.includes(note.id) ? 'white' : '#6d7175',
+                                fontSize: '10px',
+                                cursor: 'pointer'
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (selectedNotes.includes(note.id)) {
+                                  setSelectedNotes(selectedNotes.filter(id => id !== note.id));
+                                } else {
+                                  setSelectedNotes([...selectedNotes, note.id]);
+                                }
                               }}
                             >
-                              {tag}
-                            </span>
-                          ))}
-                          {note.tags.length > 3 && (
-                            <span style={{ fontSize: '10px', color: '#6d7175' }}>
-                              +{note.tags.length - 3} more
-                            </span>
+                              {selectedNotes.includes(note.id) ? '✓' : '○'}
+                            </button>
+                            
+                            {/* Manage Button */}
+                            <button
+                              style={{
+                                padding: '4px 8px',
+                                border: '1px solid #e1e3e5',
+                                borderRadius: '4px',
+                                backgroundColor: 'white',
+                                color: '#6d7175',
+                                fontSize: '10px',
+                                cursor: 'pointer'
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
+                              }}
+                            >
+                              ⋯
+                            </button>
+                            
+                            {/* Delete Button */}
+                            <button
+                              style={{
+                                padding: '4px 8px',
+                                border: '1px solid #e1e3e5',
+                                borderRadius: '4px',
+                                backgroundColor: 'white',
+                                color: '#d72c0d',
+                                fontSize: '10px',
+                                cursor: 'pointer'
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowDeleteNoteConfirm(note.id);
+                              }}
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {/* Note Content */}
+                        {note.content && (
+                          <p style={{ 
+                            margin: '0 0 8px 0', 
+                            color: '#6d7175', 
+                            fontSize: '14px',
+                            lineHeight: '1.4',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                          }}>
+                            {note.content.replace(/<[^>]*>/g, '').substring(0, 100)}...
+                          </p>
+                        )}
+                        
+                        {/* Tags */}
+                        {note.tags && note.tags.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '8px' }}>
+                            {note.tags.slice(0, 3).map((tag, index) => (
+                              <span
+                                key={index}
+                                style={{
+                                  backgroundColor: '#008060',
+                                  color: 'white',
+                                  padding: '2px 6px',
+                                  borderRadius: '8px',
+                                  fontSize: '10px'
+                                }}
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                            {note.tags.length > 3 && (
+                              <span style={{ fontSize: '10px', color: '#6d7175' }}>
+                                +{note.tags.length - 3} more
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        
+                        {/* Date Information */}
+                        <div style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center',
+                          fontSize: '11px',
+                          color: '#6d7175',
+                          borderTop: '1px solid #f1f3f4',
+                          paddingTop: '8px',
+                          marginTop: '8px'
+                        }}>
+                          <span>Created: {createdAt}</span>
+                          {wasEdited && (
+                            <span>Edited: {updatedAt}</span>
                           )}
                         </div>
-                      )}
-                    </div>
-                  ))}
+                        
+                        {/* Click to Edit Overlay */}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            cursor: 'pointer',
+                            zIndex: 1
+                          }}
+                          onClick={() => {
+                            handleEditNote(note);
+                            setMobileActiveSection('editor');
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
               </div>
 
               {/* New Note Button */}
               <div style={{ marginTop: '20px' }}>
-                <button
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    backgroundColor: '#008060',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    cursor: 'pointer'
-                  }}
+                <Button
+                  variant="primary"
+                  fullWidth
                   onClick={() => {
                     if (!selectedFolder) {
-                      alert('Please select a folder first');
+                      setAlertMessage('Please select a folder first');
+                      setAlertType('error');
+                      setTimeout(() => setAlertMessage(''), 3000);
                       return;
                     }
                     handleNewNote();
                     setMobileActiveSection('editor');
                   }}
                 >
+                  <span style={{ fontSize: '16px', marginRight: '8px' }}>➕</span>
                   New Note
-                </button>
+                </Button>
               </div>
             </div>
           </div>
