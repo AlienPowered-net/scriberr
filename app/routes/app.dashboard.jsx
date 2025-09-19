@@ -30,7 +30,6 @@ import {
   DragDropIcon,
   DragHandleIcon,
   CollectionFilledIcon,
-  TagIcon,
   FolderIcon
 } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -4412,7 +4411,7 @@ export default function Index() {
                           }
                         }}
                       >
-                        <TagIcon style={{ width: '12px', height: '12px' }} />
+                        <span style={{ fontSize: '12px' }}>🏷️</span>
                         {tag}
                         {selectedTags.includes(tag) && (
                           <i className="fas fa-times" style={{ fontSize: '10px', marginLeft: '4px' }}></i>
