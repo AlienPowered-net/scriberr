@@ -4172,21 +4172,45 @@ export default function Index() {
 
         {/* Mobile Layout */}
         {isMobile && (
-          <div className="mobile-layout" style={{ backgroundColor: 'red', zIndex: 9999 }}>
-            {/* Debug indicator */}
-            <div style={{ position: 'fixed', top: '10px', right: '10px', background: 'yellow', padding: '5px', zIndex: 10000 }}>
-              MOBILE LAYOUT ACTIVE
-            </div>
+          <div style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'white',
+            zIndex: 10000,
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
             {/* Mobile Header */}
-            <div className="mobile-header">
-              <div className="mobile-title">
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '16px',
+              backgroundColor: 'white',
+              borderBottom: '1px solid #e1e3e5',
+              position: 'sticky',
+              top: 0,
+              zIndex: 100
+            }}>
+              <div style={{ fontSize: '18px', fontWeight: '600', color: '#202223' }}>
                 {mobileActiveSection === 'folders' && 'Folders & Tags'}
                 {mobileActiveSection === 'notes' && 'Notes'}
                 {mobileActiveSection === 'editor' && 'Note Editor'}
               </div>
               {mobileActiveSection !== 'notes' && (
                 <button 
-                  className="mobile-back-btn"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '18px',
+                    color: '#008060',
+                    cursor: 'pointer',
+                    padding: '8px',
+                    borderRadius: '4px'
+                  }}
                   onClick={() => setMobileActiveSection('notes')}
                 >
                   <i className="fas fa-arrow-left"></i>
@@ -4195,8 +4219,19 @@ export default function Index() {
             </div>
 
             {/* Mobile Sections */}
-            <div className={`mobile-section ${mobileActiveSection === 'folders' ? 'active' : ''}`}>
-              <Card style={{ margin: 0, borderRadius: 0, border: 'none', boxShadow: 'none' }}>
+            <div style={{ 
+              display: mobileActiveSection === 'folders' ? 'block' : 'none',
+              flex: 1,
+              overflowY: 'auto',
+              padding: '16px',
+              paddingBottom: '80px'
+            }}>
+              <div style={{ 
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                padding: '20px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}>
                 {/* Global Search */}
                 <div style={{ marginBottom: "16px", position: "relative" }}>
                   <input
@@ -4430,11 +4465,22 @@ export default function Index() {
                   <i className="fas fa-plus" style={{ marginRight: "8px" }}></i>
                   New Folder
                 </Button>
-              </Card>
+              </div>
             </div>
 
-            <div className={`mobile-section ${mobileActiveSection === 'notes' ? 'active' : ''}`}>
-              <Card style={{ margin: 0, borderRadius: 0, border: 'none', boxShadow: 'none' }}>
+            <div style={{ 
+              display: mobileActiveSection === 'notes' ? 'block' : 'none',
+              flex: 1,
+              overflowY: 'auto',
+              padding: '16px',
+              paddingBottom: '80px'
+            }}>
+              <div style={{ 
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                padding: '20px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}>
                 {/* Search Notes Input */}
                 <div style={{ marginBottom: "20px", position: "relative" }}>
                   <input
@@ -4620,12 +4666,25 @@ export default function Index() {
                     })}
                   </div>
                 )}
-              </Card>
+              </div>
             </div>
 
-            <div className={`mobile-section ${mobileActiveSection === 'editor' ? 'active' : ''}`}>
-              <Card style={{ margin: 0, borderRadius: 0, border: 'none', boxShadow: 'none', height: '100%' }}>
-                <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ 
+              display: mobileActiveSection === 'editor' ? 'block' : 'none',
+              flex: 1,
+              overflowY: 'auto',
+              padding: '16px',
+              paddingBottom: '80px'
+            }}>
+              <div style={{ 
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                padding: '20px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
                   {/* Editor Header */}
                   <div style={{ 
                     padding: "16px", 
@@ -4884,31 +4943,79 @@ export default function Index() {
                     </BlockStack>
                   </div>
                 </div>
-              </Card>
+              </div>
             </div>
 
             {/* Mobile Bottom Navigation */}
-            <div className="mobile-bottom-nav">
+            <div style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: 'white',
+              borderTop: '1px solid #e1e3e5',
+              display: 'flex',
+              justifyContent: 'space-around',
+              padding: '12px 0',
+              zIndex: 1000,
+              boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+            }}>
               <div 
-                className={`mobile-nav-item ${mobileActiveSection === 'folders' ? 'active' : ''}`}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  minWidth: '60px',
+                  backgroundColor: mobileActiveSection === 'folders' ? '#f6fff8' : 'transparent',
+                  color: mobileActiveSection === 'folders' ? '#008060' : '#6d7175'
+                }}
                 onClick={() => setMobileActiveSection('folders')}
               >
-                <i className="far fa-folder-open"></i>
-                <span>Folders</span>
+                <i className="far fa-folder-open" style={{ fontSize: '20px' }}></i>
+                <span style={{ fontSize: '12px', fontWeight: '500' }}>Folders</span>
               </div>
               <div 
-                className={`mobile-nav-item ${mobileActiveSection === 'notes' ? 'active' : ''}`}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  minWidth: '60px',
+                  backgroundColor: mobileActiveSection === 'notes' ? '#f6fff8' : 'transparent',
+                  color: mobileActiveSection === 'notes' ? '#008060' : '#6d7175'
+                }}
                 onClick={() => setMobileActiveSection('notes')}
               >
-                <i className="far fa-note-sticky"></i>
-                <span>Notes</span>
+                <i className="far fa-note-sticky" style={{ fontSize: '20px' }}></i>
+                <span style={{ fontSize: '12px', fontWeight: '500' }}>Notes</span>
               </div>
               <div 
-                className={`mobile-nav-item ${mobileActiveSection === 'editor' ? 'active' : ''}`}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  minWidth: '60px',
+                  backgroundColor: mobileActiveSection === 'editor' ? '#f6fff8' : 'transparent',
+                  color: mobileActiveSection === 'editor' ? '#008060' : '#6d7175'
+                }}
                 onClick={() => setMobileActiveSection('editor')}
               >
-                <i className="far fa-edit"></i>
-                <span>Editor</span>
+                <i className="far fa-edit" style={{ fontSize: '20px' }}></i>
+                <span style={{ fontSize: '12px', fontWeight: '500' }}>Editor</span>
               </div>
             </div>
           </div>
