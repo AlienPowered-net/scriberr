@@ -4213,9 +4213,62 @@ export default function Index() {
               <div style={{ fontSize: '18px', fontWeight: '600', color: '#202223' }}>
                 {mobileActiveSection === 'folders' && 'Folders & Tags'}
                 {mobileActiveSection === 'notes' && (
-                  selectedFolder ? 
-                    `${localFolders.find(f => f.id === selectedFolder)?.name || 'Selected Folder'}` : 
-                    'All Notes'
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div>
+                      {selectedFolder ? 
+                        `${localFolders.find(f => f.id === selectedFolder)?.name || 'Selected Folder'}` : 
+                        'All Notes'
+                      }
+                    </div>
+                    {selectedTags.length > 0 && (
+                      <div style={{ 
+                        display: 'flex', 
+                        flexWrap: 'wrap', 
+                        gap: '4px',
+                        fontSize: '12px',
+                        fontWeight: '500'
+                      }}>
+                        {selectedTags.map((tag, index) => (
+                          <div
+                            key={index}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '2px 8px',
+                              backgroundColor: '#008060',
+                              color: 'white',
+                              borderRadius: '12px',
+                              fontSize: '11px',
+                              fontWeight: '500'
+                            }}
+                          >
+                            <i className="fas fa-tag" style={{ fontSize: '8px' }}></i>
+                            <span>{tag}</span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleTagClick(tag);
+                              }}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                cursor: 'pointer',
+                                fontSize: '10px',
+                                padding: '0',
+                                marginLeft: '2px',
+                                display: 'flex',
+                                alignItems: 'center'
+                              }}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
               {mobileActiveSection === 'folders' && (
@@ -4500,37 +4553,104 @@ export default function Index() {
                 padding: '20px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
               }}>
-                {/* Folder Indicator */}
-                {selectedFolder && (
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '12px 16px',
-                    backgroundColor: '#f6fff8',
-                    border: '1px solid #008060',
-                    borderRadius: '8px',
-                    marginBottom: '16px'
+              {/* Active Filters Indicator */}
+              {(selectedFolder || selectedTags.length > 0) && (
+                <div style={{
+                  padding: '12px 16px',
+                  backgroundColor: '#f6fff8',
+                  border: '1px solid #008060',
+                  borderRadius: '8px',
+                  marginBottom: '16px'
+                }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    marginBottom: selectedTags.length > 0 ? '8px' : '0'
                   }}>
-                    <i className="far fa-folder-open" style={{ color: '#008060', fontSize: '16px' }}></i>
+                    <i className="far fa-filter" style={{ color: '#008060', fontSize: '16px' }}></i>
                     <span style={{ color: '#008060', fontWeight: '500', fontSize: '14px' }}>
-                      Viewing: {localFolders.find(f => f.id === selectedFolder)?.name}
+                      Active Filters:
                     </span>
-                    <button
-                      onClick={() => setSelectedFolder(null)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#008060',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        marginLeft: 'auto'
-                      }}
-                    >
-                      <i className="fas fa-times"></i>
-                    </button>
                   </div>
-                )}
+                  
+                  {/* Folder Filter */}
+                  {selectedFolder && (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '6px 12px',
+                      backgroundColor: 'white',
+                      border: '1px solid #008060',
+                      borderRadius: '6px',
+                      marginBottom: selectedTags.length > 0 ? '8px' : '0'
+                    }}>
+                      <i className="far fa-folder-open" style={{ color: '#008060', fontSize: '14px' }}></i>
+                      <span style={{ color: '#008060', fontWeight: '500', fontSize: '13px' }}>
+                        {localFolders.find(f => f.id === selectedFolder)?.name}
+                      </span>
+                      <button
+                        onClick={() => setSelectedFolder(null)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#008060',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          marginLeft: 'auto',
+                          padding: '2px'
+                        }}
+                      >
+                        <i className="fas fa-times"></i>
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Tag Filters */}
+                  {selectedTags.length > 0 && (
+                    <div style={{ 
+                      display: 'flex', 
+                      flexWrap: 'wrap', 
+                      gap: '6px'
+                    }}>
+                      {selectedTags.map((tag, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            padding: '4px 8px',
+                            backgroundColor: 'white',
+                            border: '1px solid #008060',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: '500'
+                          }}
+                        >
+                          <i className="fas fa-tag" style={{ color: '#008060', fontSize: '10px' }}></i>
+                          <span style={{ color: '#008060' }}>{tag}</span>
+                          <button
+                            onClick={() => handleTagClick(tag)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#008060',
+                              cursor: 'pointer',
+                              fontSize: '10px',
+                              padding: '0',
+                              marginLeft: '2px'
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
                 {/* Search Notes Input */}
                 <div style={{ marginBottom: "20px", position: "relative" }}>
