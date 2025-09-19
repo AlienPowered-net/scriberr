@@ -27,7 +27,11 @@ import {
 } from "@shopify/polaris";
 import { 
   SaveIcon, 
-  DragDropIcon
+  DragDropIcon,
+  DragHandleIcon,
+  CollectionFilledIcon,
+  TagIcon,
+  FolderIcon
 } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
 import QuillEditor from "../components/LexicalEditor";
@@ -742,7 +746,6 @@ export default function Index() {
   const [mobileActiveSection, setMobileActiveSection] = useState('notes'); // 'folders', 'notes', 'editor'
   const [showMobileTags, setShowMobileTags] = useState(false);
   const [mobileOpenFolderMenu, setMobileOpenFolderMenu] = useState(null);
-  const [mobileDraggedFolder, setMobileDraggedFolder] = useState(null);
   
   
   // Update local folders when loader data changes
@@ -762,47 +765,32 @@ export default function Index() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Mobile folder drag handlers
-  const handleMobileFolderDragStart = (e, folderId) => {
-    setMobileDraggedFolder(folderId);
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/html', folderId);
-  };
+  // Mobile folder drag handlers - use same DND system as desktop
+  const handleMobileFolderDragEnd = async (event) => {
+    const { active, over } = event;
 
-  const handleMobileFolderDragOver = (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleMobileFolderDrop = async (e, targetFolderId) => {
-    e.preventDefault();
-    if (!mobileDraggedFolder || mobileDraggedFolder === targetFolderId) {
-      setMobileDraggedFolder(null);
+    if (!over || active.id === over.id) {
       return;
     }
 
-    const draggedIndex = localFolders.findIndex(f => f.id === mobileDraggedFolder);
-    const targetIndex = localFolders.findIndex(f => f.id === targetFolderId);
-    
-    if (draggedIndex === -1 || targetIndex === -1) {
-      setMobileDraggedFolder(null);
+    const oldIndex = localFolders.findIndex((folder) => folder.id === active.id);
+    const newIndex = localFolders.findIndex((folder) => folder.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) {
+      console.error('Could not find folder indices:', { oldIndex, newIndex, activeId: active.id, overId: over.id });
       return;
     }
 
-    const newFolders = [...localFolders];
-    const draggedFolder = newFolders.splice(draggedIndex, 1)[0];
-    newFolders.splice(targetIndex, 0, draggedFolder);
-    
-    setLocalFolders(newFolders);
-    setMobileDraggedFolder(null);
+    const reorderedFolders = arrayMove(localFolders, oldIndex, newIndex);
+    setLocalFolders(reorderedFolders);
 
-    // Update server order
+    // Send the new order to the server - use same endpoint as desktop
     try {
-      const response = await fetch('/api/reorder-folders', {
+      const response = await fetch('/api/reorder-folders-drag', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          folderIds: newFolders.map(f => f.id)
+          folderIds: reorderedFolders.map(f => f.id)
         })
       });
       
@@ -4318,7 +4306,17 @@ export default function Index() {
                   }}
                   onClick={() => setShowMobileTags(!showMobileTags)}
                 >
-                  {showMobileTags ? '📁 Folders' : '🏷️ Tags'}
+                  {showMobileTags ? (
+                    <>
+                      <FolderIcon style={{ width: '16px', height: '16px', marginRight: '8px' }} />
+                      Folders
+                    </>
+                  ) : (
+                    <>
+                      <CollectionFilledIcon style={{ width: '16px', height: '16px', marginRight: '8px' }} />
+                      Tags
+                    </>
+                  )}
                 </button>
               </div>
               
@@ -4327,173 +4325,39 @@ export default function Index() {
                   <p style={{ color: '#6d7175', margin: '0 0 16px 0' }}>Select a folder to view its notes</p>
                   
                   {/* Folders List */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {localFolders.map((folder) => (
-                      <div
-                        key={folder.id}
-                        draggable
-                        onDragStart={(e) => handleMobileFolderDragStart(e, folder.id)}
-                        onDragOver={handleMobileFolderDragOver}
-                        onDrop={(e) => handleMobileFolderDrop(e, folder.id)}
-                        style={{
-                          padding: '12px',
-                          border: '1px solid #e1e3e5',
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          backgroundColor: selectedFolder === folder.id ? '#f6fff8' : 'white',
-                          borderColor: selectedFolder === folder.id ? '#008060' : '#e1e3e5',
-                          position: 'relative',
-                          opacity: mobileDraggedFolder === folder.id ? 0.5 : 1,
-                          transform: mobileDraggedFolder === folder.id ? 'scale(0.95)' : 'scale(1)',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onClick={() => {
-                          setSelectedFolder(selectedFolder === folder.id ? null : folder.id);
-                        }}
-                      >
-                        {/* Drag Handle */}
-                        <div
-                          style={{
-                            cursor: 'grab',
-                            padding: '4px',
-                            color: '#6d7175',
-                            fontSize: '12px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '1px'
-                          }}
-                          onMouseDown={(e) => e.stopPropagation()}
-                          onTouchStart={(e) => e.stopPropagation()}
-                        >
-                          <div style={{ width: '3px', height: '3px', backgroundColor: 'currentColor', borderRadius: '50%' }}></div>
-                          <div style={{ width: '3px', height: '3px', backgroundColor: 'currentColor', borderRadius: '50%' }}></div>
-                          <div style={{ width: '3px', height: '3px', backgroundColor: 'currentColor', borderRadius: '50%' }}></div>
-                          <div style={{ width: '3px', height: '3px', backgroundColor: 'currentColor', borderRadius: '50%' }}></div>
-                          <div style={{ width: '3px', height: '3px', backgroundColor: 'currentColor', borderRadius: '50%' }}></div>
-                          <div style={{ width: '3px', height: '3px', backgroundColor: 'currentColor', borderRadius: '50%' }}></div>
-                        </div>
-                        
-                        <i 
-                          className={`far fa-${folder.icon || 'folder'}`} 
-                          style={{ 
-                            fontSize: "20px", 
-                            color: folder.iconColor || "#008060",
-                            width: '24px',
-                            height: '24px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        ></i>
-                        <span style={{ fontWeight: '500', flex: 1 }}>{folder.name}</span>
-                        
-                        {/* Three Dots Menu */}
-                        <div
-                          data-mobile-folder-menu
-                          style={{
-                            position: 'relative',
-                            padding: '4px',
-                            cursor: 'pointer',
-                            borderRadius: '4px'
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setMobileOpenFolderMenu(mobileOpenFolderMenu === folder.id ? null : folder.id);
-                          }}
-                        >
-                          <span style={{ fontSize: '16px', color: '#6d7175', fontWeight: 'bold' }}>⋯</span>
-                          
-                          {/* Dropdown Menu */}
-                          {mobileOpenFolderMenu === folder.id && (
-                            <div style={{
-                              position: 'absolute',
-                              top: '100%',
-                              right: 0,
-                              backgroundColor: 'white',
-                              border: '1px solid #e1e3e5',
-                              borderRadius: '8px',
-                              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                              zIndex: 1000,
-                              minWidth: '150px',
-                              marginTop: '4px'
-                            }}>
-                              <button
-                                style={{
-                                  width: '100%',
-                                  padding: '12px 16px',
-                                  border: 'none',
-                                  background: 'none',
-                                  textAlign: 'left',
-                                  cursor: 'pointer',
-                                  fontSize: '14px',
-                                  borderBottom: '1px solid #e1e3e5'
-                                }}
-                                onClick={() => {
-                                  setShowRenameFolderModal(folder.id);
-                                  setEditingFolderName(folder.name);
-                                  setMobileOpenFolderMenu(null);
-                                }}
-                              >
-                                <span style={{ fontSize: '14px', marginRight: '8px', color: '#008060' }}>✏️</span>
-                                Rename
-                              </button>
-                              <button
-                                style={{
-                                  width: '100%',
-                                  padding: '12px 16px',
-                                  border: 'none',
-                                  background: 'none',
-                                  textAlign: 'left',
-                                  cursor: 'pointer',
-                                  fontSize: '14px',
-                                  borderBottom: '1px solid #e1e3e5'
-                                }}
-                                onClick={() => {
-                                  setShowIconPicker(folder.id);
-                                  setMobileOpenFolderMenu(null);
-                                }}
-                              >
-                                <span style={{ fontSize: '14px', marginRight: '8px', color: '#008060' }}>🎨</span>
-                                Change Icon
-                              </button>
-                              <button
-                                style={{
-                                  width: '100%',
-                                  padding: '12px 16px',
-                                  border: 'none',
-                                  background: 'none',
-                                  textAlign: 'left',
-                                  cursor: 'pointer',
-                                  fontSize: '14px',
-                                  color: '#d32f2f'
-                                }}
-                                onClick={() => {
-                                  setShowDeleteConfirm(folder.id);
-                                  setMobileOpenFolderMenu(null);
-                                }}
-                              >
-                                <span style={{ fontSize: '14px', marginRight: '8px' }}>🗑️</span>
-                                Delete
-                              </button>
-                            </div>
-                          )}
-                        </div>
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleMobileFolderDragEnd}
+                  >
+                    <SortableContext
+                      items={localFolders.map(f => f.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {localFolders.map((folder) => (
+                          <DraggableFolder 
+                            key={folder.id} 
+                            folder={folder}
+                            selectedFolder={selectedFolder}
+                            openFolderMenu={mobileOpenFolderMenu}
+                            setOpenFolderMenu={setMobileOpenFolderMenu}
+                            onFolderClick={(folderId) => setSelectedFolder(selectedFolder === folderId ? null : folderId)}
+                          />
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </SortableContext>
+                  </DndContext>
                   
                   {/* Create New Folder Button */}
                   <div style={{ marginTop: '16px' }}>
                     <Button
-                      variant="secondary"
+                      variant="primary"
                       fullWidth
                       onClick={() => setShowNewFolderModal(true)}
                     >
-                      <span style={{ fontSize: '16px', marginRight: '8px' }}>➕</span>
-                      Create New Folder
+                      <span style={{ fontSize: '16px', marginRight: '8px', color: 'white' }}>➕</span>
+                      <span style={{ color: 'white' }}>Create New Folder</span>
                     </Button>
                   </div>
                   
@@ -4548,7 +4412,7 @@ export default function Index() {
                           }
                         }}
                       >
-                        <span style={{ fontSize: '12px' }}>🏷️</span>
+                        <TagIcon style={{ width: '12px', height: '12px' }} />
                         {tag}
                         {selectedTags.includes(tag) && (
                           <i className="fas fa-times" style={{ fontSize: '10px', marginLeft: '4px' }}></i>

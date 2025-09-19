@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { DragHandleIcon } from '@shopify/polaris-icons';
 
 const DraggableFolder = ({ 
   folder, 
@@ -61,7 +62,7 @@ const DraggableFolder = ({
           }}
           title="Drag to reorder"
         >
-          ⋮⋮
+          <DragHandleIcon style={{ width: '16px', height: '16px' }} />
         </div>
         
         {/* Clickable Folder Content */}
