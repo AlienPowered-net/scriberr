@@ -24,6 +24,7 @@ import {
   Popover,
   ActionList,
   TextContainer,
+  Tag,
 } from "@shopify/polaris";
 import { 
   SaveIcon, 
@@ -4380,21 +4381,8 @@ export default function Index() {
                   {/* Tags List */}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {Array.from(new Set(localNotes.flatMap(note => note.tags || []))).map((tag) => (
-                      <button
+                      <Tag
                         key={tag}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          padding: '8px 12px',
-                          border: '1px solid #e1e3e5',
-                          borderRadius: '20px',
-                          cursor: 'pointer',
-                          fontSize: '14px',
-                          backgroundColor: selectedTags.includes(tag) ? '#008060' : 'white',
-                          color: selectedTags.includes(tag) ? 'white' : '#6d7175',
-                          borderColor: selectedTags.includes(tag) ? '#008060' : '#e1e3e5'
-                        }}
                         onClick={() => {
                           if (selectedTags.includes(tag)) {
                             const newTags = selectedTags.filter(t => t !== tag);
@@ -4410,13 +4398,24 @@ export default function Index() {
                             setGlobalSearchQuery(`tag:${newTags.join(' tag:')}`);
                           }
                         }}
+                        onRemove={selectedTags.includes(tag) ? () => {
+                          const newTags = selectedTags.filter(t => t !== tag);
+                          setSelectedTags(newTags);
+                          if (newTags.length === 0) {
+                            setGlobalSearchQuery("");
+                          } else {
+                            setGlobalSearchQuery(`tag:${newTags.join(' tag:')}`);
+                          }
+                        } : undefined}
+                        style={{
+                          cursor: 'pointer',
+                          backgroundColor: selectedTags.includes(tag) ? '#008060' : 'white',
+                          color: selectedTags.includes(tag) ? 'white' : '#6d7175',
+                          borderColor: selectedTags.includes(tag) ? '#008060' : '#e1e3e5'
+                        }}
                       >
-                        <span style={{ fontSize: '12px' }}>🏷️</span>
                         {tag}
-                        {selectedTags.includes(tag) && (
-                          <i className="fas fa-times" style={{ fontSize: '10px', marginLeft: '4px' }}></i>
-                        )}
-                      </button>
+                      </Tag>
                     ))}
                   </div>
                   
