@@ -3,7 +3,7 @@
   "version": "Alpha Version: 296",
   "private": true,
   "scripts": {
-    "vercel-build": "prisma generate && npm run build",
+    "vercel-build": "prisma generate && prisma migrate deploy && npm run build",
     "build": "remix vite:build",
     "increment-version": "node scripts/increment-version.js",
     "apply-icon-migration": "node scripts/apply-icon-migration.js",

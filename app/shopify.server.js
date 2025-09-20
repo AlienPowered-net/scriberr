@@ -7,6 +7,16 @@ import {
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import { prisma } from "./utils/db.server";
 
+// Create session storage with error handling
+let sessionStorage;
+try {
+  sessionStorage = new PrismaSessionStorage(prisma);
+} catch (error) {
+  console.error("Failed to create PrismaSessionStorage:", error);
+  // Create a fallback session storage or handle the error
+  throw new Error("Session storage initialization failed. Please ensure the Session table exists in the database.");
+}
+
 export const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || process.env.SHOPIFY_API_SECRET_KEY,
@@ -14,7 +24,7 @@ export const shopify = shopifyApp({
   scopes: (process.env.SCOPES || "").split(",").map(s => s.trim()).filter(Boolean),
   appUrl: process.env.SHOPIFY_APP_URL || process.env.APP_URL,
   authPathPrefix: "/auth",
-  sessionStorage: new PrismaSessionStorage(prisma),
+  sessionStorage: sessionStorage,
   distribution: AppDistribution.AppStore,
   future: {
     unstable_newEmbeddedAuthStrategy: true,
