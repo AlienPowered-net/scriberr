@@ -17,16 +17,19 @@
 .container::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
+  width: 200%;
+  height: 200%;
   background: 
-    radial-gradient(circle at 20% 80%, rgba(139, 195, 74, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 235, 59, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(76, 175, 80, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 60% 60%, rgba(255, 193, 7, 0.08) 0%, transparent 50%);
-  animation: backgroundMove 20s ease-in-out infinite;
+    radial-gradient(circle at 25% 75%, rgba(139, 195, 74, 0.15) 0%, transparent 60%),
+    radial-gradient(circle at 75% 25%, rgba(255, 235, 59, 0.15) 0%, transparent 60%),
+    radial-gradient(circle at 50% 50%, rgba(76, 175, 80, 0.12) 0%, transparent 70%),
+    radial-gradient(circle at 30% 30%, rgba(255, 193, 7, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 70% 70%, rgba(139, 195, 74, 0.08) 0%, transparent 80%);
+  animation: backgroundMove 25s ease-in-out infinite;
   z-index: -2;
 }
 
@@ -34,31 +37,38 @@
 .container::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
+  width: 200%;
+  height: 200%;
   background-image: 
-    radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);
-  background-size: 20px 20px;
-  animation: grainMove 8s linear infinite;
+    radial-gradient(circle at 2px 2px, rgba(255,255,255,0.2) 1px, transparent 0),
+    radial-gradient(circle at 8px 8px, rgba(255,255,255,0.1) 1px, transparent 0),
+    radial-gradient(circle at 14px 14px, rgba(255,255,255,0.15) 1px, transparent 0);
+  background-size: 15px 15px, 25px 25px, 35px 35px;
+  animation: grainMove 12s linear infinite, grainMove2 18s linear infinite reverse;
   z-index: -1;
-  opacity: 0.3;
+  opacity: 0.4;
 }
 
 /* Background Animation */
 @keyframes backgroundMove {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
+  0% {
+    transform: translate(-20px, -15px) scale(1.1) rotate(0deg);
   }
   25% {
-    transform: translate(-10px, -5px) scale(1.1);
+    transform: translate(15px, -25px) scale(0.9) rotate(90deg);
   }
   50% {
-    transform: translate(5px, -10px) scale(0.9);
+    transform: translate(-10px, 20px) scale(1.2) rotate(180deg);
   }
   75% {
-    transform: translate(-5px, 5px) scale(1.05);
+    transform: translate(25px, 10px) scale(0.8) rotate(270deg);
+  }
+  100% {
+    transform: translate(-20px, -15px) scale(1.1) rotate(360deg);
   }
 }
 
@@ -68,7 +78,17 @@
     transform: translate(0, 0);
   }
   100% {
-    transform: translate(-20px, -20px);
+    transform: translate(-30px, -30px);
+  }
+}
+
+/* Second Grain Animation */
+@keyframes grainMove2 {
+  0% {
+    transform: translate(-30px, -30px);
+  }
+  100% {
+    transform: translate(0, 0);
   }
 }
 
