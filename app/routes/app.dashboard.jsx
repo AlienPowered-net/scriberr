@@ -598,7 +598,7 @@ export default function Index() {
               marginBottom: '8px'
             }}>
               <i className="far fa-folder-open" style={{ color: '#008060' }}></i>
-              <Text variant="bodyMd" style={{ fontWeight: '600' }}>Folders & Tags</Text>
+              <Text variant="bodyMd" style={{ fontWeight: '600' }}>Folders</Text>
             </div>
             {folders.slice(0, 4).map((folder) => (
               <div key={folder.id} style={{ 
@@ -2500,7 +2500,7 @@ export default function Index() {
                   onClick={() => toggleColumnCollapse('folders')}
                   variant="secondary"
                   size="large"
-                  accessibilityLabel="Expand Folders & Tags"
+                  accessibilityLabel="Expand Folders"
                   style={{ height: "60px" }}
                 >
                   <i className="far fa-folder-open" style={{ color: "rgba(255, 184, 0, 1)", fontSize: "20px" }}></i>
@@ -2766,7 +2766,7 @@ export default function Index() {
                   onClick={() => toggleColumnCollapse('folders')}
                   variant="tertiary"
                   size="slim"
-                  accessibilityLabel="Collapse Folders & Tags"
+                  accessibilityLabel="Collapse Folders"
                 >
                   <i className="fas fa-chevron-left"></i>
                 </Button>
