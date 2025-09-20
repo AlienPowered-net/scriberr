@@ -31,7 +31,8 @@ import {
   DragDropIcon,
   DragHandleIcon,
   CollectionFilledIcon,
-  FolderIcon
+  FolderIcon,
+  PlusIcon
 } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
 import QuillEditor from "../components/LexicalEditor";
@@ -2556,10 +2557,210 @@ export default function Index() {
               backgroundColor: "white",
               flexShrink: 0
             }}>
+              {/* Tags Section - Moved to top */}
+              <div style={{ marginBottom: "24px" }}>
+                {/* All Notes and All Tags Buttons - Side by Side */}
+                <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+                  {/* All Notes Button */}
+                  <div 
+                    style={{ 
+                      padding: "8px 12px", 
+                      flex: "1",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      backgroundColor: selectedFolder === null ? "#f6fff8" : "#F8F9FA",
+                      border: selectedFolder === null ? "2px solid #008060" : "2px solid #E1E3E5",
+                      borderRadius: "8px",
+                      position: "relative",
+                      transition: "all 0.2s ease",
+                      boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                    }}
+                    onClick={() => setSelectedFolder(null)}
+                    onMouseEnter={(e) => {
+                      if (selectedFolder !== null) {
+                        e.currentTarget.style.backgroundColor = "#f6fff8";
+                        e.currentTarget.style.borderColor = "#008060";
+                        e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedFolder !== null) {
+                        e.currentTarget.style.backgroundColor = "#F8F9FA";
+                        e.currentTarget.style.borderColor = "#E1E3E5";
+                        e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
+                      }
+                    }}
+                  >
+                    <Text as="span" variant="bodyMd" style={{ 
+                      fontWeight: "600", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: "6px",
+                      color: selectedFolder === null ? "#008060" : "rgba(48, 48, 48, 1)",
+                      fontSize: "14px"
+                    }}>
+                      <i className="far fa-note-sticky" style={{ fontSize: "16px" }}></i>
+                      All Notes
+                    </Text>
+                  </div>
+
+                  {/* All Tags Button */}
+                  <div 
+                    style={{ 
+                      padding: "8px 12px", 
+                      flex: "1",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      backgroundColor: showTagsSection ? "#f6fff8" : "#F8F9FA",
+                      border: showTagsSection ? "2px solid #008060" : "2px solid #E1E3E5",
+                      borderRadius: "8px",
+                      position: "relative",
+                      transition: "all 0.2s ease",
+                      boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                    }}
+                    onClick={() => setShowTagsSection(!showTagsSection)}
+                    onMouseEnter={(e) => {
+                      if (!showTagsSection) {
+                        e.currentTarget.style.backgroundColor = "#f6fff8";
+                        e.currentTarget.style.borderColor = "#008060";
+                        e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!showTagsSection) {
+                        e.currentTarget.style.backgroundColor = "#F8F9FA";
+                        e.currentTarget.style.borderColor = "#E1E3E5";
+                        e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
+                      }
+                    }}
+                  >
+                    <Text as="span" variant="bodyMd" style={{ 
+                      fontWeight: "600", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: "6px",
+                      color: showTagsSection ? "#008060" : "rgba(48, 48, 48, 1)",
+                      fontSize: "14px"
+                    }}>
+                      <i className="far fa-bookmark" style={{ fontSize: "16px" }}></i>
+                      All Tags
+                    </Text>
+                  </div>
+                </div>
+
+                {/* Tags List */}
+                {showTagsSection && (
+                  <div style={{ 
+                    marginBottom: "12px",
+                    padding: "12px",
+                    backgroundColor: "#f8f9fa",
+                    borderRadius: "8px",
+                    border: "1px solid #e1e3e5"
+                  }}>
+                    {getAllTagsWithCounts().length === 0 ? (
+                      <Text as="p" style={{ color: "#6d7175", fontSize: "14px" }}>No tags created yet</Text>
+                    ) : (
+                      <div style={{ 
+                        display: "flex", 
+                        flexWrap: "wrap", 
+                        gap: "6px",
+                        padding: "8px 0"
+                      }}>
+                        {getAllTagsWithCounts().map(({ tag, count }) => (
+                          <div
+                            key={tag}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              padding: "4px 8px",
+                              backgroundColor: selectedTags.includes(tag) ? "#008060" : "#f6fff8",
+                              borderRadius: "16px",
+                              border: selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060",
+                              cursor: "pointer",
+                              transition: "all 0.15s ease",
+                              position: "relative",
+                              fontSize: "12px",
+                              fontWeight: "400",
+                              color: selectedTags.includes(tag) ? "white" : "#008060",
+                              minHeight: "24px",
+                              justifyContent: "center",
+                              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                            }}
+                            onClick={() => handleTagClick(tag)}
+                            onMouseEnter={(e) => {
+                              if (!selectedTags.includes(tag)) {
+                                e.currentTarget.style.backgroundColor = "#e1e3e5";
+                                e.currentTarget.style.borderColor = "#aeb4b9";
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!selectedTags.includes(tag)) {
+                                e.currentTarget.style.backgroundColor = "#f6f6f7";
+                                e.currentTarget.style.borderColor = "#d1d3d4";
+                              }
+                            }}
+                          >
+                            <span>{tag}</span>
+                            <span style={{ 
+                              fontSize: "11px", 
+                              color: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175", 
+                              backgroundColor: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)", 
+                              padding: "1px 4px", 
+                              borderRadius: "2px",
+                              fontWeight: "500"
+                            }}>
+                              {count}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowDeleteTagConfirm(tag);
+                              }}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                                color: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175",
+                                padding: "2px",
+                                borderRadius: "2px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                transition: "all 0.15s ease",
+                                marginLeft: "2px",
+                                width: "16px",
+                                height: "16px",
+                                opacity: "0.8"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)";
+                                e.target.style.opacity = "1";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = "transparent";
+                                e.target.style.opacity = "0.8";
+                              }}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                   <i className="far fa-folder-open"></i>
-                  Folders & Tags
+                  Folders
                 </Text>
                 <Button
                   onClick={() => toggleColumnCollapse('folders')}
@@ -2617,202 +2818,6 @@ export default function Index() {
                 </span>
               </div>
 
-              {/* All Notes and All Tags Buttons - Side by Side */}
-              <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
-                {/* All Notes Button */}
-                <div 
-                  style={{ 
-                    padding: "8px 12px", 
-                    flex: "1",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    cursor: "pointer",
-                    backgroundColor: selectedFolder === null ? "#f6fff8" : "#F8F9FA",
-                    border: selectedFolder === null ? "2px solid #008060" : "2px solid #E1E3E5",
-                    borderRadius: "8px",
-                    position: "relative",
-                    transition: "all 0.2s ease",
-                    boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
-                  }}
-                  onClick={() => setSelectedFolder(null)}
-                  onMouseEnter={(e) => {
-                    if (selectedFolder !== null) {
-                      e.currentTarget.style.backgroundColor = "#f6fff8";
-                      e.currentTarget.style.borderColor = "#008060";
-                      e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedFolder !== null) {
-                      e.currentTarget.style.backgroundColor = "#F8F9FA";
-                      e.currentTarget.style.borderColor = "#E1E3E5";
-                      e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
-                    }
-                  }}
-                >
-                  <Text as="span" variant="bodyMd" style={{ 
-                    fontWeight: "600", 
-                    display: "flex", 
-                    alignItems: "center", 
-                    gap: "6px",
-                    color: selectedFolder === null ? "#008060" : "rgba(48, 48, 48, 1)",
-                    fontSize: "14px"
-                  }}>
-                    <i className="far fa-note-sticky" style={{ fontSize: "16px" }}></i>
-                    All Notes
-                  </Text>
-                </div>
-
-                {/* All Tags Button */}
-                <div 
-                  style={{ 
-                    padding: "8px 12px", 
-                    flex: "1",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    cursor: "pointer",
-                    backgroundColor: showTagsSection ? "#f6fff8" : "#F8F9FA",
-                    border: showTagsSection ? "2px solid #008060" : "2px solid #E1E3E5",
-                    borderRadius: "8px",
-                    position: "relative",
-                    transition: "all 0.2s ease",
-                    boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
-                  }}
-                  onClick={() => setShowTagsSection(!showTagsSection)}
-                  onMouseEnter={(e) => {
-                    if (!showTagsSection) {
-                      e.currentTarget.style.backgroundColor = "#f6fff8";
-                      e.currentTarget.style.borderColor = "#008060";
-                      e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!showTagsSection) {
-                      e.currentTarget.style.backgroundColor = "#F8F9FA";
-                      e.currentTarget.style.borderColor = "#E1E3E5";
-                      e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
-                    }
-                  }}
-                >
-                  <Text as="span" variant="bodyMd" style={{ 
-                    fontWeight: "600", 
-                    display: "flex", 
-                    alignItems: "center", 
-                    gap: "6px",
-                    color: showTagsSection ? "#008060" : "rgba(48, 48, 48, 1)",
-                    fontSize: "14px"
-                  }}>
-                    <i className="far fa-bookmark" style={{ fontSize: "16px" }}></i>
-                    All Tags
-                  </Text>
-                </div>
-              </div>
-
-              {/* Tags List */}
-              {showTagsSection && (
-                <div style={{ 
-                  marginBottom: "12px",
-                  padding: "12px",
-                  backgroundColor: "#f8f9fa",
-                  borderRadius: "8px",
-                  border: "1px solid #e1e3e5"
-                }}>
-                  {getAllTagsWithCounts().length === 0 ? (
-                    <Text as="p" style={{ color: "#6d7175", fontSize: "14px" }}>No tags created yet</Text>
-                  ) : (
-                    <div style={{ 
-                      display: "flex", 
-                      flexWrap: "wrap", 
-                      gap: "6px",
-                      padding: "8px 0"
-                    }}>
-                      {getAllTagsWithCounts().map(({ tag, count }) => (
-                        <div
-                          key={tag}
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            padding: "4px 8px",
-                            backgroundColor: selectedTags.includes(tag) ? "#008060" : "#f6fff8",
-                            borderRadius: "16px",
-                            border: selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060",
-                            cursor: "pointer",
-                            transition: "all 0.15s ease",
-                            position: "relative",
-                            fontSize: "12px",
-                            fontWeight: "400",
-                            color: selectedTags.includes(tag) ? "white" : "#008060",
-                            minHeight: "24px",
-                            justifyContent: "center",
-                            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                          }}
-                          onClick={() => handleTagClick(tag)}
-                          onMouseEnter={(e) => {
-                            if (!selectedTags.includes(tag)) {
-                              e.currentTarget.style.backgroundColor = "#e1e3e5";
-                              e.currentTarget.style.borderColor = "#aeb4b9";
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!selectedTags.includes(tag)) {
-                              e.currentTarget.style.backgroundColor = "#f6f6f7";
-                              e.currentTarget.style.borderColor = "#d1d3d4";
-                            }
-                          }}
-                        >
-                          <span>{tag}</span>
-                          <span style={{ 
-                            fontSize: "11px", 
-                            color: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175", 
-                            backgroundColor: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)", 
-                            padding: "1px 4px", 
-                            borderRadius: "2px",
-                            fontWeight: "500"
-                          }}>
-                            {count}
-                          </span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowDeleteTagConfirm(tag);
-                            }}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              cursor: "pointer",
-                              fontSize: "12px",
-                              color: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175",
-                              padding: "2px",
-                              borderRadius: "2px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              transition: "all 0.15s ease",
-                              marginLeft: "2px",
-                              width: "16px",
-                              height: "16px",
-                              opacity: "0.8"
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.backgroundColor = selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)";
-                              e.target.style.opacity = "1";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.backgroundColor = "transparent";
-                              e.target.style.opacity = "0.8";
-                            }}
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
 
             {/* Scrollable Folders Section */}
@@ -2879,7 +2884,7 @@ export default function Index() {
                 size="large"
                 fullWidth
               >
-                <i className="fas fa-plus" style={{ marginRight: "8px" }}></i>
+                <PlusIcon />
                 New Folder
               </Button>
             </div>
@@ -2978,7 +2983,7 @@ export default function Index() {
                   onClick={handleNewNote}
                   variant="primary"
                   tone="warning"
-                  icon={<i className="fas fa-plus"></i>}
+                  icon={<PlusIcon />}
                   fullWidth
                 >
                   New Note
@@ -4241,7 +4246,7 @@ export default function Index() {
             justifyContent: 'space-between'
           }}>
             <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
-              {mobileActiveSection === 'folders' && 'Folders & Tags'}
+              {mobileActiveSection === 'folders' && 'Folders'}
               {mobileActiveSection === 'notes' && 'Notes'}
               {mobileActiveSection === 'editor' && 'Note Editor'}
             </h1>
@@ -4273,10 +4278,165 @@ export default function Index() {
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
             }}>
               <div style={{ marginBottom: '16px' }}>
-                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Folders & Tags</h2>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Folders</h2>
               </div>
               
               <>
+                {/* Tags Section - Mobile */}
+                <div style={{ marginBottom: '24px' }}>
+                  <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600', color: '#374151' }}>Tags</h3>
+                  <p style={{ color: '#6d7175', margin: '0 0 16px 0', fontSize: '14px' }}>Filter notes by tags</p>
+                  
+                  {/* All Notes and All Tags Buttons - Mobile */}
+                  <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+                    {/* All Notes Button */}
+                    <div 
+                      style={{ 
+                        padding: "8px 12px", 
+                        flex: "1",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        cursor: "pointer",
+                        backgroundColor: selectedFolder === null ? "#f6fff8" : "#F8F9FA",
+                        border: selectedFolder === null ? "2px solid #008060" : "2px solid #E1E3E5",
+                        borderRadius: "8px",
+                        position: "relative",
+                        transition: "all 0.2s ease",
+                        boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                      }}
+                      onClick={() => setSelectedFolder(null)}
+                    >
+                      <span style={{ 
+                        fontWeight: "600", 
+                        display: "flex", 
+                        alignItems: "center", 
+                        gap: "6px",
+                        color: selectedFolder === null ? "#008060" : "rgba(48, 48, 48, 1)",
+                        fontSize: "14px"
+                      }}>
+                        <i className="far fa-note-sticky" style={{ fontSize: "16px" }}></i>
+                        All Notes
+                      </span>
+                    </div>
+
+                    {/* All Tags Button */}
+                    <div 
+                      style={{ 
+                        padding: "8px 12px", 
+                        flex: "1",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        cursor: "pointer",
+                        backgroundColor: showTagsSection ? "#f6fff8" : "#F8F9FA",
+                        border: showTagsSection ? "2px solid #008060" : "2px solid #E1E3E5",
+                        borderRadius: "8px",
+                        position: "relative",
+                        transition: "all 0.2s ease",
+                        boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                      }}
+                      onClick={() => setShowTagsSection(!showTagsSection)}
+                    >
+                      <span style={{ 
+                        fontWeight: "600", 
+                        display: "flex", 
+                        alignItems: "center", 
+                        gap: "6px",
+                        color: showTagsSection ? "#008060" : "rgba(48, 48, 48, 1)",
+                        fontSize: "14px"
+                      }}>
+                        <i className="far fa-bookmark" style={{ fontSize: "16px" }}></i>
+                        All Tags
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Tags List - Mobile */}
+                  {showTagsSection && (
+                    <div style={{ 
+                      marginBottom: "12px",
+                      padding: "12px",
+                      backgroundColor: "#f8f9fa",
+                      borderRadius: "8px",
+                      border: "1px solid #e1e3e5"
+                    }}>
+                      {getAllTagsWithCounts().length === 0 ? (
+                        <p style={{ color: "#6d7175", fontSize: "14px", margin: 0 }}>No tags created yet</p>
+                      ) : (
+                        <div style={{ 
+                          display: "flex", 
+                          flexWrap: "wrap", 
+                          gap: "6px",
+                          padding: "8px 0"
+                        }}>
+                          {getAllTagsWithCounts().map(({ tag, count }) => (
+                            <div
+                              key={tag}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                padding: "4px 8px",
+                                backgroundColor: selectedTags.includes(tag) ? "#008060" : "#f6fff8",
+                                borderRadius: "16px",
+                                border: selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060",
+                                cursor: "pointer",
+                                transition: "all 0.15s ease",
+                                position: "relative",
+                                fontSize: "12px",
+                                fontWeight: "400",
+                                color: selectedTags.includes(tag) ? "white" : "#008060",
+                                minHeight: "24px",
+                                justifyContent: "center",
+                                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                              }}
+                              onClick={() => handleTagClick(tag)}
+                            >
+                              <span>{tag}</span>
+                              <span style={{ 
+                                fontSize: "11px", 
+                                color: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175", 
+                                backgroundColor: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)", 
+                                padding: "1px 4px", 
+                                borderRadius: "2px",
+                                fontWeight: "500"
+                              }}>
+                                {count}
+                              </span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowDeleteTagConfirm(tag);
+                                }}
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  fontSize: "12px",
+                                  color: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175",
+                                  padding: "2px",
+                                  borderRadius: "2px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  transition: "all 0.15s ease",
+                                  marginLeft: "2px",
+                                  width: "16px",
+                                  height: "16px",
+                                  opacity: "0.8"
+                                }}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 {/* Folders Section */}
                 <div style={{ marginBottom: '24px' }}>
                   <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600', color: '#374151' }}>Folders</h3>
@@ -5136,7 +5296,7 @@ export default function Index() {
               onClick={() => setMobileActiveSection('folders')}
             >
               <i className="far fa-folder-open" style={{ fontSize: '20px' }}></i>
-              <span style={{ fontSize: '11px', fontWeight: '500', textAlign: 'center' }}>Folders & Tags</span>
+              <span style={{ fontSize: '11px', fontWeight: '500', textAlign: 'center' }}>Folders</span>
             </div>
             
             <div 
