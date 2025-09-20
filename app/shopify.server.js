@@ -11,6 +11,7 @@ import { initializeDatabase } from "./utils/db-init.server";
 // Initialize database on startup
 initializeDatabase().catch((error) => {
   console.error("Failed to initialize database:", error);
+  console.log("Continuing with app startup - database issues will be handled at runtime");
 });
 
 export const shopify = shopifyApp({

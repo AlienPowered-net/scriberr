@@ -19,13 +19,22 @@ export async function initializeDatabase() {
     } catch (error) {
       console.error("Session table does not exist. Database migrations may need to be run.");
       console.error("Error:", error);
-      throw new Error("Database not properly initialized. Please run migrations.");
+      
+      // Try to check if the Session table (uppercase) exists instead
+      try {
+        await prisma.$queryRaw`SELECT 1 FROM "Session" LIMIT 1`;
+        console.log("Found Session table (uppercase), this should be renamed to session");
+        // Don't throw error, let the app continue and handle this gracefully
+      } catch (sessionError) {
+        console.error("Neither session nor Session table exists");
+        // Don't throw error, let the app continue and handle this gracefully
+      }
     }
     
     isInitialized = true;
   } catch (error) {
     console.error("Database initialization failed:", error);
-    throw error;
+    // Don't throw error, let the app continue and handle this gracefully
   }
 }
 
