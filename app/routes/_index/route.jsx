@@ -1,54 +1,54 @@
 import { redirect } from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { login } from "../../shopify.server";
 import styles from "./styles.module.css";
 
 export const loader = async ({ request }) => {
   const url = new URL(request.url);
 
+  // If there's a shop parameter, redirect to the app (Shopify app context)
   if (url.searchParams.get("shop")) {
     throw redirect(`/app?${url.searchParams.toString()}`);
   }
 
+  // For direct domain visits, show the coming soon page
   return { showForm: Boolean(login) };
 };
 
-export default function App() {
+export default function ComingSoonPage() {
   const { showForm } = useLoaderData();
 
   return (
-    <div className={styles.index}>
+    <div className={styles.container}>
       <div className={styles.content}>
-        <h1 className={styles.heading}>A short heading about [your app]</h1>
-        <p className={styles.text}>
-          A tagline about [your app] that describes your value proposition.
+        {/* Logo and Brand Name */}
+        <div className={styles.logo}>
+          <div className={styles.logoIcon}>
+            <div className={styles.notebookIcon}>
+              <div className={styles.spiralS}>S</div>
+              <div className={styles.yellowLine}></div>
+            </div>
+          </div>
+          <h1 className={styles.brandName}>Scriberr</h1>
+          <div className={styles.brandUnderline}></div>
+        </div>
+
+        {/* Description Text */}
+        <p className={styles.description}>
+          Designed for Shopify merchants, Scriberr keeps your thoughts, tasks, and ideas in sync, so you can focus more on building your business.
         </p>
+
+        {/* Coming Soon Message */}
+        <div className={styles.comingSoon}>COMING SOON</div>
+
+        {/* Hidden form for development - only show if login is configured */}
         {showForm && (
-          <Form className={styles.form} method="post" action="/auth/login">
-            <label className={styles.label}>
-              <span>Shop domain</span>
-              <input className={styles.input} type="text" name="shop" />
-              <span>e.g: my-shop-domain.myshopify.com</span>
-            </label>
-            <button className={styles.button} type="submit">
-              Log in
-            </button>
-          </Form>
+          <div style={{ display: 'none' }}>
+            <form method="post" action="/auth/login">
+              <input type="text" name="shop" />
+            </form>
+          </div>
         )}
-        <ul className={styles.list}>
-          <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
-          </li>
-          <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
-          </li>
-          <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
-          </li>
-        </ul>
       </div>
     </div>
   );

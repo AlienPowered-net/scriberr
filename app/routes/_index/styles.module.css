@@ -1,73 +1,133 @@
-.index {
-  align-items: center;
+/* Coming Soon Page Styles */
+.container {
+  background-color: #000000;
+  color: #ffffff;
+  min-height: 100vh;
   display: flex;
+  align-items: center;
   justify-content: center;
-  height: 100%;
-  width: 100%;
   text-align: center;
-  padding: 1rem;
-}
-
-.heading,
-.text {
-  padding: 0;
-  margin: 0;
-}
-
-.text {
-  font-size: 1.2rem;
-  padding-bottom: 2rem;
+  padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
 }
 
 .content {
-  display: grid;
-  gap: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  max-width: 600px;
 }
 
-.form {
+/* Logo Section */
+.logo {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  margin: 0 auto;
   gap: 1rem;
+  margin-bottom: 1rem;
 }
 
-.label {
-  display: grid;
-  gap: 0.2rem;
-  max-width: 20rem;
-  text-align: left;
-  font-size: 1rem;
+.logoIcon {
+  position: relative;
 }
 
-.input {
-  padding: 0.4rem;
-}
-
-.button {
-  padding: 0.4rem;
-}
-
-.list {
-  list-style: none;
-  padding: 0;
-  padding-top: 3rem;
-  margin: 0;
+.notebookIcon {
+  width: 48px;
+  height: 48px;
+  background-color: #ffffff;
+  border-radius: 4px;
+  position: relative;
   display: flex;
-  gap: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
 }
 
-.list > li {
-  max-width: 20rem;
-  text-align: left;
+.spiralS {
+  font-size: 24px;
+  font-weight: 900;
+  color: #000000;
+  font-family: inherit;
 }
 
-@media only screen and (max-width: 50rem) {
-  .list {
-    display: block;
+.yellowLine {
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #ffd700;
+}
+
+.brandName {
+  font-size: 2.5rem;
+  font-weight: 300;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.brandUnderline {
+  width: 100px;
+  height: 2px;
+  background-color: #ffd700;
+  margin-top: 0.5rem;
+}
+
+/* Description */
+.description {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 0;
+  font-weight: 300;
+  max-width: 500px;
+}
+
+/* Coming Soon */
+.comingSoon {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-top: 2rem;
+}
+
+/* Responsive Design */
+@media only screen and (max-width: 768px) {
+  .container {
+    padding: 1rem;
   }
+  
+  .content {
+    gap: 2rem;
+  }
+  
+  .logo {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .brandName {
+    font-size: 2rem;
+  }
+  
+  .description {
+    font-size: 1rem;
+  }
+  
+  .comingSoon {
+    font-size: 1.5rem;
+  }
+}
 
-  .list > li {
-    padding-bottom: 1rem;
+@media only screen and (max-width: 480px) {
+  .brandName {
+    font-size: 1.8rem;
+  }
+  
+  .description {
+    font-size: 0.95rem;
+  }
+  
+  .comingSoon {
+    font-size: 1.3rem;
   }
 }
