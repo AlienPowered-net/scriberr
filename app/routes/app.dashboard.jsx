@@ -2557,116 +2557,8 @@ export default function Index() {
               backgroundColor: "white",
               flexShrink: 0
             }}>
-              {/* Tags Section - Moved to top */}
+              {/* Tags Section */}
               <div style={{ marginBottom: "24px" }}>
-                {/* All Notes and All Tags Buttons - Side by Side */}
-                <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
-                  {/* All Notes Button */}
-                  <div 
-                    style={{ 
-                      padding: "8px 12px", 
-                      flex: "1",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      cursor: "pointer",
-                      backgroundColor: selectedFolder === null ? "#f6fff8" : "#F8F9FA",
-                      border: selectedFolder === null ? "2px solid #008060" : "2px solid #E1E3E5",
-                      borderRadius: "8px",
-                      position: "relative",
-                      transition: "all 0.2s ease",
-                      boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
-                    }}
-                    onClick={() => setSelectedFolder(null)}
-                    onMouseEnter={(e) => {
-                      if (selectedFolder !== null) {
-                        e.currentTarget.style.backgroundColor = "#f6fff8";
-                        e.currentTarget.style.borderColor = "#008060";
-                        e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (selectedFolder !== null) {
-                        e.currentTarget.style.backgroundColor = "#F8F9FA";
-                        e.currentTarget.style.borderColor = "#E1E3E5";
-                        e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
-                      }
-                    }}
-                  >
-                    <Text as="span" variant="bodyMd" style={{ 
-                      fontWeight: "600", 
-                      display: "flex", 
-                      alignItems: "center", 
-                      gap: "6px",
-                      color: selectedFolder === null ? "#008060" : "rgba(48, 48, 48, 1)",
-                      fontSize: "14px"
-                    }}>
-                      <i className="far fa-note-sticky" style={{ fontSize: "16px" }}></i>
-                      All Notes
-                    </Text>
-                  </div>
-
-                  {/* All Tags Button */}
-                  <div 
-                    style={{ 
-                      padding: "8px 12px", 
-                      flex: "1",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      cursor: "pointer",
-                      backgroundColor: showTagsSection ? "#f6fff8" : "#F8F9FA",
-                      border: showTagsSection ? "2px solid #008060" : "2px solid #E1E3E5",
-                      borderRadius: "8px",
-                      position: "relative",
-                      transition: "all 0.2s ease",
-                      boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
-                    }}
-                    onClick={() => setShowTagsSection(!showTagsSection)}
-                    onMouseEnter={(e) => {
-                      if (!showTagsSection) {
-                        e.currentTarget.style.backgroundColor = "#f6fff8";
-                        e.currentTarget.style.borderColor = "#008060";
-                        e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!showTagsSection) {
-                        e.currentTarget.style.backgroundColor = "#F8F9FA";
-                        e.currentTarget.style.borderColor = "#E1E3E5";
-                        e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
-                      }
-                    }}
-                  >
-                    <Text as="span" variant="bodyMd" style={{ 
-                      fontWeight: "600", 
-                      display: "flex", 
-                      alignItems: "center", 
-                      gap: "6px",
-                      color: showTagsSection ? "#008060" : "rgba(48, 48, 48, 1)",
-                      fontSize: "14px"
-                    }}>
-                      <i className="far fa-bookmark" style={{ fontSize: "16px" }}></i>
-                      All Tags
-                    </Text>
-                  </div>
-                </div>
-
-                {/* Create New Folder Button - Top (only show when 6+ folders) */}
-                {localFolders.length >= 6 && (
-                  <div style={{ marginBottom: "12px" }}>
-                    <Button
-                      variant="primary"
-                      fullWidth
-                      onClick={() => setShowNewFolderModal(true)}
-                      style={{ backgroundColor: '#008060', borderColor: '#008060' }}
-                    >
-                      <PlusIcon style={{ width: '16px', height: '16px', marginRight: '8px', color: 'white' }} />
-                      <span style={{ color: 'white' }}>Create New Folder</span>
-                    </Button>
-                  </div>
-                )}
-
                 {/* Tags List */}
                 {showTagsSection && (
                   <div style={{ 
@@ -2831,6 +2723,116 @@ export default function Index() {
                 >
                   <i className="fas fa-search"></i>
                 </span>
+              </div>
+
+              {/* All Notes and All Tags Buttons - Under Search Box */}
+              <div style={{ marginBottom: "16px" }}>
+                <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+                  {/* All Notes Button */}
+                  <div 
+                    style={{ 
+                      padding: "8px 12px", 
+                      flex: "1",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      backgroundColor: selectedFolder === null ? "#f6fff8" : "#F8F9FA",
+                      border: selectedFolder === null ? "2px solid #008060" : "2px solid #E1E3E5",
+                      borderRadius: "8px",
+                      position: "relative",
+                      transition: "all 0.2s ease",
+                      boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                    }}
+                    onClick={() => setSelectedFolder(null)}
+                    onMouseEnter={(e) => {
+                      if (selectedFolder !== null) {
+                        e.currentTarget.style.backgroundColor = "#f6fff8";
+                        e.currentTarget.style.borderColor = "#008060";
+                        e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedFolder !== null) {
+                        e.currentTarget.style.backgroundColor = "#F8F9FA";
+                        e.currentTarget.style.borderColor = "#E1E3E5";
+                        e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
+                      }
+                    }}
+                  >
+                    <Text as="span" variant="bodyMd" style={{ 
+                      fontWeight: "600", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: "6px",
+                      color: selectedFolder === null ? "#008060" : "rgba(48, 48, 48, 1)",
+                      fontSize: "14px"
+                    }}>
+                      <i className="far fa-note-sticky" style={{ fontSize: "16px" }}></i>
+                      All Notes
+                    </Text>
+                  </div>
+
+                  {/* All Tags Button */}
+                  <div 
+                    style={{ 
+                      padding: "8px 12px", 
+                      flex: "1",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      backgroundColor: showTagsSection ? "#f6fff8" : "#F8F9FA",
+                      border: showTagsSection ? "2px solid #008060" : "2px solid #E1E3E5",
+                      borderRadius: "8px",
+                      position: "relative",
+                      transition: "all 0.2s ease",
+                      boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                    }}
+                    onClick={() => setShowTagsSection(!showTagsSection)}
+                    onMouseEnter={(e) => {
+                      if (!showTagsSection) {
+                        e.currentTarget.style.backgroundColor = "#f6fff8";
+                        e.currentTarget.style.borderColor = "#008060";
+                        e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!showTagsSection) {
+                        e.currentTarget.style.backgroundColor = "#F8F9FA";
+                        e.currentTarget.style.borderColor = "#E1E3E5";
+                        e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
+                      }
+                    }}
+                  >
+                    <Text as="span" variant="bodyMd" style={{ 
+                      fontWeight: "600", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: "6px",
+                      color: showTagsSection ? "#008060" : "rgba(48, 48, 48, 1)",
+                      fontSize: "14px"
+                    }}>
+                      <i className="far fa-bookmark" style={{ fontSize: "16px" }}></i>
+                      All Tags
+                    </Text>
+                  </div>
+                </div>
+
+                {/* Create New Folder Button - Under Search (only show when 6+ folders) */}
+                {localFolders.length >= 6 && (
+                  <div style={{ marginBottom: "12px" }}>
+                    <Button
+                      variant="primary"
+                      fullWidth
+                      onClick={() => setShowNewFolderModal(true)}
+                      style={{ backgroundColor: '#008060', borderColor: '#008060' }}
+                    >
+                      <PlusIcon style={{ width: '16px', height: '16px', marginRight: '8px', color: 'white' }} />
+                      <span style={{ color: 'white' }}>Create New Folder</span>
+                    </Button>
+                  </div>
+                )}
               </div>
 
             </div>
@@ -4296,92 +4298,94 @@ export default function Index() {
                 <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Folders</h2>
               </div>
               
+              {/* All Notes and All Tags Buttons - Mobile */}
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+                  {/* All Notes Button */}
+                  <div 
+                    style={{ 
+                      padding: "8px 12px", 
+                      flex: "1",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      backgroundColor: selectedFolder === null ? "#f6fff8" : "#F8F9FA",
+                      border: selectedFolder === null ? "2px solid #008060" : "2px solid #E1E3E5",
+                      borderRadius: "8px",
+                      position: "relative",
+                      transition: "all 0.2s ease",
+                      boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                    }}
+                    onClick={() => setSelectedFolder(null)}
+                  >
+                    <span style={{ 
+                      fontWeight: "600", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: "6px",
+                      color: selectedFolder === null ? "#008060" : "rgba(48, 48, 48, 1)",
+                      fontSize: "14px"
+                    }}>
+                      <i className="far fa-note-sticky" style={{ fontSize: "16px" }}></i>
+                      All Notes
+                    </span>
+                  </div>
+
+                  {/* All Tags Button */}
+                  <div 
+                    style={{ 
+                      padding: "8px 12px", 
+                      flex: "1",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      backgroundColor: showTagsSection ? "#f6fff8" : "#F8F9FA",
+                      border: showTagsSection ? "2px solid #008060" : "2px solid #E1E3E5",
+                      borderRadius: "8px",
+                      position: "relative",
+                      transition: "all 0.2s ease",
+                      boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                    }}
+                    onClick={() => setShowTagsSection(!showTagsSection)}
+                  >
+                    <span style={{ 
+                      fontWeight: "600", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: "6px",
+                      color: showTagsSection ? "#008060" : "rgba(48, 48, 48, 1)",
+                      fontSize: "14px"
+                    }}>
+                      <i className="far fa-bookmark" style={{ fontSize: "16px" }}></i>
+                      All Tags
+                    </span>
+                  </div>
+                </div>
+
+                {/* Create New Folder Button - Mobile Top (only show when 6+ folders) */}
+                {localFolders.length >= 6 && (
+                  <div style={{ marginBottom: "12px" }}>
+                    <Button
+                      variant="primary"
+                      fullWidth
+                      onClick={() => setShowNewFolderModal(true)}
+                      style={{ backgroundColor: '#008060', borderColor: '#008060' }}
+                    >
+                      <PlusIcon style={{ width: '16px', height: '16px', marginRight: '8px', color: 'white' }} />
+                      <span style={{ color: 'white' }}>Create New Folder</span>
+                    </Button>
+                  </div>
+                )}
+              </div>
+              
               <>
                 {/* Tags Section - Mobile */}
                 <div style={{ marginBottom: '24px' }}>
                   <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600', color: '#374151' }}>Tags</h3>
                   <p style={{ color: '#6d7175', margin: '0 0 16px 0', fontSize: '14px' }}>Filter notes by tags</p>
                   
-                  {/* All Notes and All Tags Buttons - Mobile */}
-                  <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
-                    {/* All Notes Button */}
-                    <div 
-                      style={{ 
-                        padding: "8px 12px", 
-                        flex: "1",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        cursor: "pointer",
-                        backgroundColor: selectedFolder === null ? "#f6fff8" : "#F8F9FA",
-                        border: selectedFolder === null ? "2px solid #008060" : "2px solid #E1E3E5",
-                        borderRadius: "8px",
-                        position: "relative",
-                        transition: "all 0.2s ease",
-                        boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
-                      }}
-                      onClick={() => setSelectedFolder(null)}
-                    >
-                      <span style={{ 
-                        fontWeight: "600", 
-                        display: "flex", 
-                        alignItems: "center", 
-                        gap: "6px",
-                        color: selectedFolder === null ? "#008060" : "rgba(48, 48, 48, 1)",
-                        fontSize: "14px"
-                      }}>
-                        <i className="far fa-note-sticky" style={{ fontSize: "16px" }}></i>
-                        All Notes
-                      </span>
-                    </div>
-
-                    {/* All Tags Button */}
-                    <div 
-                      style={{ 
-                        padding: "8px 12px", 
-                        flex: "1",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        cursor: "pointer",
-                        backgroundColor: showTagsSection ? "#f6fff8" : "#F8F9FA",
-                        border: showTagsSection ? "2px solid #008060" : "2px solid #E1E3E5",
-                        borderRadius: "8px",
-                        position: "relative",
-                        transition: "all 0.2s ease",
-                        boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
-                      }}
-                      onClick={() => setShowTagsSection(!showTagsSection)}
-                    >
-                      <span style={{ 
-                        fontWeight: "600", 
-                        display: "flex", 
-                        alignItems: "center", 
-                        gap: "6px",
-                        color: showTagsSection ? "#008060" : "rgba(48, 48, 48, 1)",
-                        fontSize: "14px"
-                      }}>
-                        <i className="far fa-bookmark" style={{ fontSize: "16px" }}></i>
-                        All Tags
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Create New Folder Button - Mobile Top (only show when 6+ folders) */}
-                  {localFolders.length >= 6 && (
-                    <div style={{ marginBottom: "12px" }}>
-                      <Button
-                        variant="primary"
-                        fullWidth
-                        onClick={() => setShowNewFolderModal(true)}
-                        style={{ backgroundColor: '#008060', borderColor: '#008060' }}
-                      >
-                        <PlusIcon style={{ width: '16px', height: '16px', marginRight: '8px', color: 'white' }} />
-                        <span style={{ color: 'white' }}>Create New Folder</span>
-                      </Button>
-                    </div>
-                  )}
-
                   {/* Tags List - Mobile */}
                   {showTagsSection && (
                     <div style={{ 
