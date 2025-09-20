@@ -4585,63 +4585,6 @@ export default function Index() {
                   </div>
                 </div>
 
-                {/* Tags Section */}
-                <div style={{ marginBottom: '24px' }}>
-                  <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600', color: '#374151' }}>Tags</h3>
-                  <p style={{ color: '#6d7175', margin: '0 0 16px 0', fontSize: '14px' }}>Select tags to filter notes</p>
-                  
-                  {/* Tags List */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {Array.from(new Set(localNotes.flatMap(note => note.tags || []))).map((tag) => (
-                      <Tag
-                        key={tag}
-                        onClick={() => {
-                          if (selectedTags.includes(tag)) {
-                            const newTags = selectedTags.filter(t => t !== tag);
-                            setSelectedTags(newTags);
-                            if (newTags.length === 0) {
-                              setGlobalSearchQuery("");
-                            } else {
-                              setGlobalSearchQuery(`tag:${newTags.join(' tag:')}`);
-                            }
-                          } else {
-                            const newTags = [...selectedTags, tag];
-                            setSelectedTags(newTags);
-                            setGlobalSearchQuery(`tag:${newTags.join(' tag:')}`);
-                          }
-                        }}
-                        onRemove={selectedTags.includes(tag) ? () => {
-                          const newTags = selectedTags.filter(t => t !== tag);
-                          setSelectedTags(newTags);
-                          if (newTags.length === 0) {
-                            setGlobalSearchQuery("");
-                          } else {
-                            setGlobalSearchQuery(`tag:${newTags.join(' tag:')}`);
-                          }
-                        } : undefined}
-                        style={{
-                          cursor: 'pointer',
-                          backgroundColor: selectedTags.includes(tag) ? '#008060' : '#f6fff8',
-                          color: selectedTags.includes(tag) ? 'white' : '#008060',
-                          borderColor: '#008060'
-                        }}
-                      >
-                        {tag}
-                      </Tag>
-                    ))}
-                  </div>
-                  
-                  {Array.from(new Set(localNotes.flatMap(note => note.tags || []))).length === 0 && (
-                    <div style={{ 
-                      textAlign: 'center', 
-                      padding: '20px', 
-                      color: '#6d7175',
-                      fontStyle: 'italic'
-                    }}>
-                      No tags found. Create notes with tags to see them here.
-                    </div>
-                  )}
-                </div>
 
                 {/* Go to Notes Button */}
                 {(selectedFolder || selectedTags.length > 0) && (
