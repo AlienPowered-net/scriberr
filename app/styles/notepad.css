@@ -159,12 +159,25 @@
 
 /* Drag overlay styling */
 .drag-overlay {
-  opacity: 0.9;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  opacity: 0.95;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   border-radius: 14px;
+  z-index: 9999 !important;
+  position: relative;
+}
+
+/* Ensure drag overlay appears above everything */
+[data-rbd-drag-handle-draggable-id] {
+  z-index: 9999 !important;
 }
 
 /* Enhanced drag feedback */
+.draggable-column.dragging {
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 14px;
+}
+
 .draggable-column.dragging .pane {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }

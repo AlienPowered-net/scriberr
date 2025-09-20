@@ -64,8 +64,9 @@ function DraggableColumn({ id, children }) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.3 : 1,
     position: 'relative',
+    zIndex: isDragging ? 1 : 'auto',
   };
 
   return (
@@ -497,9 +498,23 @@ export default function Notepad() {
         </SortableContext>
         <DragOverlay>
           {activeId ? (
-            <DraggableColumn id={activeId}>
+            <div 
+              style={{
+                opacity: 0.95,
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+                borderRadius: '14px',
+                maxWidth: '400px',
+                minHeight: '640px',
+                transform: 'rotate(2deg)',
+                position: 'relative',
+                background: '#ffffff',
+                border: '1px solid #EAECF0',
+                zIndex: 9999,
+                cursor: 'grabbing',
+              }}
+            >
               {getColumnComponents()[activeId]}
-            </DraggableColumn>
+            </div>
           ) : null}
         </DragOverlay>
       </div>
