@@ -13,6 +13,7 @@ import fontAwesomeCssUrl from "@fortawesome/fontawesome-free/css/all.min.css?url
 import mantineOverridesCssUrl from "./styles/mantine-overrides.css?url";
 
 export const links = () => [
+  { rel: "icon", href: "/favicon.png", type: "image/png" },
   { rel: "stylesheet", href: notepadCssUrl },
   { rel: "stylesheet", href: tiptapCssUrl },
   { rel: "stylesheet", href: fontAwesomeCssUrl },
