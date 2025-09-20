@@ -6,6 +6,12 @@ import {
 } from "@shopify/shopify-app-remix/server";
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import { prisma } from "./utils/db.server";
+import { initializeDatabase } from "./utils/db-init.server";
+
+// Initialize database on startup
+initializeDatabase().catch((error) => {
+  console.error("Failed to initialize database:", error);
+});
 
 export const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
