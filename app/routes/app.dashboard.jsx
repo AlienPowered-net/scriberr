@@ -2652,6 +2652,21 @@ export default function Index() {
                   </div>
                 </div>
 
+                {/* Create New Folder Button - Top (only show when 6+ folders) */}
+                {localFolders.length >= 6 && (
+                  <div style={{ marginBottom: "12px" }}>
+                    <Button
+                      variant="primary"
+                      fullWidth
+                      onClick={() => setShowNewFolderModal(true)}
+                      style={{ backgroundColor: '#008060', borderColor: '#008060' }}
+                    >
+                      <PlusIcon style={{ width: '16px', height: '16px', marginRight: '8px', color: 'white' }} />
+                      <span style={{ color: 'white' }}>Create New Folder</span>
+                    </Button>
+                  </div>
+                )}
+
                 {/* Tags List */}
                 {showTagsSection && (
                   <div style={{ 
@@ -4352,6 +4367,21 @@ export default function Index() {
                     </div>
                   </div>
 
+                  {/* Create New Folder Button - Mobile Top (only show when 6+ folders) */}
+                  {localFolders.length >= 6 && (
+                    <div style={{ marginBottom: "12px" }}>
+                      <Button
+                        variant="primary"
+                        fullWidth
+                        onClick={() => setShowNewFolderModal(true)}
+                        style={{ backgroundColor: '#008060', borderColor: '#008060' }}
+                      >
+                        <PlusIcon style={{ width: '16px', height: '16px', marginRight: '8px', color: 'white' }} />
+                        <span style={{ color: 'white' }}>Create New Folder</span>
+                      </Button>
+                    </div>
+                  )}
+
                   {/* Tags List - Mobile */}
                   {showTagsSection && (
                     <div style={{ 
@@ -4579,7 +4609,7 @@ export default function Index() {
                       onClick={() => setShowNewFolderModal(true)}
                       style={{ backgroundColor: '#008060', borderColor: '#008060' }}
                     >
-                      <span style={{ fontSize: '16px', marginRight: '8px', color: 'white' }}>➕</span>
+                      <PlusIcon style={{ width: '16px', height: '16px', marginRight: '8px', color: 'white' }} />
                       <span style={{ color: 'white' }}>Create New Folder</span>
                     </Button>
                   </div>
