@@ -756,7 +756,7 @@ export default function Index() {
   // Mobile detection
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setIsMobile(window.innerWidth <= 1024);
     };
     
     checkMobile();
@@ -2190,33 +2190,14 @@ export default function Index() {
             }
           }
           
-          /* Mobile responsive layout */
-          @media (max-width: 768px) {
+          /* Mobile and tablet responsive layout */
+          @media (max-width: 1024px) {
             .app-layout {
               flex-direction: column;
               height: auto;
             }
             .col-folders,
             .col-notes,
-            .col-editor {
-              width: 100% !important;
-            }
-            .Polaris-Card {
-              margin-bottom: 12px;
-            }
-            
-          }
-          
-          /* Tablet responsive layout */
-          @media (min-width: 769px) and (max-width: 1200px) {
-            .app-layout {
-              flex-wrap: wrap;
-              height: auto;
-            }
-            .col-folders,
-            .col-notes {
-              width: 50% !important;
-            }
             .col-editor {
               width: 100% !important;
             }
@@ -2378,9 +2359,9 @@ export default function Index() {
               }
         `}</style>
 
-        {/* Mobile Styles */}
+        {/* Mobile and Tablet Styles */}
         <style>{`
-          @media (max-width: 768px) {
+          @media (max-width: 1024px) {
             .mobile-layout {
               display: flex !important;
               flex-direction: column;
@@ -2452,7 +2433,7 @@ export default function Index() {
           }
           
           /* Desktop layout - hide mobile elements */
-          @media (min-width: 769px) {
+          @media (min-width: 1025px) {
             .mobile-layout {
               display: none !important;
             }

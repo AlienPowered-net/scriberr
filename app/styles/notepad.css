@@ -180,7 +180,7 @@
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .ui-premium[style*="grid-template-columns"] {
     grid-template-columns: 1fr !important;
   }

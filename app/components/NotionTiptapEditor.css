@@ -72,13 +72,13 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .notion-editor {
-    padding-left: 60px; /* Less padding on mobile but still space for drag handle */
+    padding-left: 60px; /* Less padding on mobile/tablet but still space for drag handle */
   }
   
   .tiptap-drag-handle {
-    left: -50px !important; /* Adjust position for mobile */
+    left: -50px !important; /* Adjust position for mobile/tablet */
   }
 }
 
@@ -461,7 +461,7 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .notion-editor {
     padding: 20px 24px;
   }
