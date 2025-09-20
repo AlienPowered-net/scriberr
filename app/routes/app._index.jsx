@@ -2728,7 +2728,7 @@ export default function Index() {
                 size="large"
                 fullWidth
               >
-                <PlusIcon />
+                <PlusIcon style={{ width: '16px', height: '16px', marginRight: '8px' }} />
                 New Folder
               </Button>
             </div>
@@ -2827,7 +2827,7 @@ export default function Index() {
                   onClick={handleNewNote}
                   variant="primary"
                   tone="warning"
-                  icon={<PlusIcon />}
+                  icon={<PlusIcon style={{ width: '16px', height: '16px' }} />}
                   fullWidth
                 >
                   New Note
