@@ -22,55 +22,14 @@
 /* Logo Section */
 .logo {
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  justify-content: center;
   margin-bottom: 1rem;
 }
 
-.logoIcon {
-  position: relative;
-}
-
-.notebookIcon {
-  width: 48px;
-  height: 48px;
-  background-color: #ffffff;
-  border-radius: 4px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid #ffffff;
-}
-
-.spiralS {
-  font-size: 24px;
-  font-weight: 900;
-  color: #000000;
-  font-family: inherit;
-}
-
-.yellowLine {
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background-color: #ffd700;
-}
-
-.brandName {
-  font-size: 2.5rem;
-  font-weight: 300;
-  margin: 0;
-  letter-spacing: -0.02em;
-}
-
-.brandUnderline {
-  width: 100px;
-  height: 2px;
-  background-color: #ffd700;
-  margin-top: 0.5rem;
+.logoImage {
+  max-width: 300px;
+  height: auto;
+  display: block;
 }
 
 /* Description */
@@ -100,13 +59,8 @@
     gap: 2rem;
   }
   
-  .logo {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .brandName {
-    font-size: 2rem;
+  .logoImage {
+    max-width: 250px;
   }
   
   .description {
@@ -119,8 +73,8 @@
 }
 
 @media only screen and (max-width: 480px) {
-  .brandName {
-    font-size: 1.8rem;
+  .logoImage {
+    max-width: 200px;
   }
   
   .description {

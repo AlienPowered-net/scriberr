@@ -23,14 +23,11 @@ export default function ComingSoonPage() {
       <div className={styles.content}>
         {/* Logo and Brand Name */}
         <div className={styles.logo}>
-          <div className={styles.logoIcon}>
-            <div className={styles.notebookIcon}>
-              <div className={styles.spiralS}>S</div>
-              <div className={styles.yellowLine}></div>
-            </div>
-          </div>
-          <h1 className={styles.brandName}>Scriberr</h1>
-          <div className={styles.brandUnderline}></div>
+          <img 
+            src="/scriberr-logo.png" 
+            alt="Scriberr Logo" 
+            className={styles.logoImage}
+          />
         </div>
 
         {/* Description Text */}
