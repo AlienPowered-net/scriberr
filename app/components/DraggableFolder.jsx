@@ -107,6 +107,7 @@ const DraggableFolder = ({
           
           <div className="folder-menu-container" style={{ position: "relative", paddingRight: "8px" }}>
             <button
+              data-mobile-folder-menu
               onClick={(e) => {
                 e.stopPropagation();
                 setOpenFolderMenu(openFolderMenu === folder.id ? null : folder.id);

@@ -4291,39 +4291,49 @@ export default function Index() {
               padding: '20px',
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div style={{ marginBottom: '16px' }}>
                 <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Folders & Tags</h2>
-                <button
-                  style={{
-                    background: 'none',
-                    border: '1px solid #e1e3e5',
-                    borderRadius: '6px',
-                    padding: '8px 12px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    color: showMobileTags ? '#008060' : '#6d7175',
-                    backgroundColor: showMobileTags ? '#f6fff8' : 'white'
-                  }}
-                  onClick={() => setShowMobileTags(!showMobileTags)}
-                >
-                  {showMobileTags ? (
-                    <>
-                      <FolderIcon style={{ width: '16px', height: '16px', marginRight: '8px' }} />
-                      Folders
-                    </>
-                  ) : (
-                    <>
-                      <CollectionFilledIcon style={{ width: '16px', height: '16px', marginRight: '8px' }} />
-                      Tags
-                    </>
-                  )}
-                </button>
               </div>
               
-              {!showMobileTags ? (
-                <>
-                  <p style={{ color: '#6d7175', margin: '0 0 16px 0' }}>Select a folder to view its notes</p>
+              <>
+                {/* Folders Section */}
+                <div style={{ marginBottom: '24px' }}>
+                  <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600', color: '#374151' }}>Folders</h3>
+                  <p style={{ color: '#6d7175', margin: '0 0 16px 0', fontSize: '14px' }}>Select a folder to view its notes</p>
                   
+                  {/* All Notes Option */}
+                  <div style={{ 
+                    padding: "12px 16px", 
+                    marginBottom: "8px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    backgroundColor: selectedFolder === null ? "#f6fff8" : "#F8F9FA",
+                    border: selectedFolder === null ? "2px solid #008060" : "2px solid #E1E3E5",
+                    borderRadius: "8px",
+                    position: "relative",
+                    transition: "all 0.2s ease",
+                    boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)",
+                    cursor: "pointer"
+                  }}
+                  onClick={() => setSelectedFolder(null)}
+                  >
+                    <span style={{ 
+                      fontWeight: "700", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: "8px",
+                      color: selectedFolder === null ? "#008060" : "#374151",
+                      fontSize: "14px"
+                    }}>
+                      <i className="far fa-sticky-note" style={{ 
+                        fontSize: "18px", 
+                        color: selectedFolder === null ? "#008060" : "#6d7175"
+                      }}></i>
+                      All Notes
+                    </span>
+                  </div>
+
                   {/* Folders List */}
                   <DndContext
                     sensors={sensors}
@@ -4343,7 +4353,78 @@ export default function Index() {
                             openFolderMenu={mobileOpenFolderMenu}
                             setOpenFolderMenu={setMobileOpenFolderMenu}
                             onFolderClick={(folderId) => setSelectedFolder(selectedFolder === folderId ? null : folderId)}
-                          />
+                          >
+                            {mobileOpenFolderMenu === folder.id && (
+                              <div style={{
+                                position: 'absolute',
+                                top: '100%',
+                                right: '0',
+                                backgroundColor: 'white',
+                                border: '1px solid #e1e3e5',
+                                borderRadius: '8px',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                zIndex: 1000,
+                                minWidth: '120px',
+                                padding: '8px 0'
+                              }}>
+                                <button
+                                  style={{
+                                    width: '100%',
+                                    padding: '8px 16px',
+                                    border: 'none',
+                                    background: 'none',
+                                    textAlign: 'left',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    color: '#374151'
+                                  }}
+                                  onClick={() => {
+                                    setShowRenameFolderModal(folder.id);
+                                    setEditingFolderName(folder.name);
+                                    setMobileOpenFolderMenu(null);
+                                  }}
+                                >
+                                  Rename
+                                </button>
+                                <button
+                                  style={{
+                                    width: '100%',
+                                    padding: '8px 16px',
+                                    border: 'none',
+                                    background: 'none',
+                                    textAlign: 'left',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    color: '#374151'
+                                  }}
+                                  onClick={() => {
+                                    setShowIconPicker(folder.id);
+                                    setMobileOpenFolderMenu(null);
+                                  }}
+                                >
+                                  Change Icon
+                                </button>
+                                <button
+                                  style={{
+                                    width: '100%',
+                                    padding: '8px 16px',
+                                    border: 'none',
+                                    background: 'none',
+                                    textAlign: 'left',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    color: '#d72c0d'
+                                  }}
+                                  onClick={() => {
+                                    setShowDeleteConfirm(folder.id);
+                                    setMobileOpenFolderMenu(null);
+                                  }}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </DraggableFolder>
                         ))}
                       </div>
                     </SortableContext>
@@ -4355,28 +4436,18 @@ export default function Index() {
                       variant="primary"
                       fullWidth
                       onClick={() => setShowNewFolderModal(true)}
+                      style={{ backgroundColor: '#008060', borderColor: '#008060' }}
                     >
                       <span style={{ fontSize: '16px', marginRight: '8px', color: 'white' }}>➕</span>
                       <span style={{ color: 'white' }}>Create New Folder</span>
                     </Button>
                   </div>
-                  
-                  {/* Go to Notes Button */}
-                  {selectedFolder && (
-                    <div style={{ marginTop: '16px' }}>
-                      <Button
-                        variant="primary"
-                        fullWidth
-                        onClick={() => setMobileActiveSection('notes')}
-                      >
-                        View Notes in {localFolders.find(f => f.id === selectedFolder)?.name || 'Selected Folder'}
-                      </Button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  <p style={{ color: '#6d7175', margin: '0 0 16px 0' }}>Select tags to filter notes</p>
+                </div>
+
+                {/* Tags Section */}
+                <div style={{ marginBottom: '24px' }}>
+                  <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600', color: '#374151' }}>Tags</h3>
+                  <p style={{ color: '#6d7175', margin: '0 0 16px 0', fontSize: '14px' }}>Select tags to filter notes</p>
                   
                   {/* Tags List */}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -4409,9 +4480,9 @@ export default function Index() {
                         } : undefined}
                         style={{
                           cursor: 'pointer',
-                          backgroundColor: selectedTags.includes(tag) ? '#008060' : 'white',
-                          color: selectedTags.includes(tag) ? 'white' : '#6d7175',
-                          borderColor: selectedTags.includes(tag) ? '#008060' : '#e1e3e5'
+                          backgroundColor: selectedTags.includes(tag) ? '#008060' : '#f6fff8',
+                          color: selectedTags.includes(tag) ? 'white' : '#008060',
+                          borderColor: '#008060'
                         }}
                       >
                         {tag}
@@ -4429,21 +4500,26 @@ export default function Index() {
                       No tags found. Create notes with tags to see them here.
                     </div>
                   )}
-                  
-                  {/* Go to Notes Button */}
-                  {selectedTags.length > 0 && (
-                    <div style={{ marginTop: '20px' }}>
-                      <Button
-                        variant="primary"
-                        fullWidth
-                        onClick={() => setMobileActiveSection('notes')}
-                      >
-                        View Notes ({selectedTags.length} tag{selectedTags.length > 1 ? 's' : ''} selected)
-                      </Button>
-                    </div>
-                  )}
-                </>
-              )}
+                </div>
+
+                {/* Go to Notes Button */}
+                {(selectedFolder || selectedTags.length > 0) && (
+                  <div style={{ marginTop: '20px' }}>
+                    <Button
+                      variant="primary"
+                      fullWidth
+                      onClick={() => setMobileActiveSection('notes')}
+                    >
+                      {selectedFolder && selectedTags.length > 0 
+                        ? `View Notes in ${localFolders.find(f => f.id === selectedFolder)?.name} (${selectedTags.length} tag${selectedTags.length > 1 ? 's' : ''} selected)`
+                        : selectedFolder 
+                        ? `View Notes in ${localFolders.find(f => f.id === selectedFolder)?.name}`
+                        : `View Notes (${selectedTags.length} tag${selectedTags.length > 1 ? 's' : ''} selected)`
+                      }
+                    </Button>
+                  </div>
+                )}
+              </>
             </div>
           </div>
 
@@ -4585,70 +4661,16 @@ export default function Index() {
                           <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', flex: 1 }}>
                             {note.title || 'Untitled'}
                           </h3>
-                          
-                          {/* Action Buttons */}
-                          <div style={{ display: 'flex', gap: '4px', marginLeft: '8px' }}>
-                            {/* Select Button */}
-                            <button
-                              style={{
-                                padding: '4px 8px',
-                                border: '1px solid #e1e3e5',
-                                borderRadius: '4px',
-                                backgroundColor: selectedNotes.includes(note.id) ? '#008060' : 'white',
-                                color: selectedNotes.includes(note.id) ? 'white' : '#6d7175',
-                                fontSize: '10px',
-                                cursor: 'pointer'
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (selectedNotes.includes(note.id)) {
-                                  setSelectedNotes(selectedNotes.filter(id => id !== note.id));
-                                } else {
-                                  setSelectedNotes([...selectedNotes, note.id]);
-                                }
-                              }}
-                            >
-                              {selectedNotes.includes(note.id) ? '✓' : '○'}
-                            </button>
-                            
-                            {/* Manage Button */}
-                            <button
-                              style={{
-                                padding: '4px 8px',
-                                border: '1px solid #e1e3e5',
-                                borderRadius: '4px',
-                                backgroundColor: 'white',
-                                color: '#6d7175',
-                                fontSize: '10px',
-                                cursor: 'pointer'
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
-                              }}
-                            >
-                              ⋯
-                            </button>
-                            
-                            {/* Delete Button */}
-                            <button
-                              style={{
-                                padding: '4px 8px',
-                                border: '1px solid #e1e3e5',
-                                borderRadius: '4px',
-                                backgroundColor: 'white',
-                                color: '#d72c0d',
-                                fontSize: '10px',
-                                cursor: 'pointer'
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowDeleteNoteConfirm(note.id);
-                              }}
-                            >
-                              🗑️
-                            </button>
-                          </div>
+                          {/* Pin Icon */}
+                          {note.pinnedAt && (
+                            <div style={{ marginLeft: '8px' }}>
+                              <i className="fas fa-thumbtack" style={{ 
+                                color: '#008060', 
+                                fontSize: '14px',
+                                transform: 'rotate(45deg)'
+                              }}></i>
+                            </div>
+                          )}
                         </div>
                         
                         {/* Note Content */}
@@ -4692,21 +4714,161 @@ export default function Index() {
                           </div>
                         )}
                         
-                        {/* Date Information */}
+                        {/* Date Information and Action Buttons */}
                         <div style={{ 
                           display: 'flex', 
                           justifyContent: 'space-between', 
                           alignItems: 'center',
-                          fontSize: '11px',
-                          color: '#6d7175',
                           borderTop: '1px solid #f1f3f4',
                           paddingTop: '8px',
                           marginTop: '8px'
                         }}>
-                          <span>Created: {createdAt}</span>
-                          {wasEdited && (
-                            <span>Edited: {updatedAt}</span>
-                          )}
+                          {/* Date Information - Left Side */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{ fontSize: '11px', color: '#6d7175', fontWeight: 'bold' }}>Created: {createdAt}</span>
+                            {wasEdited && (
+                              <span style={{ fontSize: '11px', color: '#6d7175', fontWeight: 'bold' }}>Edited: {updatedAt}</span>
+                            )}
+                          </div>
+                          
+                          {/* Action Buttons - Right Side */}
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            {/* Select Button */}
+                            <button
+                              style={{
+                                padding: '4px 8px',
+                                border: '1px solid #e1e3e5',
+                                borderRadius: '4px',
+                                backgroundColor: selectedNotes.includes(note.id) ? '#008060' : 'white',
+                                color: selectedNotes.includes(note.id) ? 'white' : '#6d7175',
+                                fontSize: '10px',
+                                cursor: 'pointer'
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (selectedNotes.includes(note.id)) {
+                                  setSelectedNotes(selectedNotes.filter(id => id !== note.id));
+                                } else {
+                                  setSelectedNotes([...selectedNotes, note.id]);
+                                }
+                              }}
+                            >
+                              {selectedNotes.includes(note.id) ? '✓' : '○'}
+                            </button>
+                            
+                            {/* Manage Button */}
+                            <div style={{ position: 'relative' }}>
+                              <button
+                                style={{
+                                  padding: '4px 8px',
+                                  border: '1px solid #e1e3e5',
+                                  borderRadius: '4px',
+                                  backgroundColor: 'white',
+                                  color: '#6d7175',
+                                  fontSize: '10px',
+                                  cursor: 'pointer'
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
+                                }}
+                              >
+                                ⋯
+                              </button>
+                              {openNoteMenu === note.id && (
+                                <div style={{
+                                  position: 'absolute',
+                                  top: '100%',
+                                  right: '0',
+                                  backgroundColor: 'white',
+                                  border: '1px solid #e1e3e5',
+                                  borderRadius: '8px',
+                                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                  zIndex: 1000,
+                                  minWidth: '120px',
+                                  padding: '8px 0'
+                                }}>
+                                  <button
+                                    style={{
+                                      width: '100%',
+                                      padding: '8px 16px',
+                                      border: 'none',
+                                      background: 'none',
+                                      textAlign: 'left',
+                                      cursor: 'pointer',
+                                      fontSize: '14px',
+                                      color: '#374151'
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditNote(note);
+                                      setMobileActiveSection('editor');
+                                      setOpenNoteMenu(null);
+                                    }}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    style={{
+                                      width: '100%',
+                                      padding: '8px 16px',
+                                      border: 'none',
+                                      background: 'none',
+                                      textAlign: 'left',
+                                      cursor: 'pointer',
+                                      fontSize: '14px',
+                                      color: '#374151'
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDuplicateNote(note);
+                                      setOpenNoteMenu(null);
+                                    }}
+                                  >
+                                    Duplicate
+                                  </button>
+                                  <button
+                                    style={{
+                                      width: '100%',
+                                      padding: '8px 16px',
+                                      border: 'none',
+                                      background: 'none',
+                                      textAlign: 'left',
+                                      cursor: 'pointer',
+                                      fontSize: '14px',
+                                      color: '#d72c0d'
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowDeleteNoteConfirm(note.id);
+                                      setOpenNoteMenu(null);
+                                    }}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Delete Button */}
+                            <button
+                              style={{
+                                padding: '4px 8px',
+                                border: '1px solid #e1e3e5',
+                                borderRadius: '4px',
+                                backgroundColor: 'white',
+                                color: '#d72c0d',
+                                fontSize: '10px',
+                                cursor: 'pointer'
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowDeleteNoteConfirm(note.id);
+                              }}
+                            >
+                              🗑️
+                            </button>
+                          </div>
                         </div>
                         
                         {/* Click to Edit Overlay */}
@@ -4745,9 +4907,10 @@ export default function Index() {
                     handleNewNote();
                     setMobileActiveSection('editor');
                   }}
+                  style={{ backgroundColor: '#008060', borderColor: '#008060' }}
                 >
-                  <span style={{ fontSize: '16px', marginRight: '8px' }}>➕</span>
-                  New Note
+                  <span style={{ fontSize: '16px', marginRight: '8px', color: 'white' }}>➕</span>
+                  <span style={{ color: 'white' }}>New Note</span>
                 </Button>
               </div>
             </div>
@@ -4773,22 +4936,25 @@ export default function Index() {
             }}>
               {/* Editor Header */}
               <div style={{ 
-                padding: "16px", 
+                padding: "12px 16px", 
                 borderBottom: "1px solid #e1e3e5",
-                marginBottom: "16px"
+                marginBottom: "16px",
+                backgroundColor: "#f8f9fa",
+                borderRadius: "8px 8px 0 0"
               }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Note Editor</h2>
-                  <div style={{ display: "flex", gap: "8px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                  <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>Note Editor</h2>
+                  <div style={{ display: "flex", gap: "6px" }}>
                     <button
                       style={{
-                        padding: "8px 16px",
+                        padding: "6px 12px",
                         backgroundColor: "#008060",
                         color: "white",
                         border: "none",
-                        borderRadius: "4px",
+                        borderRadius: "6px",
                         cursor: "pointer",
-                        fontSize: "14px"
+                        fontSize: "12px",
+                        fontWeight: "500"
                       }}
                       onClick={handleSaveNote}
                     >
@@ -4796,13 +4962,14 @@ export default function Index() {
                     </button>
                     <button
                       style={{
-                        padding: "8px 16px",
+                        padding: "6px 12px",
                         backgroundColor: "#6d7175",
                         color: "white",
                         border: "none",
-                        borderRadius: "4px",
+                        borderRadius: "6px",
                         cursor: "pointer",
-                        fontSize: "14px"
+                        fontSize: "12px",
+                        fontWeight: "500"
                       }}
                       onClick={() => setMobileActiveSection('notes')}
                     >
@@ -4814,17 +4981,33 @@ export default function Index() {
                 {/* Folder Path */}
                 {selectedFolder && (
                   <div style={{ 
-                    fontSize: "14px", 
+                    fontSize: "12px", 
                     color: "#6d7175",
-                    marginBottom: "8px"
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    backgroundColor: "white",
+                    padding: "6px 8px",
+                    borderRadius: "4px",
+                    border: "1px solid #e1e3e5"
                   }}>
-                    📁 {localFolders.find(f => f.id === selectedFolder)?.name}
+                    <FolderIcon style={{ width: '14px', height: '14px' }} />
+                    {localFolders.find(f => f.id === selectedFolder)?.name}
                   </div>
                 )}
               </div>
 
               {/* Title Input */}
-              <div style={{ marginBottom: "16px" }}>
+              <div style={{ marginBottom: "12px" }}>
+                <label style={{ 
+                  display: "block", 
+                  fontSize: "12px", 
+                  fontWeight: "600", 
+                  color: "#374151", 
+                  marginBottom: "4px" 
+                }}>
+                  Title
+                </label>
                 <input
                   type="text"
                   placeholder="Note title..."
@@ -4832,17 +5015,27 @@ export default function Index() {
                   onChange={(e) => setTitle(e.target.value)}
                   style={{
                     width: "100%",
-                    padding: "12px",
+                    padding: "10px 12px",
                     border: "1px solid #e1e3e5",
-                    borderRadius: "4px",
-                    fontSize: "16px",
-                    fontWeight: "600"
+                    borderRadius: "6px",
+                    fontSize: "15px",
+                    fontWeight: "600",
+                    backgroundColor: "white"
                   }}
                 />
               </div>
 
               {/* Tags Input */}
-              <div style={{ marginBottom: "16px" }}>
+              <div style={{ marginBottom: "12px" }}>
+                <label style={{ 
+                  display: "block", 
+                  fontSize: "12px", 
+                  fontWeight: "600", 
+                  color: "#374151", 
+                  marginBottom: "4px" 
+                }}>
+                  Tags
+                </label>
                 <input
                   type="text"
                   placeholder="Add tags (comma separated)..."
@@ -4857,10 +5050,11 @@ export default function Index() {
                   }}
                   style={{
                     width: "100%",
-                    padding: "12px",
+                    padding: "10px 12px",
                     border: "1px solid #e1e3e5",
-                    borderRadius: "4px",
-                    fontSize: "14px"
+                    borderRadius: "6px",
+                    fontSize: "13px",
+                    backgroundColor: "white"
                   }}
                 />
                 {noteTags.length > 0 && (
@@ -4903,12 +5097,30 @@ export default function Index() {
               </div>
 
               {/* Rich Text Editor */}
-              <div style={{ flex: 1, minHeight: "300px" }}>
-                <AdvancedRTE
-                  value={body}
-                  onChange={setBody}
-                  placeholder="Type your note here..."
-                />
+              <div style={{ 
+                flex: 1, 
+                minHeight: "250px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "6px",
+                overflow: "hidden"
+              }}>
+                <div style={{ 
+                  padding: "8px 12px", 
+                  backgroundColor: "#f8f9fa", 
+                  borderBottom: "1px solid #e1e3e5",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  color: "#374151"
+                }}>
+                  Content
+                </div>
+                <div style={{ height: "calc(100% - 40px)" }}>
+                  <AdvancedRTE
+                    value={body}
+                    onChange={setBody}
+                    placeholder="Type your note here..."
+                  />
+                </div>
               </div>
             </div>
           </div>
