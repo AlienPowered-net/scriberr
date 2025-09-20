@@ -7,6 +7,7 @@ import {
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import { prisma } from "./utils/db.server";
 import { initializeDatabase } from "./utils/db-init.server";
+import { RobustPrismaSessionStorage } from "./utils/session-storage.server";
 
 // Initialize database on startup
 initializeDatabase().catch((error) => {
@@ -21,7 +22,7 @@ export const shopify = shopifyApp({
   scopes: (process.env.SCOPES || "").split(",").map(s => s.trim()).filter(Boolean),
   appUrl: process.env.SHOPIFY_APP_URL || process.env.APP_URL,
   authPathPrefix: "/auth",
-  sessionStorage: new PrismaSessionStorage(prisma),
+  sessionStorage: new RobustPrismaSessionStorage(prisma),
   distribution: AppDistribution.AppStore,
   future: {
     unstable_newEmbeddedAuthStrategy: true,
