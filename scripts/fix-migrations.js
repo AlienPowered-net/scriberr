@@ -30,38 +30,14 @@ async function fixMigrations() {
       console.log('Migration check failed:', error.message);
     }
     
-    // Ensure Session table exists
+    // Check if Session table exists and is accessible
     try {
       await prisma.$queryRaw`SELECT 1 FROM "Session" LIMIT 1`;
-      console.log('✅ Session table exists');
+      console.log('✅ Session table exists and is accessible');
     } catch (error) {
-      console.log('Creating Session table...');
-      await prisma.$executeRaw`
-        CREATE TABLE IF NOT EXISTS "public"."Session" (
-          "id" TEXT NOT NULL,
-          "shop" TEXT NOT NULL,
-          "state" TEXT NOT NULL,
-          "isOnline" BOOLEAN NOT NULL,
-          "scope" TEXT,
-          "expires" TIMESTAMP(3),
-          "accessToken" TEXT,
-          "userId" BIGINT,
-          "firstName" TEXT,
-          "lastName" TEXT,
-          "email" TEXT,
-          "accountOwner" BOOLEAN DEFAULT false,
-          "locale" TEXT,
-          "collaborator" BOOLEAN DEFAULT false,
-          "emailVerified" BOOLEAN DEFAULT false,
-          "onlineAccessInfo" JSONB,
-          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          "updatedAt" TIMESTAMP(3) NOT NULL,
-          CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
-        )
-      `;
-      
-      await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "Session_shop_idx" ON "public"."Session"("shop")`;
-      console.log('✅ Session table created');
+      console.log('Session table check failed:', error.message);
+      // If the table doesn't exist or has issues, we'll let prisma migrate deploy handle it
+      console.log('⚠️ Session table may need to be created by migrations');
     }
     
     console.log('✅ Migration fix completed successfully');
