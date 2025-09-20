@@ -3,10 +3,11 @@
   "version": "Alpha Version: 296",
   "private": true,
   "scripts": {
-    "vercel-build": "prisma generate && prisma migrate deploy && npm run build",
+    "vercel-build": "prisma generate && node scripts/fix-migrations.js && prisma migrate deploy && npm run build",
     "build": "remix vite:build",
     "increment-version": "node scripts/increment-version.js",
     "apply-icon-migration": "node scripts/apply-icon-migration.js",
+    "fix-migrations": "node scripts/fix-migrations.js",
     "dev": "shopify app dev",
     "config:link": "shopify app config link",
     "generate": "shopify app generate",
