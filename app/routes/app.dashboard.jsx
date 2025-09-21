@@ -4472,6 +4472,7 @@ export default function Index() {
                   )}
                 </div>
 
+
                 {/* Folders Section */}
                 <div style={{ marginBottom: '24px' }}>
                   <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600', color: '#374151' }}>Folders</h3>
@@ -4508,103 +4509,138 @@ export default function Index() {
                       }}></i>
                       All Notes
                     </span>
+                    {selectedFolder === null && (
+                      <span style={{ 
+                        fontSize: "12px", 
+                        color: "#008060", 
+                        backgroundColor: "rgba(0, 128, 96, 0.1)", 
+                        padding: "2px 6px", 
+                        borderRadius: "4px",
+                        fontWeight: "600"
+                      }}>
+                        Active
+                      </span>
+                    )}
                   </div>
 
                   {/* Folders List */}
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleMobileFolderDragEnd}
-                  >
-                    <SortableContext
-                      items={localFolders.map(f => f.id)}
-                      strategy={verticalListSortingStrategy}
+                  {localFolders.length === 0 ? (
+                    <div style={{ 
+                      padding: "20px", 
+                      textAlign: "center", 
+                      color: "#6d7175",
+                      backgroundColor: "#f8f9fa",
+                      borderRadius: "8px",
+                      border: "1px solid #e1e3e5"
+                    }}>
+                      <i className="far fa-folder" style={{ fontSize: "24px", marginBottom: "8px", display: "block" }}></i>
+                      <p style={{ margin: 0, fontSize: "14px" }}>No folders created yet</p>
+                    </div>
+                  ) : (
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleFolderDragEnd}
                     >
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {localFolders.map((folder) => (
-                          <DraggableFolder 
-                            key={folder.id} 
-                            folder={folder}
-                            selectedFolder={selectedFolder}
-                            openFolderMenu={mobileOpenFolderMenu}
-                            setOpenFolderMenu={setMobileOpenFolderMenu}
-                            onFolderClick={(folderId) => setSelectedFolder(selectedFolder === folderId ? null : folderId)}
-                          >
-                            {mobileOpenFolderMenu === folder.id && (
-                              <div style={{
-                                position: 'absolute',
-                                top: '100%',
-                                right: '0',
-                                backgroundColor: 'white',
-                                border: '1px solid #e1e3e5',
-                                borderRadius: '8px',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                zIndex: 1000,
-                                minWidth: '120px',
-                                padding: '8px 0'
-                              }}>
-                                <button
-                                  style={{
-                                    width: '100%',
-                                    padding: '8px 16px',
-                                    border: 'none',
-                                    background: 'none',
-                                    textAlign: 'left',
-                                    cursor: 'pointer',
-                                    fontSize: '14px',
-                                    color: '#374151'
-                                  }}
-                                  onClick={() => {
-                                    setShowRenameFolderModal(folder.id);
-                                    setEditingFolderName(folder.name);
-                                    setMobileOpenFolderMenu(null);
-                                  }}
-                                >
-                                  Rename
-                                </button>
-                                <button
-                                  style={{
-                                    width: '100%',
-                                    padding: '8px 16px',
-                                    border: 'none',
-                                    background: 'none',
-                                    textAlign: 'left',
-                                    cursor: 'pointer',
-                                    fontSize: '14px',
-                                    color: '#374151'
-                                  }}
-                                  onClick={() => {
-                                    setShowIconPicker(folder.id);
-                                    setMobileOpenFolderMenu(null);
-                                  }}
-                                >
-                                  Change Icon
-                                </button>
-                                <button
-                                  style={{
-                                    width: '100%',
-                                    padding: '8px 16px',
-                                    border: 'none',
-                                    background: 'none',
-                                    textAlign: 'left',
-                                    cursor: 'pointer',
-                                    fontSize: '14px',
-                                    color: '#d72c0d'
-                                  }}
-                                  onClick={() => {
-                                    setShowDeleteConfirm(folder.id);
-                                    setMobileOpenFolderMenu(null);
-                                  }}
-                                >
-                                  Delete
-                                </button>
+                      <SortableContext items={localFolders.map(f => f.id)}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                          {localFolders.map((folder) => (
+                            <DraggableFolder key={folder.id} folder={folder}>
+                              <div
+                                style={{
+                                  padding: "12px 16px",
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  backgroundColor: selectedFolder === folder.id ? "#f6fff8" : "#F8F9FA",
+                                  border: selectedFolder === folder.id ? "2px solid #008060" : "2px solid #E1E3E5",
+                                  borderRadius: "8px",
+                                  position: "relative",
+                                  transition: "all 0.2s ease",
+                                  boxShadow: selectedFolder === folder.id ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)",
+                                  cursor: "pointer"
+                                }}
+                                onClick={() => setSelectedFolder(folder.id)}
+                              >
+                                <span style={{ 
+                                  fontWeight: "600", 
+                                  display: "flex", 
+                                  alignItems: "center", 
+                                  gap: "8px",
+                                  color: selectedFolder === folder.id ? "#008060" : "#374151",
+                                  fontSize: "14px"
+                                }}>
+                                  <i className={`far fa-${folder.icon}`} style={{ 
+                                    fontSize: "18px", 
+                                    color: selectedFolder === folder.id ? "#008060" : folder.iconColor || "#6d7175"
+                                  }}></i>
+                                  {folder.name}
+                                </span>
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                  <span style={{ 
+                                    fontSize: "12px", 
+                                    color: "#6d7175", 
+                                    backgroundColor: "rgba(0, 0, 0, 0.05)", 
+                                    padding: "2px 6px", 
+                                    borderRadius: "4px"
+                                  }}>
+                                    {localNotes.filter(note => note.folderId === folder.id).length}
+                                  </span>
+                                  {selectedFolder === folder.id && (
+                                    <span style={{ 
+                                      fontSize: "12px", 
+                                      color: "#008060", 
+                                      backgroundColor: "rgba(0, 128, 96, 0.1)", 
+                                      padding: "2px 6px", 
+                                      borderRadius: "4px",
+                                      fontWeight: "600"
+                                    }}>
+                                      Active
+                                    </span>
+                                  )}
+                                </div>
                               </div>
-                            )}
-                          </DraggableFolder>
-                        ))}
-                      </div>
-                    </SortableContext>
-                  </DndContext>
+                              {selectedFolder === folder.id && (
+                                <div style={{ 
+                                  marginTop: "8px", 
+                                  padding: "8px 12px", 
+                                  backgroundColor: "#f0f9ff", 
+                                  borderRadius: "6px", 
+                                  border: "1px solid #e0f2fe"
+                                }}>
+                                  <button
+                                    style={{
+                                      background: "none",
+                                      border: "none",
+                                      color: "#dc2626",
+                                      cursor: "pointer",
+                                      fontSize: "12px",
+                                      padding: "4px 8px",
+                                      borderRadius: "4px",
+                                      transition: "background-color 0.2s"
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowDeleteConfirm(folder.id);
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.target.style.backgroundColor = "#fee2e2";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.target.style.backgroundColor = "transparent";
+                                    }}
+                                  >
+                                    <i className="fas fa-trash" style={{ marginRight: "4px" }}></i>
+                                    Delete Folder
+                                  </button>
+                                </div>
+                              )}
+                            </DraggableFolder>
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
+                  )}
                   
                   {/* Create New Folder Button */}
                   <div style={{ marginTop: '16px' }}>
