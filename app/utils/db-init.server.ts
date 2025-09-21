@@ -9,8 +9,8 @@ export async function initializeDatabase() {
   }
 
   try {
-    // Test database connection
-    await prisma.$connect();
+    // Test database connection with retry
+    await connectWithRetry();
     
     // Check if session table exists by trying to query it
     try {
@@ -38,9 +38,27 @@ export async function initializeDatabase() {
   }
 }
 
+// Connection retry mechanism
+async function connectWithRetry(maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await prisma.$connect();
+      console.log('Database connected successfully');
+      return;
+    } catch (error) {
+      console.error(`Database connection attempt ${attempt} failed:`, error);
+      if (attempt === maxRetries) {
+        throw error;
+      }
+      // Wait before retrying (exponential backoff)
+      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+    }
+  }
+}
+
 export async function ensureDatabaseConnection() {
   try {
-    await prisma.$connect();
+    await connectWithRetry();
     return true;
   } catch (error) {
     console.error("Database connection failed:", error);
