@@ -2557,112 +2557,6 @@ export default function Index() {
               backgroundColor: "white",
               flexShrink: 0
             }}>
-              {/* Tags Section */}
-              <div style={{ marginBottom: "24px" }}>
-                {/* Tags List */}
-                {(showTagsSection || selectedTags.length > 0) && (
-                  <div style={{ 
-                    marginBottom: "12px",
-                    padding: "12px",
-                    backgroundColor: "#f8f9fa",
-                    borderRadius: "8px",
-                    border: "1px solid #e1e3e5"
-                  }}>
-                    {getAllTagsWithCounts().length === 0 ? (
-                      <Text as="p" style={{ color: "#6d7175", fontSize: "14px" }}>No tags created yet</Text>
-                    ) : (
-                      <div style={{ 
-                        display: "flex", 
-                        flexWrap: "wrap", 
-                        gap: "6px",
-                        padding: "8px 0"
-                      }}>
-                        {getAllTagsWithCounts().map(({ tag, count }) => (
-                          <div
-                            key={tag}
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "6px",
-                              padding: "4px 8px",
-                              backgroundColor: selectedTags.includes(tag) ? "#008060" : "transparent",
-                              borderRadius: "16px",
-                              border: selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060",
-                              cursor: "pointer",
-                              transition: "all 0.15s ease",
-                              position: "relative",
-                              fontSize: "12px",
-                              fontWeight: "400",
-                              color: selectedTags.includes(tag) ? "white" : "#008060",
-                              minHeight: "24px",
-                              justifyContent: "center",
-                              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                            }}
-                            onClick={() => handleTagClick(tag)}
-                            onMouseEnter={(e) => {
-                              if (!selectedTags.includes(tag)) {
-                                e.currentTarget.style.backgroundColor = "#e1e3e5";
-                                e.currentTarget.style.borderColor = "#aeb4b9";
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!selectedTags.includes(tag)) {
-                                e.currentTarget.style.backgroundColor = "#f6f6f7";
-                                e.currentTarget.style.borderColor = "#d1d3d4";
-                              }
-                            }}
-                          >
-                            <span>{tag}</span>
-                            <span style={{ 
-                              fontSize: "11px", 
-                              color: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175", 
-                              backgroundColor: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)", 
-                              padding: "1px 4px", 
-                              borderRadius: "2px",
-                              fontWeight: "500"
-                            }}>
-                              {count}
-                            </span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowDeleteTagConfirm(tag);
-                              }}
-                              style={{
-                                background: "none",
-                                border: "none",
-                                cursor: "pointer",
-                                fontSize: "12px",
-                                color: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175",
-                                padding: "2px",
-                                borderRadius: "2px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                transition: "all 0.15s ease",
-                                marginLeft: "2px",
-                                width: "16px",
-                                height: "16px",
-                                opacity: "0.8"
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)";
-                                e.target.style.opacity = "1";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = "transparent";
-                                e.target.style.opacity = "0.8";
-                              }}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
 
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -2833,6 +2727,110 @@ export default function Index() {
                   </div>
                 )}
               </div>
+
+              {/* Tags Section - Under All Notes & All Tags Buttons */}
+              {((selectedFolder === null && selectedTags.length > 0) || (selectedFolder !== null && (showTagsSection || selectedTags.length > 0))) && (
+                <div style={{ 
+                  marginBottom: "12px",
+                  padding: "12px",
+                  backgroundColor: "#f8f9fa",
+                  borderRadius: "8px",
+                  border: "1px solid #e1e3e5"
+                }}>
+                  {getAllTagsWithCounts().length === 0 ? (
+                    <Text as="p" style={{ color: "#6d7175", fontSize: "14px" }}>No tags created yet</Text>
+                  ) : (
+                    <div style={{ 
+                      display: "flex", 
+                      flexWrap: "wrap", 
+                      gap: "6px",
+                      padding: "8px 0"
+                    }}>
+                      {getAllTagsWithCounts().map(({ tag, count }) => (
+                        <div
+                          key={tag}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            padding: "4px 8px",
+                            backgroundColor: selectedTags.includes(tag) ? "#008060" : "transparent",
+                            borderRadius: "16px",
+                            border: selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060",
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
+                            position: "relative",
+                            fontSize: "12px",
+                            fontWeight: "400",
+                            color: selectedTags.includes(tag) ? "white" : "#008060",
+                            minHeight: "24px",
+                            justifyContent: "center",
+                            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+                          }}
+                          onClick={() => handleTagClick(tag)}
+                          onMouseEnter={(e) => {
+                            if (!selectedTags.includes(tag)) {
+                              e.currentTarget.style.backgroundColor = "#e1e3e5";
+                              e.currentTarget.style.borderColor = "#aeb4b9";
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!selectedTags.includes(tag)) {
+                              e.currentTarget.style.backgroundColor = "#f6f6f7";
+                              e.currentTarget.style.borderColor = "#d1d3d4";
+                            }
+                          }}
+                        >
+                          <span>{tag}</span>
+                          <span style={{ 
+                            fontSize: "11px", 
+                            color: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175", 
+                            backgroundColor: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)", 
+                            padding: "1px 4px", 
+                            borderRadius: "2px",
+                            fontWeight: "500"
+                          }}>
+                            {count}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowDeleteTagConfirm(tag);
+                            }}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              fontSize: "12px",
+                              color: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175",
+                              padding: "2px",
+                              borderRadius: "2px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              transition: "all 0.15s ease",
+                              marginLeft: "2px",
+                              width: "16px",
+                              height: "16px",
+                              opacity: "0.8"
+                            }}
+                            onMouseEnter={(e) => {
+                              e.target.style.backgroundColor = selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)";
+                              e.target.style.opacity = "1";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.backgroundColor = "transparent";
+                              e.target.style.opacity = "0.8";
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
             </div>
 
