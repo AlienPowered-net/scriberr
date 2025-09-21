@@ -2672,7 +2672,7 @@ export default function Index() {
                       onClick={() => setShowNewFolderModal(true)}
                       style={{ backgroundColor: '#008060', borderColor: '#008060' }}
                     >
-                      <PlusIcon style={{ width: '16px', height: '16px', marginRight: '8px', color: 'white' }} />
+                      <PlusIcon style={{ width: '20px', height: '20px', marginRight: '8px', color: 'white' }} />
                       <span style={{ color: 'white' }}>Create New Folder</span>
                     </Button>
                   </div>
