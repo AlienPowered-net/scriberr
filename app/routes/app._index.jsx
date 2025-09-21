@@ -2429,7 +2429,7 @@ export default function Index() {
                               alignItems: "center",
                               gap: "6px",
                               padding: "4px 8px",
-                              backgroundColor: selectedTags.includes(tag) ? "#008060" : "#f6fff8",
+                              backgroundColor: selectedTags.includes(tag) ? "#008060" : "transparent",
                               borderRadius: "16px",
                               border: selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060",
                               cursor: "pointer",
