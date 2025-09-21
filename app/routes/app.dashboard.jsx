@@ -4382,6 +4382,7 @@ export default function Index() {
               
               <>
                 {/* Tags Section - Mobile */}
+                {(showTagsSection || selectedTags.length > 0) && (
                 <div style={{ marginBottom: '24px' }}>
                   <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600', color: '#374151' }}>Tags</h3>
                   <p style={{ color: '#6d7175', margin: '0 0 16px 0', fontSize: '14px' }}>Filter notes by tags</p>
@@ -4618,25 +4619,8 @@ export default function Index() {
                     </Button>
                   </div>
                 </div>
-
-
-                {/* Go to Notes Button */}
-                {(selectedFolder || selectedTags.length > 0) && (
-                  <div style={{ marginTop: '20px' }}>
-                    <Button
-                      variant="primary"
-                      fullWidth
-                      onClick={() => setMobileActiveSection('notes')}
-                    >
-                      {selectedFolder && selectedTags.length > 0 
-                        ? `View Notes in ${localFolders.find(f => f.id === selectedFolder)?.name} (${selectedTags.length} tag${selectedTags.length > 1 ? 's' : ''} selected)`
-                        : selectedFolder 
-                        ? `View Notes in ${localFolders.find(f => f.id === selectedFolder)?.name}`
-                        : `View Notes (${selectedTags.length} tag${selectedTags.length > 1 ? 's' : ''} selected)`
-                      }
-                    </Button>
-                  </div>
                 )}
+
               </>
             </div>
           </div>
