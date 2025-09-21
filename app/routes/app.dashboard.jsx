@@ -2729,7 +2729,7 @@ export default function Index() {
               </div>
 
               {/* Tags Section - Under All Notes & All Tags Buttons */}
-              {((selectedFolder === null && selectedTags.length > 0) || (selectedFolder !== null && (showTagsSection || selectedTags.length > 0))) && (
+              {(showTagsSection || selectedTags.length > 0) && (
                 <div style={{ 
                   marginBottom: "12px",
                   padding: "12px",
