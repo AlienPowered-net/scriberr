@@ -4471,8 +4471,190 @@ export default function Index() {
                     </div>
                   )}
                 </div>
-
                 )}
+
+                {/* Folders Section - Always Visible */}
+                <div style={{ marginBottom: '24px' }}>
+                  <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600', color: '#374151' }}>Folders</h3>
+                  <p style={{ color: '#6d7175', margin: '0 0 16px 0', fontSize: '14px' }}>Select a folder to view its notes</p>
+                  
+                  {/* All Notes Option */}
+                  <div style={{ 
+                    padding: "12px 16px", 
+                    marginBottom: "8px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    backgroundColor: selectedFolder === null ? "#f6fff8" : "#F8F9FA",
+                    border: selectedFolder === null ? "2px solid #008060" : "2px solid #E1E3E5",
+                    borderRadius: "8px",
+                    position: "relative",
+                    transition: "all 0.2s ease",
+                    boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)",
+                    cursor: "pointer"
+                  }}
+                  onClick={() => setSelectedFolder(null)}
+                  >
+                    <span style={{ 
+                      fontWeight: "700", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: "8px",
+                      color: selectedFolder === null ? "#008060" : "#374151",
+                      fontSize: "14px"
+                    }}>
+                      <i className="far fa-sticky-note" style={{ 
+                        fontSize: "18px", 
+                        color: selectedFolder === null ? "#008060" : "#6d7175"
+                      }}></i>
+                      All Notes
+                    </span>
+                    {selectedFolder === null && (
+                      <span style={{ 
+                        fontSize: "12px", 
+                        color: "#008060", 
+                        backgroundColor: "rgba(0, 128, 96, 0.1)", 
+                        padding: "2px 6px", 
+                        borderRadius: "4px",
+                        fontWeight: "600"
+                      }}>
+                        Active
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Folders List */}
+                  {localFolders.length === 0 ? (
+                    <div style={{ 
+                      padding: "20px", 
+                      textAlign: "center", 
+                      color: "#6d7175",
+                      backgroundColor: "#f8f9fa",
+                      borderRadius: "8px",
+                      border: "1px solid #e1e3e5"
+                    }}>
+                      <i className="far fa-folder" style={{ fontSize: "24px", marginBottom: "8px", display: "block" }}></i>
+                      <p style={{ margin: 0, fontSize: "14px" }}>No folders created yet</p>
+                    </div>
+                  ) : (
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleFolderDragEnd}
+                    >
+                      <SortableContext items={localFolders.map(f => f.id)}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                          {localFolders.map((folder) => (
+                            <DraggableFolder key={folder.id} folder={folder}>
+                              <div
+                                style={{
+                                  padding: "12px 16px",
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  backgroundColor: selectedFolder === folder.id ? "#f6fff8" : "#F8F9FA",
+                                  border: selectedFolder === folder.id ? "2px solid #008060" : "2px solid #E1E3E5",
+                                  borderRadius: "8px",
+                                  position: "relative",
+                                  transition: "all 0.2s ease",
+                                  boxShadow: selectedFolder === folder.id ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)",
+                                  cursor: "pointer"
+                                }}
+                                onClick={() => setSelectedFolder(folder.id)}
+                              >
+                                <span style={{ 
+                                  fontWeight: "600", 
+                                  display: "flex", 
+                                  alignItems: "center", 
+                                  gap: "8px",
+                                  color: selectedFolder === folder.id ? "#008060" : "#374151",
+                                  fontSize: "14px"
+                                }}>
+                                  <i className={`far fa-${folder.icon}`} style={{ 
+                                    fontSize: "18px", 
+                                    color: selectedFolder === folder.id ? "#008060" : folder.iconColor || "#6d7175"
+                                  }}></i>
+                                  {folder.name}
+                                </span>
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                  <span style={{ 
+                                    fontSize: "12px", 
+                                    color: "#6d7175", 
+                                    backgroundColor: "rgba(0, 0, 0, 0.05)", 
+                                    padding: "2px 6px", 
+                                    borderRadius: "4px"
+                                  }}>
+                                    {localNotes.filter(note => note.folderId === folder.id).length}
+                                  </span>
+                                  {selectedFolder === folder.id && (
+                                    <span style={{ 
+                                      fontSize: "12px", 
+                                      color: "#008060", 
+                                      backgroundColor: "rgba(0, 128, 96, 0.1)", 
+                                      padding: "2px 6px", 
+                                      borderRadius: "4px",
+                                      fontWeight: "600"
+                                    }}>
+                                      Active
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              {selectedFolder === folder.id && (
+                                <div style={{ 
+                                  marginTop: "8px", 
+                                  padding: "8px 12px", 
+                                  backgroundColor: "#f0f9ff", 
+                                  borderRadius: "6px", 
+                                  border: "1px solid #e0f2fe"
+                                }}>
+                                  <button
+                                    style={{
+                                      background: "none",
+                                      border: "none",
+                                      color: "#dc2626",
+                                      cursor: "pointer",
+                                      fontSize: "12px",
+                                      padding: "4px 8px",
+                                      borderRadius: "4px",
+                                      transition: "background-color 0.2s"
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowDeleteConfirm(folder.id);
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.target.style.backgroundColor = "#fee2e2";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.target.style.backgroundColor = "transparent";
+                                    }}
+                                  >
+                                    <i className="fas fa-trash" style={{ marginRight: "4px" }}></i>
+                                    Delete Folder
+                                  </button>
+                                </div>
+                              )}
+                            </DraggableFolder>
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
+                  )}
+                  
+                  {/* Create New Folder Button */}
+                  <div style={{ marginTop: '16px' }}>
+                    <Button
+                      variant="primary"
+                      fullWidth
+                      onClick={() => setShowNewFolderModal(true)}
+                      style={{ backgroundColor: '#008060', borderColor: '#008060' }}
+                    >
+                      <PlusIcon style={{ width: '16px', height: '16px', marginRight: '8px', color: 'white' }} />
+                      <span style={{ color: 'white' }}>Create New Folder</span>
+                    </Button>
+                  </div>
+                </div>
 
               </>
             </div>
