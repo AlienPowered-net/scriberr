@@ -2404,7 +2404,7 @@ export default function Index() {
               {/* Tags Section */}
               <div style={{ marginBottom: "24px" }}>
                 {/* Tags List */}
-                {showTagsSection && (
+                {(showTagsSection || selectedTags.length > 0) && (
                   <div style={{ 
                     marginBottom: "12px",
                     padding: "12px",

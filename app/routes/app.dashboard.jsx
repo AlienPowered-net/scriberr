@@ -2560,7 +2560,7 @@ export default function Index() {
               {/* Tags Section */}
               <div style={{ marginBottom: "24px" }}>
                 {/* Tags List */}
-                {showTagsSection && (
+                {(showTagsSection || selectedTags.length > 0) && (
                   <div style={{ 
                     marginBottom: "12px",
                     padding: "12px",
@@ -4387,7 +4387,7 @@ export default function Index() {
                   <p style={{ color: '#6d7175', margin: '0 0 16px 0', fontSize: '14px' }}>Filter notes by tags</p>
                   
                   {/* Tags List - Mobile */}
-                  {showTagsSection && (
+                  {(showTagsSection || selectedTags.length > 0) && (
                     <div style={{ 
                       marginBottom: "12px",
                       padding: "12px",
