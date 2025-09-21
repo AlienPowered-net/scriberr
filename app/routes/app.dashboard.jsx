@@ -2761,28 +2761,33 @@ export default function Index() {
                           style={{
                             display: "inline-flex",
                             alignItems: "center",
-                            gap: showTagsSection ? "8px" : "6px",
-                            padding: showTagsSection ? "8px 12px" : "4px 8px",
-                            backgroundColor: showTagsSection ? "#008060" : (selectedTags.includes(tag) ? "#008060" : "transparent"),
-                            borderRadius: "20px",
-                            border: showTagsSection ? "none" : (selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060"),
+                            gap: showTagsSection ? "6px" : "6px",
+                            padding: showTagsSection ? "6px 10px" : "4px 8px",
+                            backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "#008060" : "#f6fff8") : (selectedTags.includes(tag) ? "#008060" : "transparent"),
+                            borderRadius: "16px",
+                            border: showTagsSection ? (selectedTags.includes(tag) ? "none" : "1px solid #008060") : (selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060"),
                             cursor: "pointer",
                             transition: "all 0.15s ease",
                             position: "relative",
-                            fontSize: showTagsSection ? "14px" : "12px",
+                            fontSize: showTagsSection ? "12px" : "12px",
                             fontWeight: showTagsSection ? "500" : "400",
-                            color: showTagsSection ? "white" : (selectedTags.includes(tag) ? "white" : "#008060"),
-                            minHeight: showTagsSection ? "32px" : "24px",
+                            color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "white" : "#008060"),
+                            minHeight: showTagsSection ? "28px" : "24px",
                             justifyContent: "center",
                             fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                            boxShadow: showTagsSection ? "0 2px 4px rgba(0, 128, 96, 0.2)" : "none"
+                            boxShadow: showTagsSection ? (selectedTags.includes(tag) ? "0 2px 4px rgba(0, 128, 96, 0.2)" : "none") : "none"
                           }}
                           onClick={() => handleTagClick(tag)}
                           onMouseEnter={(e) => {
                             if (showTagsSection) {
-                              e.currentTarget.style.backgroundColor = "#006b52";
-                              e.currentTarget.style.transform = "translateY(-1px)";
-                              e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 128, 96, 0.3)";
+                              if (selectedTags.includes(tag)) {
+                                e.currentTarget.style.backgroundColor = "#006b52";
+                                e.currentTarget.style.transform = "translateY(-1px)";
+                                e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 128, 96, 0.3)";
+                              } else {
+                                e.currentTarget.style.backgroundColor = "#e8f5f0";
+                                e.currentTarget.style.borderColor = "#008060";
+                              }
                             } else if (!selectedTags.includes(tag)) {
                               e.currentTarget.style.backgroundColor = "#e1e3e5";
                               e.currentTarget.style.borderColor = "#aeb4b9";
@@ -2790,9 +2795,14 @@ export default function Index() {
                           }}
                           onMouseLeave={(e) => {
                             if (showTagsSection) {
-                              e.currentTarget.style.backgroundColor = "#008060";
-                              e.currentTarget.style.transform = "translateY(0)";
-                              e.currentTarget.style.boxShadow = "0 2px 4px rgba(0, 128, 96, 0.2)";
+                              if (selectedTags.includes(tag)) {
+                                e.currentTarget.style.backgroundColor = "#008060";
+                                e.currentTarget.style.transform = "translateY(0)";
+                                e.currentTarget.style.boxShadow = "0 2px 4px rgba(0, 128, 96, 0.2)";
+                              } else {
+                                e.currentTarget.style.backgroundColor = "#f6fff8";
+                                e.currentTarget.style.borderColor = "#008060";
+                              }
                             } else if (!selectedTags.includes(tag)) {
                               e.currentTarget.style.backgroundColor = "#f6f6f7";
                               e.currentTarget.style.borderColor = "#d1d3d4";
@@ -2800,16 +2810,16 @@ export default function Index() {
                           }}
                         >
                           {showTagsSection && (
-                            <ProductFilledIcon style={{ width: '16px', height: '16px', color: 'white' }} />
+                            <ProductFilledIcon style={{ width: '14px', height: '14px', color: selectedTags.includes(tag) ? 'white' : '#008060' }} />
                           )}
                           <span>{tag}</span>
                           <span style={{ 
-                            fontSize: showTagsSection ? "12px" : "11px", 
-                            color: showTagsSection ? "white" : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175"), 
-                            backgroundColor: showTagsSection ? "rgba(255, 255, 255, 0.2)" : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)"), 
-                            padding: showTagsSection ? "2px 6px" : "1px 4px", 
-                            borderRadius: "12px",
-                            fontWeight: showTagsSection ? "700" : "500"
+                            fontSize: showTagsSection ? "11px" : "11px", 
+                            color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175"), 
+                            backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 128, 96, 0.1)") : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)"), 
+                            padding: showTagsSection ? "2px 5px" : "1px 4px", 
+                            borderRadius: "10px",
+                            fontWeight: showTagsSection ? "600" : "500"
                           }}>
                             {count}
                           </span>
@@ -2822,17 +2832,17 @@ export default function Index() {
                               background: "none",
                               border: "none",
                               cursor: "pointer",
-                              fontSize: showTagsSection ? "14px" : "12px",
-                              color: showTagsSection ? "#dc2626" : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175"),
+                              fontSize: showTagsSection ? "12px" : "12px",
+                              color: showTagsSection ? (selectedTags.includes(tag) ? "#dc2626" : "#dc2626") : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175"),
                               padding: "2px",
                               borderRadius: "2px",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
                               transition: "all 0.15s ease",
-                              marginLeft: "4px",
-                              width: showTagsSection ? "20px" : "16px",
-                              height: showTagsSection ? "20px" : "16px",
+                              marginLeft: "3px",
+                              width: showTagsSection ? "18px" : "16px",
+                              height: showTagsSection ? "18px" : "16px",
                               opacity: "0.8",
                               fontWeight: "bold"
                             }}
@@ -4443,28 +4453,33 @@ export default function Index() {
                               style={{
                                 display: "inline-flex",
                                 alignItems: "center",
-                                gap: showTagsSection ? "8px" : "6px",
-                                padding: showTagsSection ? "8px 12px" : "4px 8px",
-                                backgroundColor: showTagsSection ? "#008060" : (selectedTags.includes(tag) ? "#008060" : "transparent"),
-                                borderRadius: "20px",
-                                border: showTagsSection ? "none" : (selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060"),
+                                gap: showTagsSection ? "6px" : "6px",
+                                padding: showTagsSection ? "6px 10px" : "4px 8px",
+                                backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "#008060" : "#f6fff8") : (selectedTags.includes(tag) ? "#008060" : "transparent"),
+                                borderRadius: "16px",
+                                border: showTagsSection ? (selectedTags.includes(tag) ? "none" : "1px solid #008060") : (selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060"),
                                 cursor: "pointer",
                                 transition: "all 0.15s ease",
                                 position: "relative",
-                                fontSize: showTagsSection ? "14px" : "12px",
+                                fontSize: showTagsSection ? "12px" : "12px",
                                 fontWeight: showTagsSection ? "500" : "400",
-                                color: showTagsSection ? "white" : (selectedTags.includes(tag) ? "white" : "#008060"),
-                                minHeight: showTagsSection ? "32px" : "24px",
+                                color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "white" : "#008060"),
+                                minHeight: showTagsSection ? "28px" : "24px",
                                 justifyContent: "center",
                                 fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                                boxShadow: showTagsSection ? "0 2px 4px rgba(0, 128, 96, 0.2)" : "none"
+                                boxShadow: showTagsSection ? (selectedTags.includes(tag) ? "0 2px 4px rgba(0, 128, 96, 0.2)" : "none") : "none"
                               }}
                               onClick={() => handleTagClick(tag)}
                               onMouseEnter={(e) => {
                                 if (showTagsSection) {
-                                  e.currentTarget.style.backgroundColor = "#006b52";
-                                  e.currentTarget.style.transform = "translateY(-1px)";
-                                  e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 128, 96, 0.3)";
+                                  if (selectedTags.includes(tag)) {
+                                    e.currentTarget.style.backgroundColor = "#006b52";
+                                    e.currentTarget.style.transform = "translateY(-1px)";
+                                    e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 128, 96, 0.3)";
+                                  } else {
+                                    e.currentTarget.style.backgroundColor = "#e8f5f0";
+                                    e.currentTarget.style.borderColor = "#008060";
+                                  }
                                 } else if (!selectedTags.includes(tag)) {
                                   e.currentTarget.style.backgroundColor = "#e1e3e5";
                                   e.currentTarget.style.borderColor = "#aeb4b9";
@@ -4472,9 +4487,14 @@ export default function Index() {
                               }}
                               onMouseLeave={(e) => {
                                 if (showTagsSection) {
-                                  e.currentTarget.style.backgroundColor = "#008060";
-                                  e.currentTarget.style.transform = "translateY(0)";
-                                  e.currentTarget.style.boxShadow = "0 2px 4px rgba(0, 128, 96, 0.2)";
+                                  if (selectedTags.includes(tag)) {
+                                    e.currentTarget.style.backgroundColor = "#008060";
+                                    e.currentTarget.style.transform = "translateY(0)";
+                                    e.currentTarget.style.boxShadow = "0 2px 4px rgba(0, 128, 96, 0.2)";
+                                  } else {
+                                    e.currentTarget.style.backgroundColor = "#f6fff8";
+                                    e.currentTarget.style.borderColor = "#008060";
+                                  }
                                 } else if (!selectedTags.includes(tag)) {
                                   e.currentTarget.style.backgroundColor = "#f6f6f7";
                                   e.currentTarget.style.borderColor = "#d1d3d4";
@@ -4482,16 +4502,16 @@ export default function Index() {
                               }}
                             >
                               {showTagsSection && (
-                                <ProductFilledIcon style={{ width: '16px', height: '16px', color: 'white' }} />
+                                <ProductFilledIcon style={{ width: '14px', height: '14px', color: selectedTags.includes(tag) ? 'white' : '#008060' }} />
                               )}
                               <span>{tag}</span>
                               <span style={{ 
-                                fontSize: showTagsSection ? "12px" : "11px", 
-                                color: showTagsSection ? "white" : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175"), 
-                                backgroundColor: showTagsSection ? "rgba(255, 255, 255, 0.2)" : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)"), 
-                                padding: showTagsSection ? "2px 6px" : "1px 4px", 
-                                borderRadius: "12px",
-                                fontWeight: showTagsSection ? "700" : "500"
+                                fontSize: showTagsSection ? "11px" : "11px", 
+                                color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175"), 
+                                backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 128, 96, 0.1)") : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)"), 
+                                padding: showTagsSection ? "2px 5px" : "1px 4px", 
+                                borderRadius: "10px",
+                                fontWeight: showTagsSection ? "600" : "500"
                               }}>
                                 {count}
                               </span>
@@ -4504,17 +4524,17 @@ export default function Index() {
                                   background: "none",
                                   border: "none",
                                   cursor: "pointer",
-                                  fontSize: showTagsSection ? "14px" : "12px",
-                                  color: showTagsSection ? "#dc2626" : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175"),
+                                  fontSize: showTagsSection ? "12px" : "12px",
+                                  color: showTagsSection ? (selectedTags.includes(tag) ? "#dc2626" : "#dc2626") : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175"),
                                   padding: "2px",
                                   borderRadius: "2px",
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
                                   transition: "all 0.15s ease",
-                                  marginLeft: "4px",
-                                  width: showTagsSection ? "20px" : "16px",
-                                  height: showTagsSection ? "20px" : "16px",
+                                  marginLeft: "3px",
+                                  width: showTagsSection ? "18px" : "16px",
+                                  height: showTagsSection ? "18px" : "16px",
                                   opacity: "0.8",
                                   fontWeight: "bold"
                                 }}
