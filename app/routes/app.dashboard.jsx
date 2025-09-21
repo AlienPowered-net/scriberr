@@ -2683,7 +2683,15 @@ export default function Index() {
                       transition: "all 0.2s ease",
                       boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
                     }}
-                    onClick={() => setShowTagsSection(!showTagsSection)}
+                    onClick={() => {
+                      if (showTagsSection) {
+                        // When closing All Tags section, keep only selected tags visible
+                        setShowTagsSection(false);
+                      } else {
+                        // When opening All Tags section, show all tags
+                        setShowTagsSection(true);
+                      }
+                    }}
                     onMouseEnter={(e) => {
                       if (!showTagsSection) {
                         e.currentTarget.style.backgroundColor = "#f6fff8";
@@ -2746,7 +2754,7 @@ export default function Index() {
                       gap: "6px",
                       padding: "8px 0"
                     }}>
-                      {getAllTagsWithCounts().map(({ tag, count }) => (
+                      {(showTagsSection ? getAllTagsWithCounts() : getAllTagsWithCounts().filter(({ tag }) => selectedTags.includes(tag))).map(({ tag, count }) => (
                         <div
                           key={tag}
                           style={{
@@ -4345,7 +4353,15 @@ export default function Index() {
                       transition: "all 0.2s ease",
                       boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
                     }}
-                    onClick={() => setShowTagsSection(!showTagsSection)}
+                    onClick={() => {
+                      if (showTagsSection) {
+                        // When closing All Tags section, keep only selected tags visible
+                        setShowTagsSection(false);
+                      } else {
+                        // When opening All Tags section, show all tags
+                        setShowTagsSection(true);
+                      }
+                    }}
                   >
                     <span style={{ 
                       fontWeight: "600", 
@@ -4401,7 +4417,7 @@ export default function Index() {
                           gap: "6px",
                           padding: "8px 0"
                         }}>
-                          {getAllTagsWithCounts().map(({ tag, count }) => (
+                          {(showTagsSection ? getAllTagsWithCounts() : getAllTagsWithCounts().filter(({ tag }) => selectedTags.includes(tag))).map(({ tag, count }) => (
                             <div
                               key={tag}
                               style={{
