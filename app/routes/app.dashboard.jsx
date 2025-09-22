@@ -4249,8 +4249,8 @@ export default function Index() {
               handleIconChange(showIconPicker, iconData);
               setShowIconPicker(null);
             }}
-            currentIcon="folder"
-            currentColor="rgba(255, 184, 0, 1)"
+            currentIcon={localFolders.find(f => f.id === showIconPicker)?.icon || "folder"}
+            currentColor={localFolders.find(f => f.id === showIconPicker)?.iconColor || "rgba(255, 184, 0, 1)"}
             folderName={localFolders.find(f => f.id === showIconPicker)?.name || "Folder"}
           />
         )}
@@ -4749,7 +4749,7 @@ export default function Index() {
                                       e.target.style.backgroundColor = 'transparent';
                                     }}
                                   >
-                                    <ExchangeIcon style={{ width: '12px', height: '12px' }} />
+                                    <ExchangeIcon style={{ width: '15px', height: '15px' }} />
                                     Change Icon
                                   </button>
                                   <button
@@ -5693,19 +5693,131 @@ export default function Index() {
                 </div>
               )}
 
-              {/* Folder Icon Picker Modal */}
+              {/* Folder Icon Picker Modal - Mobile */}
               {showIconPicker && (
-                <FolderIconPicker
-                  isOpen={true}
-                  onClose={() => setShowIconPicker(null)}
-                  onSelectIcon={(iconData) => {
-                    handleIconChange(showIconPicker, iconData);
-                    setShowIconPicker(null);
-                  }}
-                  currentIcon="folder"
-                  currentColor="rgba(255, 184, 0, 1)"
-                  folderName={localFolders.find(f => f.id === showIconPicker)?.name || "Folder"}
-                />
+                <div className="modal-overlay" style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 10002,
+                  padding: "16px"
+                }}>
+                  <div style={{
+                    backgroundColor: "white",
+                    padding: "24px",
+                    borderRadius: "8px",
+                    maxWidth: "400px",
+                    width: "100%",
+                    maxHeight: "90vh",
+                    overflow: "auto"
+                  }}>
+                    <div style={{ marginBottom: '16px' }}>
+                      <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>
+                        Change Icon for "{localFolders.find(f => f.id === showIconPicker)?.name || "Folder"}"
+                      </h2>
+                    </div>
+                    
+                    <div style={{ marginBottom: '16px' }}>
+                      <p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>
+                        Current icon: <i className={`far fa-${localFolders.find(f => f.id === showIconPicker)?.icon || "folder"}`} style={{ fontSize: '24px', marginLeft: '8px', color: localFolders.find(f => f.id === showIconPicker)?.iconColor || "rgba(255, 184, 0, 1)" }}></i>
+                      </p>
+                    </div>
+                    
+                    <div style={{ marginBottom: '16px' }}>
+                      <p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>
+                        Selected icon: <i className={`far fa-${localFolders.find(f => f.id === showIconPicker)?.icon || "folder"}`} style={{ fontSize: '24px', marginLeft: '8px', color: localFolders.find(f => f.id === showIconPicker)?.iconColor || "rgba(255, 184, 0, 1)" }}></i>
+                      </p>
+                    </div>
+
+                    <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600' }}>
+                      Choose an icon:
+                    </h3>
+                    
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(6, 1fr)',
+                      gap: '8px',
+                      marginBottom: '24px',
+                      padding: '8px',
+                      border: '1px solid #e1e3e5',
+                      borderRadius: '8px',
+                      backgroundColor: '#fafbfb'
+                    }}>
+                      {[
+                        { icon: "folder", name: "Folder" },
+                        { icon: "folder-open", name: "Folder Open" },
+                        { icon: "image", name: "Image" },
+                        { icon: "house", name: "House" },
+                        { icon: "face-smile", name: "Smile" },
+                        { icon: "star", name: "Star" },
+                        { icon: "heart", name: "Heart" },
+                        { icon: "address-book", name: "Address Book" },
+                        { icon: "bookmark", name: "Bookmark" },
+                        { icon: "pen-to-square", name: "Compose" },
+                        { icon: "user", name: "User" },
+                        { icon: "gem", name: "Gem" },
+                        { icon: "square-check", name: "Check" },
+                        { icon: "trash-can", name: "Trash" },
+                        { icon: "flag", name: "Flag" },
+                        { icon: "calendar", name: "Calendar" },
+                        { icon: "lightbulb", name: "Light Bulb" },
+                        { icon: "bell", name: "Bell" },
+                        { icon: "truck", name: "Truck" },
+                        { icon: "file-code", name: "Code" }
+                      ].map((iconData, index) => (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            const selectedIcon = iconData.icon;
+                            const selectedColor = localFolders.find(f => f.id === showIconPicker)?.iconColor || "rgba(255, 184, 0, 1)";
+                            handleIconChange(showIconPicker, { icon: selectedIcon, color: selectedColor });
+                            setShowIconPicker(null);
+                          }}
+                          style={{
+                            width: '50px',
+                            height: '50px',
+                            border: '1px solid #e1e3e5',
+                            borderRadius: '8px',
+                            backgroundColor: 'white',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '18px',
+                            transition: 'all 0.2s ease',
+                            padding: '4px'
+                          }}
+                          title={iconData.name}
+                        >
+                          <i className={`far fa-${iconData.icon}`} style={{ color: localFolders.find(f => f.id === showIconPicker)?.iconColor || "rgba(255, 184, 0, 1)" }}></i>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                      <button
+                        onClick={() => setShowIconPicker(null)}
+                        style={{
+                          padding: '8px 16px',
+                          border: '1px solid #e1e3e5',
+                          borderRadius: '4px',
+                          backgroundColor: 'white',
+                          cursor: 'pointer',
+                          fontSize: '14px'
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
               )}
             </>
           )}
