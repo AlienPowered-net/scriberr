@@ -66,7 +66,7 @@ const FolderIconPicker = ({
           onAction: onClose,
         },
       ]}
-      style={{ zIndex: 9999 }}
+      style={{ zIndex: 10001 }}
     >
       <Modal.Section>
         <div style={{ marginBottom: '16px' }}>

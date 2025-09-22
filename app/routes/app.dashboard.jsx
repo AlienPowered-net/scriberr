@@ -2366,7 +2366,7 @@ export default function Index() {
           /* Ensure modals are visible on mobile */
           @media (max-width: 1024px) {
             .modal-overlay {
-              z-index: 9999 !important;
+              z-index: 10001 !important;
               position: fixed !important;
               top: 0 !important;
               left: 0 !important;
@@ -2376,11 +2376,11 @@ export default function Index() {
             
             /* Polaris Modal mobile fixes */
             [data-polaris-portal] {
-              z-index: 9999 !important;
+              z-index: 10001 !important;
             }
             
             .Polaris-Modal-Dialog {
-              z-index: 9999 !important;
+              z-index: 10001 !important;
             }
           }
           
@@ -3536,7 +3536,7 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 9999,
+            zIndex: 10001,
             padding: "16px"
           }}>
             <div style={{
@@ -3615,7 +3615,7 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 10001
           }}>
             <div style={{
               backgroundColor: "white",
@@ -3661,7 +3661,7 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 10001
           }}>
             <div style={{
               backgroundColor: "white",
@@ -3729,7 +3729,7 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 10001
           }}>
             <div style={{
               backgroundColor: "white",
@@ -3799,7 +3799,7 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 10001
           }}>
             <div style={{
               backgroundColor: "white",
@@ -3869,7 +3869,7 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 10001
           }}>
             <div style={{
               backgroundColor: "white",
@@ -3915,7 +3915,7 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 10001
           }}>
             <div style={{
               backgroundColor: "white",
@@ -3961,7 +3961,7 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 9999,
+            zIndex: 10001,
             padding: "16px"
           }}>
             <div style={{
@@ -4010,7 +4010,7 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 9999,
+            zIndex: 10001,
             padding: "16px"
           }}>
             <div style={{
@@ -4169,7 +4169,7 @@ export default function Index() {
                 overflow: 'hidden',
                 backgroundColor: '#fff',
                 border: '3px solid #008060',
-                zIndex: 9999,
+                zIndex: 10001,
                 cursor: 'grabbing',
                 maxHeight: '80vh',
                 maxWidth: '90vw'
