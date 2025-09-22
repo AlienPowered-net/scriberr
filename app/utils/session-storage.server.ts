@@ -43,63 +43,67 @@ export class RobustPrismaSessionStorage extends PrismaSessionStorage {
       // Try to query the session table to see if it exists
       await prisma.$queryRaw`SELECT 1 FROM "session" LIMIT 1`;
       this.isTableReady = true;
+      console.log("Session table exists and is ready");
       return;
     } catch (error: any) {
-      if (error.code === 'P2010' || error.message?.includes('relation "session" does not exist')) {
-        console.log("Session table does not exist, attempting to create it...");
+      console.log("Session table check failed, attempting to resolve...");
+      
+      // Check if Session table (uppercase) exists
+      try {
+        await prisma.$queryRaw`SELECT 1 FROM "Session" LIMIT 1`;
+        console.log("Found Session table (uppercase), renaming to session...");
+        
+        // Rename Session to session
+        await prisma.$executeRaw`ALTER TABLE "public"."Session" RENAME TO "session"`;
+        console.log("Successfully renamed Session table to session");
+        this.isTableReady = true;
+        return;
+        
+      } catch (sessionError: any) {
+        console.log("Session table (uppercase) not found, creating new session table...");
         
         try {
-          // Check if Session table (uppercase) exists
-          await prisma.$queryRaw`SELECT 1 FROM "Session" LIMIT 1`;
-          console.log("Found Session table (uppercase), renaming to session...");
+          // Create the session table directly with all required columns
+          await prisma.$executeRaw`
+            CREATE TABLE IF NOT EXISTS "public"."session" (
+              "id" TEXT NOT NULL,
+              "shop" TEXT NOT NULL,
+              "state" TEXT NOT NULL,
+              "isOnline" BOOLEAN NOT NULL,
+              "scope" TEXT,
+              "expires" TIMESTAMP(3),
+              "accessToken" TEXT,
+              "userId" BIGINT,
+              "firstName" TEXT,
+              "lastName" TEXT,
+              "email" TEXT,
+              "accountOwner" BOOLEAN DEFAULT false,
+              "locale" TEXT,
+              "collaborator" BOOLEAN DEFAULT false,
+              "emailVerified" BOOLEAN DEFAULT false,
+              "onlineAccessInfo" JSONB,
+              "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              CONSTRAINT "session_pkey" PRIMARY KEY ("id")
+            )
+          `;
           
-          // Rename Session to session
-          await prisma.$executeRaw`ALTER TABLE "public"."Session" RENAME TO "session"`;
-          console.log("Successfully renamed Session table to session");
+          // Create index if it doesn't exist
+          await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "session_shop_idx" ON "public"."session"("shop")`;
           
-        } catch (sessionError: any) {
-          if (sessionError.code === 'P2010' || sessionError.message?.includes('relation "Session" does not exist')) {
-            console.log("Neither session nor Session table exists, creating session table...");
-            
-            // Create the session table directly
-            await prisma.$executeRaw`
-              CREATE TABLE "public"."session" (
-                "id" TEXT NOT NULL,
-                "shop" TEXT NOT NULL,
-                "state" TEXT NOT NULL,
-                "isOnline" BOOLEAN NOT NULL,
-                "scope" TEXT,
-                "expires" TIMESTAMP(3),
-                "accessToken" TEXT,
-                "userId" BIGINT,
-                "firstName" TEXT,
-                "lastName" TEXT,
-                "email" TEXT,
-                "accountOwner" BOOLEAN DEFAULT false,
-                "locale" TEXT,
-                "collaborator" BOOLEAN DEFAULT false,
-                "emailVerified" BOOLEAN DEFAULT false,
-                "onlineAccessInfo" JSONB,
-                "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                CONSTRAINT "session_pkey" PRIMARY KEY ("id")
-              )
-            `;
-            
-            // Create index
-            await prisma.$executeRaw`CREATE INDEX "session_shop_idx" ON "public"."session"("shop")`;
-            
-            console.log("Successfully created session table");
-          } else {
-            console.error("Error checking Session table:", sessionError);
-            throw sessionError;
-          }
+          console.log("Successfully created session table with all required columns");
+          this.isTableReady = true;
+          return;
+          
+        } catch (createError: any) {
+          console.error("Failed to create session table:", createError);
+          
+          // If table creation fails, try to continue anyway
+          // The app might still work if the table gets created later
+          console.log("Continuing without session table - will retry on next request");
+          this.isTableReady = false;
+          throw new Error(`Session table creation failed: ${createError.message}`);
         }
-        
-        this.isTableReady = true;
-      } else {
-        console.error("Error checking session table:", error);
-        throw error;
       }
     }
   }
