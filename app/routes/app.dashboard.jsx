@@ -2809,8 +2809,8 @@ export default function Index() {
                             }
                           }}
                         >
-                          {showTagsSection && (
-                            <ProductFilledIcon style={{ width: '14px', height: '14px', color: selectedTags.includes(tag) ? 'white' : '#008060' }} />
+                          {(showTagsSection || selectedTags.includes(tag)) && (
+                            <ProductFilledIcon style={{ width: '14px', height: '14px', color: (showTagsSection && selectedTags.includes(tag)) ? 'white' : '#008060' }} />
                           )}
                           <span>{tag}</span>
                           <span style={{ 
@@ -4501,8 +4501,8 @@ export default function Index() {
                                 }
                               }}
                             >
-                              {showTagsSection && (
-                                <ProductFilledIcon style={{ width: '14px', height: '14px', color: selectedTags.includes(tag) ? 'white' : '#008060' }} />
+                              {(showTagsSection || selectedTags.includes(tag)) && (
+                                <ProductFilledIcon style={{ width: '14px', height: '14px', color: (showTagsSection && selectedTags.includes(tag)) ? 'white' : '#008060' }} />
                               )}
                               <span>{tag}</span>
                               <span style={{ 
