@@ -738,6 +738,19 @@ export default function Index() {
   const [newFolderIconColor, setNewFolderIconColor] = useState('rgba(255, 184, 0, 1)');
   const [localFolders, setLocalFolders] = useState(folders);
   
+  // Mobile icon picker states
+  const [mobileSelectedIcon, setMobileSelectedIcon] = useState('folder');
+  const [mobileSelectedColor, setMobileSelectedColor] = useState('rgba(255, 184, 0, 1)');
+  
+  // Initialize mobile icon picker state when modal opens
+  useEffect(() => {
+    if (showIconPicker && isMobile) {
+      const currentFolder = localFolders.find(f => f.id === showIconPicker);
+      setMobileSelectedIcon(currentFolder?.icon || "folder");
+      setMobileSelectedColor(currentFolder?.iconColor || "rgba(255, 184, 0, 1)");
+    }
+  }, [showIconPicker, isMobile, localFolders]);
+  
   // Folder selection popover states
   const [showFolderSelector, setShowFolderSelector] = useState(false);
   const [folderSelectorAction, setFolderSelectorAction] = useState(null); // 'duplicate' or 'move'
@@ -5696,8 +5709,6 @@ export default function Index() {
               {/* Folder Icon Picker Modal - Mobile */}
               {showIconPicker && (() => {
                 const currentFolder = localFolders.find(f => f.id === showIconPicker);
-                const [selectedIcon, setSelectedIcon] = useState(currentFolder?.icon || "folder");
-                const [selectedColor, setSelectedColor] = useState(currentFolder?.iconColor || "rgba(255, 184, 0, 1)");
                 
                 const folderIcons = [
                   { icon: "folder", name: "Folder" },
@@ -5734,7 +5745,7 @@ export default function Index() {
                 ];
 
                 const handleSave = () => {
-                  handleIconChange(showIconPicker, { icon: selectedIcon, color: selectedColor });
+                  handleIconChange(showIconPicker, { icon: mobileSelectedIcon, color: mobileSelectedColor });
                   setShowIconPicker(null);
                 };
 
@@ -5775,7 +5786,7 @@ export default function Index() {
                       
                       <div style={{ marginBottom: '16px' }}>
                         <p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>
-                          Selected icon: <i className={`far fa-${selectedIcon}`} style={{ fontSize: '24px', marginLeft: '8px', color: selectedColor }}></i>
+                          Selected icon: <i className={`far fa-${mobileSelectedIcon}`} style={{ fontSize: '24px', marginLeft: '8px', color: mobileSelectedColor }}></i>
                         </p>
                       </div>
 
@@ -5796,13 +5807,13 @@ export default function Index() {
                         {folderIcons.map((iconData, index) => (
                           <button
                             key={index}
-                            onClick={() => setSelectedIcon(iconData.icon)}
+                            onClick={() => setMobileSelectedIcon(iconData.icon)}
                             style={{
                               width: '50px',
                               height: '50px',
-                              border: selectedIcon === iconData.icon ? '2px solid #2e7d32' : '1px solid #e1e3e5',
+                              border: mobileSelectedIcon === iconData.icon ? '2px solid #2e7d32' : '1px solid #e1e3e5',
                               borderRadius: '8px',
-                              backgroundColor: selectedIcon === iconData.icon ? '#e8f5e8' : 'white',
+                              backgroundColor: mobileSelectedIcon === iconData.icon ? '#e8f5e8' : 'white',
                               cursor: 'pointer',
                               display: 'flex',
                               flexDirection: 'column',
@@ -5814,7 +5825,7 @@ export default function Index() {
                             }}
                             title={iconData.name}
                           >
-                            <i className={`far fa-${iconData.icon}`} style={{ color: selectedColor }}></i>
+                            <i className={`far fa-${iconData.icon}`} style={{ color: mobileSelectedColor }}></i>
                           </button>
                         ))}
                       </div>
@@ -5836,11 +5847,11 @@ export default function Index() {
                         {iconColors.map((colorData, index) => (
                           <button
                             key={index}
-                            onClick={() => setSelectedColor(colorData.color)}
+                            onClick={() => setMobileSelectedColor(colorData.color)}
                             style={{
                               width: '40px',
                               height: '40px',
-                              border: selectedColor === colorData.color ? '3px solid #2e7d32' : '2px solid #e1e3e5',
+                              border: mobileSelectedColor === colorData.color ? '3px solid #2e7d32' : '2px solid #e1e3e5',
                               borderRadius: '50%',
                               backgroundColor: colorData.color,
                               cursor: 'pointer',
@@ -5852,7 +5863,7 @@ export default function Index() {
                             }}
                             title={colorData.name}
                           >
-                            {selectedColor === colorData.color && (
+                            {mobileSelectedColor === colorData.color && (
                               <i className="fas fa-check" style={{ 
                                 color: colorData.color === 'rgba(255, 230, 0, 1)' || colorData.color === 'rgba(227, 227, 227, 1)' ? 'rgba(48, 48, 48, 1)' : 'white',
                                 fontSize: '14px' 
