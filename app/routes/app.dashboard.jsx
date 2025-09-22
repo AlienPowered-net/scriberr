@@ -2763,7 +2763,7 @@ export default function Index() {
                             alignItems: "center",
                             gap: showTagsSection ? "6px" : "6px",
                             padding: showTagsSection ? "6px 10px" : "4px 8px",
-                            backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "#008060" : "#f6fff8") : (selectedTags.includes(tag) ? "#008060" : "transparent"),
+                            backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "#008060" : "#f6fff8") : (selectedTags.includes(tag) ? "#f6fff8" : "transparent"),
                             borderRadius: "16px",
                             border: showTagsSection ? (selectedTags.includes(tag) ? "none" : "1px solid #008060") : (selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060"),
                             cursor: "pointer",
@@ -2771,7 +2771,7 @@ export default function Index() {
                             position: "relative",
                             fontSize: showTagsSection ? "12px" : "12px",
                             fontWeight: showTagsSection ? "500" : "400",
-                            color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "white" : "#008060"),
+                            color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "#008060" : "#008060"),
                             minHeight: showTagsSection ? "28px" : "24px",
                             justifyContent: "center",
                             fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
@@ -2815,8 +2815,8 @@ export default function Index() {
                           <span>{tag}</span>
                           <span style={{ 
                             fontSize: showTagsSection ? "11px" : "11px", 
-                            color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175"), 
-                            backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 128, 96, 0.1)") : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)"), 
+                            color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "#008060" : "#6d7175"), 
+                            backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 128, 96, 0.1)") : (selectedTags.includes(tag) ? "rgba(0, 128, 96, 0.1)" : "rgba(0, 0, 0, 0.1)"), 
                             padding: showTagsSection ? "2px 5px" : "1px 4px", 
                             borderRadius: "10px",
                             fontWeight: showTagsSection ? "600" : "500"
@@ -2833,7 +2833,7 @@ export default function Index() {
                               border: "none",
                               cursor: "pointer",
                               fontSize: showTagsSection ? "12px" : "12px",
-                              color: showTagsSection ? (selectedTags.includes(tag) ? "#dc2626" : "#dc2626") : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175"),
+                              color: showTagsSection ? (selectedTags.includes(tag) ? "#dc2626" : "#dc2626") : (selectedTags.includes(tag) ? "#dc2626" : "#6d7175"),
                               padding: "2px",
                               borderRadius: "2px",
                               display: "flex",
@@ -2857,7 +2857,7 @@ export default function Index() {
                             }}
                             onMouseLeave={(e) => {
                               e.target.style.backgroundColor = "transparent";
-                              e.target.style.color = showTagsSection ? "#dc2626" : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175");
+                              e.target.style.color = showTagsSection ? "#dc2626" : (selectedTags.includes(tag) ? "#dc2626" : "#6d7175");
                               e.target.style.opacity = "0.8";
                             }}
                           >
@@ -4455,7 +4455,7 @@ export default function Index() {
                                 alignItems: "center",
                                 gap: showTagsSection ? "6px" : "6px",
                                 padding: showTagsSection ? "6px 10px" : "4px 8px",
-                                backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "#008060" : "#f6fff8") : (selectedTags.includes(tag) ? "#008060" : "transparent"),
+                                backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "#008060" : "#f6fff8") : (selectedTags.includes(tag) ? "#f6fff8" : "transparent"),
                                 borderRadius: "16px",
                                 border: showTagsSection ? (selectedTags.includes(tag) ? "none" : "1px solid #008060") : (selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060"),
                                 cursor: "pointer",
@@ -4463,7 +4463,7 @@ export default function Index() {
                                 position: "relative",
                                 fontSize: showTagsSection ? "12px" : "12px",
                                 fontWeight: showTagsSection ? "500" : "400",
-                                color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "white" : "#008060"),
+                                color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "#008060" : "#008060"),
                                 minHeight: showTagsSection ? "28px" : "24px",
                                 justifyContent: "center",
                                 fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
@@ -4507,8 +4507,8 @@ export default function Index() {
                               <span>{tag}</span>
                               <span style={{ 
                                 fontSize: showTagsSection ? "11px" : "11px", 
-                                color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175"), 
-                                backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 128, 96, 0.1)") : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)"), 
+                                color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "#008060" : "#6d7175"), 
+                                backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 128, 96, 0.1)") : (selectedTags.includes(tag) ? "rgba(0, 128, 96, 0.1)" : "rgba(0, 0, 0, 0.1)"), 
                                 padding: showTagsSection ? "2px 5px" : "1px 4px", 
                                 borderRadius: "10px",
                                 fontWeight: showTagsSection ? "600" : "500"
@@ -4525,7 +4525,7 @@ export default function Index() {
                                   border: "none",
                                   cursor: "pointer",
                                   fontSize: showTagsSection ? "12px" : "12px",
-                                  color: showTagsSection ? (selectedTags.includes(tag) ? "#dc2626" : "#dc2626") : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175"),
+                                  color: showTagsSection ? (selectedTags.includes(tag) ? "#dc2626" : "#dc2626") : (selectedTags.includes(tag) ? "#dc2626" : "#6d7175"),
                                   padding: "2px",
                                   borderRadius: "2px",
                                   display: "flex",
@@ -4549,7 +4549,7 @@ export default function Index() {
                                 }}
                                 onMouseLeave={(e) => {
                                   e.target.style.backgroundColor = "transparent";
-                                  e.target.style.color = showTagsSection ? "#dc2626" : (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175");
+                                  e.target.style.color = showTagsSection ? "#dc2626" : (selectedTags.includes(tag) ? "#dc2626" : "#6d7175");
                                   e.target.style.opacity = "0.8";
                                 }}
                               >
