@@ -42,7 +42,9 @@ import FolderIconPicker from "../components/FolderIconPicker";
 import NewFolderModal from "../components/NewFolderModal";
 import DraggableFolder from "../components/DraggableFolder";
 import NoteCard from "../components/NoteCard";
+import OptimizedMobileNotes from "../components/OptimizedMobileNotes";
 import "../styles/tiptap.css";
+import "../styles/mobile-notes.css";
 import {
   DndContext,
   closestCenter,
@@ -4305,6 +4307,22 @@ export default function Index() {
 
       {/* Mobile Layout */}
       {isMobile && (
+        <OptimizedMobileNotes
+          folders={localFolders}
+          notes={localNotes}
+          onSaveNote={handleSaveNote}
+          onDeleteNote={handleDeleteNote}
+          onCreateFolder={handleCreateFolder}
+          onUpdateFolder={handleUpdateFolder}
+          onDeleteFolder={handleDeleteFolder}
+          isMobile={isMobile}
+          mobileActiveSection={mobileActiveSection}
+          onMobileSectionChange={setMobileActiveSection}
+        />
+      )}
+
+      {/* Legacy Mobile Layout (fallback) */}
+      {isMobile && false && (
         <div 
           className="mobile-layout"
           style={{ 
