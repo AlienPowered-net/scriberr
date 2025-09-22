@@ -2363,6 +2363,27 @@ export default function Index() {
 
         {/* Mobile and Tablet Styles */}
         <style>{`
+          /* Ensure modals are visible on mobile */
+          @media (max-width: 1024px) {
+            .modal-overlay {
+              z-index: 9999 !important;
+              position: fixed !important;
+              top: 0 !important;
+              left: 0 !important;
+              right: 0 !important;
+              bottom: 0 !important;
+            }
+            
+            /* Polaris Modal mobile fixes */
+            [data-polaris-portal] {
+              z-index: 9999 !important;
+            }
+            
+            .Polaris-Modal-Dialog {
+              z-index: 9999 !important;
+            }
+          }
+          
           @media (max-width: 1024px) {
             .mobile-layout {
               display: flex !important;
@@ -3505,7 +3526,7 @@ export default function Index() {
         
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
-          <div style={{
+          <div className="modal-overlay" style={{
             position: "fixed",
             top: 0,
             left: 0,
@@ -3515,14 +3536,17 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 9999,
+            padding: "16px"
           }}>
             <div style={{
               backgroundColor: "white",
               padding: "24px",
               borderRadius: "8px",
               maxWidth: "400px",
-              width: "90%"
+              width: "100%",
+              maxHeight: "90vh",
+              overflow: "auto"
             }}>
               <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
                 Delete Folder
@@ -3927,7 +3951,7 @@ export default function Index() {
 
         {/* Delete Tag Confirmation Modal */}
         {showDeleteTagConfirm && (
-          <div style={{
+          <div className="modal-overlay" style={{
             position: "fixed",
             top: 0,
             left: 0,
@@ -3937,14 +3961,17 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 9999,
+            padding: "16px"
           }}>
             <div style={{
               backgroundColor: "white",
               padding: "24px",
               borderRadius: "8px",
               maxWidth: "400px",
-              width: "90%"
+              width: "100%",
+              maxHeight: "90vh",
+              overflow: "auto"
             }}>
               <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
                 Delete Tag
@@ -3973,7 +4000,7 @@ export default function Index() {
 
         {/* Rename Folder Modal */}
         {showRenameFolderModal && (
-          <div style={{
+          <div className="modal-overlay" style={{
             position: "fixed",
             top: 0,
             left: 0,
@@ -3983,14 +4010,17 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 9999,
+            padding: "16px"
           }}>
             <div style={{
               backgroundColor: "white",
               padding: "24px",
               borderRadius: "8px",
               maxWidth: "400px",
-              width: "90%"
+              width: "100%",
+              maxHeight: "90vh",
+              overflow: "auto"
             }}>
               <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
                 Rename Folder
