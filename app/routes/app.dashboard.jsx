@@ -742,15 +742,6 @@ export default function Index() {
   const [mobileSelectedIcon, setMobileSelectedIcon] = useState('folder');
   const [mobileSelectedColor, setMobileSelectedColor] = useState('rgba(255, 184, 0, 1)');
   
-  // Initialize mobile icon picker state when modal opens
-  useEffect(() => {
-    if (showIconPicker && isMobile) {
-      const currentFolder = localFolders.find(f => f.id === showIconPicker);
-      setMobileSelectedIcon(currentFolder?.icon || "folder");
-      setMobileSelectedColor(currentFolder?.iconColor || "rgba(255, 184, 0, 1)");
-    }
-  }, [showIconPicker, isMobile, localFolders]);
-  
   // Folder selection popover states
   const [showFolderSelector, setShowFolderSelector] = useState(false);
   const [folderSelectorAction, setFolderSelectorAction] = useState(null); // 'duplicate' or 'move'
@@ -762,6 +753,15 @@ export default function Index() {
   const [mobileActiveSection, setMobileActiveSection] = useState('notes'); // 'folders', 'notes', 'editor'
   const [showMobileTags, setShowMobileTags] = useState(false);
   const [mobileOpenFolderMenu, setMobileOpenFolderMenu] = useState(null);
+  
+  // Initialize mobile icon picker state when modal opens
+  useEffect(() => {
+    if (showIconPicker && isMobile) {
+      const currentFolder = localFolders.find(f => f.id === showIconPicker);
+      setMobileSelectedIcon(currentFolder?.icon || "folder");
+      setMobileSelectedColor(currentFolder?.iconColor || "rgba(255, 184, 0, 1)");
+    }
+  }, [showIconPicker, isMobile, localFolders]);
   
   
   // Update local folders when loader data changes
