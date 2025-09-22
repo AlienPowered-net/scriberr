@@ -2397,6 +2397,7 @@ export default function Index() {
               bottom: 0;
               background-color: white !important;
               z-index: 10000;
+              isolation: isolate;
             }
             
             .mobile-section {
@@ -3524,8 +3525,8 @@ export default function Index() {
           </div>
           </SortableContext>
         
-        {/* Delete Confirmation Modal */}
-        {showDeleteConfirm && (
+        {/* Delete Confirmation Modal - Desktop Only */}
+        {!isMobile && showDeleteConfirm && (
           <div className="modal-overlay" style={{
             position: "fixed",
             top: 0,
@@ -3949,8 +3950,8 @@ export default function Index() {
           </div>
         )}
 
-        {/* Delete Tag Confirmation Modal */}
-        {showDeleteTagConfirm && (
+        {/* Delete Tag Confirmation Modal - Desktop Only */}
+        {!isMobile && showDeleteTagConfirm && (
           <div className="modal-overlay" style={{
             position: "fixed",
             top: 0,
@@ -3998,8 +3999,8 @@ export default function Index() {
           </div>
         )}
 
-        {/* Rename Folder Modal */}
-        {showRenameFolderModal && (
+        {/* Rename Folder Modal - Desktop Only */}
+        {!isMobile && showRenameFolderModal && (
           <div className="modal-overlay" style={{
             position: "fixed",
             top: 0,
@@ -4238,8 +4239,8 @@ export default function Index() {
         />
 
 
-        {/* Folder Icon Picker Modal */}
-        {showIconPicker && (
+        {/* Folder Icon Picker Modal - Desktop Only */}
+        {!isMobile && showIconPicker && (
           <FolderIconPicker
             isOpen={true}
             onClose={() => setShowIconPicker(null)}
@@ -5477,6 +5478,234 @@ export default function Index() {
               <span style={{ fontSize: '12px', fontWeight: '500' }}>Editor</span>
             </div>
           </div>
+
+          {/* Mobile Modals - rendered inside mobile layout */}
+          {isMobile && (
+            <>
+              {/* Delete Confirmation Modal */}
+              {showDeleteConfirm && (
+                <div className="modal-overlay" style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 10001,
+                  padding: "16px"
+                }}>
+                  <div style={{
+                    backgroundColor: "white",
+                    padding: "24px",
+                    borderRadius: "8px",
+                    maxWidth: "400px",
+                    width: "100%",
+                    maxHeight: "90vh",
+                    overflow: "auto"
+                  }}>
+                    <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                      Delete Folder
+                    </Text>
+                    <Text as="p" style={{ marginBottom: "24px" }}>
+                      Are you sure you want to delete this folder? This action will permanently delete the folder and all notes inside it. This action cannot be undone.
+                    </Text>
+                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setShowDeleteConfirm(null)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        tone="critical"
+                        onClick={async () => {
+                          const formData = new FormData();
+                          formData.append('folderId', showDeleteConfirm);
+                          
+                          try {
+                            const response = await fetch('/api/delete-folder', {
+                              method: 'POST',
+                              body: formData
+                            });
+                            
+                            if (response.ok) {
+                              const result = await response.json();
+                              if (result.success) {
+                                window.location.reload();
+                              } else {
+                                setAlertMessage(result.error || 'Failed to delete folder');
+                                setShowDeleteConfirm(null);
+                              }
+                            } else {
+                              setAlertMessage('Failed to delete folder');
+                              setShowDeleteConfirm(null);
+                            }
+                          } catch (error) {
+                            console.error('Error deleting folder:', error);
+                            setAlertMessage('Failed to delete folder');
+                            setShowDeleteConfirm(null);
+                          }
+                        }}
+                      >
+                        Delete Folder
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Delete Tag Confirmation Modal */}
+              {showDeleteTagConfirm && (
+                <div className="modal-overlay" style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 10001,
+                  padding: "16px"
+                }}>
+                  <div style={{
+                    backgroundColor: "white",
+                    padding: "24px",
+                    borderRadius: "8px",
+                    maxWidth: "400px",
+                    width: "100%",
+                    maxHeight: "90vh",
+                    overflow: "auto"
+                  }}>
+                    <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                      Delete Tag
+                    </Text>
+                    <Text as="p" style={{ marginBottom: "24px" }}>
+                      Are you sure you want to delete the tag "{showDeleteTagConfirm}" from all notes? This action is permanent and cannot be undone.
+                    </Text>
+                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setShowDeleteTagConfirm(null)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        tone="critical"
+                        onClick={() => handleDeleteTag(showDeleteTagConfirm)}
+                      >
+                        Delete Tag
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Rename Folder Modal */}
+              {showRenameFolderModal && (
+                <div className="modal-overlay" style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 10001,
+                  padding: "16px"
+                }}>
+                  <div style={{
+                    backgroundColor: "white",
+                    padding: "24px",
+                    borderRadius: "8px",
+                    maxWidth: "400px",
+                    width: "100%",
+                    maxHeight: "90vh",
+                    overflow: "auto"
+                  }}>
+                    <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                      Rename Folder
+                    </Text>
+                    <div style={{ marginBottom: "24px" }}>
+                      <label htmlFor="renameFolderInput" style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                        Enter new folder name:
+                      </label>
+                      <input
+                        id="renameFolderInput"
+                        type="text"
+                        value={editingFolderName}
+                        onChange={(e) => {
+                          const newValue = e.target.value;
+                          // Remove emojis from folder name input
+                          const cleanValue = removeEmojis(newValue);
+                          if (cleanValue.length <= 30) {
+                            setEditingFolderName(cleanValue);
+                          }
+                        }}
+                        maxLength={30}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSaveFolderName(showRenameFolderModal);
+                          } else if (e.key === 'Escape') {
+                            setShowRenameFolderModal(null);
+                            setEditingFolderName("");
+                          }
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "8px 12px",
+                          border: "1px solid #d1d3d4",
+                          borderRadius: "4px",
+                          fontSize: "14px",
+                          outline: "none"
+                        }}
+                        autoFocus
+                      />
+                    </div>
+                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          setShowRenameFolderModal(null);
+                          setEditingFolderName("");
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={() => handleSaveFolderName(showRenameFolderModal)}
+                        disabled={!editingFolderName.trim()}
+                      >
+                        Rename Folder
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Folder Icon Picker Modal */}
+              {showIconPicker && (
+                <FolderIconPicker
+                  isOpen={true}
+                  onClose={() => setShowIconPicker(null)}
+                  onSelectIcon={(iconData) => {
+                    handleIconChange(showIconPicker, iconData);
+                  }}
+                  currentIcon="folder"
+                  currentColor="rgba(255, 184, 0, 1)"
+                  folderName={localFolders.find(f => f.id === showIconPicker)?.name || "Folder"}
+                />
+              )}
+            </>
+          )}
         </div>
       )}
     </>
