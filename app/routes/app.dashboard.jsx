@@ -937,7 +937,7 @@ export default function Index() {
       }
       
       // Close mobile folder menu if clicking outside
-      if (mobileOpenFolderMenu && !event.target.closest('[data-mobile-folder-menu]')) {
+      if (mobileOpenFolderMenu && !event.target.closest('[data-mobile-folder-menu]') && !event.target.closest('.mobile-folder-menu')) {
         setMobileOpenFolderMenu(null);
       }
     };
@@ -4643,12 +4643,111 @@ export default function Index() {
                               key={folder.id} 
                               folder={folder}
                               selectedFolder={selectedFolder}
-                              openFolderMenu={openFolderMenu}
-                              setOpenFolderMenu={setOpenFolderMenu}
+                              openFolderMenu={mobileOpenFolderMenu}
+                              setOpenFolderMenu={setMobileOpenFolderMenu}
                               onFolderClick={(folderId) => setSelectedFolder(selectedFolder === folderId ? null : folderId)}
                             >
-                              {openFolderMenu === folder.id && (
-                                <div style={{ display: 'none' }}>
+                              {mobileOpenFolderMenu === folder.id && (
+                                <div className="mobile-folder-menu" style={{
+                                  position: 'absolute',
+                                  top: '100%',
+                                  right: '8px',
+                                  backgroundColor: 'white',
+                                  border: '1px solid #e1e3e5',
+                                  borderRadius: '8px',
+                                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                                  zIndex: 1000,
+                                  minWidth: '120px',
+                                  padding: '4px 0'
+                                }}>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowRenameFolderModal(folder.id);
+                                      setEditingFolderName(folder.name);
+                                      setMobileOpenFolderMenu(null);
+                                    }}
+                                    style={{
+                                      width: '100%',
+                                      padding: '8px 12px',
+                                      border: 'none',
+                                      background: 'none',
+                                      textAlign: 'left',
+                                      cursor: 'pointer',
+                                      fontSize: '14px',
+                                      color: '#374151',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '8px'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.target.style.backgroundColor = '#f6fff8';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.target.style.backgroundColor = 'transparent';
+                                    }}
+                                  >
+                                    <i className="far fa-edit" style={{ fontSize: '12px' }}></i>
+                                    Rename
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowIconPicker(folder.id);
+                                      setMobileOpenFolderMenu(null);
+                                    }}
+                                    style={{
+                                      width: '100%',
+                                      padding: '8px 12px',
+                                      border: 'none',
+                                      background: 'none',
+                                      textAlign: 'left',
+                                      cursor: 'pointer',
+                                      fontSize: '14px',
+                                      color: '#374151',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '8px'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.target.style.backgroundColor = '#f6fff8';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.target.style.backgroundColor = 'transparent';
+                                    }}
+                                  >
+                                    <i className="far fa-palette" style={{ fontSize: '12px' }}></i>
+                                    Change Icon
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowDeleteConfirm(folder.id);
+                                      setMobileOpenFolderMenu(null);
+                                    }}
+                                    style={{
+                                      width: '100%',
+                                      padding: '8px 12px',
+                                      border: 'none',
+                                      background: 'none',
+                                      textAlign: 'left',
+                                      cursor: 'pointer',
+                                      fontSize: '14px',
+                                      color: '#dc2626',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '8px'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.target.style.backgroundColor = '#fef2f2';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.target.style.backgroundColor = 'transparent';
+                                    }}
+                                  >
+                                    <i className="far fa-trash-alt" style={{ fontSize: '12px' }}></i>
+                                    Delete
+                                  </button>
                                 </div>
                               )}
                             </DraggableFolder>
