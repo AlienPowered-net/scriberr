@@ -5765,40 +5765,41 @@ export default function Index() {
                   }}>
                     <div style={{
                       backgroundColor: "white",
-                      padding: "24px",
+                      padding: "16px",
                       borderRadius: "8px",
-                      maxWidth: "400px",
+                      maxWidth: "350px",
                       width: "100%",
-                      maxHeight: "90vh",
-                      overflow: "auto"
+                      maxHeight: "85vh",
+                      overflow: "auto",
+                      boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)"
                     }}>
-                      <div style={{ marginBottom: '16px' }}>
-                        <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>
+                      <div style={{ marginBottom: '12px' }}>
+                        <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>
                           Change Icon for "{currentFolder?.name || "Folder"}"
                         </h2>
                       </div>
                       
-                      <div style={{ marginBottom: '16px' }}>
-                        <p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>
-                          Current icon: <i className={`far fa-${currentFolder?.icon || "folder"}`} style={{ fontSize: '24px', marginLeft: '8px', color: currentFolder?.iconColor || "rgba(255, 184, 0, 1)" }}></i>
+                      <div style={{ marginBottom: '12px' }}>
+                        <p style={{ margin: '0 0 6px 0', fontSize: '13px' }}>
+                          Current: <i className={`far fa-${currentFolder?.icon || "folder"}`} style={{ fontSize: '18px', marginLeft: '6px', color: currentFolder?.iconColor || "rgba(255, 184, 0, 1)" }}></i>
                         </p>
                       </div>
                       
-                      <div style={{ marginBottom: '16px' }}>
-                        <p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>
-                          Selected icon: <i className={`far fa-${mobileSelectedIcon}`} style={{ fontSize: '24px', marginLeft: '8px', color: mobileSelectedColor }}></i>
+                      <div style={{ marginBottom: '12px' }}>
+                        <p style={{ margin: '0 0 6px 0', fontSize: '13px' }}>
+                          Selected: <i className={`far fa-${mobileSelectedIcon}`} style={{ fontSize: '18px', marginLeft: '6px', color: mobileSelectedColor }}></i>
                         </p>
                       </div>
 
-                      <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600' }}>
+                      <h3 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600' }}>
                         Choose an icon:
                       </h3>
                       
                       <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(6, 1fr)',
-                        gap: '8px',
-                        marginBottom: '24px',
+                        gridTemplateColumns: 'repeat(5, 1fr)',
+                        gap: '6px',
+                        marginBottom: '20px',
                         padding: '8px',
                         border: '1px solid #e1e3e5',
                         borderRadius: '8px',
@@ -5809,19 +5810,19 @@ export default function Index() {
                             key={index}
                             onClick={() => setMobileSelectedIcon(iconData.icon)}
                             style={{
-                              width: '50px',
-                              height: '50px',
+                              width: '45px',
+                              height: '45px',
                               border: mobileSelectedIcon === iconData.icon ? '2px solid #2e7d32' : '1px solid #e1e3e5',
-                              borderRadius: '8px',
+                              borderRadius: '6px',
                               backgroundColor: mobileSelectedIcon === iconData.icon ? '#e8f5e8' : 'white',
                               cursor: 'pointer',
                               display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              fontSize: '18px',
+                              fontSize: '16px',
                               transition: 'all 0.2s ease',
-                              padding: '4px'
+                              padding: '2px'
                             }}
                             title={iconData.name}
                           >
@@ -5830,15 +5831,15 @@ export default function Index() {
                         ))}
                       </div>
 
-                      <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600' }}>
+                      <h3 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600' }}>
                         Choose a color:
                       </h3>
                       
                       <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(8, 1fr)',
-                        gap: '8px',
-                        marginBottom: '24px',
+                        gridTemplateColumns: 'repeat(4, 1fr)',
+                        gap: '6px',
+                        marginBottom: '20px',
                         padding: '8px',
                         border: '1px solid #e1e3e5',
                         borderRadius: '8px',
@@ -5849,9 +5850,9 @@ export default function Index() {
                             key={index}
                             onClick={() => setMobileSelectedColor(colorData.color)}
                             style={{
-                              width: '40px',
-                              height: '40px',
-                              border: mobileSelectedColor === colorData.color ? '3px solid #2e7d32' : '2px solid #e1e3e5',
+                              width: '35px',
+                              height: '35px',
+                              border: mobileSelectedColor === colorData.color ? '2px solid #2e7d32' : '1px solid #e1e3e5',
                               borderRadius: '50%',
                               backgroundColor: colorData.color,
                               cursor: 'pointer',
@@ -5866,23 +5867,24 @@ export default function Index() {
                             {mobileSelectedColor === colorData.color && (
                               <i className="fas fa-check" style={{ 
                                 color: colorData.color === 'rgba(255, 230, 0, 1)' || colorData.color === 'rgba(227, 227, 227, 1)' ? 'rgba(48, 48, 48, 1)' : 'white',
-                                fontSize: '14px' 
+                                fontSize: '12px' 
                               }}></i>
                             )}
                           </button>
                         ))}
                       </div>
 
-                      <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '8px' }}>
                         <button
                           onClick={() => setShowIconPicker(null)}
                           style={{
-                            padding: '8px 16px',
+                            padding: '8px 12px',
                             border: '1px solid #e1e3e5',
                             borderRadius: '4px',
                             backgroundColor: 'white',
                             cursor: 'pointer',
-                            fontSize: '14px'
+                            fontSize: '13px',
+                            minWidth: '60px'
                           }}
                         >
                           Cancel
@@ -5890,14 +5892,15 @@ export default function Index() {
                         <button
                           onClick={handleSave}
                           style={{
-                            padding: '8px 16px',
+                            padding: '8px 12px',
                             border: 'none',
                             borderRadius: '4px',
                             backgroundColor: '#008060',
                             color: 'white',
                             cursor: 'pointer',
-                            fontSize: '14px',
-                            fontWeight: '500'
+                            fontSize: '13px',
+                            fontWeight: '500',
+                            minWidth: '80px'
                           }}
                         >
                           Save Icon
