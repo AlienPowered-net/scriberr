@@ -53,7 +53,7 @@ import {
   SortIcon,
   ViewIcon,
   MobileIcon,
-  NotesIcon,
+  ProductFilledIcon,
   HomeIcon
 } from '@shopify/polaris-icons';
 import { useMobileNotes } from '../hooks/useMobileNotes';
@@ -153,7 +153,7 @@ const OptimizedMobileNotes = ({
           { 
             id: 'notes', 
             label: 'Notes', 
-            icon: NotesIcon,
+            icon: ProductFilledIcon,
             count: filteredNotes.length
           },
           { 
