@@ -5694,131 +5694,208 @@ export default function Index() {
               )}
 
               {/* Folder Icon Picker Modal - Mobile */}
-              {showIconPicker && (
-                <div className="modal-overlay" style={{
-                  position: "fixed",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: "rgba(0,0,0,0.5)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  zIndex: 10002,
-                  padding: "16px"
-                }}>
-                  <div style={{
-                    backgroundColor: "white",
-                    padding: "24px",
-                    borderRadius: "8px",
-                    maxWidth: "400px",
-                    width: "100%",
-                    maxHeight: "90vh",
-                    overflow: "auto"
-                  }}>
-                    <div style={{ marginBottom: '16px' }}>
-                      <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>
-                        Change Icon for "{localFolders.find(f => f.id === showIconPicker)?.name || "Folder"}"
-                      </h2>
-                    </div>
-                    
-                    <div style={{ marginBottom: '16px' }}>
-                      <p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>
-                        Current icon: <i className={`far fa-${localFolders.find(f => f.id === showIconPicker)?.icon || "folder"}`} style={{ fontSize: '24px', marginLeft: '8px', color: localFolders.find(f => f.id === showIconPicker)?.iconColor || "rgba(255, 184, 0, 1)" }}></i>
-                      </p>
-                    </div>
-                    
-                    <div style={{ marginBottom: '16px' }}>
-                      <p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>
-                        Selected icon: <i className={`far fa-${localFolders.find(f => f.id === showIconPicker)?.icon || "folder"}`} style={{ fontSize: '24px', marginLeft: '8px', color: localFolders.find(f => f.id === showIconPicker)?.iconColor || "rgba(255, 184, 0, 1)" }}></i>
-                      </p>
-                    </div>
+              {showIconPicker && (() => {
+                const currentFolder = localFolders.find(f => f.id === showIconPicker);
+                const [selectedIcon, setSelectedIcon] = useState(currentFolder?.icon || "folder");
+                const [selectedColor, setSelectedColor] = useState(currentFolder?.iconColor || "rgba(255, 184, 0, 1)");
+                
+                const folderIcons = [
+                  { icon: "folder", name: "Folder" },
+                  { icon: "folder-open", name: "Folder Open" },
+                  { icon: "image", name: "Image" },
+                  { icon: "house", name: "House" },
+                  { icon: "face-smile", name: "Smile" },
+                  { icon: "star", name: "Star" },
+                  { icon: "heart", name: "Heart" },
+                  { icon: "address-book", name: "Address Book" },
+                  { icon: "bookmark", name: "Bookmark" },
+                  { icon: "pen-to-square", name: "Compose" },
+                  { icon: "user", name: "User" },
+                  { icon: "gem", name: "Gem" },
+                  { icon: "square-check", name: "Check" },
+                  { icon: "trash-can", name: "Trash" },
+                  { icon: "flag", name: "Flag" },
+                  { icon: "calendar", name: "Calendar" },
+                  { icon: "lightbulb", name: "Light Bulb" },
+                  { icon: "bell", name: "Bell" },
+                  { icon: "truck", name: "Truck" },
+                  { icon: "file-code", name: "Code" }
+                ];
 
-                    <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600' }}>
-                      Choose an icon:
-                    </h3>
-                    
+                const iconColors = [
+                  { color: "rgba(1, 75, 64, 1)", name: "Green" },
+                  { color: "rgba(199, 10, 36, 1)", name: "Red" },
+                  { color: "rgba(255, 184, 0, 1)", name: "Orange" },
+                  { color: "rgba(255, 230, 0, 1)", name: "Yellow" },
+                  { color: "rgba(227, 227, 227, 1)", name: "White" },
+                  { color: "rgba(48, 48, 48, 1)", name: "Black" },
+                  { color: "rgba(0, 91, 211, 1)", name: "Blue" },
+                  { color: "rgba(128, 81, 255, 1)", name: "Purple" }
+                ];
+
+                const handleSave = () => {
+                  handleIconChange(showIconPicker, { icon: selectedIcon, color: selectedColor });
+                  setShowIconPicker(null);
+                };
+
+                return (
+                  <div className="modal-overlay" style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: "rgba(0,0,0,0.5)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 10002,
+                    padding: "16px"
+                  }}>
                     <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(6, 1fr)',
-                      gap: '8px',
-                      marginBottom: '24px',
-                      padding: '8px',
-                      border: '1px solid #e1e3e5',
-                      borderRadius: '8px',
-                      backgroundColor: '#fafbfb'
+                      backgroundColor: "white",
+                      padding: "24px",
+                      borderRadius: "8px",
+                      maxWidth: "400px",
+                      width: "100%",
+                      maxHeight: "90vh",
+                      overflow: "auto"
                     }}>
-                      {[
-                        { icon: "folder", name: "Folder" },
-                        { icon: "folder-open", name: "Folder Open" },
-                        { icon: "image", name: "Image" },
-                        { icon: "house", name: "House" },
-                        { icon: "face-smile", name: "Smile" },
-                        { icon: "star", name: "Star" },
-                        { icon: "heart", name: "Heart" },
-                        { icon: "address-book", name: "Address Book" },
-                        { icon: "bookmark", name: "Bookmark" },
-                        { icon: "pen-to-square", name: "Compose" },
-                        { icon: "user", name: "User" },
-                        { icon: "gem", name: "Gem" },
-                        { icon: "square-check", name: "Check" },
-                        { icon: "trash-can", name: "Trash" },
-                        { icon: "flag", name: "Flag" },
-                        { icon: "calendar", name: "Calendar" },
-                        { icon: "lightbulb", name: "Light Bulb" },
-                        { icon: "bell", name: "Bell" },
-                        { icon: "truck", name: "Truck" },
-                        { icon: "file-code", name: "Code" }
-                      ].map((iconData, index) => (
+                      <div style={{ marginBottom: '16px' }}>
+                        <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>
+                          Change Icon for "{currentFolder?.name || "Folder"}"
+                        </h2>
+                      </div>
+                      
+                      <div style={{ marginBottom: '16px' }}>
+                        <p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>
+                          Current icon: <i className={`far fa-${currentFolder?.icon || "folder"}`} style={{ fontSize: '24px', marginLeft: '8px', color: currentFolder?.iconColor || "rgba(255, 184, 0, 1)" }}></i>
+                        </p>
+                      </div>
+                      
+                      <div style={{ marginBottom: '16px' }}>
+                        <p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>
+                          Selected icon: <i className={`far fa-${selectedIcon}`} style={{ fontSize: '24px', marginLeft: '8px', color: selectedColor }}></i>
+                        </p>
+                      </div>
+
+                      <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600' }}>
+                        Choose an icon:
+                      </h3>
+                      
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(6, 1fr)',
+                        gap: '8px',
+                        marginBottom: '24px',
+                        padding: '8px',
+                        border: '1px solid #e1e3e5',
+                        borderRadius: '8px',
+                        backgroundColor: '#fafbfb'
+                      }}>
+                        {folderIcons.map((iconData, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setSelectedIcon(iconData.icon)}
+                            style={{
+                              width: '50px',
+                              height: '50px',
+                              border: selectedIcon === iconData.icon ? '2px solid #2e7d32' : '1px solid #e1e3e5',
+                              borderRadius: '8px',
+                              backgroundColor: selectedIcon === iconData.icon ? '#e8f5e8' : 'white',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '18px',
+                              transition: 'all 0.2s ease',
+                              padding: '4px'
+                            }}
+                            title={iconData.name}
+                          >
+                            <i className={`far fa-${iconData.icon}`} style={{ color: selectedColor }}></i>
+                          </button>
+                        ))}
+                      </div>
+
+                      <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600' }}>
+                        Choose a color:
+                      </h3>
+                      
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(8, 1fr)',
+                        gap: '8px',
+                        marginBottom: '24px',
+                        padding: '8px',
+                        border: '1px solid #e1e3e5',
+                        borderRadius: '8px',
+                        backgroundColor: '#fafbfb'
+                      }}>
+                        {iconColors.map((colorData, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setSelectedColor(colorData.color)}
+                            style={{
+                              width: '40px',
+                              height: '40px',
+                              border: selectedColor === colorData.color ? '3px solid #2e7d32' : '2px solid #e1e3e5',
+                              borderRadius: '50%',
+                              backgroundColor: colorData.color,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s ease',
+                              boxShadow: colorData.color === 'rgba(227, 227, 227, 1)' ? 'inset 0 0 0 1px #e1e3e5' : 'none'
+                            }}
+                            title={colorData.name}
+                          >
+                            {selectedColor === colorData.color && (
+                              <i className="fas fa-check" style={{ 
+                                color: colorData.color === 'rgba(255, 230, 0, 1)' || colorData.color === 'rgba(227, 227, 227, 1)' ? 'rgba(48, 48, 48, 1)' : 'white',
+                                fontSize: '14px' 
+                              }}></i>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                         <button
-                          key={index}
-                          onClick={() => {
-                            const selectedIcon = iconData.icon;
-                            const selectedColor = localFolders.find(f => f.id === showIconPicker)?.iconColor || "rgba(255, 184, 0, 1)";
-                            handleIconChange(showIconPicker, { icon: selectedIcon, color: selectedColor });
-                            setShowIconPicker(null);
-                          }}
+                          onClick={() => setShowIconPicker(null)}
                           style={{
-                            width: '50px',
-                            height: '50px',
+                            padding: '8px 16px',
                             border: '1px solid #e1e3e5',
-                            borderRadius: '8px',
+                            borderRadius: '4px',
                             backgroundColor: 'white',
                             cursor: 'pointer',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '18px',
-                            transition: 'all 0.2s ease',
-                            padding: '4px'
+                            fontSize: '14px'
                           }}
-                          title={iconData.name}
                         >
-                          <i className={`far fa-${iconData.icon}`} style={{ color: localFolders.find(f => f.id === showIconPicker)?.iconColor || "rgba(255, 184, 0, 1)" }}></i>
+                          Cancel
                         </button>
-                      ))}
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                      <button
-                        onClick={() => setShowIconPicker(null)}
-                        style={{
-                          padding: '8px 16px',
-                          border: '1px solid #e1e3e5',
-                          borderRadius: '4px',
-                          backgroundColor: 'white',
-                          cursor: 'pointer',
-                          fontSize: '14px'
-                        }}
-                      >
-                        Cancel
-                      </button>
+                        <button
+                          onClick={handleSave}
+                          style={{
+                            padding: '8px 16px',
+                            border: 'none',
+                            borderRadius: '4px',
+                            backgroundColor: '#008060',
+                            color: 'white',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            fontWeight: '500'
+                          }}
+                        >
+                          Save Icon
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </>
           )}
         </div>
