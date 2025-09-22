@@ -31,6 +31,7 @@ import {
   DragDropIcon,
   DragHandleIcon,
   CollectionFilledIcon,
+  ExchangeIcon,
   FolderIcon,
   PlusIcon,
   ProductFilledIcon
@@ -4246,6 +4247,7 @@ export default function Index() {
             onClose={() => setShowIconPicker(null)}
             onSelectIcon={(iconData) => {
               handleIconChange(showIconPicker, iconData);
+              setShowIconPicker(null);
             }}
             currentIcon="folder"
             currentColor="rgba(255, 184, 0, 1)"
@@ -4747,7 +4749,7 @@ export default function Index() {
                                       e.target.style.backgroundColor = 'transparent';
                                     }}
                                   >
-                                    <i className="far fa-palette" style={{ fontSize: '12px' }}></i>
+                                    <ExchangeIcon style={{ width: '12px', height: '12px' }} />
                                     Change Icon
                                   </button>
                                   <button
@@ -5698,6 +5700,7 @@ export default function Index() {
                   onClose={() => setShowIconPicker(null)}
                   onSelectIcon={(iconData) => {
                     handleIconChange(showIconPicker, iconData);
+                    setShowIconPicker(null);
                   }}
                   currentIcon="folder"
                   currentColor="rgba(255, 184, 0, 1)"
