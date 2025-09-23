@@ -315,7 +315,10 @@ const NoteCard = ({
             </Button>
             <Popover
               active={openMenu}
-              onOpen={() => setOpenMenu(true)}
+              onOpen={() => {
+                console.log('Desktop Manage button clicked, opening popover');
+                setOpenMenu(true);
+              }}
               activator={
                 <Button
                   size="xs"
@@ -374,6 +377,7 @@ const NoteCard = ({
               variant="light"
               color="red"
               onClick={(e) => {
+                console.log('Desktop Delete button clicked');
                 e.stopPropagation();
                 onDelete && onDelete();
               }}

@@ -5221,7 +5221,10 @@ export default function Index() {
                             {/* Manage Button */}
                             <Popover
                               active={openNoteMenu === note.id}
-                              onOpen={() => setOpenNoteMenu(note.id)}
+                              onOpen={() => {
+                                console.log('Mobile Manage button clicked, opening popover for note:', note.id);
+                                setOpenNoteMenu(note.id);
+                              }}
                               activator={
                                 <Button
                                   size="slim"
@@ -5282,6 +5285,7 @@ export default function Index() {
                               variant="secondary"
                               tone="critical"
                               onClick={(e) => {
+                                console.log('Mobile Delete button clicked for note:', note.id);
                                 e.stopPropagation();
                                 setShowDeleteNoteConfirm(note.id);
                               }}
