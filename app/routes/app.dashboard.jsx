@@ -750,7 +750,7 @@ export default function Index() {
 
   // Mobile layout state
   const [isMobile, setIsMobile] = useState(false);
-  const [mobileActiveSection, setMobileActiveSection] = useState('notes'); // 'folders', 'notes', 'editor'
+  const [mobileActiveSection, setMobileActiveSection] = useState('folders'); // 'folders', 'notes', 'editor'
   const [showMobileTags, setShowMobileTags] = useState(false);
   const [mobileOpenFolderMenu, setMobileOpenFolderMenu] = useState(null);
   
