@@ -436,12 +436,6 @@ export default function Index() {
   // Mobile detection state - moved early to avoid initialization issues
   const [isMobile, setIsMobile] = useState(false);
   
-  // Debug alert message changes
-  useEffect(() => {
-    if (alertMessage) {
-      console.log('Alert message set:', alertMessage, 'Type:', alertType, 'isMobile:', isMobile);
-    }
-  }, [alertMessage, alertType, isMobile]);
   
   // Note editing states
   const [editingNoteId, setEditingNoteId] = useState(null);
@@ -4399,26 +4393,6 @@ export default function Index() {
               {mobileActiveSection === 'folders' && 'Folders'}
               {mobileActiveSection === 'notes' && 'Notes'}
             </h1>
-            {/* Temporary Test Button */}
-            <button 
-              onClick={() => {
-                console.log('Test alert button clicked');
-                setAlertMessage('Test alert message - this should be visible!');
-                setAlertType('error');
-                setTimeout(() => setAlertMessage(''), 4000);
-              }}
-              style={{
-                padding: '4px 8px',
-                backgroundColor: '#ff6b6b',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                fontSize: '12px',
-                cursor: 'pointer'
-              }}
-            >
-              Test Alert
-            </button>
             {mobileActiveSection !== 'notes' && (
               <Button
                 variant="primary"
@@ -4912,9 +4886,7 @@ export default function Index() {
                   variant="primary"
                   size="slim"
                   onClick={() => {
-                    console.log('New Note button clicked, selectedFolder:', selectedFolder);
                     if (!selectedFolder) {
-                      console.log('No folder selected, showing alert');
                       setAlertMessage('Please select a folder first to create a new note');
                       setAlertType('error');
                       setTimeout(() => setAlertMessage(''), 4000);
@@ -5341,9 +5313,7 @@ export default function Index() {
                   variant="primary"
                   fullWidth
                   onClick={() => {
-                    console.log('Bottom New Note button clicked, selectedFolder:', selectedFolder);
                     if (!selectedFolder) {
-                      console.log('No folder selected, showing alert');
                       setAlertMessage('Please select a folder first to create a new note');
                       setAlertType('error');
                       setTimeout(() => setAlertMessage(''), 4000);
