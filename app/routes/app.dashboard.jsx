@@ -755,7 +755,7 @@ export default function Index() {
 
   // Mobile layout state
   const [isMobile, setIsMobile] = useState(false);
-  const [mobileActiveSection, setMobileActiveSection] = useState('folders'); // 'folders', 'notes', 'editor'
+  const [mobileActiveSection, setMobileActiveSection] = useState('folders'); // 'folders', 'notes'
   const [showMobileTags, setShowMobileTags] = useState(false);
   const [mobileOpenFolderMenu, setMobileOpenFolderMenu] = useState(null);
   
@@ -4353,7 +4353,6 @@ export default function Index() {
             <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
               {mobileActiveSection === 'folders' && 'Folders'}
               {mobileActiveSection === 'notes' && 'Notes'}
-              {mobileActiveSection === 'editor' && 'Note Editor'}
             </h1>
             {mobileActiveSection !== 'notes' && (
               <Button
@@ -5510,7 +5509,8 @@ export default function Index() {
             backgroundColor: 'white',
             borderTop: '1px solid #e1e3e5',
             display: 'flex',
-            justifyContent: 'space-around',
+            justifyContent: 'center',
+            gap: '40px',
             padding: '12px 0',
             zIndex: 1000,
             boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
@@ -5553,24 +5553,6 @@ export default function Index() {
               <span style={{ fontSize: '12px', fontWeight: '500' }}>Notes</span>
             </div>
             
-            <div 
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '8px 12px',
-                cursor: 'pointer',
-                borderRadius: '8px',
-                minWidth: '60px',
-                backgroundColor: mobileActiveSection === 'editor' ? '#f6fff8' : 'transparent',
-                color: mobileActiveSection === 'editor' ? '#008060' : '#6d7175'
-              }}
-              onClick={() => setMobileActiveSection('editor')}
-            >
-              <i className="far fa-edit" style={{ fontSize: '20px' }}></i>
-              <span style={{ fontSize: '12px', fontWeight: '500' }}>Editor</span>
-            </div>
           </div>
 
           {/* Mobile Modals - rendered inside mobile layout */}
