@@ -5064,23 +5064,33 @@ export default function Index() {
                         key={note.id}
                         style={{
                           padding: '16px',
-                          border: '1px solid #D1D3D4',
+                          border: selectButtonClicked.has(note.id) ? '1px solid #FF8C00' : '1px solid #D1D3D4',
                           borderRadius: '12px',
-                          backgroundColor: 'white',
+                          backgroundColor: selectButtonClicked.has(note.id) ? '#fffbf8' : 'white',
                           position: 'relative',
-                          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                          boxShadow: selectButtonClicked.has(note.id) ? '0 4px 12px rgba(255, 140, 0, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
                           transition: 'all 0.2s ease',
                           cursor: 'pointer'
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.transform = 'translateY(-2px)';
-                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-                          e.currentTarget.style.borderColor = '#D0D7E2';
+                          if (selectButtonClicked.has(note.id)) {
+                            e.currentTarget.style.boxShadow = '0 6px 16px rgba(255, 140, 0, 0.4)';
+                            e.currentTarget.style.borderColor = '#FF8C00';
+                          } else {
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                            e.currentTarget.style.borderColor = '#D0D7E2';
+                          }
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
-                          e.currentTarget.style.borderColor = '#D1D3D4';
+                          if (selectButtonClicked.has(note.id)) {
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 140, 0, 0.3)';
+                            e.currentTarget.style.borderColor = '#FF8C00';
+                          } else {
+                            e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+                            e.currentTarget.style.borderColor = '#D1D3D4';
+                          }
                         }}
                       >
                         {/* Note Header */}
