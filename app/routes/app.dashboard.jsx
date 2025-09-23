@@ -433,6 +433,13 @@ export default function Index() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState(""); // "error" or "success"
   
+  // Debug alert message changes
+  useEffect(() => {
+    if (alertMessage) {
+      console.log('Alert message set:', alertMessage, 'Type:', alertType, 'isMobile:', isMobile);
+    }
+  }, [alertMessage, alertType, isMobile]);
+  
   // Note editing states
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [selectedNoteId, setSelectedNoteId] = useState(null);
@@ -2502,23 +2509,25 @@ export default function Index() {
 
         {/* Custom Alert */}
         {alertMessage && (
-          <div style={{
-            position: "fixed",
-            top: isMobile ? "10px" : "20px",
-            left: isMobile ? "10px" : "auto",
-            right: isMobile ? "10px" : "20px",
-            padding: "12px 16px",
-            borderRadius: "6px",
-            color: "white",
-            fontSize: "14px",
-            fontWeight: "500",
-            zIndex: 10000,
-            maxWidth: isMobile ? "calc(100vw - 20px)" : "300px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-            animation: "slideIn 0.3s ease-out",
-            backgroundColor: alertType === 'error' ? "#d82c0d" : "#008060",
-            textAlign: isMobile ? "center" : "left"
-          }}>
+          <div 
+            style={{
+              position: "fixed",
+              top: isMobile ? "10px" : "20px",
+              left: isMobile ? "10px" : "auto",
+              right: isMobile ? "10px" : "20px",
+              padding: "12px 16px",
+              borderRadius: "6px",
+              color: "white",
+              fontSize: "14px",
+              fontWeight: "500",
+              zIndex: 10002,
+              maxWidth: isMobile ? "calc(100vw - 20px)" : "300px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              animation: "slideIn 0.3s ease-out",
+              backgroundColor: alertType === 'error' ? "#d82c0d" : "#008060",
+              textAlign: isMobile ? "center" : "left"
+            }}
+          >
             {alertMessage}
           </div>
         )}
@@ -4857,7 +4866,9 @@ export default function Index() {
                   variant="primary"
                   size="slim"
                   onClick={() => {
+                    console.log('New Note button clicked, selectedFolder:', selectedFolder);
                     if (!selectedFolder) {
+                      console.log('No folder selected, showing alert');
                       setAlertMessage('Please select a folder first to create a new note');
                       setAlertType('error');
                       setTimeout(() => setAlertMessage(''), 4000);
@@ -5284,7 +5295,9 @@ export default function Index() {
                   variant="primary"
                   fullWidth
                   onClick={() => {
+                    console.log('Bottom New Note button clicked, selectedFolder:', selectedFolder);
                     if (!selectedFolder) {
+                      console.log('No folder selected, showing alert');
                       setAlertMessage('Please select a folder first to create a new note');
                       setAlertType('error');
                       setTimeout(() => setAlertMessage(''), 4000);
