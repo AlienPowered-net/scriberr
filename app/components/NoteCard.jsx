@@ -313,72 +313,26 @@ const NoteCard = ({
             >
               Select
             </Button>
-            <Popover
-              active={openMenu}
-              onOpen={() => {
-                console.log('Desktop Manage button clicked, opening popover');
-                setOpenMenu(true);
+            <Button
+              size="xs"
+              variant="light"
+              color="orange"
+              onClick={(e) => {
+                e.stopPropagation();
+                alert(`Desktop Manage clicked for note: ${title}`);
+                console.log('Desktop Manage button clicked');
               }}
-              activator={
-                <Button
-                  size="xs"
-                  variant="light"
-                  color="orange"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                >
-                  Manage
-                </Button>
-              }
-              onClose={() => setOpenMenu(false)}
             >
-              <Popover.Pane>
-                <ActionList
-                  items={[
-                    {
-                      content: isPinned ? "Unpin" : "Pin",
-                      icon: <IconPin size={14} />,
-                      onAction: () => {
-                        onPin && onPin();
-                        setOpenMenu(false);
-                      }
-                    },
-                    {
-                      content: "Duplicate to current folder",
-                      icon: <IconCopy size={14} />,
-                      onAction: () => {
-                        onDuplicate && onDuplicate();
-                        setOpenMenu(false);
-                      }
-                    },
-                    {
-                      content: "Duplicate to different folder",
-                      icon: <IconCopy size={14} />,
-                      onAction: () => {
-                        onDuplicate && onDuplicate("different");
-                        setOpenMenu(false);
-                      }
-                    },
-                    {
-                      content: "Move to different folder",
-                      icon: <IconFolder size={14} />,
-                      onAction: () => {
-                        onMove && onMove();
-                        setOpenMenu(false);
-                      }
-                    }
-                  ]}
-                />
-              </Popover.Pane>
-            </Popover>
+              Manage
+            </Button>
             <Button
               size="xs"
               variant="light"
               color="red"
               onClick={(e) => {
-                console.log('Desktop Delete button clicked');
                 e.stopPropagation();
+                alert(`Desktop Delete clicked for note: ${title}`);
+                console.log('Desktop Delete button clicked');
                 onDelete && onDelete();
               }}
             >

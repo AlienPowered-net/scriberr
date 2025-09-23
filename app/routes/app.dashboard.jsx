@@ -5219,65 +5219,18 @@ export default function Index() {
                             </Button>
                             
                             {/* Manage Button */}
-                            <Popover
-                              active={openNoteMenu === note.id}
-                              onOpen={() => {
-                                console.log('Mobile Manage button clicked, opening popover for note:', note.id);
-                                setOpenNoteMenu(note.id);
+                            <Button
+                              size="slim"
+                              variant="secondary"
+                              tone="warning"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                alert(`Manage clicked for note: ${note.title}`);
+                                console.log('Mobile Manage button clicked for note:', note.id);
                               }}
-                              activator={
-                                <Button
-                                  size="slim"
-                                  variant="secondary"
-                                  tone="warning"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                  }}
-                                >
-                                  Manage
-                                </Button>
-                              }
-                              onClose={() => setOpenNoteMenu(null)}
                             >
-                              <Popover.Pane>
-                                <ActionList
-                                  items={[
-                                    {
-                                      content: note.pinnedAt ? "Unpin" : "Pin",
-                                      icon: <i className="fas fa-thumbtack" style={{ fontSize: '12px' }}></i>,
-                                      onAction: () => {
-                                        handlePinNote(note.id);
-                                        setOpenNoteMenu(null);
-                                      }
-                                    },
-                                    {
-                                      content: "Duplicate to current folder",
-                                      icon: <i className="fas fa-copy" style={{ fontSize: '12px' }}></i>,
-                                      onAction: () => {
-                                        handleDuplicateFromMenu(note.id, "current");
-                                        setOpenNoteMenu(null);
-                                      }
-                                    },
-                                    {
-                                      content: "Duplicate to different folder",
-                                      icon: <i className="fas fa-copy" style={{ fontSize: '12px' }}></i>,
-                                      onAction: () => {
-                                        handleDuplicateFromMenu(note.id, "different");
-                                        setOpenNoteMenu(null);
-                                      }
-                                    },
-                                    {
-                                      content: "Move to different folder",
-                                      icon: <i className="fas fa-folder" style={{ fontSize: '12px' }}></i>,
-                                      onAction: () => {
-                                        handleMoveFromMenu(note.id);
-                                        setOpenNoteMenu(null);
-                                      }
-                                    }
-                                  ]}
-                                />
-                              </Popover.Pane>
-                            </Popover>
+                              Manage
+                            </Button>
                             
                             {/* Delete Button */}
                             <Button
@@ -5285,8 +5238,9 @@ export default function Index() {
                               variant="secondary"
                               tone="critical"
                               onClick={(e) => {
-                                console.log('Mobile Delete button clicked for note:', note.id);
                                 e.stopPropagation();
+                                alert(`Delete clicked for note: ${note.title}`);
+                                console.log('Mobile Delete button clicked for note:', note.id);
                                 setShowDeleteNoteConfirm(note.id);
                               }}
                             >
