@@ -433,6 +433,9 @@ export default function Index() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState(""); // "error" or "success"
   
+  // Mobile detection state - moved early to avoid initialization issues
+  const [isMobile, setIsMobile] = useState(false);
+  
   // Debug alert message changes
   useEffect(() => {
     if (alertMessage) {
@@ -761,7 +764,6 @@ export default function Index() {
   const [folderSelectorSearchQuery, setFolderSelectorSearchQuery] = useState("");
 
   // Mobile layout state
-  const [isMobile, setIsMobile] = useState(false);
   const [mobileActiveSection, setMobileActiveSection] = useState('folders'); // 'folders', 'notes'
   const [showMobileTags, setShowMobileTags] = useState(false);
   const [mobileOpenFolderMenu, setMobileOpenFolderMenu] = useState(null);
