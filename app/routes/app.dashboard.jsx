@@ -1301,12 +1301,12 @@ export default function Index() {
     const currentFolderId = selectedFolder || "";
     
     if (!currentFolderId) {
-      setAlertMessage('Please select a folder first');
+      setAlertMessage('Please select a folder first to create a new note');
       setAlertType('error');
       // Highlight the folders column to draw attention
       setHighlightFolders(true);
       setTimeout(() => setHighlightFolders(false), 3000);
-      setTimeout(() => setAlertMessage(''), 3000);
+      setTimeout(() => setAlertMessage(''), 4000);
       return;
     }
 
@@ -2504,18 +2504,20 @@ export default function Index() {
         {alertMessage && (
           <div style={{
             position: "fixed",
-            top: "20px",
-            right: "20px",
+            top: isMobile ? "10px" : "20px",
+            left: isMobile ? "10px" : "auto",
+            right: isMobile ? "10px" : "20px",
             padding: "12px 16px",
             borderRadius: "6px",
             color: "white",
             fontSize: "14px",
             fontWeight: "500",
-            zIndex: 3000,
-            maxWidth: "300px",
+            zIndex: 10000,
+            maxWidth: isMobile ? "calc(100vw - 20px)" : "300px",
             boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
             animation: "slideIn 0.3s ease-out",
-            backgroundColor: alertType === 'error' ? "#d82c0d" : "#008060"
+            backgroundColor: alertType === 'error' ? "#d82c0d" : "#008060",
+            textAlign: isMobile ? "center" : "left"
           }}>
             {alertMessage}
           </div>
@@ -4856,9 +4858,9 @@ export default function Index() {
                   size="slim"
                   onClick={() => {
                     if (!selectedFolder) {
-                      setAlertMessage('Please select a folder first');
+                      setAlertMessage('Please select a folder first to create a new note');
                       setAlertType('error');
-                      setTimeout(() => setAlertMessage(''), 3000);
+                      setTimeout(() => setAlertMessage(''), 4000);
                       return;
                     }
                     handleNewNote();
@@ -5283,9 +5285,9 @@ export default function Index() {
                   fullWidth
                   onClick={() => {
                     if (!selectedFolder) {
-                      setAlertMessage('Please select a folder first');
+                      setAlertMessage('Please select a folder first to create a new note');
                       setAlertType('error');
-                      setTimeout(() => setAlertMessage(''), 3000);
+                      setTimeout(() => setAlertMessage(''), 4000);
                       return;
                     }
                     handleNewNote();
