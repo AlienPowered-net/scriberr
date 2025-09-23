@@ -742,6 +742,11 @@ export default function Index() {
   const [mobileSelectedIcon, setMobileSelectedIcon] = useState('folder');
   const [mobileSelectedColor, setMobileSelectedColor] = useState('rgba(255, 184, 0, 1)');
   
+  // Mobile new folder modal states
+  const [mobileFolderName, setMobileFolderName] = useState('');
+  const [mobileNewFolderIcon, setMobileNewFolderIcon] = useState('folder');
+  const [mobileNewFolderColor, setMobileNewFolderColor] = useState('rgba(255, 184, 0, 1)');
+  
   // Folder selection popover states
   const [showFolderSelector, setShowFolderSelector] = useState(false);
   const [folderSelectorAction, setFolderSelectorAction] = useState(null); // 'duplicate' or 'move'
@@ -762,6 +767,15 @@ export default function Index() {
       setMobileSelectedColor(currentFolder?.iconColor || "rgba(255, 184, 0, 1)");
     }
   }, [showIconPicker, isMobile, localFolders]);
+  
+  // Initialize mobile new folder modal state when modal opens
+  useEffect(() => {
+    if (showNewFolderModal && isMobile) {
+      setMobileFolderName('');
+      setMobileNewFolderIcon('folder');
+      setMobileNewFolderColor('rgba(255, 184, 0, 1)');
+    }
+  }, [showNewFolderModal, isMobile]);
   
   
   // Update local folders when loader data changes
@@ -5906,9 +5920,6 @@ export default function Index() {
 
               {/* New Folder Modal - Mobile */}
               {showNewFolderModal && (() => {
-                const [folderName, setFolderName] = useState('');
-                const [selectedIcon, setSelectedIcon] = useState('folder');
-                const [selectedColor, setSelectedColor] = useState('rgba(255, 184, 0, 1)');
                 
                 const folderIcons = [
                   { icon: "folder", name: "Folder" },
@@ -5945,20 +5956,20 @@ export default function Index() {
                 ];
 
                 const handleCreate = () => {
-                  if (!folderName.trim()) {
+                  if (!mobileFolderName.trim()) {
                     return;
                   }
                   
                   handleCreateFolderFromModal({
-                    name: folderName.trim(),
-                    icon: selectedIcon,
-                    color: selectedColor
+                    name: mobileFolderName.trim(),
+                    icon: mobileNewFolderIcon,
+                    color: mobileNewFolderColor
                   });
                   
                   // Reset form
-                  setFolderName('');
-                  setSelectedIcon('folder');
-                  setSelectedColor('rgba(255, 184, 0, 1)');
+                  setMobileFolderName('');
+                  setMobileNewFolderIcon('folder');
+                  setMobileNewFolderColor('rgba(255, 184, 0, 1)');
                   setShowNewFolderModal(false);
                 };
 
@@ -5998,11 +6009,11 @@ export default function Index() {
                         </label>
                         <input
                           type="text"
-                          value={folderName}
+                          value={mobileFolderName}
                           onChange={(e) => {
                             const cleanValue = e.target.value.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '');
                             if (cleanValue.length <= 30) {
-                              setFolderName(cleanValue);
+                              setMobileFolderName(cleanValue);
                             }
                           }}
                           placeholder="Enter folder name..."
@@ -6017,13 +6028,13 @@ export default function Index() {
                           }}
                         />
                         <div style={{ fontSize: '12px', color: '#6d7175', marginTop: '4px' }}>
-                          {folderName.length}/30 characters
+                          {mobileFolderName.length}/30 characters
                         </div>
                       </div>
                       
                       <div style={{ marginBottom: '12px' }}>
                         <p style={{ margin: '0 0 6px 0', fontSize: '13px' }}>
-                          Preview: <i className={`far fa-${selectedIcon}`} style={{ fontSize: '18px', marginLeft: '6px', color: selectedColor }}></i> {folderName || 'Folder Name'}
+                          Preview: <i className={`far fa-${mobileNewFolderIcon}`} style={{ fontSize: '18px', marginLeft: '6px', color: mobileNewFolderColor }}></i> {mobileFolderName || 'Folder Name'}
                         </p>
                       </div>
 
@@ -6044,13 +6055,13 @@ export default function Index() {
                         {folderIcons.map((iconData, index) => (
                           <button
                             key={index}
-                            onClick={() => setSelectedIcon(iconData.icon)}
+                            onClick={() => setMobileNewFolderIcon(iconData.icon)}
                             style={{
                               width: '45px',
                               height: '45px',
-                              border: selectedIcon === iconData.icon ? '2px solid #2e7d32' : '1px solid #e1e3e5',
+                              border: mobileNewFolderIcon === iconData.icon ? '2px solid #2e7d32' : '1px solid #e1e3e5',
                               borderRadius: '6px',
-                              backgroundColor: selectedIcon === iconData.icon ? '#e8f5e8' : 'white',
+                              backgroundColor: mobileNewFolderIcon === iconData.icon ? '#e8f5e8' : 'white',
                               cursor: 'pointer',
                               display: 'flex',
                               flexDirection: 'column',
@@ -6062,7 +6073,7 @@ export default function Index() {
                             }}
                             title={iconData.name}
                           >
-                            <i className={`far fa-${iconData.icon}`} style={{ color: selectedColor }}></i>
+                            <i className={`far fa-${iconData.icon}`} style={{ color: mobileNewFolderColor }}></i>
                           </button>
                         ))}
                       </div>
@@ -6084,11 +6095,11 @@ export default function Index() {
                         {iconColors.map((colorData, index) => (
                           <button
                             key={index}
-                            onClick={() => setSelectedColor(colorData.color)}
+                            onClick={() => setMobileNewFolderColor(colorData.color)}
                             style={{
                               width: '35px',
                               height: '35px',
-                              border: selectedColor === colorData.color ? '2px solid #2e7d32' : '1px solid #e1e3e5',
+                              border: mobileNewFolderColor === colorData.color ? '2px solid #2e7d32' : '1px solid #e1e3e5',
                               borderRadius: '50%',
                               backgroundColor: colorData.color,
                               cursor: 'pointer',
@@ -6100,7 +6111,7 @@ export default function Index() {
                             }}
                             title={colorData.name}
                           >
-                            {selectedColor === colorData.color && (
+                            {mobileNewFolderColor === colorData.color && (
                               <i className="fas fa-check" style={{ 
                                 color: colorData.color === 'rgba(255, 230, 0, 1)' || colorData.color === 'rgba(227, 227, 227, 1)' ? 'rgba(48, 48, 48, 1)' : 'white',
                                 fontSize: '12px' 
@@ -6127,14 +6138,14 @@ export default function Index() {
                         </button>
                         <button
                           onClick={handleCreate}
-                          disabled={!folderName.trim()}
+                          disabled={!mobileFolderName.trim()}
                           style={{
                             padding: '8px 12px',
                             border: 'none',
                             borderRadius: '4px',
-                            backgroundColor: folderName.trim() ? '#008060' : '#ccc',
+                            backgroundColor: mobileFolderName.trim() ? '#008060' : '#ccc',
                             color: 'white',
-                            cursor: folderName.trim() ? 'pointer' : 'not-allowed',
+                            cursor: mobileFolderName.trim() ? 'pointer' : 'not-allowed',
                             fontSize: '13px',
                             fontWeight: '500',
                             minWidth: '80px'
