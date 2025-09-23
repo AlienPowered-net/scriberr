@@ -5253,7 +5253,7 @@ export default function Index() {
                                     border: '1px solid #e1e3e5',
                                     borderRadius: '8px',
                                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                                    zIndex: 1000,
+                                    zIndex: 10001,
                                     minWidth: '200px',
                                     marginTop: '4px'
                                   }}
