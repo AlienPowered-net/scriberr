@@ -5146,16 +5146,12 @@ export default function Index() {
                             {/* Select Button */}
                             <Button
                               size="slim"
-                              variant={selectedNotes.includes(note.id) ? "primary" : "secondary"}
-                              tone={selectedNotes.includes(note.id) ? "success" : "base"}
+                              variant={selectButtonClicked.has(note.id) ? "primary" : "secondary"}
+                              tone={selectButtonClicked.has(note.id) ? "success" : "base"}
                               onClick={(e) => {
                                 console.log('Select button clicked for note:', note.id);
                                 e.stopPropagation();
-                                if (selectedNotes.includes(note.id)) {
-                                  setSelectedNotes(selectedNotes.filter(id => id !== note.id));
-                                } else {
-                                  setSelectedNotes([...selectedNotes, note.id]);
-                                }
+                                handleSelectButtonClick(note.id);
                               }}
                             >
                               Select
@@ -5164,6 +5160,7 @@ export default function Index() {
                             {/* Manage Button */}
                             <Popover
                               active={openNoteMenu === note.id}
+                              onOpen={() => setOpenNoteMenu(note.id)}
                               activator={
                                 <Button
                                   size="slim"
@@ -5172,7 +5169,6 @@ export default function Index() {
                                   onClick={(e) => {
                                     console.log('Manage button clicked for note:', note.id);
                                     e.stopPropagation();
-                                    setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
                                   }}
                                 >
                                   Manage
@@ -5197,7 +5193,7 @@ export default function Index() {
                                       icon: <i className="fas fa-copy" style={{ fontSize: '12px' }}></i>,
                                       onAction: () => {
                                         console.log('Duplicate to current folder action clicked for note:', note.id);
-                                        handleDuplicateNote(note);
+                                        handleDuplicateFromMenu(note.id, "current");
                                         setOpenNoteMenu(null);
                                       }
                                     },
@@ -5206,7 +5202,7 @@ export default function Index() {
                                       icon: <i className="fas fa-copy" style={{ fontSize: '12px' }}></i>,
                                       onAction: () => {
                                         console.log('Duplicate to different folder action clicked for note:', note.id);
-                                        handleDuplicateNote(note, "different");
+                                        handleDuplicateFromMenu(note.id, "different");
                                         setOpenNoteMenu(null);
                                       }
                                     },
