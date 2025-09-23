@@ -5142,13 +5142,14 @@ export default function Index() {
                           </div>
                           
                           {/* Action Buttons - Right Side */}
-                          <div style={{ display: 'flex', gap: '4px' }}>
+                          <div style={{ display: 'flex', gap: '4px', position: 'relative', zIndex: 2 }}>
                             {/* Select Button */}
                             <Button
                               size="slim"
                               variant={selectedNotes.includes(note.id) ? "primary" : "secondary"}
                               tone={selectedNotes.includes(note.id) ? "success" : "base"}
                               onClick={(e) => {
+                                console.log('Select button clicked for note:', note.id);
                                 e.stopPropagation();
                                 if (selectedNotes.includes(note.id)) {
                                   setSelectedNotes(selectedNotes.filter(id => id !== note.id));
@@ -5169,6 +5170,7 @@ export default function Index() {
                                   variant="secondary"
                                   tone="warning"
                                   onClick={(e) => {
+                                    console.log('Manage button clicked for note:', note.id);
                                     e.stopPropagation();
                                     setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
                                   }}
@@ -5185,6 +5187,7 @@ export default function Index() {
                                       content: note.pinnedAt ? "Unpin" : "Pin",
                                       icon: <i className="fas fa-thumbtack" style={{ fontSize: '12px' }}></i>,
                                       onAction: () => {
+                                        console.log('Pin/Unpin action clicked for note:', note.id);
                                         handlePinNote(note.id);
                                         setOpenNoteMenu(null);
                                       }
@@ -5193,6 +5196,7 @@ export default function Index() {
                                       content: "Duplicate to current folder",
                                       icon: <i className="fas fa-copy" style={{ fontSize: '12px' }}></i>,
                                       onAction: () => {
+                                        console.log('Duplicate to current folder action clicked for note:', note.id);
                                         handleDuplicateNote(note);
                                         setOpenNoteMenu(null);
                                       }
@@ -5201,6 +5205,7 @@ export default function Index() {
                                       content: "Duplicate to different folder",
                                       icon: <i className="fas fa-copy" style={{ fontSize: '12px' }}></i>,
                                       onAction: () => {
+                                        console.log('Duplicate to different folder action clicked for note:', note.id);
                                         handleDuplicateNote(note, "different");
                                         setOpenNoteMenu(null);
                                       }
@@ -5209,6 +5214,7 @@ export default function Index() {
                                       content: "Move to different folder",
                                       icon: <i className="fas fa-folder" style={{ fontSize: '12px' }}></i>,
                                       onAction: () => {
+                                        console.log('Move to different folder action clicked for note:', note.id);
                                         handleMoveFromMenu(note.id);
                                         setOpenNoteMenu(null);
                                       }
@@ -5224,6 +5230,7 @@ export default function Index() {
                               variant="secondary"
                               tone="critical"
                               onClick={(e) => {
+                                console.log('Delete button clicked for note:', note.id);
                                 e.stopPropagation();
                                 setShowDeleteNoteConfirm(note.id);
                               }}
