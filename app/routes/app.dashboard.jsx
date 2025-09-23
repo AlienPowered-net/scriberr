@@ -2509,25 +2509,24 @@ export default function Index() {
           }
         `}</style>
 
-        {/* Custom Alert */}
-        {alertMessage && (
+        {/* Custom Alert - Desktop Only */}
+        {!isMobile && alertMessage && (
           <div 
             style={{
               position: "fixed",
-              top: isMobile ? "10px" : "20px",
-              left: isMobile ? "10px" : "auto",
-              right: isMobile ? "10px" : "20px",
+              top: "20px",
+              right: "20px",
               padding: "12px 16px",
               borderRadius: "6px",
               color: "white",
               fontSize: "14px",
               fontWeight: "500",
               zIndex: 10002,
-              maxWidth: isMobile ? "calc(100vw - 20px)" : "300px",
+              maxWidth: "300px",
               boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
               animation: "slideIn 0.3s ease-out",
               backgroundColor: alertType === 'error' ? "#d82c0d" : "#008060",
-              textAlign: isMobile ? "center" : "left"
+              textAlign: "left"
             }}
           >
             {alertMessage}
@@ -4362,6 +4361,31 @@ export default function Index() {
             display: 'flex',
             flexDirection: 'column'
           }}>
+          
+          {/* Mobile Alert */}
+          {alertMessage && (
+            <div 
+              style={{
+                position: "fixed",
+                top: "10px",
+                left: "10px",
+                right: "10px",
+                padding: "16px 20px",
+                borderRadius: "8px",
+                color: "white",
+                fontSize: "16px",
+                fontWeight: "600",
+                zIndex: 10001,
+                boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
+                animation: "slideIn 0.3s ease-out",
+                backgroundColor: alertType === 'error' ? "#d82c0d" : "#008060",
+                textAlign: "center",
+                border: "2px solid rgba(255,255,255,0.3)"
+              }}
+            >
+              {alertMessage}
+            </div>
+          )}
           {/* Mobile Header */}
           <div style={{
             padding: '16px',
@@ -4375,6 +4399,26 @@ export default function Index() {
               {mobileActiveSection === 'folders' && 'Folders'}
               {mobileActiveSection === 'notes' && 'Notes'}
             </h1>
+            {/* Temporary Test Button */}
+            <button 
+              onClick={() => {
+                console.log('Test alert button clicked');
+                setAlertMessage('Test alert message - this should be visible!');
+                setAlertType('error');
+                setTimeout(() => setAlertMessage(''), 4000);
+              }}
+              style={{
+                padding: '4px 8px',
+                backgroundColor: '#ff6b6b',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: 'pointer'
+              }}
+            >
+              Test Alert
+            </button>
             {mobileActiveSection !== 'notes' && (
               <Button
                 variant="primary"
