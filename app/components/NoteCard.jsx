@@ -304,7 +304,7 @@ const NoteCard = ({
             <Button
               size="xs"
               variant={isSelectButtonClicked ? "filled" : "light"}
-              color={isSelectButtonClicked ? "dark" : "gray"}
+              color={isSelectButtonClicked ? "orange" : "gray"}
               onClick={(e) => {
                 e.stopPropagation();
                 onSelect && onSelect();

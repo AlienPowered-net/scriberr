@@ -1653,6 +1653,7 @@ export default function Index() {
 
   // Handle select button clicks
   const handleSelectButtonClick = (noteId) => {
+    // Update visual selection state
     setSelectButtonClicked(prev => {
       const newSet = new Set(prev);
       if (newSet.has(noteId)) {
@@ -1661,6 +1662,15 @@ export default function Index() {
         newSet.add(noteId);
       }
       return newSet;
+    });
+    
+    // Update bulk selection state for bulk actions
+    setSelectedNotes(prev => {
+      if (prev.includes(noteId)) {
+        return prev.filter(id => id !== noteId);
+      } else {
+        return [...prev, noteId];
+      }
     });
   };
 
@@ -4902,6 +4912,48 @@ export default function Index() {
                 </Button>
               </div>
               
+              {/* Mobile Multi-select action buttons */}
+              {selectedNotes.length > 0 && (
+                <div style={{ 
+                  marginBottom: "16px",
+                  display: "flex",
+                  gap: "8px",
+                  flexDirection: "column"
+                }}>
+                  <Button
+                    variant="primary"
+                    tone="critical"
+                    onClick={() => setShowDeleteMultipleConfirm(true)}
+                    style={{
+                      backgroundColor: "#d82c0d",
+                      border: "none",
+                      color: "white",
+                      padding: "10px 16px",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      fontWeight: "500"
+                    }}
+                  >
+                    Delete {selectedNotes.length} Selected Note{selectedNotes.length > 1 ? 's' : ''}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => setShowMoveModal('bulk')}
+                    style={{
+                      backgroundColor: "rgba(48, 48, 48, 1)",
+                      border: "none",
+                      color: "white",
+                      padding: "10px 16px",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      fontWeight: "500"
+                    }}
+                  >
+                    Move {selectedNotes.length} Selected Note{selectedNotes.length > 1 ? 's' : ''}
+                  </Button>
+                </div>
+              )}
+              
               {/* Current View Display */}
               <div style={{
                 padding: '12px',
@@ -5147,7 +5199,7 @@ export default function Index() {
                             <Button
                               size="slim"
                               variant={selectButtonClicked.has(note.id) ? "primary" : "secondary"}
-                              tone={selectButtonClicked.has(note.id) ? "success" : "base"}
+                              tone={selectButtonClicked.has(note.id) ? "warning" : "base"}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleSelectButtonClick(note.id);
