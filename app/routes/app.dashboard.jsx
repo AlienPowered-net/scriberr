@@ -2453,21 +2453,22 @@ export default function Index() {
               background-color: white;
               border-top: 1px solid #e1e3e5;
               display: flex;
-              justify-content: space-around;
-              padding: 12px 0;
+              justify-content: center;
+              gap: 60px;
+              padding: 8px 0;
               z-index: 1000;
-              box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+              box-shadow: 0 -1px 6px rgba(0,0,0,0.08);
             }
             
             .mobile-nav-item {
               display: flex;
               flex-direction: column;
               align-items: center;
-              gap: 4px;
-              padding: 8px 12px;
+              gap: 2px;
+              padding: 6px 8px;
               cursor: pointer;
-              border-radius: 8px;
-              min-width: 60px;
+              border-radius: 6px;
+              min-width: 50px;
             }
             
             .mobile-header {
@@ -5549,28 +5550,28 @@ export default function Index() {
             borderTop: '1px solid #e1e3e5',
             display: 'flex',
             justifyContent: 'center',
-            gap: '40px',
-            padding: '12px 0',
+            gap: '60px',
+            padding: '8px 0',
             zIndex: 1000,
-            boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+            boxShadow: '0 -1px 6px rgba(0,0,0,0.08)'
           }}>
             <div 
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '4px',
-                padding: '8px 12px',
+                gap: '2px',
+                padding: '6px 8px',
                 cursor: 'pointer',
-                borderRadius: '8px',
-                minWidth: '60px',
+                borderRadius: '6px',
+                minWidth: '50px',
                 backgroundColor: mobileActiveSection === 'folders' ? '#f6fff8' : 'transparent',
                 color: mobileActiveSection === 'folders' ? '#008060' : '#6d7175'
               }}
               onClick={() => setMobileActiveSection('folders')}
             >
-              <i className="far fa-folder-open" style={{ fontSize: '20px' }}></i>
-              <span style={{ fontSize: '11px', fontWeight: '500', textAlign: 'center' }}>Folders</span>
+              <i className="far fa-folder-open" style={{ fontSize: '16px' }}></i>
+              <span style={{ fontSize: '10px', fontWeight: '500', textAlign: 'center' }}>Folders</span>
             </div>
             
             <div 
@@ -5578,18 +5579,18 @@ export default function Index() {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '4px',
-                padding: '8px 12px',
+                gap: '2px',
+                padding: '6px 8px',
                 cursor: 'pointer',
-                borderRadius: '8px',
-                minWidth: '60px',
+                borderRadius: '6px',
+                minWidth: '50px',
                 backgroundColor: mobileActiveSection === 'notes' ? '#f6fff8' : 'transparent',
                 color: mobileActiveSection === 'notes' ? '#008060' : '#6d7175'
               }}
               onClick={() => setMobileActiveSection('notes')}
             >
-              <i className="far fa-note-sticky" style={{ fontSize: '20px' }}></i>
-              <span style={{ fontSize: '12px', fontWeight: '500' }}>Notes</span>
+              <i className="far fa-note-sticky" style={{ fontSize: '16px' }}></i>
+              <span style={{ fontSize: '10px', fontWeight: '500' }}>Notes</span>
             </div>
             
           </div>
