@@ -1384,7 +1384,15 @@ export default function Index() {
           const newNote = result.note;
           
           // Update notes state to include new note (add to beginning of array)
-          window.location.reload(); // Temporary - will implement proper state update
+          setLocalNotes(prevNotes => [newNote, ...prevNotes]);
+          
+          // Set the new note as the editing note and populate editor
+          setEditingNoteId(newNote.id);
+          setTitle(newNote.title || '');
+          setBody(newNote.content || 'Type your note here...');
+          setFolderId(newNote.folderId || currentFolderId);
+          setNoteTags(newNote.tags || []);
+          setHasUnsavedChanges(false);
           
           setAlertMessage('New note created successfully!');
           setAlertType('success');
