@@ -4842,7 +4842,26 @@ export default function Index() {
               padding: '20px',
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
             }}>
-              <h2 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: '600' }}>Notes</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Notes</h2>
+                <Button
+                  variant="primary"
+                  size="slim"
+                  onClick={() => {
+                    if (!selectedFolder) {
+                      setAlertMessage('Please select a folder first');
+                      setAlertType('error');
+                      setTimeout(() => setAlertMessage(''), 3000);
+                      return;
+                    }
+                    handleNewNote();
+                    setMobileActiveSection('editor');
+                  }}
+                  style={{ backgroundColor: '#008060', borderColor: '#008060' }}
+                >
+                  New Note
+                </Button>
+              </div>
               
               {/* Current View Display */}
               <div style={{
@@ -4954,17 +4973,49 @@ export default function Index() {
                         key={note.id}
                         style={{
                           padding: '16px',
-                          border: '1px solid #e1e3e5',
-                          borderRadius: '8px',
+                          border: '1px solid #D1D3D4',
+                          borderRadius: '12px',
                           backgroundColor: 'white',
-                          position: 'relative'
+                          position: 'relative',
+                          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                          transition: 'all 0.2s ease',
+                          cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                          e.currentTarget.style.borderColor = '#D0D7E2';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+                          e.currentTarget.style.borderColor = '#D1D3D4';
                         }}
                       >
                         {/* Note Header */}
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-                          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', flex: 1 }}>
-                            {note.title || 'Untitled'}
-                          </h3>
+                          <div style={{ flex: 1 }}>
+                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>
+                              {note.title || 'Untitled'}
+                            </h3>
+                            {/* Folder Badge */}
+                            {note.folderId && localFolders.find(f => f.id === note.folderId) && (
+                              <div style={{ marginTop: '4px' }}>
+                                <span style={{
+                                  display: 'inline-block',
+                                  backgroundColor: '#E3F2FD',
+                                  color: '#1976D2',
+                                  border: '1px solid #BBDEFB',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  fontSize: '10px',
+                                  fontWeight: '500'
+                                }}>
+                                  {localFolders.find(f => f.id === note.folderId)?.name}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                           {/* Pin Icon */}
                           {note.pinnedAt && (
                             <div style={{ marginLeft: '8px' }}>
@@ -4995,26 +5046,38 @@ export default function Index() {
                         
                         {/* Tags */}
                         {note.tags && note.tags.length > 0 && (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '8px' }}>
-                            {note.tags.slice(0, 3).map((tag, index) => (
-                              <span
-                                key={index}
-                                style={{
-                                  backgroundColor: '#008060',
-                                  color: 'white',
-                                  padding: '2px 6px',
-                                  borderRadius: '8px',
-                                  fontSize: '10px'
-                                }}
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                            {note.tags.length > 3 && (
-                              <span style={{ fontSize: '10px', color: '#6d7175' }}>
-                                +{note.tags.length - 3} more
-                              </span>
-                            )}
+                          <div style={{ marginBottom: '12px' }}>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                              {note.tags.slice(0, 3).map((tag, index) => (
+                                <span
+                                  key={index}
+                                  style={{
+                                    backgroundColor: '#E8F5E8',
+                                    color: '#008060',
+                                    border: '1px solid #B8E6B8',
+                                    padding: '4px 8px',
+                                    borderRadius: '12px',
+                                    fontSize: '12px',
+                                    fontWeight: '500'
+                                  }}
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                              {note.tags.length > 3 && (
+                                <span style={{ 
+                                  fontSize: '12px', 
+                                  color: '#6d7175',
+                                  backgroundColor: '#F5F5F5',
+                                  border: '1px solid #E0E0E0',
+                                  padding: '4px 8px',
+                                  borderRadius: '12px',
+                                  fontWeight: '500'
+                                }}>
+                                  +{note.tags.length - 3}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         )}
                         
@@ -5028,10 +5091,14 @@ export default function Index() {
                           marginTop: '8px'
                         }}>
                           {/* Date Information - Left Side */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                            <span style={{ fontSize: '11px', color: '#6d7175', fontWeight: 'bold' }}>Created: {createdAt}</span>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <span style={{ fontSize: '12px', color: '#8C9196', fontWeight: '500' }}>
+                              <strong>Created:</strong> {createdAt}
+                            </span>
                             {wasEdited && (
-                              <span style={{ fontSize: '11px', color: '#6d7175', fontWeight: 'bold' }}>Edited: {updatedAt}</span>
+                              <span style={{ fontSize: '12px', color: '#8C9196', fontWeight: '500' }}>
+                                <strong>Edited:</strong> {updatedAt}
+                              </span>
                             )}
                           </div>
                           
@@ -5040,13 +5107,15 @@ export default function Index() {
                             {/* Select Button */}
                             <button
                               style={{
-                                padding: '4px 8px',
+                                padding: '6px 12px',
                                 border: '1px solid #e1e3e5',
-                                borderRadius: '4px',
+                                borderRadius: '6px',
                                 backgroundColor: selectedNotes.includes(note.id) ? '#008060' : 'white',
                                 color: selectedNotes.includes(note.id) ? 'white' : '#6d7175',
-                                fontSize: '10px',
-                                cursor: 'pointer'
+                                fontSize: '12px',
+                                fontWeight: '500',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
                               }}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -5057,27 +5126,29 @@ export default function Index() {
                                 }
                               }}
                             >
-                              {selectedNotes.includes(note.id) ? '✓' : '○'}
+                              Select
                             </button>
                             
                             {/* Manage Button */}
                             <div style={{ position: 'relative' }}>
                               <button
                                 style={{
-                                  padding: '4px 8px',
+                                  padding: '6px 12px',
                                   border: '1px solid #e1e3e5',
-                                  borderRadius: '4px',
+                                  borderRadius: '6px',
                                   backgroundColor: 'white',
                                   color: '#6d7175',
-                                  fontSize: '10px',
-                                  cursor: 'pointer'
+                                  fontSize: '12px',
+                                  fontWeight: '500',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease'
                                 }}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
                                 }}
                               >
-                                ⋯
+                                Manage
                               </button>
                               {openNoteMenu === note.id && (
                                 <div style={{
@@ -5157,20 +5228,22 @@ export default function Index() {
                             {/* Delete Button */}
                             <button
                               style={{
-                                padding: '4px 8px',
+                                padding: '6px 12px',
                                 border: '1px solid #e1e3e5',
-                                borderRadius: '4px',
+                                borderRadius: '6px',
                                 backgroundColor: 'white',
                                 color: '#d72c0d',
-                                fontSize: '10px',
-                                cursor: 'pointer'
+                                fontSize: '12px',
+                                fontWeight: '500',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
                               }}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setShowDeleteNoteConfirm(note.id);
                               }}
                             >
-                              🗑️
+                              Delete
                             </button>
                           </div>
                         </div>
@@ -5213,8 +5286,7 @@ export default function Index() {
                   }}
                   style={{ backgroundColor: '#008060', borderColor: '#008060' }}
                 >
-                  <span style={{ fontSize: '16px', marginRight: '8px', color: 'white' }}>➕</span>
-                  <span style={{ color: 'white' }}>New Note</span>
+                  New Note
                 </Button>
               </div>
             </div>
