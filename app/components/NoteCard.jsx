@@ -24,6 +24,18 @@ const NoteCard = ({
   isSelectButtonClicked
 }) => {
   const [openMenu, setOpenMenu] = useState(false);
+  
+  // Close menu when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = () => {
+      setOpenMenu(false);
+    };
+    
+    if (openMenu) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [openMenu]);
   // Determine card state
   let state = "default";
   if (isSelectButtonClicked) state = "select-button-clicked";
@@ -313,26 +325,118 @@ const NoteCard = ({
             >
               Select
             </Button>
-            <Button
-              size="xs"
-              variant="light"
-              color="orange"
-              onClick={(e) => {
-                e.stopPropagation();
-                alert(`Desktop Manage clicked for note: ${title}`);
-                console.log('Desktop Manage button clicked');
-              }}
-            >
-              Manage
-            </Button>
+            <div style={{ position: 'relative' }}>
+              <Button
+                size="xs"
+                variant="light"
+                color="orange"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenMenu(!openMenu);
+                }}
+              >
+                Manage
+              </Button>
+              {openMenu && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: '0',
+                    backgroundColor: 'white',
+                    border: '1px solid #e1e3e5',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    zIndex: 1000,
+                    minWidth: '200px',
+                    marginTop: '4px'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div
+                    style={{
+                      padding: '8px 12px',
+                      cursor: 'pointer',
+                      borderBottom: '1px solid #f1f3f4',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                    onClick={() => {
+                      onPin && onPin();
+                      setOpenMenu(false);
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                  >
+                    <IconPin size={14} />
+                    {isPinned ? "Unpin" : "Pin"}
+                  </div>
+                  <div
+                    style={{
+                      padding: '8px 12px',
+                      cursor: 'pointer',
+                      borderBottom: '1px solid #f1f3f4',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                    onClick={() => {
+                      onDuplicate && onDuplicate();
+                      setOpenMenu(false);
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                  >
+                    <IconCopy size={14} />
+                    Duplicate to current folder
+                  </div>
+                  <div
+                    style={{
+                      padding: '8px 12px',
+                      cursor: 'pointer',
+                      borderBottom: '1px solid #f1f3f4',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                    onClick={() => {
+                      onDuplicate && onDuplicate("different");
+                      setOpenMenu(false);
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                  >
+                    <IconCopy size={14} />
+                    Duplicate to different folder
+                  </div>
+                  <div
+                    style={{
+                      padding: '8px 12px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                    onClick={() => {
+                      onMove && onMove();
+                      setOpenMenu(false);
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                  >
+                    <IconFolder size={14} />
+                    Move to different folder
+                  </div>
+                </div>
+              )}
+            </div>
             <Button
               size="xs"
               variant="light"
               color="red"
               onClick={(e) => {
                 e.stopPropagation();
-                alert(`Desktop Delete clicked for note: ${title}`);
-                console.log('Desktop Delete button clicked');
                 onDelete && onDelete();
               }}
             >
