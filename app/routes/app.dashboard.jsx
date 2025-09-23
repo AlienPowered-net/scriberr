@@ -5211,10 +5211,7 @@ export default function Index() {
                             {/* Manage Button */}
                             <Popover
                               active={openNoteMenu === note.id}
-                              onOpen={() => {
-                                console.log('Mobile Popover opening for note:', note.id);
-                                setOpenNoteMenu(note.id);
-                              }}
+                              onOpen={() => setOpenNoteMenu(note.id)}
                               activator={
                                 <Button
                                   size="slim"

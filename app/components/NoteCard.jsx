@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Card, Text, Badge, Button, Group, Stack, Menu } from "@mantine/core";
+import { Card, Text, Badge, Button, Group, Stack } from "@mantine/core";
 import { IconCopy, IconFolder, IconPin } from "@tabler/icons-react";
-import { Tooltip } from "@shopify/polaris";
+import { Tooltip, Popover, ActionList } from "@shopify/polaris";
 
 const NoteCard = ({
   title,
@@ -23,6 +23,7 @@ const NoteCard = ({
   onPin,
   isSelectButtonClicked
 }) => {
+  const [openMenu, setOpenMenu] = useState(false);
   // Determine card state
   let state = "default";
   if (isSelectButtonClicked) state = "select-button-clicked";
@@ -312,8 +313,10 @@ const NoteCard = ({
             >
               Select
             </Button>
-            <Menu shadow="md" width={200}>
-              <Menu.Target>
+            <Popover
+              active={openMenu}
+              onOpen={() => setOpenMenu(true)}
+              activator={
                 <Button
                   size="xs"
                   variant="light"
@@ -324,46 +327,48 @@ const NoteCard = ({
                 >
                   Manage
                 </Button>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Item
-                  leftSection={<IconPin size={14} />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onPin && onPin();
-                  }}
-                >
-                  {isPinned ? "Unpin" : "Pin"}
-                </Menu.Item>
-                <Menu.Item
-                  leftSection={<IconCopy size={14} />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDuplicate && onDuplicate();
-                  }}
-                >
-                  Duplicate to current folder
-                </Menu.Item>
-                <Menu.Item
-                  leftSection={<IconCopy size={14} />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDuplicate && onDuplicate("different");
-                  }}
-                >
-                  Duplicate to different folder
-                </Menu.Item>
-                <Menu.Item
-                  leftSection={<IconFolder size={14} />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onMove && onMove();
-                  }}
-                >
-                  Move to different folder
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
+              }
+              onClose={() => setOpenMenu(false)}
+            >
+              <Popover.Pane>
+                <ActionList
+                  items={[
+                    {
+                      content: isPinned ? "Unpin" : "Pin",
+                      icon: <IconPin size={14} />,
+                      onAction: () => {
+                        onPin && onPin();
+                        setOpenMenu(false);
+                      }
+                    },
+                    {
+                      content: "Duplicate to current folder",
+                      icon: <IconCopy size={14} />,
+                      onAction: () => {
+                        onDuplicate && onDuplicate();
+                        setOpenMenu(false);
+                      }
+                    },
+                    {
+                      content: "Duplicate to different folder",
+                      icon: <IconCopy size={14} />,
+                      onAction: () => {
+                        onDuplicate && onDuplicate("different");
+                        setOpenMenu(false);
+                      }
+                    },
+                    {
+                      content: "Move to different folder",
+                      icon: <IconFolder size={14} />,
+                      onAction: () => {
+                        onMove && onMove();
+                        setOpenMenu(false);
+                      }
+                    }
+                  ]}
+                />
+              </Popover.Pane>
+            </Popover>
             <Button
               size="xs"
               variant="light"
