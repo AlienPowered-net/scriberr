@@ -5144,18 +5144,10 @@ export default function Index() {
                           {/* Action Buttons - Right Side */}
                           <div style={{ display: 'flex', gap: '4px' }}>
                             {/* Select Button */}
-                            <button
-                              style={{
-                                padding: '6px 12px',
-                                border: '1px solid #e1e3e5',
-                                borderRadius: '6px',
-                                backgroundColor: selectedNotes.includes(note.id) ? '#008060' : 'white',
-                                color: selectedNotes.includes(note.id) ? 'white' : '#6d7175',
-                                fontSize: '12px',
-                                fontWeight: '500',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease'
-                              }}
+                            <Button
+                              size="slim"
+                              variant={selectedNotes.includes(note.id) ? "primary" : "secondary"}
+                              tone={selectedNotes.includes(note.id) ? "success" : "base"}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (selectedNotes.includes(note.id)) {
@@ -5166,124 +5158,78 @@ export default function Index() {
                               }}
                             >
                               Select
-                            </button>
+                            </Button>
                             
                             {/* Manage Button */}
-                            <div style={{ position: 'relative' }}>
-                              <button
-                                style={{
-                                  padding: '6px 12px',
-                                  border: '1px solid #e1e3e5',
-                                  borderRadius: '6px',
-                                  backgroundColor: 'white',
-                                  color: '#6d7175',
-                                  fontSize: '12px',
-                                  fontWeight: '500',
-                                  cursor: 'pointer',
-                                  transition: 'all 0.2s ease'
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
-                                }}
-                              >
-                                Manage
-                              </button>
-                              {openNoteMenu === note.id && (
-                                <div style={{
-                                  position: 'absolute',
-                                  top: '100%',
-                                  right: '0',
-                                  backgroundColor: 'white',
-                                  border: '1px solid #e1e3e5',
-                                  borderRadius: '8px',
-                                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                  zIndex: 1000,
-                                  minWidth: '120px',
-                                  padding: '8px 0'
-                                }}>
-                                  <button
-                                    style={{
-                                      width: '100%',
-                                      padding: '8px 16px',
-                                      border: 'none',
-                                      background: 'none',
-                                      textAlign: 'left',
-                                      cursor: 'pointer',
-                                      fontSize: '14px',
-                                      color: '#374151'
-                                    }}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleEditNote(note);
-                                      setMobileActiveSection('editor');
-                                      setOpenNoteMenu(null);
-                                    }}
-                                  >
-                                    Edit
-                                  </button>
-                                  <button
-                                    style={{
-                                      width: '100%',
-                                      padding: '8px 16px',
-                                      border: 'none',
-                                      background: 'none',
-                                      textAlign: 'left',
-                                      cursor: 'pointer',
-                                      fontSize: '14px',
-                                      color: '#374151'
-                                    }}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDuplicateNote(note);
-                                      setOpenNoteMenu(null);
-                                    }}
-                                  >
-                                    Duplicate
-                                  </button>
-                                  <button
-                                    style={{
-                                      width: '100%',
-                                      padding: '8px 16px',
-                                      border: 'none',
-                                      background: 'none',
-                                      textAlign: 'left',
-                                      cursor: 'pointer',
-                                      fontSize: '14px',
-                                      color: '#d72c0d'
-                                    }}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setShowDeleteNoteConfirm(note.id);
-                                      setOpenNoteMenu(null);
-                                    }}
-                                  >
-                                    Delete
-                                  </button>
-                                </div>
-                              )}
-                            </div>
+                            <Popover
+                              active={openNoteMenu === note.id}
+                              activator={
+                                <Button
+                                  size="slim"
+                                  variant="secondary"
+                                  tone="warning"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
+                                  }}
+                                >
+                                  Manage
+                                </Button>
+                              }
+                              onClose={() => setOpenNoteMenu(null)}
+                            >
+                              <Popover.Pane>
+                                <ActionList
+                                  items={[
+                                    {
+                                      content: note.pinnedAt ? "Unpin" : "Pin",
+                                      icon: <i className="fas fa-thumbtack" style={{ fontSize: '12px' }}></i>,
+                                      onAction: () => {
+                                        handlePinNote(note.id);
+                                        setOpenNoteMenu(null);
+                                      }
+                                    },
+                                    {
+                                      content: "Duplicate to current folder",
+                                      icon: <i className="fas fa-copy" style={{ fontSize: '12px' }}></i>,
+                                      onAction: () => {
+                                        handleDuplicateNote(note);
+                                        setOpenNoteMenu(null);
+                                      }
+                                    },
+                                    {
+                                      content: "Duplicate to different folder",
+                                      icon: <i className="fas fa-copy" style={{ fontSize: '12px' }}></i>,
+                                      onAction: () => {
+                                        handleDuplicateNote(note, "different");
+                                        setOpenNoteMenu(null);
+                                      }
+                                    },
+                                    {
+                                      content: "Move to different folder",
+                                      icon: <i className="fas fa-folder" style={{ fontSize: '12px' }}></i>,
+                                      onAction: () => {
+                                        handleMoveFromMenu(note.id);
+                                        setOpenNoteMenu(null);
+                                      }
+                                    }
+                                  ]}
+                                />
+                              </Popover.Pane>
+                            </Popover>
                             
                             {/* Delete Button */}
-                            <button
-                              style={{
-                                padding: '6px 12px',
-                                border: '1px solid #e1e3e5',
-                                borderRadius: '6px',
-                                backgroundColor: 'white',
-                                color: '#d72c0d',
-                                fontSize: '12px',
-                                fontWeight: '500',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease'
-                              }}
+                            <Button
+                              size="slim"
+                              variant="secondary"
+                              tone="critical"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setShowDeleteNoteConfirm(note.id);
                               }}
                             >
                               Delete
-                            </button>
+                            </Button>
                           </div>
                         </div>
                         
