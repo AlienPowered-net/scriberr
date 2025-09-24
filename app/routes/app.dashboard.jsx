@@ -1655,13 +1655,24 @@ export default function Index() {
 
   // Close mobile note menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => {
+    const handleClickOutside = (event) => {
+      // Don't close if clicking on the dropdown itself
+      if (event.target.closest('[data-dropdown-menu]')) {
+        return;
+      }
       setOpenNoteMenu(null);
     };
     
     if (openNoteMenu) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
+      // Add a small delay to prevent immediate closing
+      const timeoutId = setTimeout(() => {
+        document.addEventListener('click', handleClickOutside);
+      }, 100);
+      
+      return () => {
+        clearTimeout(timeoutId);
+        document.removeEventListener('click', handleClickOutside);
+      };
     }
   }, [openNoteMenu]);
 
@@ -1671,6 +1682,7 @@ export default function Index() {
 
     return createPortal(
       <div
+        data-dropdown-menu
         style={{
           position: 'fixed',
           top: position.top,
