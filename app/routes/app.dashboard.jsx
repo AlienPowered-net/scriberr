@@ -1,6 +1,7 @@
 // app/routes/app._index.jsx
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, Form } from "@remix-run/react";
+import { createPortal } from "react-dom";
 import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
@@ -1663,6 +1664,105 @@ export default function Index() {
       return () => document.removeEventListener('click', handleClickOutside);
     }
   }, [openNoteMenu]);
+
+  // Portal-based dropdown component
+  const PortalDropdown = ({ isOpen, position, onClose, note }) => {
+    if (!isOpen) return null;
+
+    return createPortal(
+      <div
+        style={{
+          position: 'fixed',
+          top: position.top,
+          left: position.left,
+          backgroundColor: 'white',
+          border: '1px solid #e1e3e5',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          zIndex: 10001,
+          minWidth: '200px'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          style={{
+            padding: '8px 12px',
+            cursor: 'pointer',
+            borderBottom: '1px solid #f1f3f4',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+          onClick={() => {
+            handlePinNote(note.id);
+            onClose();
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+        >
+          <i className="fas fa-thumbtack" style={{ fontSize: '12px' }}></i>
+          {note.pinnedAt ? "Unpin" : "Pin"}
+        </div>
+        <div
+          style={{
+            padding: '8px 12px',
+            cursor: 'pointer',
+            borderBottom: '1px solid #f1f3f4',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+          onClick={() => {
+            handleDuplicateFromMenu(note.id, "current");
+            onClose();
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+        >
+          <i className="fas fa-copy" style={{ fontSize: '12px' }}></i>
+          Duplicate to current folder
+        </div>
+        <div
+          style={{
+            padding: '8px 12px',
+            cursor: 'pointer',
+            borderBottom: '1px solid #f1f3f4',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+          onClick={() => {
+            handleDuplicateFromMenu(note.id, "different");
+            onClose();
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+        >
+          <i className="fas fa-copy" style={{ fontSize: '12px' }}></i>
+          Duplicate to different folder
+        </div>
+        <div
+          style={{
+            padding: '8px 12px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+          onClick={() => {
+            handleMoveFromMenu(note.id);
+            onClose();
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+        >
+          <i className="fas fa-folder" style={{ fontSize: '12px' }}></i>
+          Move to different folder
+        </div>
+      </div>,
+      document.body
+    );
+  };
 
   // Handle select button clicks
   const handleSelectButtonClick = (noteId) => {
@@ -5232,118 +5332,24 @@ export default function Index() {
                             </Button>
                             
                             {/* Manage Button */}
-                            <div style={{ position: 'relative' }}>
-                              <Button
-                                size="slim"
-                                variant="secondary"
-                                tone="warning"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const buttonRect = e.currentTarget.getBoundingClientRect();
-                                  
-                                  // Position dropdown directly next to the button
-                                  setDropdownPosition({
-                                    top: buttonRect.top + window.scrollY - 4,
-                                    left: buttonRect.left + window.scrollX
-                                  });
-                                  setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
-                                }}
-                              >
-                                Manage
-                              </Button>
-                              {openNoteMenu === note.id && (
-                                <div
-                                  style={{
-                                    position: 'fixed',
-                                    top: dropdownPosition.top,
-                                    left: dropdownPosition.left,
-                                    backgroundColor: 'white',
-                                    border: '1px solid #e1e3e5',
-                                    borderRadius: '8px',
-                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                                    zIndex: 10001,
-                                    minWidth: '200px'
-                                  }}
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <div
-                                    style={{
-                                      padding: '8px 12px',
-                                      cursor: 'pointer',
-                                      borderBottom: '1px solid #f1f3f4',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '8px'
-                                    }}
-                                    onClick={() => {
-                                      handlePinNote(note.id);
-                                      setOpenNoteMenu(null);
-                                    }}
-                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
-                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                                  >
-                                    <i className="fas fa-thumbtack" style={{ fontSize: '12px' }}></i>
-                                    {note.pinnedAt ? "Unpin" : "Pin"}
-                                  </div>
-                                  <div
-                                    style={{
-                                      padding: '8px 12px',
-                                      cursor: 'pointer',
-                                      borderBottom: '1px solid #f1f3f4',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '8px'
-                                    }}
-                                    onClick={() => {
-                                      handleDuplicateFromMenu(note.id, "current");
-                                      setOpenNoteMenu(null);
-                                    }}
-                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
-                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                                  >
-                                    <i className="fas fa-copy" style={{ fontSize: '12px' }}></i>
-                                    Duplicate to current folder
-                                  </div>
-                                  <div
-                                    style={{
-                                      padding: '8px 12px',
-                                      cursor: 'pointer',
-                                      borderBottom: '1px solid #f1f3f4',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '8px'
-                                    }}
-                                    onClick={() => {
-                                      handleDuplicateFromMenu(note.id, "different");
-                                      setOpenNoteMenu(null);
-                                    }}
-                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
-                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                                  >
-                                    <i className="fas fa-copy" style={{ fontSize: '12px' }}></i>
-                                    Duplicate to different folder
-                                  </div>
-                                  <div
-                                    style={{
-                                      padding: '8px 12px',
-                                      cursor: 'pointer',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '8px'
-                                    }}
-                                    onClick={() => {
-                                      handleMoveFromMenu(note.id);
-                                      setOpenNoteMenu(null);
-                                    }}
-                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
-                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                                  >
-                                    <i className="fas fa-folder" style={{ fontSize: '12px' }}></i>
-                                    Move to different folder
-                                  </div>
-                                </div>
-                              )}
-                            </div>
+                            <Button
+                              size="slim"
+                              variant="secondary"
+                              tone="warning"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const buttonRect = e.currentTarget.getBoundingClientRect();
+                                
+                                // Position dropdown directly next to the button
+                                setDropdownPosition({
+                                  top: buttonRect.bottom + 4,
+                                  left: buttonRect.left
+                                });
+                                setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
+                              }}
+                            >
+                              Manage
+                            </Button>
                             
                             {/* Delete Button */}
                             <Button
@@ -5403,6 +5409,14 @@ export default function Index() {
               </div>
             </div>
           </div>
+
+          {/* Portal Dropdown for Mobile */}
+          <PortalDropdown
+            isOpen={openNoteMenu !== null}
+            position={dropdownPosition}
+            onClose={() => setOpenNoteMenu(null)}
+            note={localNotes.find(n => n.id === openNoteMenu)}
+          />
 
           <div style={{ 
             display: mobileActiveSection === 'editor' ? 'block' : 'none',

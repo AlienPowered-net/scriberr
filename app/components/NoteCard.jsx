@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { Card, Text, Badge, Button, Group, Stack } from "@mantine/core";
 import { IconCopy, IconFolder, IconPin } from "@tabler/icons-react";
 import { Tooltip, Popover, ActionList } from "@shopify/polaris";
@@ -37,6 +38,105 @@ const NoteCard = ({
       return () => document.removeEventListener('click', handleClickOutside);
     }
   }, [openMenu]);
+
+  // Portal-based dropdown component
+  const PortalDropdown = ({ isOpen, position, onClose }) => {
+    if (!isOpen) return null;
+
+    return createPortal(
+      <div
+        style={{
+          position: 'fixed',
+          top: position.top,
+          left: position.left,
+          backgroundColor: 'white',
+          border: '1px solid #e1e3e5',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          zIndex: 10001,
+          minWidth: '200px'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          style={{
+            padding: '8px 12px',
+            cursor: 'pointer',
+            borderBottom: '1px solid #f1f3f4',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+          onClick={() => {
+            onPin && onPin();
+            onClose();
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+        >
+          <IconPin size={14} />
+          {isPinned ? "Unpin" : "Pin"}
+        </div>
+        <div
+          style={{
+            padding: '8px 12px',
+            cursor: 'pointer',
+            borderBottom: '1px solid #f1f3f4',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+          onClick={() => {
+            onDuplicate && onDuplicate();
+            onClose();
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+        >
+          <IconCopy size={14} />
+          Duplicate to current folder
+        </div>
+        <div
+          style={{
+            padding: '8px 12px',
+            cursor: 'pointer',
+            borderBottom: '1px solid #f1f3f4',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+          onClick={() => {
+            onDuplicate && onDuplicate("different");
+            onClose();
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+        >
+          <IconCopy size={14} />
+          Duplicate to different folder
+        </div>
+        <div
+          style={{
+            padding: '8px 12px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+          onClick={() => {
+            onMove && onMove();
+            onClose();
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+        >
+          <IconFolder size={14} />
+          Move to different folder
+        </div>
+      </div>,
+      document.body
+    );
+  };
   // Determine card state
   let state = "default";
   if (isSelectButtonClicked) state = "select-button-clicked";
@@ -326,118 +426,24 @@ const NoteCard = ({
             >
               Select
             </Button>
-            <div style={{ position: 'relative' }}>
-              <Button
-                size="xs"
-                variant="light"
-                color="orange"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const buttonRect = e.currentTarget.getBoundingClientRect();
-                  
-                  // Position dropdown directly next to the button
-                  setDropdownPosition({
-                    top: buttonRect.bottom + window.scrollY + 4,
-                    left: buttonRect.left + window.scrollX
-                  });
-                  setOpenMenu(!openMenu);
-                }}
-              >
-                Manage
-              </Button>
-              {openMenu && (
-                <div
-                  style={{
-                    position: 'fixed',
-                    top: dropdownPosition.top,
-                    left: dropdownPosition.left,
-                    backgroundColor: 'white',
-                    border: '1px solid #e1e3e5',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                    zIndex: 10001,
-                    minWidth: '200px'
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div
-                    style={{
-                      padding: '8px 12px',
-                      cursor: 'pointer',
-                      borderBottom: '1px solid #f1f3f4',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                    onClick={() => {
-                      onPin && onPin();
-                      setOpenMenu(false);
-                    }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                  >
-                    <IconPin size={14} />
-                    {isPinned ? "Unpin" : "Pin"}
-                  </div>
-                  <div
-                    style={{
-                      padding: '8px 12px',
-                      cursor: 'pointer',
-                      borderBottom: '1px solid #f1f3f4',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                    onClick={() => {
-                      onDuplicate && onDuplicate();
-                      setOpenMenu(false);
-                    }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                  >
-                    <IconCopy size={14} />
-                    Duplicate to current folder
-                  </div>
-                  <div
-                    style={{
-                      padding: '8px 12px',
-                      cursor: 'pointer',
-                      borderBottom: '1px solid #f1f3f4',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                    onClick={() => {
-                      onDuplicate && onDuplicate("different");
-                      setOpenMenu(false);
-                    }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                  >
-                    <IconCopy size={14} />
-                    Duplicate to different folder
-                  </div>
-                  <div
-                    style={{
-                      padding: '8px 12px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                    onClick={() => {
-                      onMove && onMove();
-                      setOpenMenu(false);
-                    }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                  >
-                    <IconFolder size={14} />
-                    Move to different folder
-                  </div>
-                </div>
-              )}
-            </div>
+            <Button
+              size="xs"
+              variant="light"
+              color="orange"
+              onClick={(e) => {
+                e.stopPropagation();
+                const buttonRect = e.currentTarget.getBoundingClientRect();
+                
+                // Position dropdown directly next to the button
+                setDropdownPosition({
+                  top: buttonRect.bottom + 4,
+                  left: buttonRect.left
+                });
+                setOpenMenu(!openMenu);
+              }}
+            >
+              Manage
+            </Button>
             <Button
               size="xs"
               variant="light"
@@ -452,6 +458,13 @@ const NoteCard = ({
           </Group>
         </Group>
       </Stack>
+      
+      {/* Portal Dropdown */}
+      <PortalDropdown
+        isOpen={openMenu}
+        position={dropdownPosition}
+        onClose={() => setOpenMenu(false)}
+      />
     </Card>
   );
 };
