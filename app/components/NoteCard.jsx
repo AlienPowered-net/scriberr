@@ -334,23 +334,12 @@ const NoteCard = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   const buttonRect = e.currentTarget.getBoundingClientRect();
-                  const dropdownWidth = 200;
-                  const dropdownHeight = 200;
                   
-                  // Calculate position with boundary checking
-                  let left = buttonRect.right - dropdownWidth + window.scrollX;
-                  let top = buttonRect.bottom + window.scrollY + 4;
-                  
-                  // Ensure dropdown doesn't go off-screen
-                  if (left < 10) left = 10;
-                  if (left + dropdownWidth > window.innerWidth) {
-                    left = window.innerWidth - dropdownWidth - 10;
-                  }
-                  if (top + dropdownHeight > window.innerHeight + window.scrollY) {
-                    top = buttonRect.top - dropdownHeight + window.scrollY - 4;
-                  }
-                  
-                  setDropdownPosition({ top, left });
+                  // Position dropdown directly next to the button
+                  setDropdownPosition({
+                    top: buttonRect.bottom + window.scrollY + 4,
+                    left: buttonRect.left + window.scrollX
+                  });
                   setOpenMenu(!openMenu);
                 }}
               >
