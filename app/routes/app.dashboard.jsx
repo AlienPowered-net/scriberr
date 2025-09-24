@@ -1667,7 +1667,7 @@ export default function Index() {
 
   // Portal-based dropdown component
   const PortalDropdown = ({ isOpen, position, onClose, note }) => {
-    if (!isOpen) return null;
+    if (!isOpen || !note) return null;
 
     return createPortal(
       <div
@@ -1694,6 +1694,7 @@ export default function Index() {
             gap: '8px'
           }}
           onClick={() => {
+            console.log('Mobile Pin clicked for note:', note.id);
             handlePinNote(note.id);
             onClose();
           }}
@@ -1713,6 +1714,7 @@ export default function Index() {
             gap: '8px'
           }}
           onClick={() => {
+            console.log('Mobile Duplicate current clicked for note:', note.id);
             handleDuplicateFromMenu(note.id, "current");
             onClose();
           }}
@@ -1732,6 +1734,7 @@ export default function Index() {
             gap: '8px'
           }}
           onClick={() => {
+            console.log('Mobile Duplicate different clicked for note:', note.id);
             handleDuplicateFromMenu(note.id, "different");
             onClose();
           }}
@@ -1750,6 +1753,7 @@ export default function Index() {
             gap: '8px'
           }}
           onClick={() => {
+            console.log('Mobile Move clicked for note:', note.id);
             handleMoveFromMenu(note.id);
             onClose();
           }}
@@ -5415,7 +5419,11 @@ export default function Index() {
             isOpen={openNoteMenu !== null}
             position={dropdownPosition}
             onClose={() => setOpenNoteMenu(null)}
-            note={localNotes.find(n => n.id === openNoteMenu)}
+            note={(() => {
+              const foundNote = localNotes.find(n => n.id === openNoteMenu);
+              console.log('Mobile PortalDropdown - openNoteMenu:', openNoteMenu, 'foundNote:', foundNote);
+              return foundNote;
+            })()}
           />
 
           <div style={{ 
