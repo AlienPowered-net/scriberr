@@ -333,16 +333,12 @@ const NoteCard = ({
                 color="orange"
                 onClick={(e) => {
                   e.stopPropagation();
+                  const buttonRect = e.currentTarget.getBoundingClientRect();
+                  setDropdownPosition({
+                    top: buttonRect.bottom + window.scrollY + 4,
+                    left: buttonRect.right - 200 + window.scrollX
+                  });
                   setOpenMenu(!openMenu);
-                }}
-                ref={(el) => {
-                  if (el && openMenu) {
-                    const rect = el.getBoundingClientRect();
-                    setDropdownPosition({
-                      top: rect.bottom + window.scrollY + 4,
-                      left: rect.right - 200 + window.scrollX
-                    });
-                  }
                 }}
               >
                 Manage
