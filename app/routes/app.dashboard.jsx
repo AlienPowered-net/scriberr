@@ -442,6 +442,7 @@ export default function Index() {
   const [selectedNoteId, setSelectedNoteId] = useState(null);
   const [selectedNote, setSelectedNote] = useState(null);
   const [openNoteMenu, setOpenNoteMenu] = useState(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [showDeleteNoteConfirm, setShowDeleteNoteConfirm] = useState(null);
   const [showChangeFolderModal, setShowChangeFolderModal] = useState(null);
   const [showMoveModal, setShowMoveModal] = useState(null);
@@ -5240,22 +5241,30 @@ export default function Index() {
                                   e.stopPropagation();
                                   setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
                                 }}
+                                ref={(el) => {
+                                  if (el && openNoteMenu === note.id) {
+                                    const rect = el.getBoundingClientRect();
+                                    setDropdownPosition({
+                                      top: rect.bottom + window.scrollY + 4,
+                                      left: rect.right - 200 + window.scrollX
+                                    });
+                                  }
+                                }}
                               >
                                 Manage
                               </Button>
                               {openNoteMenu === note.id && (
                                 <div
                                   style={{
-                                    position: 'absolute',
-                                    top: '100%',
-                                    right: '0',
+                                    position: 'fixed',
+                                    top: dropdownPosition.top,
+                                    left: dropdownPosition.left,
                                     backgroundColor: 'white',
                                     border: '1px solid #e1e3e5',
                                     borderRadius: '8px',
                                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                                     zIndex: 10001,
-                                    minWidth: '200px',
-                                    marginTop: '4px'
+                                    minWidth: '200px'
                                   }}
                                   onClick={(e) => e.stopPropagation()}
                                 >

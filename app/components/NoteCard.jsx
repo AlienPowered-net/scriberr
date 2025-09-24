@@ -24,6 +24,7 @@ const NoteCard = ({
   isSelectButtonClicked
 }) => {
   const [openMenu, setOpenMenu] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   
   // Close menu when clicking outside
   React.useEffect(() => {
@@ -334,22 +335,30 @@ const NoteCard = ({
                   e.stopPropagation();
                   setOpenMenu(!openMenu);
                 }}
+                ref={(el) => {
+                  if (el && openMenu) {
+                    const rect = el.getBoundingClientRect();
+                    setDropdownPosition({
+                      top: rect.bottom + window.scrollY + 4,
+                      left: rect.right - 200 + window.scrollX
+                    });
+                  }
+                }}
               >
                 Manage
               </Button>
               {openMenu && (
                 <div
                   style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: '0',
+                    position: 'fixed',
+                    top: dropdownPosition.top,
+                    left: dropdownPosition.left,
                     backgroundColor: 'white',
                     border: '1px solid #e1e3e5',
                     borderRadius: '8px',
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                     zIndex: 10001,
-                    minWidth: '200px',
-                    marginTop: '4px'
+                    minWidth: '200px'
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
