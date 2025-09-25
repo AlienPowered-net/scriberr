@@ -965,7 +965,10 @@ export default function Index() {
       }
       
       // Close note menu if clicking outside
-      if (openNoteMenu && !event.target.closest('.note-card-container')) {
+      if (openNoteMenu && !event.target.closest('.note-card-container') && 
+          !event.target.closest('[data-dropdown-menu]') &&
+          !event.target.closest('[data-manage-button]') &&
+          !event.target.closest('.mobile-note-actions')) {
         setOpenNoteMenu(null);
       }
       
@@ -1656,8 +1659,10 @@ export default function Index() {
   // Close mobile note menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Don't close if clicking on the dropdown itself
-      if (event.target.closest('[data-dropdown-menu]')) {
+      // Don't close if clicking on the dropdown itself or manage button
+      if (event.target.closest('[data-dropdown-menu]') || 
+          event.target.closest('[data-manage-button]') ||
+          event.target.closest('.mobile-note-actions')) {
         return;
       }
       setOpenNoteMenu(null);
@@ -1692,85 +1697,108 @@ export default function Index() {
           borderRadius: '8px',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
           zIndex: 10001,
-          minWidth: '200px'
+          minWidth: '200px',
+          maxWidth: '250px',
+          // Mobile-friendly touch targets
+          touchAction: 'manipulation'
         }}
         onClick={(e) => e.stopPropagation()}
       >
         <div
           style={{
-            padding: '8px 12px',
+            padding: '12px 16px',
             cursor: 'pointer',
             borderBottom: '1px solid #f1f3f4',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            minHeight: '44px', // iOS recommended touch target size
+            transition: 'background-color 0.2s ease'
           }}
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             console.log('Mobile Pin clicked for note:', note.id);
             handlePinNote(note.id);
             onClose();
           }}
           onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
           onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+          onTouchStart={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onTouchEnd={(e) => e.target.style.backgroundColor = 'white'}
         >
           <i className="fas fa-thumbtack" style={{ fontSize: '12px' }}></i>
           {note.pinnedAt ? "Unpin" : "Pin"}
         </div>
         <div
           style={{
-            padding: '8px 12px',
+            padding: '12px 16px',
             cursor: 'pointer',
             borderBottom: '1px solid #f1f3f4',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            minHeight: '44px',
+            transition: 'background-color 0.2s ease'
           }}
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             console.log('Mobile Duplicate current clicked for note:', note.id);
             handleDuplicateFromMenu(note.id, "current");
             onClose();
           }}
           onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
           onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+          onTouchStart={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onTouchEnd={(e) => e.target.style.backgroundColor = 'white'}
         >
           <i className="fas fa-copy" style={{ fontSize: '12px' }}></i>
           Duplicate to current folder
         </div>
         <div
           style={{
-            padding: '8px 12px',
+            padding: '12px 16px',
             cursor: 'pointer',
             borderBottom: '1px solid #f1f3f4',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            minHeight: '44px',
+            transition: 'background-color 0.2s ease'
           }}
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             console.log('Mobile Duplicate different clicked for note:', note.id);
             handleDuplicateFromMenu(note.id, "different");
             onClose();
           }}
           onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
           onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+          onTouchStart={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onTouchEnd={(e) => e.target.style.backgroundColor = 'white'}
         >
           <i className="fas fa-copy" style={{ fontSize: '12px' }}></i>
           Duplicate to different folder
         </div>
         <div
           style={{
-            padding: '8px 12px',
+            padding: '12px 16px',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            minHeight: '44px',
+            transition: 'background-color 0.2s ease'
           }}
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             console.log('Mobile Move clicked for note:', note.id);
             handleMoveFromMenu(note.id);
             onClose();
           }}
           onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
           onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+          onTouchStart={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onTouchEnd={(e) => e.target.style.backgroundColor = 'white'}
         >
           <i className="fas fa-folder" style={{ fontSize: '12px' }}></i>
           Move to different folder
@@ -5333,7 +5361,7 @@ export default function Index() {
                           </div>
                           
                           {/* Action Buttons - Right Side */}
-                          <div style={{ display: 'flex', gap: '4px', position: 'relative', zIndex: 2 }}>
+                          <div className="mobile-note-actions" style={{ display: 'flex', gap: '4px', position: 'relative', zIndex: 2 }}>
                             {/* Select Button */}
                             <Button
                               size="slim"
@@ -5349,18 +5377,30 @@ export default function Index() {
                             
                             {/* Manage Button */}
                             <Button
+                              data-manage-button
                               size="slim"
                               variant="secondary"
                               tone="warning"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 const buttonRect = e.currentTarget.getBoundingClientRect();
+                                const viewportWidth = window.innerWidth;
                                 
-                                // Position dropdown directly next to the button
-                                setDropdownPosition({
-                                  top: buttonRect.bottom + 4,
-                                  left: buttonRect.left
-                                });
+                                // Position dropdown with mobile-friendly positioning
+                                let left = buttonRect.left;
+                                let top = buttonRect.bottom + 4;
+                                
+                                // Ensure menu doesn't go off-screen on mobile
+                                if (left + 200 > viewportWidth) {
+                                  left = viewportWidth - 220; // 200px menu width + 20px margin
+                                }
+                                
+                                // If menu would go below viewport, position it above the button
+                                if (top + 200 > window.innerHeight) {
+                                  top = buttonRect.top - 204; // 200px menu height + 4px margin
+                                }
+                                
+                                setDropdownPosition({ top, left });
                                 setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
                               }}
                             >
