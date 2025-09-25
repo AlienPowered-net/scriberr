@@ -6399,6 +6399,130 @@ export default function Index() {
                   </div>
                 );
               })()}
+              
+              {/* Mobile Folder Selector Popover */}
+              {showFolderSelector && (
+                <div className="modal-overlay" style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  zIndex: 10002,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '20px'
+                }}>
+                  <div style={{
+                    backgroundColor: 'white',
+                    borderRadius: '12px',
+                    padding: '24px',
+                    width: '100%',
+                    maxWidth: '400px',
+                    maxHeight: '80vh',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '20px'
+                    }}>
+                      <h3 style={{
+                        margin: 0,
+                        fontSize: '18px',
+                        fontWeight: '600',
+                        color: '#202223'
+                      }}>
+                        {folderSelectorAction === 'duplicate' ? 'Duplicate to folder' : 'Move to folder'}
+                      </h3>
+                      <button
+                        onClick={() => {
+                          setShowFolderSelector(false);
+                          setFolderSelectorAction(null);
+                          setFolderSelectorNoteId(null);
+                          setFolderSelectorSearchQuery("");
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          fontSize: '20px',
+                          cursor: 'pointer',
+                          color: '#6d7175',
+                          padding: '4px'
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                    
+                    <div style={{ marginBottom: '16px' }}>
+                      <input
+                        type="text"
+                        placeholder="Search folders..."
+                        value={folderSelectorSearchQuery}
+                        onChange={(e) => setFolderSelectorSearchQuery(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '12px 16px',
+                          border: '1px solid #d1d3d4',
+                          borderRadius: '8px',
+                          fontSize: '16px',
+                          outline: 'none'
+                        }}
+                        autoComplete="off"
+                      />
+                    </div>
+                    
+                    <div style={{
+                      flex: 1,
+                      overflowY: 'auto',
+                      border: '1px solid #e1e3e5',
+                      borderRadius: '8px'
+                    }}>
+                      {localFolders
+                        .filter(folder => 
+                          folder.name.toLowerCase().includes(folderSelectorSearchQuery.toLowerCase())
+                        )
+                        .map(folder => (
+                          <div
+                            key={folder.id}
+                            onClick={() => handleFolderSelection(folder.id)}
+                            style={{
+                              padding: '16px',
+                              borderBottom: '1px solid #f1f3f4',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              transition: 'background-color 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                            onTouchStart={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                            onTouchEnd={(e) => e.target.style.backgroundColor = 'white'}
+                          >
+                            <i className="fas fa-folder" style={{
+                              fontSize: '16px',
+                              color: '#6d7175'
+                            }}></i>
+                            <span style={{
+                              fontSize: '16px',
+                              color: '#202223',
+                              fontWeight: '500'
+                            }}>
+                              {folder.name}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
