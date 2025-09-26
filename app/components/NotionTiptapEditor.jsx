@@ -98,6 +98,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedUseCase, setSelectedUseCase] = useState('');
   const [showUseCaseSelection, setShowUseCaseSelection] = useState(true);
+  const [documentMistakes, setDocumentMistakes] = useState([]);
+  const [showMistakeCorrections, setShowMistakeCorrections] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [linkText, setLinkText] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -454,13 +456,33 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   };
 
   const generateAIContent = async () => {
-    if (!aiPrompt.trim()) return;
+    if (!aiPrompt.trim() && !['spell-check', 'grammar-check'].includes(selectedUseCase)) return;
     
     setIsGenerating(true);
     try {
       // Get the selected use case
       const useCase = aiUseCases.find(uc => uc.id === selectedUseCase);
-      const enhancedPrompt = useCase ? `${useCase.prompt} ${aiPrompt}` : aiPrompt;
+      let enhancedPrompt;
+      
+      // Handle grammar and spell check differently
+      if (selectedUseCase === 'spell-check' || selectedUseCase === 'grammar-check') {
+        // Get the current document text
+        const documentText = editor?.getText() || '';
+        if (!documentText.trim()) {
+          setIsGenerating(false);
+          setShowMistakeCorrections(true);
+          setDocumentMistakes([{
+            type: 'info',
+            message: 'No text found in the document to check.',
+            suggestion: 'Please add some text to the document first.'
+          }]);
+          return;
+        }
+        
+        enhancedPrompt = `${useCase.prompt} "${documentText}"`;
+      } else {
+        enhancedPrompt = useCase ? `${useCase.prompt} ${aiPrompt}` : aiPrompt;
+      }
       
       const response = await fetch('/api/ai-generate', {
         method: 'POST',
@@ -472,32 +494,76 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       
       if (response.ok) {
         const data = await response.json();
-        // Insert content and keep modal open briefly to show success
-        editor?.chain().focus().insertContent(data.content).run();
         
-        // Close modal after a short delay to show the content was inserted
-        setTimeout(() => {
+        // Handle grammar and spell check results differently
+        if (selectedUseCase === 'spell-check' || selectedUseCase === 'grammar-check') {
+          // Parse the AI response for mistakes and suggestions
+          const mistakes = parseMistakesFromAIResponse(data.content, documentText);
+          setDocumentMistakes(mistakes);
+          setShowMistakeCorrections(true);
           setIsGenerating(false);
-          setAIPrompt('');
-          setSelectedUseCase('');
-          setShowUseCaseSelection(true);
-          setShowAIModal(false);
-        }, 1000);
-        return;
+          return;
+        } else {
+          // Insert content and keep modal open briefly to show success
+          editor?.chain().focus().insertContent(data.content).run();
+          
+          // Close modal after a short delay to show the content was inserted
+          setTimeout(() => {
+            setIsGenerating(false);
+            setAIPrompt('');
+            setSelectedUseCase('');
+            setShowUseCaseSelection(true);
+            setShowAIModal(false);
+          }, 1000);
+          return;
+        }
       } else {
         const errorData = await response.json();
         if (errorData.quotaExceeded) {
           // Handle quota exceeded error
-          editor?.chain().focus().insertContent(`<p style="color: #dc2626; font-style: italic;">⚠️ AI service quota exceeded. The functionality is working correctly but requires quota to be available. Please try again later.</p>`).run();
+          if (selectedUseCase === 'spell-check' || selectedUseCase === 'grammar-check') {
+            setDocumentMistakes([{
+              type: 'error',
+              message: 'AI service quota exceeded. Please try again later.',
+              suggestion: 'The functionality is working correctly but requires quota to be available.'
+            }]);
+            setShowMistakeCorrections(true);
+            setIsGenerating(false);
+            return;
+          } else {
+            editor?.chain().focus().insertContent(`<p style="color: #dc2626; font-style: italic;">⚠️ AI service quota exceeded. The functionality is working correctly but requires quota to be available. Please try again later.</p>`).run();
+          }
         } else {
           // Fallback for other errors
-          editor?.chain().focus().insertContent(`[AI Generated Content for: "${aiPrompt}"]`).run();
+          if (selectedUseCase === 'spell-check' || selectedUseCase === 'grammar-check') {
+            setDocumentMistakes([{
+              type: 'error',
+              message: 'Failed to analyze document.',
+              suggestion: 'Please try again or check your connection.'
+            }]);
+            setShowMistakeCorrections(true);
+            setIsGenerating(false);
+            return;
+          } else {
+            editor?.chain().focus().insertContent(`[AI Generated Content for: "${aiPrompt}"]`).run();
+          }
         }
       }
     } catch (error) {
       console.error('AI generation error:', error);
       // Fallback content
-      editor?.chain().focus().insertContent(`[AI Generated Content for: "${aiPrompt}"]`).run();
+      if (selectedUseCase === 'spell-check' || selectedUseCase === 'grammar-check') {
+        setDocumentMistakes([{
+          type: 'error',
+          message: 'An error occurred while analyzing the document.',
+          suggestion: 'Please try again.'
+        }]);
+        setShowMistakeCorrections(true);
+        setIsGenerating(false);
+        return;
+      } else {
+        editor?.chain().focus().insertContent(`[AI Generated Content for: "${aiPrompt}"]`).run();
+      }
     }
     
     // Only close modal if there was an error (success case handled above)
@@ -506,6 +572,56 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     setSelectedUseCase('');
     setShowUseCaseSelection(true);
     setShowAIModal(false);
+  };
+
+  const parseMistakesFromAIResponse = (aiResponse, originalText) => {
+    // This is a simplified parser - in a real implementation, you'd want more sophisticated parsing
+    const mistakes = [];
+    
+    // Look for common mistake patterns in AI responses
+    const lines = aiResponse.split('\n');
+    let mistakeCount = 0;
+    
+    lines.forEach((line, index) => {
+      // Look for patterns like "Line X: 'word' should be 'corrected word'"
+      const mistakeMatch = line.match(/(?:line\s+\d+:|word\s+['"]([^'"]+)['"]\s+should\s+be\s+['"]([^'"]+)['"])/i);
+      if (mistakeMatch) {
+        mistakes.push({
+          id: mistakeCount++,
+          type: selectedUseCase === 'spell-check' ? 'spelling' : 'grammar',
+          original: mistakeMatch[1],
+          suggestion: mistakeMatch[2],
+          line: index + 1,
+          message: line.trim()
+        });
+      }
+    });
+    
+    // If no structured mistakes found, create a general response
+    if (mistakes.length === 0) {
+      mistakes.push({
+        id: 0,
+        type: 'info',
+        message: 'Document analysis complete',
+        suggestion: aiResponse,
+        original: '',
+        line: 0
+      });
+    }
+    
+    return mistakes;
+  };
+
+  const applyCorrection = (mistake) => {
+    if (mistake.type === 'info') return;
+    
+    // Find and replace the mistake in the document
+    const currentText = editor?.getText() || '';
+    const correctedText = currentText.replace(mistake.original, mistake.suggestion);
+    editor?.commands.setContent(correctedText);
+    
+    // Remove the mistake from the list
+    setDocumentMistakes(prev => prev.filter(m => m.id !== mistake.id));
   };
 
   const handleUseCaseSelection = (useCaseId) => {
@@ -519,6 +635,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     setShowUseCaseSelection(true);
     setIsGenerating(false);
     setShowAIModal(false);
+    setDocumentMistakes([]);
+    setShowMistakeCorrections(false);
   };
 
   const insertImage = () => {
@@ -919,18 +1037,25 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         open={showAIModal}
         onClose={resetAIModal}
         title="AI Content Generator"
-        primaryAction={!showUseCaseSelection ? {
+        primaryAction={!showUseCaseSelection && !showMistakeCorrections ? {
           content: isGenerating ? 'Generating...' : 'Generate',
           onAction: generateAIContent,
           loading: isGenerating,
           variant: 'primary',
           tone: 'magic',
-          disabled: !aiPrompt.trim(),
+          disabled: !aiPrompt.trim() && !['spell-check', 'grammar-check'].includes(selectedUseCase),
         } : undefined}
         secondaryActions={[
           {
-            content: showUseCaseSelection ? 'Cancel' : 'Back',
-            onAction: showUseCaseSelection ? resetAIModal : () => setShowUseCaseSelection(true),
+            content: showUseCaseSelection ? 'Cancel' : showMistakeCorrections ? 'Done' : 'Back',
+            onAction: showUseCaseSelection ? resetAIModal : showMistakeCorrections ? resetAIModal : () => {
+              if (showMistakeCorrections) {
+                setShowMistakeCorrections(false);
+                setShowUseCaseSelection(true);
+              } else {
+                setShowUseCaseSelection(true);
+              }
+            },
           },
         ]}
       >
@@ -947,50 +1072,275 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   Choose a use case to help AI generate the perfect content for your needs.
                 </Text>
                 
+                {/* New horizontal scrollable layout */}
                 <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                  gap: '12px',
-                  maxHeight: '400px',
-                  overflowY: 'auto'
+                  display: 'flex',
+                  gap: '16px',
+                  overflowX: 'auto',
+                  padding: '8px 0',
+                  maxHeight: '300px',
+                  flexDirection: 'column'
                 }}>
-                  {aiUseCases.map((useCase) => (
-                    <button
-                      key={useCase.id}
-                      onClick={() => handleUseCaseSelection(useCase.id)}
-                      style={{
-                        padding: '16px',
-                        border: '2px solid #e1e5e9',
-                        borderRadius: '8px',
-                        backgroundColor: 'white',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        textAlign: 'left',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px',
-                        minHeight: '100px'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.borderColor = '#8052fe';
-                        e.target.style.backgroundColor = '#f8f6ff';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.borderColor = '#e1e5e9';
-                        e.target.style.backgroundColor = 'white';
-                      }}
-                    >
-                      <div style={{ fontSize: '24px' }}>{useCase.icon}</div>
-                      <div>
-                        <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '4px' }}>
-                          {useCase.title}
-                        </div>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                          {useCase.description}
+                  {/* First row - Writing types */}
+                  <div>
+                    <Text variant="bodyMd" fontWeight="semibold" color="subdued" style={{ marginBottom: '8px' }}>
+                      Content Creation
+                    </Text>
+                    <div style={{ 
+                      display: 'flex',
+                      gap: '12px',
+                      overflowX: 'auto',
+                      padding: '4px 0'
+                    }}>
+                      {aiUseCases.filter(uc => ['blog-post', 'email', 'social-media', 'marketing', 'creative-writing'].includes(uc.id)).map((useCase) => (
+                        <button
+                          key={useCase.id}
+                          onClick={() => handleUseCaseSelection(useCase.id)}
+                          style={{
+                            padding: '12px 16px',
+                            border: '2px solid #e1e5e9',
+                            borderRadius: '12px',
+                            backgroundColor: 'white',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            textAlign: 'left',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            minWidth: '200px',
+                            flexShrink: 0
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.borderColor = '#8052fe';
+                            e.target.style.backgroundColor = '#f8f6ff';
+                            e.target.style.transform = 'translateY(-2px)';
+                            e.target.style.boxShadow = '0 4px 12px rgba(128, 82, 254, 0.15)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.borderColor = '#e1e5e9';
+                            e.target.style.backgroundColor = 'white';
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = 'none';
+                          }}
+                        >
+                          <div style={{ fontSize: '20px' }}>{useCase.icon}</div>
+                          <div>
+                            <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '2px' }}>
+                              {useCase.title}
+                            </div>
+                            <div style={{ fontSize: '11px', color: '#6b7280', lineHeight: '1.3' }}>
+                              {useCase.description}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Second row - Editing types */}
+                  <div>
+                    <Text variant="bodyMd" fontWeight="semibold" color="subdued" style={{ marginBottom: '8px' }}>
+                      Document Editing
+                    </Text>
+                    <div style={{ 
+                      display: 'flex',
+                      gap: '12px',
+                      overflowX: 'auto',
+                      padding: '4px 0'
+                    }}>
+                      {aiUseCases.filter(uc => ['spell-check', 'grammar-check', 'summary'].includes(uc.id)).map((useCase) => (
+                        <button
+                          key={useCase.id}
+                          onClick={() => handleUseCaseSelection(useCase.id)}
+                          style={{
+                            padding: '12px 16px',
+                            border: '2px solid #e1e5e9',
+                            borderRadius: '12px',
+                            backgroundColor: 'white',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            textAlign: 'left',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            minWidth: '200px',
+                            flexShrink: 0
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.borderColor = '#8052fe';
+                            e.target.style.backgroundColor = '#f8f6ff';
+                            e.target.style.transform = 'translateY(-2px)';
+                            e.target.style.boxShadow = '0 4px 12px rgba(128, 82, 254, 0.15)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.borderColor = '#e1e5e9';
+                            e.target.style.backgroundColor = 'white';
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = 'none';
+                          }}
+                        >
+                          <div style={{ fontSize: '20px' }}>{useCase.icon}</div>
+                          <div>
+                            <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '2px' }}>
+                              {useCase.title}
+                            </div>
+                            <div style={{ fontSize: '11px', color: '#6b7280', lineHeight: '1.3' }}>
+                              {useCase.description}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Third row - Business types */}
+                  <div>
+                    <Text variant="bodyMd" fontWeight="semibold" color="subdued" style={{ marginBottom: '8px' }}>
+                      Business & Professional
+                    </Text>
+                    <div style={{ 
+                      display: 'flex',
+                      gap: '12px',
+                      overflowX: 'auto',
+                      padding: '4px 0'
+                    }}>
+                      {aiUseCases.filter(uc => ['business-doc', 'product-description'].includes(uc.id)).map((useCase) => (
+                        <button
+                          key={useCase.id}
+                          onClick={() => handleUseCaseSelection(useCase.id)}
+                          style={{
+                            padding: '12px 16px',
+                            border: '2px solid #e1e5e9',
+                            borderRadius: '12px',
+                            backgroundColor: 'white',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            textAlign: 'left',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            minWidth: '200px',
+                            flexShrink: 0
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.borderColor = '#8052fe';
+                            e.target.style.backgroundColor = '#f8f6ff';
+                            e.target.style.transform = 'translateY(-2px)';
+                            e.target.style.boxShadow = '0 4px 12px rgba(128, 82, 254, 0.15)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.borderColor = '#e1e5e9';
+                            e.target.style.backgroundColor = 'white';
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = 'none';
+                          }}
+                        >
+                          <div style={{ fontSize: '20px' }}>{useCase.icon}</div>
+                          <div>
+                            <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '2px' }}>
+                              {useCase.title}
+                            </div>
+                            <div style={{ fontSize: '11px', color: '#6b7280', lineHeight: '1.3' }}>
+                              {useCase.description}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : showMistakeCorrections ? (
+              <>
+                <Text variant="headingMd">
+                  {selectedUseCase === 'spell-check' ? 'Spelling' : 'Grammar'} Check Results
+                </Text>
+                <Text variant="bodyMd" color="subdued">
+                  Review and apply corrections to your document.
+                </Text>
+                
+                <div style={{ 
+                  maxHeight: '300px',
+                  overflowY: 'auto',
+                  border: '1px solid #e1e5e9',
+                  borderRadius: '8px',
+                  padding: '12px'
+                }}>
+                  {documentMistakes.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '20px', color: '#6b7280' }}>
+                      <div style={{ fontSize: '24px', marginBottom: '8px' }}>✅</div>
+                      <div>No issues found in your document!</div>
+                    </div>
+                  ) : (
+                    documentMistakes.map((mistake) => (
+                      <div
+                        key={mistake.id}
+                        style={{
+                          padding: '12px',
+                          border: '1px solid #e1e5e9',
+                          borderRadius: '6px',
+                          marginBottom: '8px',
+                          backgroundColor: mistake.type === 'error' ? '#fef2f2' : mistake.type === 'info' ? '#f0f9ff' : '#f8f9fa'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                          <div style={{ flex: 1 }}>
+                            {mistake.type === 'spelling' && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                <span style={{ fontSize: '12px', fontWeight: '600', color: '#dc2626' }}>SPELLING</span>
+                                <span style={{ fontSize: '14px', fontFamily: 'monospace', backgroundColor: '#f3f4f6', padding: '2px 6px', borderRadius: '4px' }}>
+                                  "{mistake.original}"
+                                </span>
+                                <span style={{ color: '#6b7280' }}>→</span>
+                                <span style={{ fontSize: '14px', fontFamily: 'monospace', backgroundColor: '#dcfce7', padding: '2px 6px', borderRadius: '4px' }}>
+                                  "{mistake.suggestion}"
+                                </span>
+                              </div>
+                            )}
+                            {mistake.type === 'grammar' && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                <span style={{ fontSize: '12px', fontWeight: '600', color: '#d97706' }}>GRAMMAR</span>
+                                <span style={{ fontSize: '14px', fontFamily: 'monospace', backgroundColor: '#f3f4f6', padding: '2px 6px', borderRadius: '4px' }}>
+                                  "{mistake.original}"
+                                </span>
+                                <span style={{ color: '#6b7280' }}>→</span>
+                                <span style={{ fontSize: '14px', fontFamily: 'monospace', backgroundColor: '#dcfce7', padding: '2px 6px', borderRadius: '4px' }}>
+                                  "{mistake.suggestion}"
+                                </span>
+                              </div>
+                            )}
+                            {(mistake.type === 'error' || mistake.type === 'info') && (
+                              <div style={{ fontSize: '14px', marginBottom: '4px' }}>
+                                {mistake.message}
+                              </div>
+                            )}
+                            <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                              {mistake.suggestion}
+                            </div>
+                          </div>
+                          {mistake.type !== 'info' && mistake.type !== 'error' && (
+                            <button
+                              onClick={() => applyCorrection(mistake)}
+                              style={{
+                                padding: '6px 12px',
+                                backgroundColor: '#8052fe',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                                transition: 'background-color 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.target.style.backgroundColor = '#6d3dd8'}
+                              onMouseLeave={(e) => e.target.style.backgroundColor = '#8052fe'}
+                            >
+                              Apply
+                            </button>
+                          )}
                         </div>
                       </div>
-                    </button>
-                  ))}
+                    ))
+                  )}
                 </div>
               </>
             ) : (

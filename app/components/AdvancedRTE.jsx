@@ -37,6 +37,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedUseCase, setSelectedUseCase] = useState('');
   const [showUseCaseSelection, setShowUseCaseSelection] = useState(true);
+  const [documentMistakes, setDocumentMistakes] = useState([]);
+  const [showMistakeCorrections, setShowMistakeCorrections] = useState(false);
   const [showBubbleMenu, setShowBubbleMenu] = useState(false);
   const [bubbleMenuPosition, setBubbleMenuPosition] = useState({ x: 0, y: 0 });
   const [showTableMenu, setShowTableMenu] = useState(false);
