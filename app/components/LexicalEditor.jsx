@@ -127,6 +127,33 @@ function ClientQuill({ value, onChange, placeholder }) {
           .ql-picker-options {
             z-index: 99999 !important;
           }
+          
+          /* Mobile responsive styles for better text editor sizing */
+          @media (max-width: 768px) {
+            .editor-container {
+              min-height: 120px !important;
+            }
+            .ql-editor {
+              min-height: 120px !important;
+              max-height: 240px !important;
+              overflow-y: auto !important;
+              font-size: 16px !important;
+              line-height: 1.5 !important;
+              padding: 12px !important;
+            }
+            .ql-container {
+              height: auto !important;
+              min-height: 120px !important;
+              max-height: 240px !important;
+            }
+            .ql-toolbar {
+              padding: 8px !important;
+              overflow-x: auto !important;
+            }
+            .ql-toolbar .ql-formats {
+              margin-right: 8px !important;
+            }
+          }
         `;
         document.head.appendChild(style);
       });

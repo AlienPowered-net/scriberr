@@ -487,6 +487,42 @@
   }
 }
 
+/* Mobile specific improvements */
+@media (max-width: 768px) {
+  .notion-tiptap-container {
+    min-height: 120px !important;
+  }
+  
+  .notion-editor {
+    min-height: 120px !important;
+    max-height: 240px !important;
+    overflow-y: auto !important;
+    padding: 12px 16px !important;
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+  }
+  
+  .notion-editor-wrapper {
+    min-height: 120px !important;
+    max-height: 240px !important;
+    overflow-y: auto !important;
+  }
+  
+  .notion-toolbar {
+    padding: 6px 8px !important;
+    overflow-x: auto !important;
+  }
+  
+  .notion-toolbar .Polaris-ButtonGroup {
+    margin-right: 4px !important;
+  }
+  
+  .notion-toolbar .Polaris-Button {
+    min-height: 28px !important;
+    padding: 4px 6px !important;
+  }
+}
+
 /* Dark mode support (if needed) */
 @media (prefers-color-scheme: dark) {
   .notion-tiptap-container {
