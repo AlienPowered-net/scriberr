@@ -21,24 +21,16 @@ import CharacterCount from '@tiptap/extension-character-count';
 import TiptapDragHandle from './TiptapDragHandle';
 import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack } from '@shopify/polaris';
-import { MagicIcon } from '@shopify/polaris-icons';
 
 const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
-  const [showAIModal, setShowAIModal] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [linkText, setLinkText] = useState('');
-  const [aiPrompt, setAIPrompt] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedUseCase, setSelectedUseCase] = useState('');
-  const [showUseCaseSelection, setShowUseCaseSelection] = useState(true);
-  const [documentMistakes, setDocumentMistakes] = useState([]);
-  const [showMistakeCorrections, setShowMistakeCorrections] = useState(false);
   const [showBubbleMenu, setShowBubbleMenu] = useState(false);
   const [bubbleMenuPosition, setBubbleMenuPosition] = useState({ x: 0, y: 0 });
   const [showTableMenu, setShowTableMenu] = useState(false);
@@ -57,79 +49,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   const [tempBorderColor, setTempBorderColor] = useState('#d1d5db');
   const editorRef = useRef(null);
 
-  // AI Use Cases
-  const aiUseCases = [
-    {
-      id: 'blog-post',
-      title: 'Blog Post',
-      description: 'Write engaging blog articles and long-form content',
-      icon: '📝',
-      prompt: 'Write a comprehensive blog post about'
-    },
-    {
-      id: 'email',
-      title: 'Email',
-      description: 'Professional emails, newsletters, and communications',
-      icon: '📧',
-      prompt: 'Write a professional email about'
-    },
-    {
-      id: 'social-media',
-      title: 'Social Media',
-      description: 'Posts for Twitter, LinkedIn, Instagram, and Facebook',
-      icon: '📱',
-      prompt: 'Write engaging social media content about'
-    },
-    {
-      id: 'marketing',
-      title: 'Marketing Copy',
-      description: 'Ad copy, product descriptions, and sales content',
-      icon: '🎯',
-      prompt: 'Write compelling marketing copy for'
-    },
-    {
-      id: 'spell-check',
-      title: 'Spell Check',
-      description: 'Check and correct spelling errors in your text',
-      icon: '✅',
-      prompt: 'Check and correct spelling errors in this text:'
-    },
-    {
-      id: 'grammar-check',
-      title: 'Grammar Check',
-      description: 'Improve grammar, punctuation, and sentence structure',
-      icon: '📚',
-      prompt: 'Check and improve grammar in this text:'
-    },
-    {
-      id: 'creative-writing',
-      title: 'Creative Writing',
-      description: 'Stories, poems, scripts, and creative content',
-      icon: '✨',
-      prompt: 'Write creative content about'
-    },
-    {
-      id: 'business-doc',
-      title: 'Business Document',
-      description: 'Reports, proposals, and professional documents',
-      icon: '📊',
-      prompt: 'Write a professional business document about'
-    },
-    {
-      id: 'product-description',
-      title: 'Product Description',
-      description: 'Compelling product descriptions and features',
-      icon: '🛍️',
-      prompt: 'Write a product description for'
-    },
-    {
-      id: 'summary',
-      title: 'Summary',
-      description: 'Summarize long texts and extract key points',
-      icon: '📋',
-      prompt: 'Summarize this content:'
-    }
-  ];
 
   // Create lowlight instance for syntax highlighting
   const lowlight = createLowlight();
@@ -378,73 +297,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   };
 
 
-  const generateAIContent = async () => {
-    if (!aiPrompt.trim()) return;
-    
-    setIsGenerating(true);
-    try {
-      // Get the selected use case
-      const useCase = aiUseCases.find(uc => uc.id === selectedUseCase);
-      const enhancedPrompt = useCase ? `${useCase.prompt} ${aiPrompt}` : aiPrompt;
-      
-      const response = await fetch('/api/ai-generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt: enhancedPrompt }),
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        // Insert content and keep modal open briefly to show success
-        editor?.chain().focus().insertContent(data.content).run();
-        
-        // Close modal after a short delay to show the content was inserted
-        setTimeout(() => {
-          setIsGenerating(false);
-          setAIPrompt('');
-          setSelectedUseCase('');
-          setShowUseCaseSelection(true);
-          setShowAIModal(false);
-        }, 1000);
-        return;
-      } else {
-        const errorData = await response.json();
-        if (errorData.quotaExceeded) {
-          // Handle quota exceeded error
-          editor?.chain().focus().insertContent(`<p style="color: #dc2626; font-style: italic;">⚠️ AI service quota exceeded. The functionality is working correctly but requires quota to be available. Please try again later.</p>`).run();
-        } else {
-          // Fallback for other errors
-          editor?.chain().focus().insertContent(`[AI Generated Content for: "${aiPrompt}"]`).run();
-        }
-      }
-    } catch (error) {
-      console.error('AI generation error:', error);
-      // Fallback content
-      editor?.chain().focus().insertContent(`[AI Generated Content for: "${aiPrompt}"]`).run();
-    }
-    
-    // Only close modal if there was an error (success case handled above)
-    setIsGenerating(false);
-    setAIPrompt('');
-    setSelectedUseCase('');
-    setShowUseCaseSelection(true);
-    setShowAIModal(false);
-  };
-
-  const handleUseCaseSelection = (useCaseId) => {
-    setSelectedUseCase(useCaseId);
-    setShowUseCaseSelection(false);
-  };
-
-  const resetAIModal = () => {
-    setAIPrompt('');
-    setSelectedUseCase('');
-    setShowUseCaseSelection(true);
-    setIsGenerating(false);
-    setShowAIModal(false);
-  };
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
@@ -929,30 +781,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           
           <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
 
-          {/* AI Assistant */}
-          <button
-            onClick={() => setShowAIModal(true)}
-            style={{
-              padding: "6px 8px",
-              border: "1px solid #8052fe",
-              borderRadius: "4px",
-              backgroundColor: "#8052fe",
-              color: "#ffffff",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              fontSize: "13px",
-              minWidth: "32px",
-              height: "32px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-            title="AI Assistant"
-            onMouseEnter={(e) => e.target.style.backgroundColor = "#6d3dd8"}
-            onMouseLeave={(e) => e.target.style.backgroundColor = "#8052fe"}
-          >
-            <MagicIcon style={{ color: "#ffffff", fill: "#ffffff", width: "18px", height: "18px" }} />
-          </button>
 
         </div>
       </div>
@@ -2132,101 +1960,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         </Modal.Section>
       </Modal>
 
-      <Modal
-        open={showAIModal}
-        onClose={resetAIModal}
-        title="AI Content Generator"
-        primaryAction={!showUseCaseSelection ? {
-          content: isGenerating ? 'Generating...' : 'Generate',
-          onAction: generateAIContent,
-          loading: isGenerating,
-          disabled: !aiPrompt.trim(),
-        } : undefined}
-        secondaryActions={[
-          {
-            content: showUseCaseSelection ? 'Cancel' : 'Back',
-            onAction: showUseCaseSelection ? resetAIModal : () => setShowUseCaseSelection(true),
-          },
-        ]}
-      >
-        <Modal.Section>
-          <BlockStack gap="4">
-            {showUseCaseSelection ? (
-              <>
-                <Text variant="headingMd">What would you like to create?</Text>
-                <Text variant="bodyMd" color="subdued">
-                  Choose a use case to help AI generate the perfect content for your needs.
-                </Text>
-                
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                  gap: '12px',
-                  maxHeight: '400px',
-                  overflowY: 'auto'
-                }}>
-                  {aiUseCases.map((useCase) => (
-                    <button
-                      key={useCase.id}
-                      onClick={() => handleUseCaseSelection(useCase.id)}
-                      style={{
-                        padding: '16px',
-                        border: '2px solid #e1e5e9',
-                        borderRadius: '8px',
-                        backgroundColor: 'white',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        textAlign: 'left',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px',
-                        minHeight: '100px'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.borderColor = '#8052fe';
-                        e.target.style.backgroundColor = '#f8f6ff';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.borderColor = '#e1e5e9';
-                        e.target.style.backgroundColor = 'white';
-                      }}
-                    >
-                      <div style={{ fontSize: '24px' }}>{useCase.icon}</div>
-                      <div>
-                        <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '4px' }}>
-                          {useCase.title}
-                        </div>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                          {useCase.description}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <>
-                <Text variant="headingMd">
-                  {aiUseCases.find(uc => uc.id === selectedUseCase)?.title} Generation
-                </Text>
-                <Text variant="bodyMd" color="subdued">
-                  {aiUseCases.find(uc => uc.id === selectedUseCase)?.description}
-                </Text>
-                
-                <TextField
-                  label="What would you like AI to write about?"
-                  value={aiPrompt}
-                  onChange={setAIPrompt}
-                  placeholder={`${aiUseCases.find(uc => uc.id === selectedUseCase)?.prompt}...`}
-                  multiline={3}
-                  autoComplete="off"
-                  helpText="Be specific about what you want AI to generate"
-                />
-              </>
-            )}
-          </BlockStack>
-        </Modal.Section>
-      </Modal>
 
       {/* Overlay for expanded mode */}
       {isExpanded && (
