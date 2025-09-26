@@ -149,7 +149,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     editorProps: {
       attributes: {
         class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none p-4',
-        style: 'min-height: 8rem; max-height: 25rem; overflow-y: auto; width: 100%; outline: none; cursor: text; line-height: 1.6; padding-left: 1rem;',
+        style: 'min-height: 8rem; max-height: 25rem; overflow-y: auto; width: 100%; outline: none; cursor: text; line-height: 1.6; padding-left: 1rem; font-size: 16px;',
       },
       handleClick: (view, pos, event) => {
         // Ensure the entire editor area is clickable and focuses properly
@@ -340,14 +340,14 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           /* Make toolbar sticky on mobile */
           @media (max-width: 768px) {
             .advanced-rte-content {
-              min-height: 10rem !important; /* 5 lines minimum */
-              max-height: 25rem !important;
+              min-height: 8rem !important; /* 5 lines minimum (16px font * 1.6 line-height * 5 lines = 8rem) */
+              max-height: 16rem !important; /* 10 lines maximum (16px font * 1.6 line-height * 10 lines = 16rem) */
               padding-left: 20px !important;
             }
             
             .advanced-rte-content .ProseMirror {
-              min-height: 10rem !important; /* 5 lines minimum */
-              max-height: 25rem !important;
+              min-height: 8rem !important; /* 5 lines minimum */
+              max-height: 16rem !important; /* 10 lines maximum */
               padding-left: 0 !important;
             }
             
@@ -873,15 +873,15 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             editor={editor} 
             className="advanced-rte-content"
             style={{
-              minHeight: "8rem", // Default minimum height
-              maxHeight: "25rem", // Max at 15+ lines (25rem = ~15+ lines at 1.5 line-height)
+              minHeight: "8rem", // Default minimum height (5 lines)
+              maxHeight: "25rem", // Max at 15+ lines on desktop
               overflowY: "auto", // Add scroll when content exceeds max height
               padding: "20px 24px",
               paddingLeft: "24px", // Reduced left padding to move text closer to edge
               border: "none",
               outline: "none",
-              fontSize: "16px", // Slightly larger font
-              lineHeight: "1.6", // Better line height
+              fontSize: "16px", // Font size for line calculations
+              lineHeight: "1.6", // Line height for precise calculations
               color: "#212529",
               cursor: "text",
               width: "100%"
