@@ -74,7 +74,7 @@
 /* Responsive adjustments */
 @media (max-width: 1024px) {
   .notion-editor {
-    padding-left: 60px; /* Less padding on mobile/tablet but still space for drag handle */
+    padding-left: 30px; /* Reduced padding on mobile/tablet for better text positioning */
   }
   
   .tiptap-drag-handle {
@@ -109,7 +109,7 @@
 /* Editor Core Styles */
 .notion-editor {
   padding: 40px 60px;
-  padding-left: 80px; /* Extra padding on the left for drag handle */
+  padding-left: 40px; /* Reduced left padding for better text positioning */
   min-height: 100%;
   max-width: 900px;
   margin: 0 auto;
@@ -464,6 +464,7 @@
 @media (max-width: 1024px) {
   .notion-editor {
     padding: 20px 24px;
+    padding-left: 20px; /* Reduced left padding for mobile */
   }
   
   .notion-toolbar {

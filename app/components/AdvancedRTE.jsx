@@ -148,8 +148,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[300px] p-4',
-        style: 'min-height: 300px; width: 100%; outline: none; cursor: text;',
+        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none p-4',
+        style: 'min-height: 6rem; max-height: 15rem; overflow-y: auto; width: 100%; outline: none; cursor: text; line-height: 1.5;',
       },
       handleClick: (view, pos, event) => {
         // Ensure the entire editor area is clickable and focuses properly
@@ -311,11 +311,36 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   }
 
   return (
-    <div 
-      className={`relative border rounded-lg bg-white transition-all duration-300 ${
-        isExpanded ? 'fixed inset-4 z-50 shadow-2xl' : 'w-full'
-      }`}
-      style={{
+    <>
+      <style>
+        {`
+          .advanced-rte-content {
+            min-height: 6rem !important;
+            max-height: 15rem !important;
+            overflow-y: auto !important;
+          }
+          
+          @media (max-width: 768px) {
+            .advanced-rte-content {
+              padding-left: 20px !important;
+              min-height: 6rem !important;
+              max-height: 15rem !important;
+            }
+          }
+          
+          @media (min-width: 769px) {
+            .advanced-rte-content {
+              padding-left: 70px !important;
+              max-height: 20rem !important;
+            }
+          }
+        `}
+      </style>
+      <div 
+        className={`relative border rounded-lg bg-white transition-all duration-300 ${
+          isExpanded ? 'fixed inset-4 z-50 shadow-2xl' : 'w-full'
+        }`}
+        style={{
         ...(isExpanded && {
           position: 'fixed',
           top: '20px',
@@ -807,8 +832,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         <div style={{ position: 'relative' }}>
           <EditorContent 
             editor={editor} 
+            className="advanced-rte-content"
             style={{
-              minHeight: "400px",
+              minHeight: "6rem", // Start at 4 lines (6rem = ~4 lines at 1.5 line-height)
+              maxHeight: "15rem", // Max at 10 lines (15rem = ~10 lines at 1.5 line-height)
+              overflowY: "auto", // Add scroll when content exceeds max height
               padding: "16px 20px",
               paddingLeft: "70px", // Extra padding for drag handle
               border: "none",
@@ -1973,6 +2001,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         />
       )}
     </div>
+    </>
   );
 };
 
