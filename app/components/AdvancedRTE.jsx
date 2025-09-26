@@ -149,7 +149,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     editorProps: {
       attributes: {
         class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none p-4',
-        style: 'min-height: 6rem; max-height: 15rem; overflow-y: auto; width: 100%; outline: none; cursor: text; line-height: 1.5;',
+        style: 'min-height: 8rem; max-height: 20rem; overflow-y: auto; width: 100%; outline: none; cursor: text; line-height: 1.5; padding-left: 1rem;',
       },
       handleClick: (view, pos, event) => {
         // Ensure the entire editor area is clickable and focuses properly
@@ -315,23 +315,48 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       <style>
         {`
           .advanced-rte-content {
-            min-height: 6rem !important;
-            max-height: 15rem !important;
+            min-height: 8rem !important;
+            max-height: 25rem !important;
             overflow-y: auto !important;
+            padding-left: 24px !important;
+            font-size: 16px !important;
+            line-height: 1.6 !important;
+          }
+          
+          .advanced-rte-content .ProseMirror {
+            min-height: 8rem !important;
+            max-height: 25rem !important;
+            overflow-y: auto !important;
+            padding-left: 0 !important;
+            font-size: 16px !important;
+            line-height: 1.6 !important;
           }
           
           @media (max-width: 768px) {
             .advanced-rte-content {
+              min-height: 8rem !important;
+              max-height: 25rem !important;
               padding-left: 20px !important;
-              min-height: 6rem !important;
-              max-height: 15rem !important;
+            }
+            
+            .advanced-rte-content .ProseMirror {
+              min-height: 8rem !important;
+              max-height: 25rem !important;
+              padding-left: 0 !important;
             }
           }
           
           @media (min-width: 769px) {
             .advanced-rte-content {
-              padding-left: 70px !important;
-              max-height: 20rem !important;
+              min-height: 8rem !important;
+              max-height: 25rem !important;
+              padding-left: 24px !important;
+            }
+            
+            .advanced-rte-content .ProseMirror {
+              min-height: 8rem !important;
+              max-height: 25rem !important;
+              padding-left: 0 !important;
             }
           }
         `}
@@ -834,15 +859,15 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             editor={editor} 
             className="advanced-rte-content"
             style={{
-              minHeight: "6rem", // Start at 4 lines (6rem = ~4 lines at 1.5 line-height)
-              maxHeight: "15rem", // Max at 10 lines (15rem = ~10 lines at 1.5 line-height)
+              minHeight: "8rem", // Start at 5-6 lines (8rem = ~5-6 lines at 1.5 line-height)
+              maxHeight: "25rem", // Max at 15+ lines (25rem = ~15+ lines at 1.5 line-height)
               overflowY: "auto", // Add scroll when content exceeds max height
-              padding: "16px 20px",
-              paddingLeft: "70px", // Extra padding for drag handle
+              padding: "20px 24px",
+              paddingLeft: "24px", // Reduced left padding to move text closer to edge
               border: "none",
               outline: "none",
-              fontSize: "14px",
-              lineHeight: "1.5",
+              fontSize: "16px", // Slightly larger font
+              lineHeight: "1.6", // Better line height
               color: "#212529",
               cursor: "text",
               width: "100%"
