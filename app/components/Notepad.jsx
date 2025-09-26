@@ -362,7 +362,7 @@ export default function Notepad() {
         </div>
 
         <div className="addFolder">
-          <Button fullWidth onClick={addFolder}>+ Add new folder</Button>
+          <Button fullWidth onClick={addFolder}>Add new folder</Button>
         </div>
       </aside>
     ),
