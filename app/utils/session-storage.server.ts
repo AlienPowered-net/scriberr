@@ -34,6 +34,10 @@ export class RobustPrismaSessionStorage extends PrismaSessionStorage {
     return super.findSessionsByShop(shop);
   }
 
+  async ensureReady(): Promise<void> {
+    await this.ensureTableExists();
+  }
+
   private async ensureTableExists(): Promise<void> {
     if (this.isTableReady) {
       return;
@@ -102,7 +106,8 @@ export class RobustPrismaSessionStorage extends PrismaSessionStorage {
           // The app might still work if the table gets created later
           console.log("Continuing without session table - will retry on next request");
           this.isTableReady = false;
-          throw new Error(`Session table creation failed: ${createError.message}`);
+          // Don't throw error here, let the app continue and retry later
+          return;
         }
       }
     }
