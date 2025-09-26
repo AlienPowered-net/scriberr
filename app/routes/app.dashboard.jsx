@@ -34,7 +34,6 @@ import {
   CollectionFilledIcon,
   ExchangeIcon,
   FolderIcon,
-  PlusIcon,
   ProductFilledIcon
 } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -3187,7 +3186,6 @@ export default function Index() {
                 size="large"
                 fullWidth
               >
-                <PlusIcon style={{ width: '16px', height: '16px', marginRight: '8px' }} />
                 New Folder
               </Button>
             </div>
@@ -3286,7 +3284,6 @@ export default function Index() {
                   onClick={handleNewNote}
                   variant="primary"
                   tone="warning"
-                  icon={<PlusIcon style={{ width: '16px', height: '16px' }} />}
                   fullWidth
                 >
                   New Note
