@@ -370,7 +370,7 @@ export default function Notepad() {
       <main className="pane notes" key={COLUMNS.NOTES}>
         <div className="notesHeader">
           <Text as="h2" variant="headingLg">My Notes</Text>
-          <Button onClick={handleNewNote}>+ Add new note</Button>
+          <Button onClick={handleNewNote}>Add new note</Button>
         </div>
 
         <div className="notesList">
