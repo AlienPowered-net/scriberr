@@ -1681,6 +1681,25 @@ export default function Index() {
     }
   }, [openNoteMenu]);
 
+  // Position folder selector activator in notes column
+  useEffect(() => {
+    if (showFolderSelector && !isMobile) {
+      const activator = document.getElementById('folder-selector-activator');
+      const notesColumn = document.querySelector('[data-notes-column]');
+      
+      if (activator && notesColumn) {
+        const notesRect = notesColumn.getBoundingClientRect();
+        const notesCenterX = notesRect.left + (notesRect.width / 2);
+        const notesCenterY = notesRect.top + (notesRect.height / 2);
+        
+        activator.style.position = 'fixed';
+        activator.style.left = `${notesCenterX}px`;
+        activator.style.top = `${notesCenterY}px`;
+        activator.style.transform = 'translate(-50%, -50%)';
+      }
+    }
+  }, [showFolderSelector, isMobile]);
+
   // Portal-based dropdown component
   const PortalDropdown = ({ isOpen, position, onClose, note }) => {
     if (!isOpen || !note) return null;
@@ -3276,13 +3295,15 @@ export default function Index() {
             </div>
 
             {/* Scrollable Notes Section */}
-            <div style={{ 
-              flex: "1",
-              overflowY: filteredNotes.length > 1 ? "auto" : "visible",
-              overflowX: "hidden",
-              padding: "16px 20px 16px 16px",
-              maxHeight: filteredNotes.length > 1 ? "calc(100vh - 200px)" : "none"
-            }}>
+            <div 
+              data-notes-column
+              style={{ 
+                flex: "1",
+                overflowY: filteredNotes.length > 1 ? "auto" : "visible",
+                overflowX: "hidden",
+                padding: "16px 20px 16px 16px",
+                maxHeight: filteredNotes.length > 1 ? "calc(100vh - 200px)" : "none"
+              }}>
               
               {/* Multi-select action buttons */}
               {selectedNotes.length > 0 && (
@@ -4461,7 +4482,20 @@ export default function Index() {
         <Popover
           active={showFolderSelector}
           activator={
-            <div style={{ display: 'none' }} />
+            <div 
+              id="folder-selector-activator"
+              style={{ 
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '1px',
+                height: '1px',
+                opacity: 0,
+                pointerEvents: 'none',
+                zIndex: -1
+              }} 
+            />
           }
           onClose={() => {
             setShowFolderSelector(false);
