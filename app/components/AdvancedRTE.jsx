@@ -149,7 +149,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     editorProps: {
       attributes: {
         class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none p-4',
-        style: 'min-height: 8rem; max-height: 25rem; overflow-y: auto; width: 100%; outline: none; cursor: text; line-height: 1.6; padding-left: 1rem; font-size: 16px;',
+        style: 'min-height: 8rem; max-height: 25rem; overflow: visible; width: 100%; outline: none; cursor: text; line-height: 1.6; padding-left: 1rem; font-size: 16px;',
       },
       handleClick: (view, pos, event) => {
         // Ensure the entire editor area is clickable and focuses properly
@@ -337,18 +337,30 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             overflow: hidden !important;
           }
           
+          /* Ensure only one scroll bar - remove scroll from outer container */
+          .advanced-rte-content {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+          }
+          
+          .advanced-rte-content .ProseMirror {
+            overflow: visible !important; /* Remove scroll from inner ProseMirror */
+          }
+          
           /* Make toolbar sticky on mobile */
           @media (max-width: 768px) {
             .advanced-rte-content {
               min-height: 8rem !important; /* 5 lines minimum (16px font * 1.6 line-height * 5 lines = 8rem) */
               max-height: 16rem !important; /* 10 lines maximum (16px font * 1.6 line-height * 10 lines = 16rem) */
               padding-left: 20px !important;
+              overflow-y: auto !important; /* Enable scrolling when content exceeds 10 lines */
             }
             
             .advanced-rte-content .ProseMirror {
               min-height: 8rem !important; /* 5 lines minimum */
               max-height: 16rem !important; /* 10 lines maximum */
               padding-left: 0 !important;
+              overflow-y: auto !important; /* Enable scrolling when content exceeds 10 lines */
             }
             
             /* Make toolbar sticky */
@@ -365,12 +377,14 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               min-height: 8rem !important;
               max-height: 25rem !important;
               padding-left: 24px !important;
+              overflow-y: auto !important; /* Enable scrolling when content exceeds max height */
             }
             
             .advanced-rte-content .ProseMirror {
               min-height: 8rem !important;
               max-height: 25rem !important;
               padding-left: 0 !important;
+              overflow: visible !important; /* Remove scroll from inner ProseMirror */
             }
           }
         `}
@@ -851,7 +865,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
 
       {/* Editor Content */}
       <div 
-        className={`${isExpanded ? 'h-full overflow-auto' : 'min-h-[400px]'}`}
+        className={`${isExpanded ? 'h-full overflow-hidden' : 'min-h-[400px]'}`}
         style={{
           position: "relative",
           backgroundColor: "#ffffff",
@@ -860,7 +874,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           padding: "0",
           border: "1px solid #dee2e6",
           borderTop: "none",
-          cursor: "text"
+          cursor: "text",
+          overflow: "hidden" // Prevent outer container from scrolling
         }}
         onClick={() => {
           if (editor) {
@@ -876,6 +891,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               minHeight: "8rem", // Default minimum height (5 lines)
               maxHeight: "25rem", // Max at 15+ lines on desktop
               overflowY: "auto", // Add scroll when content exceeds max height
+              overflowX: "hidden", // Prevent horizontal scroll
               padding: "20px 24px",
               paddingLeft: "24px", // Reduced left padding to move text closer to edge
               border: "none",
