@@ -149,7 +149,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     editorProps: {
       attributes: {
         class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none p-4',
-        style: 'min-height: 8rem; max-height: 20rem; overflow-y: auto; width: 100%; outline: none; cursor: text; line-height: 1.5; padding-left: 1rem;',
+        style: 'min-height: 8rem; max-height: 25rem; overflow-y: auto; width: 100%; outline: none; cursor: text; line-height: 1.6; padding-left: 1rem;',
       },
       handleClick: (view, pos, event) => {
         // Ensure the entire editor area is clickable and focuses properly
@@ -332,17 +332,31 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             line-height: 1.6 !important;
           }
           
+          /* Fix double scroll bars */
+          .advanced-rte-container {
+            overflow: hidden !important;
+          }
+          
+          /* Make toolbar sticky on mobile */
           @media (max-width: 768px) {
             .advanced-rte-content {
-              min-height: 8rem !important;
+              min-height: 10rem !important; /* 5 lines minimum */
               max-height: 25rem !important;
               padding-left: 20px !important;
             }
             
             .advanced-rte-content .ProseMirror {
-              min-height: 8rem !important;
+              min-height: 10rem !important; /* 5 lines minimum */
               max-height: 25rem !important;
               padding-left: 0 !important;
+            }
+            
+            /* Make toolbar sticky */
+            .advanced-rte-toolbar {
+              position: sticky !important;
+              top: 0 !important;
+              z-index: 10 !important;
+              background: #f8f9fa !important;
             }
           }
           
@@ -362,7 +376,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         `}
       </style>
       <div 
-        className={`relative border rounded-lg bg-white transition-all duration-300 ${
+        className={`advanced-rte-container relative border rounded-lg bg-white transition-all duration-300 ${
           isExpanded ? 'fixed inset-4 z-50 shadow-2xl' : 'w-full'
         }`}
         style={{
@@ -382,7 +396,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
       ref={editorRef}
     >
       {/* Toolbar */}
-      <div style={{ 
+      <div className="advanced-rte-toolbar" style={{ 
         borderBottom: "1px solid #e1e5e9", 
         padding: "8px 12px", 
         backgroundColor: "#f8f9fa", 
@@ -859,7 +873,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             editor={editor} 
             className="advanced-rte-content"
             style={{
-              minHeight: "8rem", // Start at 5-6 lines (8rem = ~5-6 lines at 1.5 line-height)
+              minHeight: "8rem", // Default minimum height
               maxHeight: "25rem", // Max at 15+ lines (25rem = ~15+ lines at 1.5 line-height)
               overflowY: "auto", // Add scroll when content exceeds max height
               padding: "20px 24px",
