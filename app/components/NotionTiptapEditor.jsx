@@ -394,8 +394,14 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         const data = await response.json();
         editor?.chain().focus().insertContent(data.content).run();
       } else {
-        // Fallback for when API is not yet implemented
-        editor?.chain().focus().insertContent(`[AI Generated Content for: "${aiPrompt}"]`).run();
+        const errorData = await response.json();
+        if (errorData.quotaExceeded) {
+          // Handle quota exceeded error
+          editor?.chain().focus().insertContent(`<p style="color: #dc2626; font-style: italic;">⚠️ AI service quota exceeded. The functionality is working correctly but requires quota to be available. Please try again later.</p>`).run();
+        } else {
+          // Fallback for other errors
+          editor?.chain().focus().insertContent(`[AI Generated Content for: "${aiPrompt}"]`).run();
+        }
       }
     } catch (error) {
       console.error('AI generation error:', error);
