@@ -4659,19 +4659,76 @@ export default function Index() {
             alignItems: 'center',
             justifyContent: 'space-between'
           }}>
-            <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
-              {mobileActiveSection === 'folders' && 'Folders'}
-              {mobileActiveSection === 'notes' && 'Notes'}
-            </h1>
-            {mobileActiveSection !== 'notes' && (
-              <Button
-                variant="primary"
-                size="slim"
-                onClick={() => setMobileActiveSection('notes')}
-              >
-                Notes
-              </Button>
-            )}
+            {/* Left Navigation */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {mobileActiveSection === 'notes' && !editingNoteId && (
+                <Button
+                  variant="secondary"
+                  size="slim"
+                  onClick={() => setMobileActiveSection('folders')}
+                  style={{ fontSize: '14px', fontWeight: '500' }}
+                >
+                  Folders
+                </Button>
+              )}
+              {editingNoteId && (
+                <>
+                  <Button
+                    variant="secondary"
+                    size="slim"
+                    onClick={() => setMobileActiveSection('folders')}
+                    style={{ fontSize: '14px', fontWeight: '500' }}
+                  >
+                    Folders
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="slim"
+                    onClick={() => setMobileActiveSection('notes')}
+                    style={{ fontSize: '14px', fontWeight: '500' }}
+                  >
+                    Back to notes
+                  </Button>
+                </>
+              )}
+              {mobileActiveSection === 'folders' && (
+                <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
+                  Folders
+                </h1>
+              )}
+              {mobileActiveSection === 'notes' && !editingNoteId && (
+                <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
+                  Notes
+                </h1>
+              )}
+              {editingNoteId && (
+                <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
+                  Note Editor
+                </h1>
+              )}
+            </div>
+            
+            {/* Right Navigation */}
+            <div>
+              {mobileActiveSection === 'notes' && !editingNoteId && (
+                <Button
+                  variant="primary"
+                  size="slim"
+                  onClick={() => {
+                    if (!selectedFolder) {
+                      setAlertMessage('Please select a folder first to create a new note');
+                      setAlertType('error');
+                      setTimeout(() => setAlertMessage(''), 4000);
+                      return;
+                    }
+                    handleNewNote();
+                  }}
+                  style={{ fontSize: '14px', fontWeight: '500' }}
+                >
+                  Create Note
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Mobile Sections */}
@@ -4680,7 +4737,6 @@ export default function Index() {
             flex: 1,
             overflowY: 'auto',
             padding: '16px',
-            paddingBottom: '80px',
             WebkitOverflowScrolling: 'touch'
           }}>
             {/* Folders Section Content */}
@@ -5140,7 +5196,6 @@ export default function Index() {
             flex: 1,
             overflowY: 'auto',
             padding: '16px',
-            paddingBottom: '80px',
             WebkitOverflowScrolling: 'touch'
           }}>
             {/* Notes Section Content */}
@@ -5585,7 +5640,6 @@ export default function Index() {
             flex: 1,
             overflowY: 'auto',
             padding: '16px',
-            paddingBottom: '100px',
             WebkitOverflowScrolling: 'touch',
             position: 'relative',
             zIndex: 1
@@ -5796,61 +5850,6 @@ export default function Index() {
             </div>
           </div>
 
-          {/* Mobile Bottom Navigation */}
-          <div style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: 'white',
-            borderTop: '1px solid #e1e3e5',
-            display: 'flex',
-            zIndex: 1000,
-            isolation: 'isolate',
-            justifyContent: 'center',
-            gap: '60px',
-            padding: '8px 0',
-            boxShadow: '0 -1px 6px rgba(0,0,0,0.08)'
-          }}>
-            <div 
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '2px',
-                padding: '6px 8px',
-                cursor: 'pointer',
-                borderRadius: '6px',
-                minWidth: '50px',
-                backgroundColor: mobileActiveSection === 'folders' ? '#f6fff8' : 'transparent',
-                color: mobileActiveSection === 'folders' ? '#008060' : '#6d7175'
-              }}
-              onClick={() => setMobileActiveSection('folders')}
-            >
-              <i className="far fa-folder-open" style={{ fontSize: '16px' }}></i>
-              <span style={{ fontSize: '10px', fontWeight: '500', textAlign: 'center' }}>Folders</span>
-            </div>
-            
-            <div 
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '2px',
-                padding: '6px 8px',
-                cursor: 'pointer',
-                borderRadius: '6px',
-                minWidth: '50px',
-                backgroundColor: mobileActiveSection === 'notes' ? '#f6fff8' : 'transparent',
-                color: mobileActiveSection === 'notes' ? '#008060' : '#6d7175'
-              }}
-              onClick={() => setMobileActiveSection('notes')}
-            >
-              <i className="far fa-note-sticky" style={{ fontSize: '16px' }}></i>
-              <span style={{ fontSize: '10px', fontWeight: '500' }}>Notes</span>
-            </div>
-            
-          </div>
 
           {/* Mobile Modals - rendered inside mobile layout */}
           {isMobile && (
