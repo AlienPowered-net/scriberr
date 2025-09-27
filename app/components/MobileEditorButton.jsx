@@ -14,12 +14,13 @@ const MobileEditorButton = ({
   const [showEditorModal, setShowEditorModal] = useState(false);
 
   const openEditor = (e) => {
-    console.log('Opening editor modal...');
+    console.log('Opening editor modal...', { showEditorModal });
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
     setShowEditorModal(true);
+    console.log('Modal state set to true');
   };
 
   const closeEditor = () => {
@@ -95,7 +96,6 @@ const MobileEditorButton = ({
           backgroundColor: '#ffffff',
           margin: '0'
         }}
-        onClick={(e) => openEditor(e)}
       >
           {/* Header with title and save status */}
           <div style={{
@@ -139,8 +139,10 @@ const MobileEditorButton = ({
               variant={hasContent ? "primary" : "secondary"}
               onClick={(e) => {
                 console.log('Button clicked!');
+                e.preventDefault();
                 e.stopPropagation();
-                openEditor(e);
+                alert('Button clicked! Opening editor...');
+                openEditor();
               }}
               style={{
                 width: '100%',
@@ -168,6 +170,7 @@ const MobileEditorButton = ({
         </div>
 
       {/* Fullscreen Editor Modal */}
+      {console.log('Rendering modal with showEditorModal:', showEditorModal)}
       <Modal
         open={showEditorModal}
         onClose={closeEditor}
@@ -177,6 +180,7 @@ const MobileEditorButton = ({
           content: 'Done',
           onAction: closeEditor,
         }}
+        style={{ zIndex: 10000 }}
       >
         <Modal.Section>
           <div style={{
