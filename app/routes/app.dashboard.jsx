@@ -4710,6 +4710,16 @@ export default function Index() {
             
             {/* Right Navigation */}
             <div>
+              {mobileActiveSection === 'folders' && (
+                <Button
+                  variant="primary"
+                  size="slim"
+                  onClick={() => setMobileActiveSection('notes')}
+                  style={{ fontSize: '14px', fontWeight: '500' }}
+                >
+                  View notes
+                </Button>
+              )}
               {mobileActiveSection === 'notes' && !editingNoteId && (
                 <Button
                   variant="primary"
