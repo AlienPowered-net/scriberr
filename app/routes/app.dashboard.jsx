@@ -3715,6 +3715,9 @@ export default function Index() {
                       onChange={setBody}
                       placeholder="Type your note here..."
                       isMobile={isMobile}
+                      hasUnsavedChanges={hasUnsavedChanges}
+                      lastSavedTime={autoSaveNotification ? null : (editingNoteId ? 'Recently' : null)}
+                      autoSaveTime={autoSaveNotification}
                     />
                   ) : (
                     <AdvancedRTE
@@ -5730,6 +5733,9 @@ export default function Index() {
                       onChange={setBody}
                       placeholder="Type your note here..."
                       isMobile={isMobile}
+                      hasUnsavedChanges={hasUnsavedChanges}
+                      lastSavedTime={autoSaveNotification ? null : (editingNoteId ? 'Recently' : null)}
+                      autoSaveTime={autoSaveNotification}
                     />
                   ) : (
                     <AdvancedRTE

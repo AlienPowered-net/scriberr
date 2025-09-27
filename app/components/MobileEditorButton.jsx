@@ -6,7 +6,10 @@ const MobileEditorButton = ({
   value = '', 
   onChange, 
   placeholder = "Type your note here...",
-  isMobile = false 
+  isMobile = false,
+  hasUnsavedChanges = false,
+  lastSavedTime = null,
+  autoSaveTime = null
 }) => {
   const [showEditorModal, setShowEditorModal] = useState(false);
 
@@ -42,9 +45,38 @@ const MobileEditorButton = ({
     return now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
   };
 
+  // Get save status text and color
+  const getSaveStatus = () => {
+    if (hasUnsavedChanges) {
+      return {
+        text: "You have unsaved changes",
+        color: "#d82c0d" // Red
+      };
+    }
+    
+    if (autoSaveTime) {
+      return {
+        text: `Auto Saved at ${autoSaveTime}`,
+        color: "#008060" // Green
+      };
+    }
+    
+    if (lastSavedTime) {
+      return {
+        text: `Saved on ${lastSavedTime}`,
+        color: "#008060" // Green
+      };
+    }
+    
+    return {
+      text: getCurrentDateTime(),
+      color: "#6d7175" // Default gray
+    };
+  };
+
   const previewText = getPreviewText();
   const hasContent = value && value.trim().length > 0;
-  const currentDateTime = getCurrentDateTime();
+  const saveStatus = getSaveStatus();
 
   return (
     <>
@@ -65,30 +97,18 @@ const MobileEditorButton = ({
         }}
         onClick={(e) => openEditor(e)}
       >
-          {/* Header with icon and date */}
+          {/* Header with title and save status */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '16px'
           }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              <div style={{
-                fontSize: '24px',
-                color: hasContent ? '#007bff' : '#6c757d'
-              }}>
-                {hasContent ? '📄' : '📝'}
-              </div>
-              <Text variant="headingMd" fontWeight="semibold">
-                {hasContent ? 'Note Content' : 'New Note'}
-              </Text>
-            </div>
-            <Text variant="bodySm" color="subdued">
-              {currentDateTime}
+            <Text variant="headingMd" fontWeight="semibold">
+              {hasContent ? 'Note Content' : 'New Note'}
+            </Text>
+            <Text variant="bodySm" style={{ color: saveStatus.color, fontWeight: '500' }}>
+              {saveStatus.text}
             </Text>
           </div>
 
@@ -108,7 +128,7 @@ const MobileEditorButton = ({
             </Text>
           </div>
 
-          {/* Edit Button */}
+          {/* Open Editor Button */}
           <div style={{
             display: 'flex',
             justifyContent: 'center',
@@ -123,13 +143,13 @@ const MobileEditorButton = ({
                 openEditor(e);
               }}
               style={{
-                minWidth: '200px',
+                width: '100%',
                 height: '48px',
                 fontSize: '16px',
                 fontWeight: '600'
               }}
             >
-              {hasContent ? 'Edit Note' : 'Start Writing'}
+              {hasContent ? 'Open Editor' : 'Start Writing'}
             </Button>
           </div>
 
