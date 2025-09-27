@@ -141,7 +141,6 @@ const MobileEditorButton = ({
                 console.log('Button clicked!');
                 e.preventDefault();
                 e.stopPropagation();
-                alert('Button clicked! Opening editor...');
                 openEditor();
               }}
               style={{
@@ -169,46 +168,70 @@ const MobileEditorButton = ({
           }} />
         </div>
 
-      {/* Fullscreen Editor Modal */}
+      {/* Custom Fullscreen Editor Modal */}
       {console.log('Rendering modal with showEditorModal:', showEditorModal)}
-      <Modal
-        open={showEditorModal}
-        onClose={closeEditor}
-        title="Note Editor"
-        size="fullScreen"
-        primaryAction={{
-          content: 'Done',
-          onAction: closeEditor,
-        }}
-        style={{ zIndex: 10000 }}
-      >
-        <Modal.Section>
-          <div style={{
-            height: 'calc(100vh - 140px)',
-            width: '100%',
+      {showEditorModal && (
+        <div 
+          className="mobile-fullscreen-modal"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 10000,
             display: 'flex',
-            flexDirection: 'column',
-            padding: '0',
-            backgroundColor: '#ffffff'
+            flexDirection: 'column'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              closeEditor();
+            }
+          }}
+        >
+          {/* Modal Header */}
+          <div style={{
+            backgroundColor: '#ffffff',
+            padding: '16px',
+            borderBottom: '1px solid #e1e3e5',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
           }}>
-            <div style={{
-              height: '100%',
-              width: '100%',
-              border: 'none',
-              borderRadius: '0px',
-              overflow: 'hidden',
-              backgroundColor: '#ffffff'
-            }}>
-              <AdvancedRTE
-                value={value}
-                onChange={onChange}
-                placeholder={placeholder}
-                isMobile={true}
-              />
-            </div>
+            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Note Editor</h2>
+            <button
+              onClick={closeEditor}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#008060',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer'
+              }}
+            >
+              Done
+            </button>
           </div>
-        </Modal.Section>
-      </Modal>
+          
+          {/* Modal Content */}
+          <div style={{
+            flex: 1,
+            backgroundColor: '#ffffff',
+            overflow: 'hidden'
+          }}>
+            <AdvancedRTE
+              value={value}
+              onChange={onChange}
+              placeholder={placeholder}
+              isMobileProp={true}
+            />
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         @media (max-width: 768px) {
@@ -220,6 +243,16 @@ const MobileEditorButton = ({
             margin: 0 !important;
             padding: 20px !important;
             box-sizing: border-box;
+          }
+          
+          /* Ensure modal appears on top */
+          .mobile-fullscreen-modal {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            z-index: 10000 !important;
           }
           
           .mobile-note-card:hover {
