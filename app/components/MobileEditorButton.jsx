@@ -9,7 +9,8 @@ const MobileEditorButton = ({
   isMobile = false,
   hasUnsavedChanges = false,
   lastSavedTime = null,
-  autoSaveTime = null
+  autoSaveTime = null,
+  editingNoteId = null
 }) => {
   const [showEditorModal, setShowEditorModal] = useState(false);
 
@@ -46,32 +47,56 @@ const MobileEditorButton = ({
     return now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
   };
 
-  // Get save status text and color
+  // Get save status pill info
   const getSaveStatus = () => {
+    // 1. Blue - "New note" - When you make a new note, before you type anything into it
+    if (!hasContent && !editingNoteId) {
+      return {
+        text: "New note",
+        color: "#007bff", // Blue
+        backgroundColor: "#e3f2fd",
+        borderColor: "#007bff"
+      };
+    }
+    
+    // 2. Red - "Unsaved changes" - When you make changes and haven't saved yet
     if (hasUnsavedChanges) {
       return {
-        text: "You have unsaved changes",
-        color: "#d82c0d" // Red
+        text: "Unsaved changes",
+        color: "#d82c0d", // Red
+        backgroundColor: "#fef2f2",
+        borderColor: "#d82c0d"
       };
     }
     
+    // 3. Green - "Auto saved" - When auto save occurs
     if (autoSaveTime) {
       return {
-        text: `Auto Saved at ${autoSaveTime}`,
-        color: "#008060" // Green
+        text: "Auto saved",
+        color: "#008060", // Green
+        backgroundColor: "#f0f9f4",
+        borderColor: "#008060",
+        timeText: `Auto saved at: ${autoSaveTime}`
       };
     }
     
-    if (lastSavedTime) {
+    // 4. Green - "Saved changes" - When manually saved or existing note
+    if (lastSavedTime || editingNoteId) {
       return {
-        text: `Saved on ${lastSavedTime}`,
-        color: "#008060" // Green
+        text: "Saved changes",
+        color: "#008060", // Green
+        backgroundColor: "#f0f9f4",
+        borderColor: "#008060",
+        timeText: lastSavedTime ? `Last saved on: ${lastSavedTime}` : "Last saved on: Recently"
       };
     }
     
+    // Fallback
     return {
-      text: getCurrentDateTime(),
-      color: "#6d7175" // Default gray
+      text: "New note",
+      color: "#007bff",
+      backgroundColor: "#e3f2fd",
+      borderColor: "#007bff"
     };
   };
 
@@ -97,19 +122,47 @@ const MobileEditorButton = ({
           margin: '0'
         }}
       >
-          {/* Header with title and save status */}
+          {/* Header with title and save status pill */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             marginBottom: '16px'
           }}>
             <Text variant="headingMd" fontWeight="semibold">
               {hasContent ? 'Note Content' : 'New Note'}
             </Text>
-            <Text variant="bodySm" style={{ color: saveStatus.color, fontWeight: '500' }}>
-              {saveStatus.text}
-            </Text>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+              gap: '4px'
+            }}>
+              {/* Status Pill */}
+              <div style={{
+                padding: '4px 12px',
+                borderRadius: '16px',
+                backgroundColor: saveStatus.backgroundColor,
+                border: `1px solid ${saveStatus.borderColor}`,
+                color: saveStatus.color,
+                fontSize: '12px',
+                fontWeight: '600',
+                textAlign: 'center',
+                whiteSpace: 'nowrap'
+              }}>
+                {saveStatus.text}
+              </div>
+              {/* Time Text (if available) */}
+              {saveStatus.timeText && (
+                <Text variant="bodySm" style={{ 
+                  color: '#6d7175', 
+                  fontSize: '10px',
+                  textAlign: 'right'
+                }}>
+                  {saveStatus.timeText}
+                </Text>
+              )}
+            </div>
           </div>
 
           {/* Preview Content */}
@@ -154,18 +207,6 @@ const MobileEditorButton = ({
             </Button>
           </div>
 
-          {/* Status indicator */}
-          <div style={{
-            position: 'absolute',
-            top: '12px',
-            right: '12px',
-            width: '12px',
-            height: '12px',
-            borderRadius: '50%',
-            backgroundColor: hasContent ? '#28a745' : '#ffc107',
-            border: '2px solid #ffffff',
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-          }} />
         </div>
 
       {/* Custom Fullscreen Editor Modal */}

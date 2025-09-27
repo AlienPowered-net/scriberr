@@ -3718,6 +3718,7 @@ export default function Index() {
                       hasUnsavedChanges={hasUnsavedChanges}
                       lastSavedTime={autoSaveNotification ? null : (editingNoteId ? 'Recently' : null)}
                       autoSaveTime={autoSaveNotification}
+                      editingNoteId={editingNoteId}
                     />
                   ) : (
                     <AdvancedRTE
@@ -5736,6 +5737,7 @@ export default function Index() {
                       hasUnsavedChanges={hasUnsavedChanges}
                       lastSavedTime={autoSaveNotification ? null : (editingNoteId ? 'Recently' : null)}
                       autoSaveTime={autoSaveNotification}
+                      editingNoteId={editingNoteId}
                     />
                   ) : (
                     <AdvancedRTE
