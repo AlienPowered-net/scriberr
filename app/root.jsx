@@ -9,7 +9,6 @@ import "@mantine/core/styles.css"; // Mantine styles
 // ✅ Import your local CSS and pass its URL to <Links/>
 import notepadCssUrl from "./styles/notepad.css?url";
 import tiptapCssUrl from "./styles/tiptap.css?url";
-import tinymceCssUrl from "./styles/tinymce.css?url";
 import fontAwesomeCssUrl from "@fortawesome/fontawesome-free/css/all.min.css?url";
 import mantineOverridesCssUrl from "./styles/mantine-overrides.css?url";
 
@@ -17,7 +16,6 @@ export const links = () => [
   { rel: "icon", href: "/favicon.png", type: "image/png" },
   { rel: "stylesheet", href: notepadCssUrl },
   { rel: "stylesheet", href: tiptapCssUrl },
-  { rel: "stylesheet", href: tinymceCssUrl },
   { rel: "stylesheet", href: fontAwesomeCssUrl },
   { rel: "stylesheet", href: mantineOverridesCssUrl },
 ];

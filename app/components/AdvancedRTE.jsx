@@ -360,14 +360,14 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             }
             
             .advanced-rte-content {
-              min-height: 300px !important; /* 10+ lines on mobile */
-              max-height: 500px !important; /* 15+ lines on mobile */
+              min-height: 400px !important; /* 15+ lines on mobile */
+              max-height: 600px !important; /* 20+ lines on mobile */
               overflow-y: auto !important;
               -webkit-overflow-scrolling: touch !important;
             }
             
             .advanced-rte-content .ProseMirror {
-              min-height: 280px !important; /* Ensure content area is visible */
+              min-height: 380px !important; /* Ensure content area is visible */
               padding: 16px !important;
               font-size: 18px !important;
               line-height: 1.6 !important;
@@ -434,8 +434,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           borderRadius: '12px'
         }),
         ...(isMobile && !isExpanded && {
-          minHeight: '400px', // Ensure minimum height on mobile
-          maxHeight: '600px' // Prevent excessive height on mobile
+          minHeight: '500px', // Ensure minimum height on mobile
+          maxHeight: '700px' // Prevent excessive height on mobile
         })
       }}
       ref={editorRef}
@@ -896,7 +896,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
 
       {/* Editor Content */}
       <div 
-        className={`${isExpanded ? 'h-full overflow-hidden' : isMobile ? 'min-h-[400px] max-h-[600px]' : 'min-h-[400px]'}`}
+        className={`${isExpanded ? 'h-full overflow-hidden' : isMobile ? 'min-h-[500px] max-h-[700px]' : 'min-h-[400px]'}`}
         style={{
           position: "relative",
           backgroundColor: "#ffffff",
@@ -908,8 +908,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           cursor: "text",
           overflow: "hidden", // Prevent outer container from scrolling
           ...(isMobile && {
-            minHeight: "400px",
-            maxHeight: "600px",
+            minHeight: "500px",
+            maxHeight: "700px",
             display: "flex",
             flexDirection: "column"
           })
@@ -925,8 +925,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             editor={editor} 
             className="advanced-rte-content"
             style={isMobile ? {
-              minHeight: "300px", // 10+ lines on mobile (300px = ~10 lines at 18px font)
-              maxHeight: "500px", // 15+ lines on mobile (500px = ~15 lines at 18px font)
+              minHeight: "400px", // 15+ lines on mobile (400px = ~15 lines at 18px font)
+              maxHeight: "600px", // 20+ lines on mobile (600px = ~20 lines at 18px font)
               overflowY: "auto", // Add scroll when content exceeds max height
               overflowX: "hidden", // Prevent horizontal scroll
               padding: "16px",
