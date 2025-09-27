@@ -380,6 +380,39 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               -webkit-overflow-scrolling: touch !important;
               transform: translateZ(0) !important; /* Force hardware acceleration */
             }
+            
+            .advanced-rte-content .ProseMirror {
+              -webkit-overflow-scrolling: touch !important;
+              transform: translateZ(0) !important;
+            }
+          }
+          
+          /* Additional mobile fixes for better touch interaction */
+          @media (max-width: 768px) {
+            .advanced-rte-container {
+              touch-action: manipulation !important;
+              -webkit-touch-callout: none !important;
+              -webkit-user-select: none !important;
+              -moz-user-select: none !important;
+              -ms-user-select: none !important;
+              user-select: none !important;
+            }
+            
+            .advanced-rte-content {
+              touch-action: auto !important;
+              -webkit-user-select: text !important;
+              -moz-user-select: text !important;
+              -ms-user-select: text !important;
+              user-select: text !important;
+            }
+            
+            .advanced-rte-content .ProseMirror {
+              touch-action: auto !important;
+              -webkit-user-select: text !important;
+              -moz-user-select: text !important;
+              -ms-user-select: text !important;
+              user-select: text !important;
+            }
           }
         `}
       </style>

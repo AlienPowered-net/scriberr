@@ -506,38 +506,16 @@
   }
 }
 
-/* Additional mobile fixes for better visibility */
-@media (max-width: 768px) {
-  .notion-editor {
-    min-height: 300px !important; /* Ensure minimum height for 10+ lines */
-    max-height: 500px !important; /* Limit height for 15+ lines */
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    transform: translateZ(0) !important; /* Force hardware acceleration */
-  }
-  
-  /* Ensure the editor is always visible on mobile */
-  .notion-tiptap-container {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-  }
-  
-  /* Fix for mobile viewport issues */
-  .notion-editor-wrapper {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-  }
-}
-
-/* Mobile specific improvements */
+/* Mobile specific improvements - consolidated */
 @media (max-width: 768px) {
   .notion-tiptap-container {
     min-height: 400px !important; /* Ensure minimum height for visibility */
     max-height: 600px !important; /* Prevent excessive height */
     display: flex !important;
     flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
   
   .notion-editor {
@@ -559,6 +537,9 @@
     flex: 1 !important; /* Take available space */
     display: flex !important;
     flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
   
   .notion-toolbar {
@@ -588,6 +569,30 @@
   .notion-editor {
     -webkit-overflow-scrolling: touch !important;
     transform: translateZ(0) !important; /* Force hardware acceleration */
+  }
+}
+
+/* Additional mobile touch interaction fixes */
+@media (max-width: 768px) {
+  .notion-tiptap-container {
+    touch-action: manipulation !important;
+    -webkit-touch-callout: none !important;
+  }
+  
+  .notion-editor-wrapper {
+    touch-action: auto !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+  }
+  
+  .notion-editor {
+    touch-action: auto !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
   }
 }
 
