@@ -4671,7 +4671,7 @@ export default function Index() {
                   Folders
                 </Button>
               )}
-              {editingNoteId && (
+              {editingNoteId && mobileActiveSection === 'editor' && (
                 <>
                   <Button
                     variant="secondary"
