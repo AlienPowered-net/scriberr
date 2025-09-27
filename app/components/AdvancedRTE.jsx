@@ -350,17 +350,24 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           /* Make toolbar sticky on mobile */
           @media (max-width: 768px) {
             .advanced-rte-content {
-              min-height: 8rem !important; /* 5 lines minimum (16px font * 1.6 line-height * 5 lines = 8rem) */
-              max-height: 16rem !important; /* 10 lines maximum (16px font * 1.6 line-height * 10 lines = 16rem) */
-              padding-left: 20px !important;
+              min-height: 12rem !important; /* 5+ lines minimum (18px font * 1.6 line-height * 5 lines = 12rem) */
+              max-height: 24rem !important; /* 10+ lines maximum (18px font * 1.6 line-height * 10 lines = 24rem) */
+              padding-left: 16px !important;
+              padding-right: 16px !important;
+              padding-top: 16px !important;
+              padding-bottom: 16px !important;
               overflow-y: auto !important; /* Enable scrolling when content exceeds 10 lines */
+              font-size: 18px !important;
+              line-height: 1.6 !important;
             }
             
             .advanced-rte-content .ProseMirror {
-              min-height: 8rem !important; /* 5 lines minimum */
-              max-height: 16rem !important; /* 10 lines maximum */
+              min-height: 12rem !important; /* 5+ lines minimum */
+              max-height: 24rem !important; /* 10+ lines maximum */
               padding-left: 0 !important;
-              overflow-y: auto !important; /* Enable scrolling when content exceeds 10 lines */
+              overflow: visible !important; /* Remove scroll from inner ProseMirror to prevent double scrollbars */
+              font-size: 18px !important;
+              line-height: 1.6 !important;
             }
             
             /* Make toolbar sticky */
@@ -385,6 +392,28 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               max-height: 25rem !important;
               padding-left: 0 !important;
               overflow: visible !important; /* Remove scroll from inner ProseMirror */
+            }
+          }
+          
+          /* Additional mobile overrides to ensure styles take effect */
+          @media (max-width: 768px) {
+            /* Override any inline styles */
+            .advanced-rte-content[style] {
+              min-height: 12rem !important;
+              max-height: 24rem !important;
+              font-size: 18px !important;
+              line-height: 1.6 !important;
+              padding: 16px !important;
+              overflow-y: auto !important;
+            }
+            
+            /* Ensure ProseMirror respects mobile styles */
+            .advanced-rte-content .ProseMirror[style] {
+              min-height: 12rem !important;
+              max-height: 24rem !important;
+              overflow: visible !important;
+              font-size: 18px !important;
+              line-height: 1.6 !important;
             }
           }
         `}
