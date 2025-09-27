@@ -22,7 +22,7 @@ import TiptapDragHandle from './TiptapDragHandle';
 import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack } from '@shopify/polaris';
 
-const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
+const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobile = false }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -417,10 +417,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
         `}
       </style>
       <div 
-        className={`advanced-rte-container relative border rounded-lg bg-white transition-all duration-300 ${
+        className={`advanced-rte-container relative transition-all duration-300 ${
           isExpanded ? 'fixed inset-4 z-50 shadow-2xl' : 'w-full'
         }`}
         style={{
+        border: isMobile ? 'none' : '1px solid #e1e3e5',
+        borderRadius: isMobile ? '0px' : '8px',
+        backgroundColor: '#ffffff',
         ...(isExpanded && {
           position: 'fixed',
           top: '20px',
@@ -442,10 +445,10 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     >
       {/* Toolbar */}
       <div className="advanced-rte-toolbar" style={{ 
-        borderBottom: "1px solid #e1e5e9", 
+        borderBottom: isMobile ? "none" : "1px solid #e1e5e9", 
         padding: "8px 12px", 
         backgroundColor: "#f8f9fa", 
-        borderRadius: "8px 8px 0 0", 
+        borderRadius: isMobile ? "0px" : "8px 8px 0 0", 
         position: "relative"
       }}>
         {/* Fullscreen Button - Top Right */}

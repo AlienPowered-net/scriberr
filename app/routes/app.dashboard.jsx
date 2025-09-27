@@ -2431,6 +2431,19 @@ export default function Index() {
             .Polaris-Card {
               margin-bottom: 12px;
             }
+            
+            /* Desktop mobile view - match note card styling */
+            .col-editor .mobile-note-card {
+              width: 100% !important;
+              margin: 0 !important;
+              border-radius: 8px !important;
+            }
+            
+            /* Ensure editor container matches note card */
+            .col-editor {
+              padding: 16px !important;
+              box-sizing: border-box !important;
+            }
           }
 
           /* Desktop wide layout */
@@ -5524,18 +5537,21 @@ export default function Index() {
             flex: 1,
             overflowY: 'auto',
             padding: '16px',
-            paddingBottom: '80px',
-            WebkitOverflowScrolling: 'touch'
+            paddingBottom: '100px',
+            WebkitOverflowScrolling: 'touch',
+            position: 'relative',
+            zIndex: 1
           }}>
             {/* Editor Section Content */}
             <div style={{ 
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              padding: '20px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              backgroundColor: 'transparent',
+              borderRadius: '0px',
+              padding: '0px',
+              boxShadow: 'none',
               height: '100%',
               display: 'flex',
-              flexDirection: 'column'
+              flexDirection: 'column',
+              border: 'none'
             }}>
               {/* Editor Header */}
               <div style={{ 
@@ -5703,21 +5719,11 @@ export default function Index() {
               <div style={{ 
                 flex: 1, 
                 minHeight: "250px",
-                border: "1px solid #e1e3e5",
-                borderRadius: "6px",
+                border: "none",
+                borderRadius: "8px",
                 overflow: "hidden"
               }}>
-                <div style={{ 
-                  padding: "8px 12px", 
-                  backgroundColor: "#f8f9fa", 
-                  borderBottom: "1px solid #e1e3e5",
-                  fontSize: "12px",
-                  fontWeight: "600",
-                  color: "#374151"
-                }}>
-                  Content
-                </div>
-                <div style={{ height: "calc(100% - 40px)" }}>
+                <div style={{ height: "100%" }}>
                   {isMobile ? (
                     <MobileEditorButton
                       value={body}
@@ -5746,10 +5752,11 @@ export default function Index() {
             backgroundColor: 'white',
             borderTop: '1px solid #e1e3e5',
             display: 'flex',
+            zIndex: 1000,
+            isolation: 'isolate',
             justifyContent: 'center',
             gap: '60px',
             padding: '8px 0',
-            zIndex: 1000,
             boxShadow: '0 -1px 6px rgba(0,0,0,0.08)'
           }}>
             <div 

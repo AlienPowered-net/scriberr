@@ -10,8 +10,12 @@ const MobileEditorButton = ({
 }) => {
   const [showEditorModal, setShowEditorModal] = useState(false);
 
-  const openEditor = () => {
+  const openEditor = (e) => {
     console.log('Opening editor modal...');
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setShowEditorModal(true);
   };
 
@@ -59,7 +63,7 @@ const MobileEditorButton = ({
           backgroundColor: '#ffffff',
           margin: '0'
         }}
-        onClick={openEditor}
+        onClick={(e) => openEditor(e)}
       >
           {/* Header with icon and date */}
           <div style={{
@@ -116,7 +120,7 @@ const MobileEditorButton = ({
               onClick={(e) => {
                 console.log('Button clicked!');
                 e.stopPropagation();
-                openEditor();
+                openEditor(e);
               }}
               style={{
                 minWidth: '200px',
@@ -160,19 +164,22 @@ const MobileEditorButton = ({
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
-            padding: '0'
+            padding: '0',
+            backgroundColor: '#ffffff'
           }}>
             <div style={{
               height: '100%',
               width: '100%',
-              border: '1px solid #e1e3e5',
-              borderRadius: '8px',
-              overflow: 'hidden'
+              border: 'none',
+              borderRadius: '0px',
+              overflow: 'hidden',
+              backgroundColor: '#ffffff'
             }}>
               <AdvancedRTE
                 value={value}
                 onChange={onChange}
                 placeholder={placeholder}
+                isMobile={true}
               />
             </div>
           </div>
@@ -227,6 +234,18 @@ const MobileEditorButton = ({
             border: 1px solid #e1e3e5 !important;
             border-radius: 8px !important;
             background: #ffffff !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+          }
+          
+          /* Ensure proper touch interaction */
+          .mobile-note-card * {
+            pointer-events: auto !important;
+          }
+          
+          .mobile-note-card button {
+            pointer-events: auto !important;
+            z-index: 10 !important;
           }
         }
         
