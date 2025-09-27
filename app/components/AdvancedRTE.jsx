@@ -22,7 +22,7 @@ import TiptapDragHandle from './TiptapDragHandle';
 import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack } from '@shopify/polaris';
 
-const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobile = false }) => {
+const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobileProp = false }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -421,8 +421,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           isExpanded ? 'fixed inset-4 z-50 shadow-2xl' : 'w-full'
         }`}
         style={{
-        border: isMobile ? 'none' : '1px solid #e1e3e5',
-        borderRadius: isMobile ? '0px' : '8px',
+        border: isMobileProp ? 'none' : '1px solid #e1e3e5',
+        borderRadius: isMobileProp ? '0px' : '8px',
         backgroundColor: '#ffffff',
         ...(isExpanded && {
           position: 'fixed',
@@ -436,7 +436,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 10px 20px -5px rgba(0, 0, 0, 0.3)',
           borderRadius: '12px'
         }),
-        ...(isMobile && !isExpanded && {
+        ...(isMobileProp && !isExpanded && {
           minHeight: '500px', // Ensure minimum height on mobile
           maxHeight: '700px' // Prevent excessive height on mobile
         })
@@ -445,10 +445,10 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     >
       {/* Toolbar */}
       <div className="advanced-rte-toolbar" style={{ 
-        borderBottom: isMobile ? "none" : "1px solid #e1e5e9", 
+        borderBottom: isMobileProp ? "none" : "1px solid #e1e5e9", 
         padding: "8px 12px", 
         backgroundColor: "#f8f9fa", 
-        borderRadius: isMobile ? "0px" : "8px 8px 0 0", 
+        borderRadius: isMobileProp ? "0px" : "8px 8px 0 0", 
         position: "relative"
       }}>
         {/* Fullscreen Button - Top Right */}
