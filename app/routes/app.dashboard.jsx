@@ -454,6 +454,19 @@ export default function Index() {
   const [wasJustSaved, setWasJustSaved] = useState(false);
   const [highlightFolders, setHighlightFolders] = useState(false);
   
+  // Format dates with exact time like "9 Sep 2024, 2:30 PM"
+  const formatDateTime = (date) => {
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const day = date.getDate();
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    return `${day} ${month} ${year}, ${displayHours}:${minutes} ${ampm}`;
+  };
+  
   // Get the last saved time for the current note
   const getLastSavedTime = () => {
     if (!editingNoteId) return null;
