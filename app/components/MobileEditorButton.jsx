@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Modal, Text, BlockStack, Card } from '@shopify/polaris';
+import { Button, Modal, Text, BlockStack } from '@shopify/polaris';
 import AdvancedRTE from './AdvancedRTE';
 
 const MobileEditorButton = ({ 
@@ -45,22 +45,22 @@ const MobileEditorButton = ({
   return (
     <>
       {/* Mobile Note Card */}
-      <Card>
-        <div 
-          className="mobile-note-card"
-          style={{
-            width: '100%',
-            minHeight: '160px',
-            padding: '20px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            position: 'relative',
-            border: '1px solid #e1e3e5',
-            borderRadius: '8px',
-            backgroundColor: '#ffffff'
-          }}
-          onClick={openEditor}
-        >
+      <div 
+        className="mobile-note-card"
+        style={{
+          width: '100%',
+          minHeight: '160px',
+          padding: '20px',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          position: 'relative',
+          border: '1px solid #e1e3e5',
+          borderRadius: '8px',
+          backgroundColor: '#ffffff',
+          margin: '0'
+        }}
+        onClick={openEditor}
+      >
           {/* Header with icon and date */}
           <div style={{
             display: 'flex',
@@ -142,7 +142,6 @@ const MobileEditorButton = ({
             boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
           }} />
         </div>
-      </Card>
 
       {/* Fullscreen Editor Modal */}
       <Modal
@@ -187,6 +186,9 @@ const MobileEditorButton = ({
             -webkit-tap-highlight-color: transparent;
             pointer-events: auto;
             z-index: 1;
+            margin: 0 !important;
+            padding: 20px !important;
+            box-sizing: border-box;
           }
           
           .mobile-note-card:hover {
@@ -211,6 +213,20 @@ const MobileEditorButton = ({
             pointer-events: auto !important;
             z-index: 10 !important;
             position: relative !important;
+          }
+          
+          /* Remove any unwanted spacing */
+          .mobile-note-card * {
+            box-sizing: border-box;
+          }
+          
+          /* Ensure no extra margins or padding */
+          .mobile-note-card {
+            margin: 0 !important;
+            padding: 20px !important;
+            border: 1px solid #e1e3e5 !important;
+            border-radius: 8px !important;
+            background: #ffffff !important;
           }
         }
         
