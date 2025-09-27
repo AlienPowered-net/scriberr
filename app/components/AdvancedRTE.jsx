@@ -47,6 +47,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
   const [showBorderColorPicker, setShowBorderColorPicker] = useState(false);
   const [borderColor, setBorderColor] = useState('#d1d5db');
   const [tempBorderColor, setTempBorderColor] = useState('#d1d5db');
+  const [isMobile, setIsMobile] = useState(false);
   const editorRef = useRef(null);
 
 
@@ -77,6 +78,21 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     };
     
     registerLanguages();
+  }, []);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    // Check on mount
+    checkMobile();
+    
+    // Add resize listener
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   const editor = useEditor({
@@ -314,24 +330,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     <>
       <style>
         {`
-          .advanced-rte-content {
-            min-height: 8rem !important;
-            max-height: 25rem !important;
-            overflow-y: auto !important;
-            padding-left: 24px !important;
-            font-size: 16px !important;
-            line-height: 1.6 !important;
-          }
-          
-          .advanced-rte-content .ProseMirror {
-            min-height: 8rem !important;
-            max-height: 25rem !important;
-            overflow-y: auto !important;
-            padding-left: 0 !important;
-            font-size: 16px !important;
-            line-height: 1.6 !important;
-          }
-          
           /* Fix double scroll bars */
           .advanced-rte-container {
             overflow: hidden !important;
@@ -349,71 +347,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           
           /* Make toolbar sticky on mobile */
           @media (max-width: 768px) {
-            .advanced-rte-content {
-              min-height: 12rem !important; /* 5+ lines minimum (18px font * 1.6 line-height * 5 lines = 12rem) */
-              max-height: 24rem !important; /* 10+ lines maximum (18px font * 1.6 line-height * 10 lines = 24rem) */
-              padding-left: 16px !important;
-              padding-right: 16px !important;
-              padding-top: 16px !important;
-              padding-bottom: 16px !important;
-              overflow-y: auto !important; /* Enable scrolling when content exceeds 10 lines */
-              font-size: 18px !important;
-              line-height: 1.6 !important;
-            }
-            
-            .advanced-rte-content .ProseMirror {
-              min-height: 12rem !important; /* 5+ lines minimum */
-              max-height: 24rem !important; /* 10+ lines maximum */
-              padding-left: 0 !important;
-              overflow: visible !important; /* Remove scroll from inner ProseMirror to prevent double scrollbars */
-              font-size: 18px !important;
-              line-height: 1.6 !important;
-            }
-            
-            /* Make toolbar sticky */
             .advanced-rte-toolbar {
               position: sticky !important;
               top: 0 !important;
               z-index: 10 !important;
               background: #f8f9fa !important;
-            }
-          }
-          
-          @media (min-width: 769px) {
-            .advanced-rte-content {
-              min-height: 8rem !important;
-              max-height: 25rem !important;
-              padding-left: 24px !important;
-              overflow-y: auto !important; /* Enable scrolling when content exceeds max height */
-            }
-            
-            .advanced-rte-content .ProseMirror {
-              min-height: 8rem !important;
-              max-height: 25rem !important;
-              padding-left: 0 !important;
-              overflow: visible !important; /* Remove scroll from inner ProseMirror */
-            }
-          }
-          
-          /* Additional mobile overrides to ensure styles take effect */
-          @media (max-width: 768px) {
-            /* Override any inline styles */
-            .advanced-rte-content[style] {
-              min-height: 12rem !important;
-              max-height: 24rem !important;
-              font-size: 18px !important;
-              line-height: 1.6 !important;
-              padding: 16px !important;
-              overflow-y: auto !important;
-            }
-            
-            /* Ensure ProseMirror respects mobile styles */
-            .advanced-rte-content .ProseMirror[style] {
-              min-height: 12rem !important;
-              max-height: 24rem !important;
-              overflow: visible !important;
-              font-size: 18px !important;
-              line-height: 1.6 !important;
             }
           }
         `}
@@ -916,7 +854,20 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           <EditorContent 
             editor={editor} 
             className="advanced-rte-content"
-            style={{
+            style={isMobile ? {
+              minHeight: "200px", // 5+ lines on mobile (200px = ~5 lines at 18px font)
+              maxHeight: "400px", // 10+ lines on mobile (400px = ~10 lines at 18px font)
+              overflowY: "auto", // Add scroll when content exceeds max height
+              overflowX: "hidden", // Prevent horizontal scroll
+              padding: "16px",
+              border: "none",
+              outline: "none",
+              fontSize: "18px", // Larger font for mobile
+              lineHeight: "1.6", // Line height for precise calculations
+              color: "#212529",
+              cursor: "text",
+              width: "100%"
+            } : {
               minHeight: "8rem", // Default minimum height (5 lines)
               maxHeight: "25rem", // Max at 15+ lines on desktop
               overflowY: "auto", // Add scroll when content exceeds max height
