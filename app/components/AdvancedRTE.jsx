@@ -330,28 +330,55 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
     <>
       <style>
         {`
-          /* Fix double scroll bars */
+          /* Fix double scroll bars and mobile issues */
           .advanced-rte-container {
             overflow: hidden !important;
           }
           
-          /* Ensure only one scroll bar - remove scroll from outer container */
+          /* Ensure proper scrolling and mobile visibility */
           .advanced-rte-content {
             overflow-y: auto !important;
             overflow-x: hidden !important;
+            -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on iOS */
           }
           
           .advanced-rte-content .ProseMirror {
             overflow: visible !important; /* Remove scroll from inner ProseMirror */
+            min-height: 100% !important; /* Ensure content fills container */
           }
           
-          /* Make toolbar sticky on mobile */
+          /* Mobile-specific fixes */
           @media (max-width: 768px) {
             .advanced-rte-toolbar {
               position: sticky !important;
               top: 0 !important;
               z-index: 10 !important;
               background: #f8f9fa !important;
+              padding: 6px 8px !important;
+              overflow-x: auto !important;
+              white-space: nowrap !important;
+            }
+            
+            .advanced-rte-content {
+              min-height: 300px !important; /* 10+ lines on mobile */
+              max-height: 500px !important; /* 15+ lines on mobile */
+              overflow-y: auto !important;
+              -webkit-overflow-scrolling: touch !important;
+            }
+            
+            .advanced-rte-content .ProseMirror {
+              min-height: 280px !important; /* Ensure content area is visible */
+              padding: 16px !important;
+              font-size: 18px !important;
+              line-height: 1.6 !important;
+            }
+          }
+          
+          /* iOS Safari specific fixes */
+          @supports (-webkit-touch-callout: none) {
+            .advanced-rte-content {
+              -webkit-overflow-scrolling: touch !important;
+              transform: translateZ(0) !important; /* Force hardware acceleration */
             }
           }
         `}
@@ -372,6 +399,10 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           maxWidth: 'calc(100vw - 40px)',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 10px 20px -5px rgba(0, 0, 0, 0.3)',
           borderRadius: '12px'
+        }),
+        ...(isMobile && !isExpanded && {
+          minHeight: '400px', // Ensure minimum height on mobile
+          maxHeight: '600px' // Prevent excessive height on mobile
         })
       }}
       ref={editorRef}
@@ -832,7 +863,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
 
       {/* Editor Content */}
       <div 
-        className={`${isExpanded ? 'h-full overflow-hidden' : 'min-h-[400px]'}`}
+        className={`${isExpanded ? 'h-full overflow-hidden' : isMobile ? 'min-h-[400px] max-h-[600px]' : 'min-h-[400px]'}`}
         style={{
           position: "relative",
           backgroundColor: "#ffffff",
@@ -842,7 +873,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
           border: "1px solid #dee2e6",
           borderTop: "none",
           cursor: "text",
-          overflow: "hidden" // Prevent outer container from scrolling
+          overflow: "hidden", // Prevent outer container from scrolling
+          ...(isMobile && {
+            minHeight: "400px",
+            maxHeight: "600px",
+            display: "flex",
+            flexDirection: "column"
+          })
         }}
         onClick={() => {
           if (editor) {
@@ -855,8 +892,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
             editor={editor} 
             className="advanced-rte-content"
             style={isMobile ? {
-              minHeight: "200px", // 5+ lines on mobile (200px = ~5 lines at 18px font)
-              maxHeight: "400px", // 10+ lines on mobile (400px = ~10 lines at 18px font)
+              minHeight: "300px", // 10+ lines on mobile (300px = ~10 lines at 18px font)
+              maxHeight: "500px", // 15+ lines on mobile (500px = ~15 lines at 18px font)
               overflowY: "auto", // Add scroll when content exceeds max height
               overflowX: "hidden", // Prevent horizontal scroll
               padding: "16px",
@@ -866,7 +903,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing..." }) => {
               lineHeight: "1.6", // Line height for precise calculations
               color: "#212529",
               cursor: "text",
-              width: "100%"
+              width: "100%",
+              WebkitOverflowScrolling: "touch", // Smooth scrolling on iOS
+              transform: "translateZ(0)" // Force hardware acceleration on iOS
             } : {
               minHeight: "8rem", // Default minimum height (5 lines)
               maxHeight: "25rem", // Max at 15+ lines on desktop

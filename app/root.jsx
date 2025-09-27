@@ -20,6 +20,12 @@ export const links = () => [
   { rel: "stylesheet", href: mantineOverridesCssUrl },
 ];
 
+export const meta = () => [
+  { title: "Shopify Notepad App" },
+  { name: "description", content: "A powerful notepad app for Shopify" },
+  { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" },
+];
+
 export default function App() {
   return (
     <html lang="en">

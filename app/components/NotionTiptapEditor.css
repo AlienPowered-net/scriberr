@@ -12,6 +12,14 @@
   position: relative; /* Ensure proper positioning context */
 }
 
+/* Mobile container adjustments */
+@media (max-width: 768px) {
+  .notion-tiptap-container {
+    min-height: 400px !important; /* Reduced for mobile */
+    max-height: 600px !important; /* Prevent excessive height */
+  }
+}
+
 /* Drag Handle Styles */
 .drag-handle {
   position: absolute;
@@ -105,6 +113,17 @@
   overflow-x: visible; /* Allow drag handle to extend beyond editor bounds */
   background: #ffffff;
   position: relative;
+}
+
+/* Mobile editor wrapper adjustments */
+@media (max-width: 768px) {
+  .notion-editor-wrapper {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on iOS */
+    flex: 1 !important; /* Take available space */
+    display: flex !important;
+    flex-direction: column !important;
+  }
 }
 
 /* Editor Core Styles */
@@ -487,31 +506,66 @@
   }
 }
 
+/* Additional mobile fixes for better visibility */
+@media (max-width: 768px) {
+  .notion-editor {
+    min-height: 300px !important; /* Ensure minimum height for 10+ lines */
+    max-height: 500px !important; /* Limit height for 15+ lines */
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    transform: translateZ(0) !important; /* Force hardware acceleration */
+  }
+  
+  /* Ensure the editor is always visible on mobile */
+  .notion-tiptap-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix for mobile viewport issues */
+  .notion-editor-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
 /* Mobile specific improvements */
 @media (max-width: 768px) {
   .notion-tiptap-container {
-    min-height: 200px !important;
-    max-height: 400px !important;
+    min-height: 400px !important; /* Ensure minimum height for visibility */
+    max-height: 600px !important; /* Prevent excessive height */
+    display: flex !important;
+    flex-direction: column !important;
   }
   
   .notion-editor {
-    min-height: 200px !important;
-    max-height: 400px !important;
+    min-height: 300px !important; /* 10+ lines on mobile */
+    max-height: 500px !important; /* 15+ lines on mobile */
     overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on iOS */
     padding: 16px 20px !important;
     font-size: 18px !important;
     line-height: 1.6 !important;
+    transform: translateZ(0) !important; /* Force hardware acceleration on iOS */
   }
   
   .notion-editor-wrapper {
-    min-height: 200px !important;
-    max-height: 400px !important;
+    min-height: 300px !important; /* 10+ lines on mobile */
+    max-height: 500px !important; /* 15+ lines on mobile */
     overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on iOS */
+    flex: 1 !important; /* Take available space */
+    display: flex !important;
+    flex-direction: column !important;
   }
   
   .notion-toolbar {
     padding: 6px 8px !important;
     overflow-x: auto !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important; /* Prevent toolbar from shrinking */
   }
   
   .notion-toolbar .Polaris-ButtonGroup {
@@ -521,6 +575,19 @@
   .notion-toolbar .Polaris-Button {
     min-height: 28px !important;
     padding: 4px 6px !important;
+  }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  .notion-editor-wrapper {
+    -webkit-overflow-scrolling: touch !important;
+    transform: translateZ(0) !important; /* Force hardware acceleration */
+  }
+  
+  .notion-editor {
+    -webkit-overflow-scrolling: touch !important;
+    transform: translateZ(0) !important; /* Force hardware acceleration */
   }
 }
 
