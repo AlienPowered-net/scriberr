@@ -451,6 +451,7 @@ export default function Index() {
   const [showTagPopup, setShowTagPopup] = useState(null);
   const [tagPopupPosition, setTagPopupPosition] = useState({ x: 0, y: 0 });
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [wasJustSaved, setWasJustSaved] = useState(false);
   const [highlightFolders, setHighlightFolders] = useState(false);
   const [globalSearchQuery, setGlobalSearchQuery] = useState("");
   const [folderSearchQuery, setFolderSearchQuery] = useState("");
@@ -1144,6 +1145,22 @@ export default function Index() {
     setHasUnsavedChanges(hasChanges);
   }, [title, body, noteTags, editingNoteId, localNotes]);
 
+  // Track when a note was just saved
+  useEffect(() => {
+    if (hasUnsavedChanges === false && editingNoteId) {
+      // If we just went from having unsaved changes to no unsaved changes, 
+      // and we have an editingNoteId, it means we just saved
+      setWasJustSaved(true);
+      
+      // Reset wasJustSaved after a short delay
+      const timer = setTimeout(() => {
+        setWasJustSaved(false);
+      }, 3000); // Show "Saved changes" for 3 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [hasUnsavedChanges, editingNoteId]);
+
   // Restore selected note and folder from localStorage on page load
   useEffect(() => {
     const savedNoteId = localStorage.getItem('selectedNoteId');
@@ -1211,6 +1228,7 @@ export default function Index() {
     setFolderId(note.folderId || "");
     setNoteTags(note.tags || []);
     setHasUnsavedChanges(false);
+    setWasJustSaved(false); // Reset when opening existing note
     // Automatically select the folder associated with this note
     if (note.folderId) {
       setSelectedFolder(note.folderId);
@@ -1401,6 +1419,7 @@ export default function Index() {
           setFolderId(newNote.folderId || currentFolderId);
           setNoteTags(newNote.tags || []);
           setHasUnsavedChanges(false);
+          setWasJustSaved(false);
           
           setAlertMessage('New note created successfully!');
           setAlertType('success');
@@ -1431,6 +1450,7 @@ export default function Index() {
     setFolderId('');
     setNoteTags([]);
     setHasUnsavedChanges(false);
+    setWasJustSaved(false);
     setAutoSaveNotification('');
   };
 
@@ -3719,6 +3739,7 @@ export default function Index() {
                       lastSavedTime={autoSaveNotification ? null : (editingNoteId ? 'Recently' : null)}
                       autoSaveTime={autoSaveNotification}
                       editingNoteId={editingNoteId}
+                      wasJustSaved={wasJustSaved}
                     />
                   ) : (
                     <AdvancedRTE
@@ -5738,6 +5759,7 @@ export default function Index() {
                       lastSavedTime={autoSaveNotification ? null : (editingNoteId ? 'Recently' : null)}
                       autoSaveTime={autoSaveNotification}
                       editingNoteId={editingNoteId}
+                      wasJustSaved={wasJustSaved}
                     />
                   ) : (
                     <AdvancedRTE

@@ -10,7 +10,8 @@ const MobileEditorButton = ({
   hasUnsavedChanges = false,
   lastSavedTime = null,
   autoSaveTime = null,
-  editingNoteId = null
+  editingNoteId = null,
+  wasJustSaved = false
 }) => {
   const [showEditorModal, setShowEditorModal] = useState(false);
 
@@ -80,10 +81,21 @@ const MobileEditorButton = ({
       };
     }
     
-    // 4. Green - "Saved changes" - When manually saved or existing note
-    if (lastSavedTime || editingNoteId) {
+    // 4. Green - "Saved changes" - When you make edits and click save button
+    if (wasJustSaved) {
       return {
         text: "Saved changes",
+        color: "#008060", // Green
+        backgroundColor: "#f0f9f4",
+        borderColor: "#008060",
+        timeText: lastSavedTime ? `Last saved on: ${lastSavedTime}` : "Last saved on: Recently"
+      };
+    }
+    
+    // 5. Green - "Existing saved changes" - When you open an existing note
+    if (editingNoteId && !wasJustSaved) {
+      return {
+        text: "Existing saved changes",
         color: "#008060", // Green
         backgroundColor: "#f0f9f4",
         borderColor: "#008060",
