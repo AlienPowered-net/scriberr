@@ -4709,7 +4709,7 @@ export default function Index() {
             </div>
             
             {/* Right Navigation */}
-            <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {mobileActiveSection === 'folders' && (
                 <Button
                   variant="primary"
@@ -4721,22 +4721,32 @@ export default function Index() {
                 </Button>
               )}
               {mobileActiveSection === 'notes' && !editingNoteId && (
-                <Button
-                  variant="primary"
-                  size="slim"
-                  onClick={() => {
-                    if (!selectedFolder) {
-                      setAlertMessage('Please select a folder first to create a new note');
-                      setAlertType('error');
-                      setTimeout(() => setAlertMessage(''), 4000);
-                      return;
-                    }
-                    handleNewNote();
-                  }}
-                  style={{ fontSize: '14px', fontWeight: '500' }}
-                >
-                  Create Note
-                </Button>
+                <>
+                  <Button
+                    variant="secondary"
+                    size="slim"
+                    onClick={() => setMobileActiveSection('folders')}
+                    style={{ fontSize: '14px', fontWeight: '500', backgroundColor: '#000000', color: '#ffffff', borderColor: '#000000' }}
+                  >
+                    Back to Folder
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="slim"
+                    onClick={() => {
+                      if (!selectedFolder) {
+                        setAlertMessage('Please select a folder first to create a new note');
+                        setAlertType('error');
+                        setTimeout(() => setAlertMessage(''), 4000);
+                        return;
+                      }
+                      handleNewNote();
+                    }}
+                    style={{ fontSize: '14px', fontWeight: '500' }}
+                  >
+                    Create Note
+                  </Button>
+                </>
               )}
             </div>
           </div>
