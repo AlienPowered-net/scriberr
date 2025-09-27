@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Modal, Text, BlockStack } from '@shopify/polaris';
+import { Button, Modal, Text, BlockStack, Card } from '@shopify/polaris';
 import AdvancedRTE from './AdvancedRTE';
 
 const MobileEditorButton = ({ 
@@ -11,6 +11,7 @@ const MobileEditorButton = ({
   const [showEditorModal, setShowEditorModal] = useState(false);
 
   const openEditor = () => {
+    console.log('Opening editor modal...');
     setShowEditorModal(true);
   };
 
@@ -23,102 +24,125 @@ const MobileEditorButton = ({
     return null;
   }
 
-  // Get preview text (first 100 characters of content)
+  // Get preview text (first 150 characters of content)
   const getPreviewText = () => {
-    if (!value) return placeholder;
+    if (!value) return 'No content yet. Tap to start writing...';
     // Strip HTML tags for preview
-    const textOnly = value.replace(/<[^>]*>/g, '');
-    return textOnly.length > 100 ? textOnly.substring(0, 100) + '...' : textOnly;
+    const textOnly = value.replace(/<[^>]*>/g, '').trim();
+    return textOnly.length > 150 ? textOnly.substring(0, 150) + '...' : textOnly;
+  };
+
+  // Get current date/time for display
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    return now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
   };
 
   const previewText = getPreviewText();
   const hasContent = value && value.trim().length > 0;
+  const currentDateTime = getCurrentDateTime();
 
   return (
     <>
-      {/* Mobile Editor Button */}
-      <div 
-        className="mobile-editor-button"
-        style={{
-          width: '100%',
-          minHeight: '140px',
-          border: hasContent ? '2px solid #007bff' : '2px dashed #e1e3e5',
-          borderRadius: '12px',
-          backgroundColor: hasContent ? '#f8f9fa' : '#ffffff',
-          padding: '24px 20px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-          position: 'relative',
-          boxShadow: hasContent ? '0 2px 8px rgba(0, 123, 255, 0.1)' : '0 1px 3px rgba(0, 0, 0, 0.1)'
-        }}
-        onClick={openEditor}
-      >
-        {/* Editor Icon */}
-        <div style={{
-          fontSize: '40px',
-          marginBottom: '16px',
-          color: hasContent ? '#007bff' : '#6c757d',
-          filter: hasContent ? 'drop-shadow(0 2px 4px rgba(0, 123, 255, 0.2))' : 'none'
-        }}>
-          {hasContent ? '✏️' : '📝'}
-        </div>
-
-        {/* Button Text */}
-        <Button
-          size="large"
-          variant={hasContent ? "primary" : "secondary"}
-          onClick={(e) => {
-            e.stopPropagation();
-            openEditor();
-          }}
+      {/* Mobile Note Card */}
+      <Card>
+        <div 
+          className="mobile-note-card"
           style={{
-            marginBottom: '12px',
-            minWidth: '180px',
-            height: '44px',
-            fontSize: '16px',
-            fontWeight: '600'
+            width: '100%',
+            minHeight: '160px',
+            padding: '20px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            position: 'relative',
+            border: '1px solid #e1e3e5',
+            borderRadius: '8px',
+            backgroundColor: '#ffffff'
           }}
+          onClick={openEditor}
         >
-          {hasContent ? 'Edit Note' : 'Open Editor'}
-        </Button>
-
-        {/* Preview Text */}
-        {hasContent && (
-          <Text variant="bodySm" color="subdued" alignment="center" style={{
-            maxWidth: '280px',
-            lineHeight: '1.4',
-            marginTop: '4px'
+          {/* Header with icon and date */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '16px'
           }}>
-            {previewText}
-          </Text>
-        )}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <div style={{
+                fontSize: '24px',
+                color: hasContent ? '#007bff' : '#6c757d'
+              }}>
+                {hasContent ? '📄' : '📝'}
+              </div>
+              <Text variant="headingMd" fontWeight="semibold">
+                {hasContent ? 'Note Content' : 'New Note'}
+              </Text>
+            </div>
+            <Text variant="bodySm" color="subdued">
+              {currentDateTime}
+            </Text>
+          </div>
 
-        {/* Hint Text */}
-        {!hasContent && (
-          <Text variant="bodySm" color="subdued" alignment="center" style={{
-            maxWidth: '280px',
-            lineHeight: '1.4'
+          {/* Preview Content */}
+          <div style={{
+            marginBottom: '20px',
+            minHeight: '60px'
           }}>
-            Tap to start writing your note
-          </Text>
-        )}
+            <Text variant="bodyMd" color={hasContent ? "base" : "subdued"} style={{
+              lineHeight: '1.5',
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
+            }}>
+              {previewText}
+            </Text>
+          </div>
 
-        {/* Corner indicator */}
-        <div style={{
-          position: 'absolute',
-          top: '8px',
-          right: '8px',
-          width: '8px',
-          height: '8px',
-          borderRadius: '50%',
-          backgroundColor: hasContent ? '#007bff' : '#e1e3e5',
-          transition: 'background-color 0.2s ease'
-        }} />
-      </div>
+          {/* Edit Button */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            width: '100%'
+          }}>
+            <Button
+              size="large"
+              variant={hasContent ? "primary" : "secondary"}
+              onClick={(e) => {
+                console.log('Button clicked!');
+                e.stopPropagation();
+                openEditor();
+              }}
+              style={{
+                minWidth: '200px',
+                height: '48px',
+                fontSize: '16px',
+                fontWeight: '600'
+              }}
+            >
+              {hasContent ? 'Edit Note' : 'Start Writing'}
+            </Button>
+          </div>
+
+          {/* Status indicator */}
+          <div style={{
+            position: 'absolute',
+            top: '12px',
+            right: '12px',
+            width: '12px',
+            height: '12px',
+            borderRadius: '50%',
+            backgroundColor: hasContent ? '#28a745' : '#ffc107',
+            border: '2px solid #ffffff',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+          }} />
+        </div>
+      </Card>
 
       {/* Fullscreen Editor Modal */}
       <Modal
@@ -158,37 +182,46 @@ const MobileEditorButton = ({
 
       <style jsx>{`
         @media (max-width: 768px) {
-          .mobile-editor-button {
+          .mobile-note-card {
             transition: all 0.2s ease;
             -webkit-tap-highlight-color: transparent;
+            pointer-events: auto;
+            z-index: 1;
           }
           
-          .mobile-editor-button:hover {
+          .mobile-note-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             border-color: #007bff;
-            background-color: #f8f9fa;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
           }
           
-          .mobile-editor-button:active {
+          .mobile-note-card:active {
             transform: scale(0.98) translateY(0);
-            box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
           }
           
-          .mobile-editor-button:focus {
+          .mobile-note-card:focus {
             outline: 2px solid #007bff;
             outline-offset: 2px;
+          }
+          
+          /* Ensure input fields work properly */
+          .mobile-note-card input,
+          .mobile-note-card textarea {
+            pointer-events: auto !important;
+            z-index: 10 !important;
+            position: relative !important;
           }
         }
         
         /* Dark mode support */
         @media (prefers-color-scheme: dark) {
-          .mobile-editor-button {
+          .mobile-note-card {
             background-color: #191919;
             border-color: #373737;
           }
           
-          .mobile-editor-button:hover {
+          .mobile-note-card:hover {
             background-color: #202020;
           }
         }
