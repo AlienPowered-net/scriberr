@@ -3335,17 +3335,6 @@ export default function Index() {
                 </span>
               </div>
               
-              {/* New Note Button */}
-              <div style={{ marginTop: "16px" }}>
-                <Button 
-                  onClick={handleNewNote}
-                  variant="primary"
-                  tone="warning"
-                  fullWidth
-                >
-                  New Note
-                </Button>
-              </div>
             </div>
 
             {/* Scrollable Notes Section */}
@@ -4661,47 +4650,17 @@ export default function Index() {
           }}>
             {/* Left Navigation */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {mobileActiveSection === 'notes' && !editingNoteId && (
-                <Button
-                  variant="secondary"
-                  size="slim"
-                  onClick={() => setMobileActiveSection('folders')}
-                  style={{ fontSize: '14px', fontWeight: '500' }}
-                >
-                  Folders
-                </Button>
-              )}
-              {editingNoteId && mobileActiveSection === 'editor' && (
-                <>
-                  <Button
-                    variant="secondary"
-                    size="slim"
-                    onClick={() => setMobileActiveSection('folders')}
-                    style={{ fontSize: '14px', fontWeight: '500' }}
-                  >
-                    Folders
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="slim"
-                    onClick={() => setMobileActiveSection('notes')}
-                    style={{ fontSize: '14px', fontWeight: '500' }}
-                  >
-                    Back to notes
-                  </Button>
-                </>
-              )}
               {mobileActiveSection === 'folders' && (
                 <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
                   Folders
                 </h1>
               )}
-              {mobileActiveSection === 'notes' && !editingNoteId && (
+              {mobileActiveSection === 'notes' && (
                 <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
                   Notes
                 </h1>
               )}
-              {editingNoteId && (
+              {editingNoteId && mobileActiveSection === 'editor' && (
                 <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
                   Note Editor
                 </h1>
@@ -4720,7 +4679,7 @@ export default function Index() {
                   View notes
                 </Button>
               )}
-              {mobileActiveSection === 'notes' && !editingNoteId && (
+              {mobileActiveSection === 'notes' && (
                 <>
                   <Button
                     variant="secondary"
@@ -4728,7 +4687,7 @@ export default function Index() {
                     onClick={() => setMobileActiveSection('folders')}
                     style={{ fontSize: '14px', fontWeight: '500', backgroundColor: '#000000', color: '#ffffff', borderColor: '#000000' }}
                   >
-                    Back to Folder
+                    Back to Folders
                   </Button>
                   <Button
                     variant="primary"
@@ -4745,6 +4704,26 @@ export default function Index() {
                     style={{ fontSize: '14px', fontWeight: '500' }}
                   >
                     Create Note
+                  </Button>
+                </>
+              )}
+              {editingNoteId && mobileActiveSection === 'editor' && (
+                <>
+                  <Button
+                    variant="secondary"
+                    size="slim"
+                    onClick={() => setMobileActiveSection('folders')}
+                    style={{ fontSize: '14px', fontWeight: '500', backgroundColor: '#000000', color: '#ffffff', borderColor: '#000000' }}
+                  >
+                    Back to Folders
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="slim"
+                    onClick={() => setMobileActiveSection('notes')}
+                    style={{ fontSize: '14px', fontWeight: '500', backgroundColor: '#000000', color: '#ffffff', borderColor: '#000000' }}
+                  >
+                    Back to Notes
                   </Button>
                 </>
               )}
@@ -5227,23 +5206,6 @@ export default function Index() {
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Notes</h2>
-                <Button
-                  variant="primary"
-                  size="slim"
-                  onClick={() => {
-                    if (!selectedFolder) {
-                      setAlertMessage('Please select a folder first to create a new note');
-                      setAlertType('error');
-                      setTimeout(() => setAlertMessage(''), 4000);
-                      return;
-                    }
-                    handleNewNote();
-                    setMobileActiveSection('editor');
-                  }}
-                  style={{ backgroundColor: '#008060', borderColor: '#008060' }}
-                >
-                  New Note
-                </Button>
               </div>
               
               {/* Mobile Multi-select action buttons */}
@@ -5620,26 +5582,6 @@ export default function Index() {
                   })}
               </div>
 
-              {/* New Note Button */}
-              <div style={{ marginTop: '20px' }}>
-                <Button
-                  variant="primary"
-                  fullWidth
-                  onClick={() => {
-                    if (!selectedFolder) {
-                      setAlertMessage('Please select a folder first to create a new note');
-                      setAlertType('error');
-                      setTimeout(() => setAlertMessage(''), 4000);
-                      return;
-                    }
-                    handleNewNote();
-                    setMobileActiveSection('editor');
-                  }}
-                  style={{ backgroundColor: '#008060', borderColor: '#008060' }}
-                >
-                  New Note
-                </Button>
-              </div>
             </div>
           </div>
 
