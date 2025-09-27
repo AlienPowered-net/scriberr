@@ -51,7 +51,9 @@ const MobileEditorButton = ({
   // Get save status pill info
   const getSaveStatus = () => {
     // 1. Blue - "New note" - When you make a new note, before you type anything into it
-    if (!hasContent && !editingNoteId) {
+    // This includes newly created notes that haven't been edited yet
+    if ((!hasContent && !editingNoteId) || 
+        (editingNoteId && !hasUnsavedChanges && !wasJustSaved && !lastSavedTime && !autoSaveTime)) {
       return {
         text: "New note",
         color: "#007bff", // Blue
