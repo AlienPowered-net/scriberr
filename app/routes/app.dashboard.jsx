@@ -453,6 +453,16 @@ export default function Index() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [wasJustSaved, setWasJustSaved] = useState(false);
   const [highlightFolders, setHighlightFolders] = useState(false);
+  
+  // Get the last saved time for the current note
+  const getLastSavedTime = () => {
+    if (!editingNoteId) return null;
+    const currentNote = localNotes.find(note => note.id === editingNoteId);
+    if (!currentNote || !currentNote.updatedAt) return null;
+    
+    const updatedDate = new Date(currentNote.updatedAt);
+    return formatDateTime(updatedDate);
+  };
   const [globalSearchQuery, setGlobalSearchQuery] = useState("");
   const [folderSearchQuery, setFolderSearchQuery] = useState("");
   const [noteTags, setNoteTags] = useState([]);
@@ -3736,7 +3746,7 @@ export default function Index() {
                       placeholder="Type your note here..."
                       isMobile={isMobile}
                       hasUnsavedChanges={hasUnsavedChanges}
-                      lastSavedTime={autoSaveNotification ? null : (editingNoteId ? 'Recently' : null)}
+                      lastSavedTime={autoSaveNotification ? null : (editingNoteId ? getLastSavedTime() : null)}
                       autoSaveTime={autoSaveNotification}
                       editingNoteId={editingNoteId}
                       wasJustSaved={wasJustSaved}
@@ -5756,7 +5766,7 @@ export default function Index() {
                       placeholder="Type your note here..."
                       isMobile={isMobile}
                       hasUnsavedChanges={hasUnsavedChanges}
-                      lastSavedTime={autoSaveNotification ? null : (editingNoteId ? 'Recently' : null)}
+                      lastSavedTime={autoSaveNotification ? null : (editingNoteId ? getLastSavedTime() : null)}
                       autoSaveTime={autoSaveNotification}
                       editingNoteId={editingNoteId}
                       wasJustSaved={wasJustSaved}

@@ -77,7 +77,7 @@ const MobileEditorButton = ({
         color: "#008060", // Green
         backgroundColor: "#f0f9f4",
         borderColor: "#008060",
-        timeText: `Auto saved at: ${autoSaveTime}`
+        timeText: autoSaveTime // Remove "Auto saved at:" prefix since autoSaveTime already contains the full message
       };
     }
     
@@ -88,7 +88,7 @@ const MobileEditorButton = ({
         color: "#008060", // Green
         backgroundColor: "#f0f9f4",
         borderColor: "#008060",
-        timeText: lastSavedTime ? `Last saved on: ${lastSavedTime}` : "Last saved on: Recently"
+        timeText: lastSavedTime ? `Last saved on: ${lastSavedTime}` : "Last saved on: Just now"
       };
     }
     
@@ -99,7 +99,7 @@ const MobileEditorButton = ({
         color: "#008060", // Green
         backgroundColor: "#f0f9f4",
         borderColor: "#008060",
-        timeText: lastSavedTime ? `Last saved on: ${lastSavedTime}` : "Last saved on: Recently"
+        timeText: lastSavedTime ? `Last saved on: ${lastSavedTime}` : "Last saved on: Unknown"
       };
     }
     
