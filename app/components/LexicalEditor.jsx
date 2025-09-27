@@ -131,20 +131,22 @@ function ClientQuill({ value, onChange, placeholder }) {
           /* Mobile responsive styles for better text editor sizing */
           @media (max-width: 768px) {
             .editor-container {
-              min-height: 120px !important;
+              min-height: 200px !important;
+              max-height: 400px !important;
             }
             .ql-editor {
-              min-height: 120px !important;
-              max-height: 240px !important;
+              min-height: 200px !important;
+              max-height: 400px !important;
               overflow-y: auto !important;
-              font-size: 16px !important;
-              line-height: 1.5 !important;
-              padding: 12px !important;
+              font-size: 18px !important;
+              line-height: 1.6 !important;
+              padding: 16px !important;
             }
             .ql-container {
               height: auto !important;
-              min-height: 120px !important;
-              max-height: 240px !important;
+              min-height: 200px !important;
+              max-height: 400px !important;
+              overflow: hidden !important;
             }
             .ql-toolbar {
               padding: 8px !important;

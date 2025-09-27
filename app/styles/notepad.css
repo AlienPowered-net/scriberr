@@ -202,3 +202,36 @@
     margin-bottom: 20px;
   }
 }
+
+/* Mobile specific fixes for text editor */
+@media (max-width: 768px) {
+  .contentRow .Polaris-TextField__Input {
+    min-height: 200px !important;
+    max-height: 400px !important;
+    overflow-y: auto !important;
+  }
+  
+  .editor {
+    padding: 12px !important;
+    overflow: hidden !important;
+  }
+  
+  .pane {
+    min-height: auto !important;
+    overflow: hidden !important;
+  }
+  
+  /* Fix double scrollbar issue */
+  .editor-container {
+    overflow: hidden !important;
+  }
+  
+  .editor-container .ql-container {
+    overflow: hidden !important;
+  }
+  
+  .editor-container .ql-editor {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+}
