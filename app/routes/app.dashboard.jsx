@@ -1444,6 +1444,11 @@ export default function Index() {
           setHasUnsavedChanges(false);
           setWasJustSaved(false);
           
+          // Navigate to editor section on mobile
+          if (isMobile) {
+            setMobileActiveSection('editor');
+          }
+          
           setAlertMessage('New note created successfully!');
           setAlertType('success');
           setTimeout(() => setAlertMessage(''), 3000);
