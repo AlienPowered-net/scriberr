@@ -38,7 +38,7 @@ import {
 } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
 import QuillEditor from "../components/LexicalEditor";
-import AdvancedRTE from "../components/AdvancedRTE";
+import TinyMCEEditor from "../components/TinyMCEEditor";
 import FolderIconPicker from "../components/FolderIconPicker";
 import NewFolderModal from "../components/NewFolderModal";
 import DraggableFolder from "../components/DraggableFolder";
@@ -3695,10 +3695,12 @@ export default function Index() {
                   <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
                     Body
                   </label>
-                  <AdvancedRTE
+                  <TinyMCEEditor
                     value={body}
                     onChange={setBody}
                     placeholder="Type your note here..."
+                    height={400}
+                    isMobile={isMobile}
                   />
                 </div>
                 <div style={{ marginTop: "20px" }}>
@@ -5708,10 +5710,12 @@ export default function Index() {
                   Content
                 </div>
                 <div style={{ height: "calc(100% - 40px)" }}>
-                  <AdvancedRTE
+                  <TinyMCEEditor
                     value={body}
                     onChange={setBody}
                     placeholder="Type your note here..."
+                    height={400}
+                    isMobile={isMobile}
                   />
                 </div>
               </div>

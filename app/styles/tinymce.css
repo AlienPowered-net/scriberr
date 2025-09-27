@@ -1,0 +1,160 @@
+/* TinyMCE Editor Styles */
+
+/* Container styles */
+.tinymce-editor-container {
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+  position: relative;
+}
+
+.tinymce-editor-container.expanded {
+  position: fixed !important;
+  top: 20px !important;
+  left: 20px !important;
+  right: 20px !important;
+  bottom: 20px !important;
+  z-index: 9999 !important;
+  max-height: calc(100vh - 40px) !important;
+  max-width: calc(100vw - 40px) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 10px 20px -5px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 12px !important;
+}
+
+/* TinyMCE specific overrides */
+.tox-tinymce {
+  border: none !important;
+  border-radius: 8px !important;
+}
+
+.tox-editor-header {
+  border-bottom: 1px solid #e1e3e5 !important;
+  background: #f8f9fa !important;
+}
+
+.tox-toolbar {
+  background: #f8f9fa !important;
+}
+
+.tox-edit-area {
+  background: #ffffff !important;
+}
+
+.tox-edit-area iframe {
+  border-radius: 0 0 8px 8px !important;
+}
+
+/* Mobile specific styles */
+@media (max-width: 768px) {
+  .tinymce-editor-container {
+    min-height: 350px;
+    max-height: 500px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .tox-tinymce {
+    border-radius: 8px !important;
+  }
+  
+  .tox-edit-area {
+    min-height: 280px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  .tox-edit-area iframe {
+    min-height: 280px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  .tox-toolbar {
+    padding: 4px 8px !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+  }
+  
+  .tox-toolbar__group {
+    margin-right: 8px !important;
+  }
+  
+  .tox-tbtn {
+    min-width: 32px !important;
+    height: 32px !important;
+  }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  .tox-edit-area {
+    -webkit-overflow-scrolling: touch !important;
+    transform: translateZ(0) !important;
+  }
+  
+  .tox-edit-area iframe {
+    -webkit-overflow-scrolling: touch !important;
+    transform: translateZ(0) !important;
+  }
+}
+
+/* Fullscreen mode styles */
+.tinymce-editor-container.expanded .tox-tinymce {
+  border-radius: 12px !important;
+  height: 100% !important;
+}
+
+.tinymce-editor-container.expanded .tox-edit-area {
+  height: calc(100% - 60px) !important;
+}
+
+.tinymce-editor-container.expanded .tox-edit-area iframe {
+  height: 100% !important;
+  border-radius: 0 0 12px 12px !important;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .tinymce-editor-container {
+    background: #191919;
+    border-color: #373737;
+  }
+  
+  .tox-editor-header {
+    background: #202020 !important;
+    border-color: #373737 !important;
+  }
+  
+  .tox-toolbar {
+    background: #202020 !important;
+  }
+  
+  .tox-edit-area {
+    background: #191919 !important;
+  }
+}
+
+/* Focus styles */
+.tox-tinymce:focus-within {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Loading state */
+.tox-tinymce.tox-loading {
+  opacity: 0.7;
+}
+
+/* Status bar styling */
+.tox-statusbar {
+  background: #f8f9fa !important;
+  border-top: 1px solid #e1e3e5 !important;
+  font-size: 12px !important;
+  color: #6c757d !important;
+}
+
+/* Mobile status bar */
+@media (max-width: 768px) {
+  .tox-statusbar {
+    display: none !important;
+  }
+}
