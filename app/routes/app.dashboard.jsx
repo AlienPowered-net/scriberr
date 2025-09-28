@@ -5922,51 +5922,6 @@ export default function Index() {
                   </div>
                 )}
 
-                {/* Save Status Indicator */}
-                <div style={{ 
-                  marginTop: "8px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  flexWrap: "wrap"
-                }}>
-                  {wasJustSaved && (
-                    <div style={{
-                      backgroundColor: "#008060",
-                      color: "white",
-                      padding: "4px 8px",
-                      borderRadius: "4px",
-                      fontSize: "11px",
-                      fontWeight: "500"
-                    }}>
-                      ✓ Saved
-                    </div>
-                  )}
-                  {hasUnsavedChanges && !wasJustSaved && (
-                    <div style={{
-                      backgroundColor: "#FF8C00",
-                      color: "white",
-                      padding: "4px 8px",
-                      borderRadius: "4px",
-                      fontSize: "11px",
-                      fontWeight: "500"
-                    }}>
-                      • Unsaved changes
-                    </div>
-                  )}
-                  {autoSaveNotification && (
-                    <div style={{
-                      backgroundColor: "#5c6ac4",
-                      color: "white",
-                      padding: "4px 8px",
-                      borderRadius: "4px",
-                      fontSize: "11px",
-                      fontWeight: "500"
-                    }}>
-                      Auto-saved {autoSaveNotification}
-                    </div>
-                  )}
-                </div>
               </div>
 
               {/* Title Input */}
