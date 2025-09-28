@@ -1367,8 +1367,12 @@ export default function Index() {
       setTimeout(() => setAlertMessage(''), 4000);
       // Animate the Back to Folders button after error message disappears
       setTimeout(() => {
+        console.log('Starting Back to Folders animation');
         setAnimateBackToFolders(true);
-        setTimeout(() => setAnimateBackToFolders(false), 2000);
+        setTimeout(() => {
+          console.log('Stopping Back to Folders animation');
+          setAnimateBackToFolders(false);
+        }, 2000);
       }, 4000);
       return;
     }
@@ -2682,6 +2686,14 @@ export default function Index() {
                 0%, 100% { transform: translateX(0); }
                 10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
                 20%, 40%, 60%, 80% { transform: translateX(5px); }
+              }
+              
+              /* Animation class for Back to Folders button */
+              .back-to-folders-animate {
+                background-color: #16A34A !important;
+                border-color: #16A34A !important;
+                animation: shake 0.5s ease-in-out !important;
+                transition: all 0.3s ease !important;
               }
         `}</style>
 
@@ -4740,14 +4752,13 @@ export default function Index() {
                     variant="secondary"
                     size="slim"
                     onClick={() => setMobileActiveSection('folders')}
+                    className={animateBackToFolders ? 'back-to-folders-animate' : ''}
                     style={{ 
                       fontSize: '14px', 
                       fontWeight: '500', 
-                      backgroundColor: animateBackToFolders ? '#16A34A' : '#000000', 
+                      backgroundColor: '#000000', 
                       color: '#ffffff', 
-                      borderColor: animateBackToFolders ? '#16A34A' : '#000000',
-                      animation: animateBackToFolders ? 'shake 0.5s ease-in-out' : 'none',
-                      transition: 'all 0.3s ease'
+                      borderColor: '#000000'
                     }}
                   >
                     Back to Folders
@@ -4763,8 +4774,12 @@ export default function Index() {
                         setTimeout(() => setAlertMessage(''), 4000);
                         // Animate the Back to Folders button after error message disappears
                         setTimeout(() => {
+                          console.log('Starting Back to Folders animation (mobile)');
                           setAnimateBackToFolders(true);
-                          setTimeout(() => setAnimateBackToFolders(false), 2000);
+                          setTimeout(() => {
+                            console.log('Stopping Back to Folders animation (mobile)');
+                            setAnimateBackToFolders(false);
+                          }, 2000);
                         }, 4000);
                         return;
                       }
@@ -4782,14 +4797,13 @@ export default function Index() {
                     variant="secondary"
                     size="slim"
                     onClick={() => setMobileActiveSection('folders')}
+                    className={animateBackToFolders ? 'back-to-folders-animate' : ''}
                     style={{ 
                       fontSize: '14px', 
                       fontWeight: '500', 
-                      backgroundColor: animateBackToFolders ? '#16A34A' : '#000000', 
+                      backgroundColor: '#000000', 
                       color: '#ffffff', 
-                      borderColor: animateBackToFolders ? '#16A34A' : '#000000',
-                      animation: animateBackToFolders ? 'shake 0.5s ease-in-out' : 'none',
-                      transition: 'all 0.3s ease'
+                      borderColor: '#000000'
                     }}
                   >
                     Back to Folders
