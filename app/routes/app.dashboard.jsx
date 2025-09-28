@@ -1376,10 +1376,15 @@ export default function Index() {
         setHasUnsavedChanges(false);
         setWasJustSaved(false);
       } else if (!trimmedBody) {
-        setAlertMessage('Please provide content for the note');
-        setAlertType('error');
-        setTimeout(() => setAlertMessage(''), 3000);
-        return;
+        // If note has title but no body, discard it when creating new note
+        // (Don't block new note creation)
+        setEditingNoteId(null);
+        setTitle('');
+        setBody('');
+        setFolderId('');
+        setNoteTags([]);
+        setHasUnsavedChanges(false);
+        setWasJustSaved(false);
       } else {
         const formData = new FormData();
         formData.append('noteId', editingNoteId);

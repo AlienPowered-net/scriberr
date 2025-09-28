@@ -31,10 +31,8 @@ export async function action({ request }) {
     return json({ error: "Note title cannot exceed 35 characters" });
   }
 
-  // Check if at least title or body is provided (allow empty title for placeholder notes)
-  if (!trimmedBody) {
-    return json({ error: "Please provide content for the note" });
-  }
+  // Allow creating notes with empty content (for new note creation)
+  // Content validation will be handled when saving existing notes
 
   // Check if a folder is selected
   if (!trimmedFolderId) {
