@@ -391,7 +391,7 @@ export default function Notepad() {
                     </div>
                     <div className="noteMeta">
                       <div className="noteTitle">{item.title || "Untitled"}</div>
-                      <div className="noteSnippet">{(item.content || "").slice(0, 120)}</div>
+                      <div className="noteSnippet">{(item.content || "").slice(0, 200)}</div>
                     </div>
                   </div>
                 </ResourceList.Item>

@@ -3241,10 +3241,10 @@ export default function Index() {
           /* Preview text clamp fallback */
           .preview-clip {
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 4;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            max-height: calc(1.4em * 2);
+            max-height: calc(1.4em * 4);
           }
           
           body, html {
@@ -6290,11 +6290,11 @@ export default function Index() {
                             fontSize: '14px',
                             lineHeight: '1.4',
                             display: '-webkit-box',
-                            WebkitLineClamp: 2,
+                            WebkitLineClamp: 4,
                             WebkitBoxOrient: 'vertical',
                             overflow: 'hidden'
                           }}>
-                            {note.content.replace(/<[^>]*>/g, '').substring(0, 100)}...
+                            {note.content.replace(/<[^>]*>/g, '').substring(0, 200)}...
                           </p>
                         )}
                         
