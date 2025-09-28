@@ -22,7 +22,7 @@ import TiptapDragHandle from './TiptapDragHandle';
 import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack } from '@shopify/polaris';
 
-const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobileProp = false }) => {
+const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobileProp = false, onFullscreenChange }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -314,7 +314,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
 
   const toggleExpanded = () => {
-    setIsExpanded(!isExpanded);
+    const newExpandedState = !isExpanded;
+    setIsExpanded(newExpandedState);
+    // Notify parent component about fullscreen state change
+    if (onFullscreenChange) {
+      console.log('AdvancedRTE: Notifying parent of fullscreen state change:', newExpandedState);
+      onFullscreenChange(newExpandedState);
+    }
   };
 
   if (!editor) {

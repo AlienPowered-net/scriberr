@@ -65,7 +65,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 /* ------------------ SortableColumn Component ------------------ */
-function SortableColumn({ id, children, ...props }) {
+function SortableColumn({ id, children, isEditorFullscreen, ...props }) {
   const {
     attributes,
     listeners,
@@ -93,32 +93,34 @@ function SortableColumn({ id, children, ...props }) {
       {...attributes}
       {...props}
     >
-      {/* Drag handle positioned lower with more space from top */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '8px',
-          left: '8px',
-          zIndex: 10,
-          cursor: 'grab',
-          padding: '6px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '28px',
-          height: '28px'
-        }}
-        {...listeners}
-      >
-        <div style={{ 
-          fontSize: "14px", 
-          color: "#6d7175",
-          userSelect: "none",
-          cursor: "grab"
-        }}>
-          ⋮⋮
+      {/* Drag handle positioned lower with more space from top - hidden when editor is fullscreen */}
+      {!isEditorFullscreen && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '8px',
+            left: '8px',
+            zIndex: 10,
+            cursor: 'grab',
+            padding: '6px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '28px',
+            height: '28px'
+          }}
+          {...listeners}
+        >
+          <div style={{ 
+            fontSize: "14px", 
+            color: "#6d7175",
+            userSelect: "none",
+            cursor: "grab"
+          }}>
+            ⋮⋮
+          </div>
         </div>
-      </div>
+      )}
       {children}
     </div>
   );
@@ -520,6 +522,21 @@ export default function Index() {
     }
     return ['folders', 'notes', 'editor'];
   });
+
+  // State to track if any editor is in fullscreen mode
+  const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
+
+  // Debug logging for fullscreen state changes
+  useEffect(() => {
+    console.log('Editor fullscreen state changed:', isEditorFullscreen);
+  }, [isEditorFullscreen]);
+
+  // Cleanup effect to reset fullscreen state when component unmounts
+  useEffect(() => {
+    return () => {
+      setIsEditorFullscreen(false);
+    };
+  }, []);
   
   // Ref to hold the current columnOrder for use in event handlers
   const columnOrderRef = useRef(columnOrder);
@@ -3179,6 +3196,7 @@ export default function Index() {
                   <SortableColumn 
                     key="folders"
                     id="folders"
+                    isEditorFullscreen={isEditorFullscreen}
                     style={{ width: "380px", minWidth: "380px", maxWidth: "380px", overflow: "hidden" }}
                   >
           <Card
@@ -3602,6 +3620,7 @@ export default function Index() {
                   <SortableColumn 
                     key="notes"
                     id="notes"
+                    isEditorFullscreen={isEditorFullscreen}
                     style={{ width: "380px", minWidth: "380px", maxWidth: "380px", overflow: "hidden" }}
                   >
           <Card style={{ flex: "1", display: "flex", flexDirection: "column", backgroundColor: "#fff", height: "100%", minHeight: "100%", padding: "0", margin: "0", borderRadius: "8px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", border: "1px solid #e1e3e5" }}>
@@ -3853,6 +3872,7 @@ export default function Index() {
                   <SortableColumn 
                     key="editor"
                     id="editor"
+                    isEditorFullscreen={isEditorFullscreen}
                     style={{ 
                       ...(collapsedColumns.folders && collapsedColumns.notes ? {
                         flex: "1",
@@ -4109,12 +4129,14 @@ export default function Index() {
                       editingNoteId={editingNoteId}
                       wasJustSaved={wasJustSaved}
                       isNewlyCreated={isNewlyCreated}
+                      onFullscreenChange={setIsEditorFullscreen}
                     />
                   ) : (
                     <AdvancedRTE
                       value={body}
                       onChange={setBody}
                       placeholder="Type your note here..."
+                      onFullscreenChange={setIsEditorFullscreen}
                     />
                   )}
                 </div>
@@ -6256,12 +6278,14 @@ export default function Index() {
                       editingNoteId={editingNoteId}
                       wasJustSaved={wasJustSaved}
                       isNewlyCreated={isNewlyCreated}
+                      onFullscreenChange={setIsEditorFullscreen}
                     />
                   ) : (
                     <AdvancedRTE
                       value={body}
                       onChange={setBody}
                       placeholder="Type your note here..."
+                      onFullscreenChange={setIsEditorFullscreen}
                     />
                   )}
                 </div>

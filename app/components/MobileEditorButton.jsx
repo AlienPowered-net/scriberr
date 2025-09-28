@@ -12,7 +12,8 @@ const MobileEditorButton = ({
   autoSaveTime = null,
   editingNoteId = null,
   wasJustSaved = false,
-  isNewlyCreated = false
+  isNewlyCreated = false,
+  onFullscreenChange
 }) => {
   const [showEditorModal, setShowEditorModal] = useState(false);
 
@@ -284,6 +285,7 @@ const MobileEditorButton = ({
               onChange={onChange}
               placeholder={placeholder}
               isMobileProp={true}
+              onFullscreenChange={onFullscreenChange}
             />
           </div>
         </div>
