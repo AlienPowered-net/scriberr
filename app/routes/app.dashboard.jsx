@@ -1317,14 +1317,22 @@ export default function Index() {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          // Store current context before clearing
-          const currentFolderId = selectedFolder;
-          const currentNoteId = editingNoteId;
+          // Update the notes list to reflect the changes
+          const updatedNote = {
+            id: editingNoteId,
+            title: trimmedTitle || "Untitled",
+            content: trimmedBody,
+            tags: noteTags.map(tag => removeEmojis(tag)),
+            folderId: trimmedFolderId,
+            updatedAt: new Date().toISOString()
+          };
           
-          // Store the note ID and folder ID in localStorage BEFORE reload
-          localStorage.setItem('selectedNoteId', currentNoteId);
-          localStorage.setItem('selectedFolderId', currentFolderId);
-          
+          // Update the notes list
+          setLocalNotes(prevNotes => 
+            prevNotes.map(note => 
+              note.id === editingNoteId ? { ...note, ...updatedNote } : note
+            )
+          );
           
           // Clear the form
           setEditingNoteId(null);
@@ -1332,9 +1340,13 @@ export default function Index() {
           setBody('');
           setFolderId('');
           setNoteTags([]);
+          setHasUnsavedChanges(false);
+          setWasJustSaved(true);
           
-          // Reload the page but maintain context
-          window.location.reload();
+          // Show success message
+          setAlertMessage('Note updated successfully');
+          setAlertType('success');
+          setTimeout(() => setAlertMessage(''), 3000);
         } else {
           setAlertMessage(result.error || 'Failed to update note');
           setAlertType('error');
@@ -2244,13 +2256,23 @@ export default function Index() {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          // Store current context before clearing
-          const currentFolderId = selectedFolder;
-          const newNoteId = result.noteId; // For new notes, we get the ID back
+          // Add the new note to the notes list
+          const newNote = {
+            id: result.noteId,
+            title: trimmedTitle || "Untitled",
+            content: trimmedBody,
+            tags: noteTags.map(tag => removeEmojis(tag)),
+            folderId: trimmedFolderId,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            folder: {
+              id: trimmedFolderId,
+              name: folders.find(f => f.id === trimmedFolderId)?.name || "Unknown Folder"
+            }
+          };
           
-          // Store the note ID and folder ID in localStorage BEFORE reload
-          localStorage.setItem('selectedNoteId', newNoteId || editingNoteId);
-          localStorage.setItem('selectedFolderId', currentFolderId);
+          // Add the new note to the notes list
+          setLocalNotes(prevNotes => [newNote, ...prevNotes]);
           
           // Clear the form
           setEditingNoteId(null);
@@ -2258,9 +2280,13 @@ export default function Index() {
           setBody('');
           setFolderId('');
           setNoteTags([]);
+          setHasUnsavedChanges(false);
+          setWasJustSaved(true);
           
-          // Reload the page but maintain context
-          window.location.reload();
+          // Show success message
+          setAlertMessage('Note created successfully');
+          setAlertType('success');
+          setTimeout(() => setAlertMessage(''), 3000);
         } else {
           setAlertMessage(result.error || 'Failed to save note');
           setAlertType('error');
