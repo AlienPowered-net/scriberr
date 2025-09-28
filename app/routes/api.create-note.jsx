@@ -70,6 +70,7 @@ export async function action({ request }) {
         content: true,
         tags: true,
         folderId: true,
+        pinnedAt: true,
         createdAt: true,
         updatedAt: true,
         folder: {

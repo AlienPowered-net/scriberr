@@ -275,7 +275,7 @@ export async function loader({ request }) {
         n."updatedAt" DESC
     `;
   } else {
-    notes = await prisma.note.findMany({
+    const notesWithoutPinnedAt = await prisma.note.findMany({
       where: { shopId },
       orderBy: { updatedAt: "desc" },
       select: {
@@ -294,6 +294,12 @@ export async function loader({ request }) {
         updatedAt: true,
       },
     });
+    
+    // Explicitly set pinnedAt to null for all notes when column doesn't exist
+    notes = notesWithoutPinnedAt.map(note => ({
+      ...note,
+      pinnedAt: null
+    }));
   }
 
 
