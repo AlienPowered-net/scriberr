@@ -4694,7 +4694,7 @@ export default function Index() {
             <div 
               style={{
                 position: "fixed",
-                top: "80px",
+                top: "10px",
                 left: "10px",
                 right: "10px",
                 padding: "16px 20px",
