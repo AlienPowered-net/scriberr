@@ -1273,6 +1273,118 @@ export default function Index() {
     return str.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1F018}-\u{1F270}]|[\u{238C}-\u{2454}]|[\u{20D0}-\u{20FF}]|[\u{FE00}-\u{FE0F}]|[\u{1F900}-\u{1F9FF}]|[\u{1F018}-\u{1F270}]|[\u{238C}-\u{2454}]|[\u{20D0}-\u{20FF}]|[\u{FE00}-\u{FE0F}]/gu, '');
   };
 
+  // Handle mobile save - maintains editing state and shows saved status
+  const handleMobileSave = async () => {
+    const trimmedTitle = removeEmojis(title.trim());
+    const trimmedBody = removeEmojis(body.trim());
+    const trimmedFolderId = folderId.trim();
+
+    // Check if at least title or body is provided
+    if (!trimmedTitle && !trimmedBody) {
+      setAlertMessage('Please provide a title or content for the note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
+    // Check if a folder is selected
+    if (!trimmedFolderId) {
+      setAlertMessage('Please select a folder for the note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('title', trimmedTitle);
+    formData.append('body', trimmedBody);
+    formData.append('folderId', trimmedFolderId);
+    formData.append('tags', JSON.stringify(noteTags.map(tag => removeEmojis(tag))));
+    
+    try {
+      const endpoint = editingNoteId ? '/api/update-note' : '/api/create-note';
+      if (editingNoteId) {
+        formData.append('noteId', editingNoteId);
+      }
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Accept-Charset': 'utf-8'
+        },
+        body: formData
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          if (editingNoteId) {
+            // Update existing note in the notes list
+            const updatedNote = {
+              id: editingNoteId,
+              title: trimmedTitle || "Untitled",
+              content: trimmedBody,
+              tags: noteTags.map(tag => removeEmojis(tag)),
+              folderId: trimmedFolderId,
+              updatedAt: new Date().toISOString()
+            };
+            
+            setLocalNotes(prevNotes => 
+              prevNotes.map(note => 
+                note.id === editingNoteId ? { ...note, ...updatedNote } : note
+              )
+            );
+          } else {
+            // Add new note to the notes list
+            const newNote = {
+              id: result.noteId,
+              title: trimmedTitle || "Untitled",
+              content: trimmedBody,
+              tags: noteTags.map(tag => removeEmojis(tag)),
+              folderId: trimmedFolderId,
+              pinnedAt: null,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              folder: {
+                id: trimmedFolderId,
+                name: folders.find(f => f.id === trimmedFolderId)?.name || "Unknown Folder"
+              }
+            };
+            
+            setLocalNotes(prevNotes => [newNote, ...prevNotes]);
+            setEditingNoteId(result.noteId);
+          }
+          
+          // Keep the form open and show saved state
+          setHasUnsavedChanges(false);
+          setWasJustSaved(true);
+          
+          // Reset wasJustSaved after 3 seconds
+          setTimeout(() => setWasJustSaved(false), 3000);
+          
+          // Show success message
+          setAlertMessage('Note saved successfully');
+          setAlertType('success');
+          setTimeout(() => setAlertMessage(''), 3000);
+        } else {
+          setAlertMessage(result.error || 'Failed to save note');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
+        }
+      } else {
+        setAlertMessage('Failed to save note');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error saving note:', error);
+      setAlertMessage('Failed to save note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+    }
+  };
+
   // Handle saving note changes
   const handleSaveNote = async () => {
     const trimmedTitle = removeEmojis(title.trim());
@@ -2263,6 +2375,7 @@ export default function Index() {
             content: trimmedBody,
             tags: noteTags.map(tag => removeEmojis(tag)),
             folderId: trimmedFolderId,
+            pinnedAt: null, // Explicitly set to null for new notes
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             folder: {
@@ -5763,7 +5876,7 @@ export default function Index() {
                         fontSize: "12px",
                         fontWeight: "500"
                       }}
-                      onClick={handleSaveNote}
+                      onClick={handleMobileSave}
                     >
                       Save
                     </button>
@@ -5802,6 +5915,52 @@ export default function Index() {
                     {localFolders.find(f => f.id === selectedFolder)?.name}
                   </div>
                 )}
+
+                {/* Save Status Indicator */}
+                <div style={{ 
+                  marginTop: "8px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  flexWrap: "wrap"
+                }}>
+                  {wasJustSaved && (
+                    <div style={{
+                      backgroundColor: "#008060",
+                      color: "white",
+                      padding: "4px 8px",
+                      borderRadius: "4px",
+                      fontSize: "11px",
+                      fontWeight: "500"
+                    }}>
+                      ✓ Saved
+                    </div>
+                  )}
+                  {hasUnsavedChanges && !wasJustSaved && (
+                    <div style={{
+                      backgroundColor: "#FF8C00",
+                      color: "white",
+                      padding: "4px 8px",
+                      borderRadius: "4px",
+                      fontSize: "11px",
+                      fontWeight: "500"
+                    }}>
+                      • Unsaved changes
+                    </div>
+                  )}
+                  {autoSaveNotification && (
+                    <div style={{
+                      backgroundColor: "#5c6ac4",
+                      color: "white",
+                      padding: "4px 8px",
+                      borderRadius: "4px",
+                      fontSize: "11px",
+                      fontWeight: "500"
+                    }}>
+                      Auto-saved {autoSaveNotification}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Title Input */}
