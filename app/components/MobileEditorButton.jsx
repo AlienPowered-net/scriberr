@@ -63,13 +63,14 @@ const MobileEditorButton = ({
       };
     }
     
-    // 2. Red - "Unsaved changes" - When you make changes and haven't saved yet
-    if (hasUnsavedChanges) {
+    // 2. Green - "Saved changes" - When you make edits and click save button (HIGHEST PRIORITY)
+    if (wasJustSaved) {
       return {
-        text: "Unsaved changes",
-        color: "#d82c0d", // Red
-        backgroundColor: "#fef2f2",
-        borderColor: "#d82c0d"
+        text: "Saved changes",
+        color: "#008060", // Green
+        backgroundColor: "#f0f9f4",
+        borderColor: "#008060",
+        timeText: lastSavedTime ? `Last saved on: ${lastSavedTime}` : "Last saved on: Just now"
       };
     }
     
@@ -84,14 +85,13 @@ const MobileEditorButton = ({
       };
     }
     
-    // 4. Green - "Saved changes" - When you make edits and click save button
-    if (wasJustSaved) {
+    // 4. Red - "Unsaved changes" - When you make changes and haven't saved yet
+    if (hasUnsavedChanges) {
       return {
-        text: "Saved changes",
-        color: "#008060", // Green
-        backgroundColor: "#f0f9f4",
-        borderColor: "#008060",
-        timeText: lastSavedTime ? `Last saved on: ${lastSavedTime}` : "Last saved on: Just now"
+        text: "Unsaved changes",
+        color: "#d82c0d", // Red
+        backgroundColor: "#fef2f2",
+        borderColor: "#d82c0d"
       };
     }
     
