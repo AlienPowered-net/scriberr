@@ -95,10 +95,10 @@ const MobileEditorButton = ({
       };
     }
     
-    // 5. Green - "Existing saved changes" - When you open an existing note
+    // 5. Green - "Last saved" - When you open an existing note
     if (editingNoteId && !wasJustSaved) {
       return {
-        text: "Existing saved changes",
+        text: "Last saved",
         color: "#008060", // Green
         backgroundColor: "#f0f9f4",
         borderColor: "#008060",
