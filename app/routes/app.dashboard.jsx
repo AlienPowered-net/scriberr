@@ -924,47 +924,232 @@ export default function Index() {
                 <i className="far fa-edit" style={{ fontSize: "20px" }}></i>
                 Note Editor
               </Text>
+              {(autoSaveNotification || hasUnsavedChanges) && (
+                <div style={{ marginTop: "4px" }}>
+                  {autoSaveNotification && (
+                    <Text as="p" style={{ 
+                      fontSize: "14px", 
+                      color: "#008060", 
+                      fontWeight: "500", 
+                      marginBottom: hasUnsavedChanges ? "4px" : "0",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px"
+                    }}>
+                      <i className="fas fa-check-circle" style={{ fontSize: "16px", color: "#008060" }}></i>
+                      {autoSaveNotification}
+                    </Text>
+                  )}
+                  {hasUnsavedChanges && (
+                    <Text as="p" style={{ 
+                      fontSize: "14px", 
+                      color: "rgba(199, 10, 36, 1)", 
+                      fontWeight: "600", 
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px"
+                    }}>
+                      <i className="fas fa-exclamation-triangle" style={{ fontSize: "16px", color: "rgba(199, 10, 36, 1)" }}></i>
+                      You have unsaved changes
+                    </Text>
+                  )}
+                </div>
+              )}
             </div>
+            <InlineStack gap="200">
+              {editingNoteId ? (
+                <>
+                  <Button 
+                    variant="primary"
+                    tone="success"
+                    disabled
+                  >
+                    Save Note
+                  </Button>
+                  <Button 
+                    variant="primary"
+                    tone="base"
+                    disabled
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="primary"
+                    tone="critical"
+                    disabled
+                  >
+                    Delete Note
+                  </Button>
+                </>
+              ) : (
+                <Button 
+                  variant="primary"
+                  tone="success"
+                  disabled
+                >
+                  Save Note
+                </Button>
+              )}
+            </InlineStack>
           </div>
-          
-          <div style={{ 
-            flex: "1", 
-            display: "flex", 
-            flexDirection: "column", 
-            padding: "16px",
-            backgroundColor: "#fff"
-          }}>
-            {selectedNote ? (
-              <div style={{ 
-                padding: "16px", 
-                backgroundColor: "#f8f9fa", 
-                borderRadius: "8px", 
-                border: "1px solid #e1e3e5",
-                minHeight: "200px"
-              }}>
-                <Text variant="bodyMd" style={{ fontWeight: '500', marginBottom: '8px' }}>
-                  {selectedNote.title || 'Untitled'}
-                </Text>
-                <Text variant="bodySm" style={{ color: '#6d7175' }}>
-                  {selectedNote.content ? selectedNote.content.replace(/<[^>]*>/g, '').trim().substring(0, 200) + '...' : 'No content'}
-                </Text>
+          <div style={{ padding: "16px 16px 16px 16px", flex: "1", overflowY: "auto" }}>
+            <BlockStack gap="300">
+              <div>
+                <div style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: "8px", 
+                  fontSize: "14px", 
+                  color: "#6d7175",
+                  marginBottom: "16px"
+                }}>
+                  {folderId ? (
+                    <>
+                      <span style={{ fontWeight: "500" }}>
+                        {folders.find(f => f.id === folderId)?.name}
+                      </span>
+                      <span>/</span>
+                      <span style={{ fontWeight: "600", color: "#202223" }}>
+                        {title || "(untitled)"}
+                      </span>
+                    </>
+                  ) : (
+                    <span style={{ fontStyle: "italic", color: "#8c9196" }}>
+                      Select a folder to start
+                    </span>
+                  )}
+                </div>
               </div>
-            ) : (
-              <div style={{ 
-                padding: "16px", 
-                backgroundColor: "#f8f9fa", 
-                borderRadius: "8px", 
-                border: "1px solid #e1e3e5",
-                minHeight: "200px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }}>
-                <Text variant="bodyMd" style={{ color: '#6d7175', fontStyle: 'italic' }}>
-                  Select a note to edit
-                </Text>
+              <div>
+                <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                  Tags
+                </label>
+                <div style={{ marginBottom: "8px" }}>
+                  <input
+                    type="text"
+                    style={{
+                      border: "none",
+                      outline: "none",
+                      fontSize: "14px",
+                      color: "#202223",
+                      padding: "8px 0",
+                      borderBottom: "1px solid #e1e3e5",
+                      cursor: "text",
+                      width: "100%",
+                      backgroundColor: "transparent",
+                      fontFamily: "inherit",
+                      transition: "border-color 0.2s ease"
+                    }}
+                    value={newTagInput}
+                    readOnly
+                    placeholder="Add a tag and press Enter..."
+                  />
+                </div>
+                {noteTags.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                    {noteTags.map((tag, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          padding: "4px 8px",
+                          backgroundColor: "#f6fff8",
+                          border: "1px solid #008060",
+                          borderRadius: "16px",
+                          fontSize: "12px",
+                          color: "#008060"
+                        }}
+                      >
+                        <span>{tag}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+              <div>
+                <input
+                  type="text"
+                  value={title}
+                  readOnly
+                  placeholder="Add a title to your note here..."
+                  maxLength={35}
+                  style={{
+                    border: "none",
+                    outline: "none",
+                    fontSize: "24px",
+                    fontWeight: "600",
+                    color: "#202223",
+                    padding: "8px 0",
+                    borderBottom: "1px solid #e1e3e5",
+                    cursor: "text",
+                    width: "100%",
+                    backgroundColor: "transparent",
+                    fontFamily: "inherit",
+                    transition: "border-color 0.2s ease"
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+                  Body
+                </label>
+                <div style={{
+                  border: "1px solid #e1e3e5",
+                  borderRadius: "8px",
+                  padding: "16px",
+                  minHeight: "200px",
+                  backgroundColor: "#f8f9fa",
+                  fontSize: "14px",
+                  lineHeight: "1.5",
+                  color: "#6d7175"
+                }}>
+                  {body ? (
+                    <div dangerouslySetInnerHTML={{ __html: body.substring(0, 300) + (body.length > 300 ? '...' : '') }} />
+                  ) : (
+                    <span style={{ fontStyle: "italic" }}>Type your note here...</span>
+                  )}
+                </div>
+              </div>
+              <div style={{ marginTop: "20px" }}>
+                <InlineStack gap="300">
+                {editingNoteId ? (
+                  <>
+                    <Button 
+                      variant="primary"
+                      tone="success"
+                      disabled
+                    >
+                      Save Note
+                    </Button>
+                    <Button 
+                      variant="primary"
+                      tone="base"
+                      disabled
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      variant="primary"
+                      tone="critical"
+                      disabled
+                    >
+                      Delete Note
+                    </Button>
+                  </>
+                ) : (
+                  <Button 
+                    variant="primary"
+                    tone="success"
+                    disabled
+                  >
+                    Save Note
+                  </Button>
+                )}
+                </InlineStack>
+              </div>
+            </BlockStack>
           </div>
         </Card>
       );
