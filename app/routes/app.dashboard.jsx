@@ -1358,7 +1358,7 @@ export default function Index() {
               }
             };
             
-            setLocalNotes(prevNotes => [newNote, ...prevNotes]);
+            setLocalNotes(prevNotes => insertNoteAfterOldestPin(newNote, prevNotes));
             setEditingNoteId(result.noteId);
           }
           
@@ -1595,8 +1595,8 @@ export default function Index() {
           // Add new note to the notes list immediately
           const newNote = result.note;
           
-          // Update notes state to include new note (add to beginning of array)
-          setLocalNotes(prevNotes => [newNote, ...prevNotes]);
+          // Update notes state to include new note (add after oldest pinned note)
+          setLocalNotes(prevNotes => insertNoteAfterOldestPin(newNote, prevNotes));
           
           // Set the new note as the editing note and populate editor
           setEditingNoteId(newNote.id);
@@ -1666,7 +1666,19 @@ export default function Index() {
         const result = await response.json();
         if (result.success) {
           setShowDeleteNoteConfirm(null);
-          window.location.reload();
+          // Remove the note from local state instead of reloading
+          setLocalNotes(prevNotes => prevNotes.filter(note => note.id !== noteId));
+          // If we were editing this note, clear the editor
+          if (editingNoteId === noteId) {
+            setEditingNoteId(null);
+            setTitle('');
+            setBody('');
+            setFolderId('');
+            setNoteTags([]);
+            setHasUnsavedChanges(false);
+            setWasJustSaved(false);
+            setIsNewlyCreated(false);
+          }
         } else {
           setAlertMessage(result.error || 'Failed to delete note');
           setAlertType('error');
@@ -1847,9 +1859,24 @@ export default function Index() {
       });
       
       await Promise.all(deletePromises);
+      
+      // Remove deleted notes from local state instead of reloading
+      setLocalNotes(prevNotes => prevNotes.filter(note => !selectedNotes.includes(note.id)));
+      
+      // If we were editing one of the deleted notes, clear the editor
+      if (selectedNotes.includes(editingNoteId)) {
+        setEditingNoteId(null);
+        setTitle('');
+        setBody('');
+        setFolderId('');
+        setNoteTags([]);
+        setHasUnsavedChanges(false);
+        setWasJustSaved(false);
+        setIsNewlyCreated(false);
+      }
+      
       setSelectedNotes([]);
       setShowDeleteMultipleConfirm(false);
-      window.location.reload();
     } catch (error) {
       console.error('Error deleting multiple notes:', error);
       setAlertMessage('Failed to delete some notes');
@@ -2061,6 +2088,32 @@ export default function Index() {
         return [...prev, noteId];
       }
     });
+  };
+
+  // Helper function to insert new note after oldest pinned note
+  const insertNoteAfterOldestPin = (newNote, notes) => {
+    // Find the oldest pinned note (last in the pinned section)
+    const pinnedNotes = notes.filter(note => note.pinnedAt !== null);
+    
+    if (pinnedNotes.length === 0) {
+      // No pinned notes, add to beginning
+      return [newNote, ...notes];
+    }
+    
+    // Sort pinned notes by pinnedAt DESC (newest first)
+    const sortedPinnedNotes = pinnedNotes.sort((a, b) => 
+      new Date(b.pinnedAt) - new Date(a.pinnedAt)
+    );
+    
+    // Find the oldest pinned note (last in sorted array)
+    const oldestPinnedNote = sortedPinnedNotes[sortedPinnedNotes.length - 1];
+    const oldestPinnedIndex = notes.findIndex(note => note.id === oldestPinnedNote.id);
+    
+    // Insert new note after the oldest pinned note
+    const newNotes = [...notes];
+    newNotes.splice(oldestPinnedIndex + 1, 0, newNote);
+    
+    return newNotes;
   };
 
   // Handle pin note with optimistic updates
@@ -2390,8 +2443,8 @@ export default function Index() {
             }
           };
           
-          // Add the new note to the notes list
-          setLocalNotes(prevNotes => [newNote, ...prevNotes]);
+          // Add the new note to the notes list (after oldest pinned note)
+          setLocalNotes(prevNotes => insertNoteAfterOldestPin(newNote, prevNotes));
           
           // Clear the form
           setEditingNoteId(null);
@@ -4084,7 +4137,11 @@ export default function Index() {
                       if (response.ok) {
                         const result = await response.json();
                         if (result.success) {
-                          window.location.reload();
+                          // Remove folder from local state and clear selected folder if it was deleted
+                          setLocalFolders(prevFolders => prevFolders.filter(folder => folder.id !== showDeleteConfirm));
+                          if (selectedFolder === showDeleteConfirm) {
+                            setSelectedFolder(null);
+                          }
                         } else {
                           setAlertMessage(result.error || 'Failed to delete folder');
                           setAlertType('error');
@@ -6140,7 +6197,7 @@ export default function Index() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  zIndex: 10001,
+                  zIndex: 99999,
                   padding: "16px"
                 }}>
                   <div style={{
@@ -6180,7 +6237,12 @@ export default function Index() {
                             if (response.ok) {
                               const result = await response.json();
                               if (result.success) {
-                                window.location.reload();
+                                // Remove folder from local state and clear selected folder if it was deleted
+                                setLocalFolders(prevFolders => prevFolders.filter(folder => folder.id !== showDeleteConfirm));
+                                if (selectedFolder === showDeleteConfirm) {
+                                  setSelectedFolder(null);
+                                }
+                                setShowDeleteConfirm(null);
                               } else {
                                 setAlertMessage(result.error || 'Failed to delete folder');
                                 setShowDeleteConfirm(null);
