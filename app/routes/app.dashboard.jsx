@@ -637,16 +637,17 @@ export default function Index() {
       return (
         <div style={{ 
           padding: '16px', 
-          backgroundColor: '#fafafa', 
+          backgroundColor: '#fff', 
           minHeight: '200px',
           width: '380px',
           borderRadius: '8px',
-          border: '1px solid #e1e3e5'
+          border: '1px solid #e1e3e5',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ 
               padding: '12px', 
-              backgroundColor: '#fff', 
+              backgroundColor: '#f8f9fa', 
               borderRadius: '4px', 
               border: '1px solid #e1e3e5',
               display: 'flex',
@@ -660,14 +661,17 @@ export default function Index() {
             {folders.slice(0, 4).map((folder) => (
               <div key={folder.id} style={{ 
                 padding: '8px 12px', 
-                backgroundColor: '#fff', 
+                backgroundColor: '#f8f9fa', 
                 borderRadius: '4px', 
                 border: '1px solid #e1e3e5',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px'
               }}>
-                <div style={{ fontSize: '16px' }}>{folder.icon}</div>
+                <i className={`far fa-${folder.icon || 'folder'}`} style={{ 
+                  fontSize: '16px', 
+                  color: folder.iconColor || '#f57c00' 
+                }}></i>
                 <Text variant="bodyMd">{folder.name}</Text>
               </div>
             ))}
@@ -683,16 +687,17 @@ export default function Index() {
       return (
         <div style={{ 
           padding: '16px', 
-          backgroundColor: '#fafafa', 
+          backgroundColor: '#fff', 
           minHeight: '200px',
           width: '380px',
           borderRadius: '8px',
-          border: '1px solid #e1e3e5'
+          border: '1px solid #e1e3e5',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ 
               padding: '12px', 
-              backgroundColor: '#fff', 
+              backgroundColor: '#f8f9fa', 
               borderRadius: '4px', 
               border: '1px solid #e1e3e5',
               display: 'flex',
@@ -706,7 +711,7 @@ export default function Index() {
             {notes.slice(0, 4).map((note) => (
               <div key={note.id} style={{ 
                 padding: '8px 12px', 
-                backgroundColor: '#fff', 
+                backgroundColor: '#f8f9fa', 
                 borderRadius: '4px', 
                 border: '1px solid #e1e3e5'
               }}>
@@ -730,16 +735,17 @@ export default function Index() {
       return (
         <div style={{ 
           padding: '16px', 
-          backgroundColor: '#fafafa', 
+          backgroundColor: '#fff', 
           minHeight: '200px',
           width: '400px',
           borderRadius: '8px',
-          border: '1px solid #e1e3e5'
+          border: '1px solid #e1e3e5',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ 
               padding: '12px', 
-              backgroundColor: '#fff', 
+              backgroundColor: '#f8f9fa', 
               borderRadius: '4px', 
               border: '1px solid #e1e3e5',
               display: 'flex',
@@ -752,7 +758,7 @@ export default function Index() {
             </div>
             <div style={{ 
               padding: '12px', 
-              backgroundColor: '#fff', 
+              backgroundColor: '#f8f9fa', 
               borderRadius: '4px', 
               border: '1px solid #e1e3e5',
               minHeight: '120px'
@@ -3198,6 +3204,7 @@ export default function Index() {
                     id="folders"
                     isEditorFullscreen={isEditorFullscreen}
                     style={{ width: "380px", minWidth: "380px", maxWidth: "380px", overflow: "hidden" }}
+                    data-column-id="folders"
                   >
           <Card
             style={{
@@ -3622,6 +3629,7 @@ export default function Index() {
                     id="notes"
                     isEditorFullscreen={isEditorFullscreen}
                     style={{ width: "380px", minWidth: "380px", maxWidth: "380px", overflow: "hidden" }}
+                    data-column-id="notes"
                   >
           <Card style={{ flex: "1", display: "flex", flexDirection: "column", backgroundColor: "#fff", height: "100%", minHeight: "100%", padding: "0", margin: "0", borderRadius: "8px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", border: "1px solid #e1e3e5" }}>
             {/* Fixed Header Section */}
@@ -3884,6 +3892,7 @@ export default function Index() {
                       }),
                       transition: "all 0.3s ease"
                     }}
+                    data-column-id="editor"
                   >
           <Card style={{ flex: "1", display: "flex", flexDirection: "column", backgroundColor: "#fff", height: "100%", minHeight: "100%", padding: "0", margin: "0", borderRadius: "8px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", border: "1px solid #e1e3e5" }}>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
