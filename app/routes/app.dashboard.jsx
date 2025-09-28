@@ -718,7 +718,7 @@ export default function Index() {
                 <Text variant="bodyMd" style={{ fontWeight: '500' }}>{note.title || 'Untitled'}</Text>
                 {note.content && (
                   <Text variant="bodySm" style={{ color: '#6d7175', marginTop: '4px' }}>
-                    {note.content.substring(0, 50)}...
+                    {note.content.replace(/<[^>]*>/g, '').trim().substring(0, 50)}...
                   </Text>
                 )}
               </div>
@@ -769,7 +769,7 @@ export default function Index() {
                     {selectedNote.title || 'Untitled'}
                   </Text>
                   <Text variant="bodySm" style={{ color: '#6d7175' }}>
-                    {selectedNote.content ? selectedNote.content.substring(0, 100) + '...' : 'No content'}
+                    {selectedNote.content ? selectedNote.content.replace(/<[^>]*>/g, '').trim().substring(0, 100) + '...' : 'No content'}
                   </Text>
                 </div>
               ) : (
