@@ -2684,16 +2684,23 @@ export default function Index() {
               /* Shake animation for Back to Folders button */
               @keyframes shake {
                 0%, 100% { transform: translateX(0); }
-                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-                20%, 40%, 60%, 80% { transform: translateX(5px); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+                20%, 40%, 60%, 80% { transform: translateX(8px); }
+              }
+              
+              /* Glow animation for Back to Folders button */
+              @keyframes glow {
+                0%, 100% { box-shadow: 0 0 5px #16A34A; }
+                50% { box-shadow: 0 0 20px #16A34A, 0 0 30px #16A34A; }
               }
               
               /* Animation class for Back to Folders button */
               .back-to-folders-animate {
                 background-color: #16A34A !important;
                 border-color: #16A34A !important;
-                animation: shake 0.5s ease-in-out !important;
+                animation: shake 0.6s ease-in-out, glow 1s ease-in-out infinite !important;
                 transition: all 0.3s ease !important;
+                transform: scale(1.05) !important;
               }
         `}</style>
 
@@ -4687,7 +4694,7 @@ export default function Index() {
             <div 
               style={{
                 position: "fixed",
-                top: "10px",
+                top: "80px",
                 left: "10px",
                 right: "10px",
                 padding: "16px 20px",
