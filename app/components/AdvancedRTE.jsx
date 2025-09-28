@@ -247,7 +247,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       });
       setShowTableMenu(true);
       setShowBubbleMenu(false);
-      setShowFloatingMenu(false);
     };
 
     const editorElement = editor.view.dom;
@@ -426,15 +425,17 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         backgroundColor: '#ffffff',
         ...(isExpanded && {
           position: 'fixed',
-          top: '20px',
-          left: '20px',
-          right: '20px',
-          bottom: '20px',
-          zIndex: 9999,
-          maxHeight: 'calc(100vh - 40px)',
-          maxWidth: 'calc(100vw - 40px)',
+          top: '0',
+          left: '0',
+          right: '0',
+          bottom: '0',
+          zIndex: 99999,
+          height: '100vh',
+          width: '100vw',
+          maxHeight: '100vh',
+          maxWidth: '100vw',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 10px 20px -5px rgba(0, 0, 0, 0.3)',
-          borderRadius: '12px'
+          borderRadius: '0px'
         }),
         ...(isMobileProp && !isExpanded && {
           minHeight: '500px', // Ensure minimum height on mobile
@@ -903,13 +904,18 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         style={{
           position: "relative",
           backgroundColor: "#ffffff",
-          borderRadius: "0 0 8px 8px",
+          borderRadius: isExpanded ? "0px" : "0 0 8px 8px",
           margin: "0",
           padding: "0",
-          border: "1px solid #dee2e6",
+          border: isExpanded ? "none" : "1px solid #dee2e6",
           borderTop: "none",
           cursor: "text",
           overflow: "hidden", // Prevent outer container from scrolling
+          ...(isExpanded && {
+            height: "calc(100vh - 60px)", // Full height minus toolbar
+            display: "flex",
+            flexDirection: "column"
+          }),
           ...(isMobile && {
             minHeight: "500px",
             maxHeight: "700px",
@@ -927,7 +933,22 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           <EditorContent 
             editor={editor} 
             className="advanced-rte-content"
-            style={isMobile ? {
+            style={isExpanded ? {
+              height: "calc(100vh - 120px)", // Full height minus toolbar and padding
+              minHeight: "calc(100vh - 120px)",
+              maxHeight: "calc(100vh - 120px)",
+              overflowY: "auto",
+              overflowX: "hidden",
+              padding: "24px",
+              border: "none",
+              outline: "none",
+              fontSize: "16px",
+              lineHeight: "1.6",
+              color: "#212529",
+              cursor: "text",
+              width: "100%",
+              backgroundColor: "#ffffff"
+            } : isMobile ? {
               minHeight: "400px", // 15+ lines on mobile (400px = ~15 lines at 18px font)
               maxHeight: "600px", // 20+ lines on mobile (600px = ~20 lines at 18px font)
               overflowY: "auto", // Add scroll when content exceeds max height
@@ -2102,10 +2123,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       {/* Overlay for expanded mode */}
       {isExpanded && (
         <div 
-          className="fixed inset-0 z-40"
+          className="fixed inset-0"
           style={{
             backgroundColor: "rgba(0, 0, 0, 0.75)",
-            backdropFilter: "blur(4px)"
+            backdropFilter: "blur(4px)",
+            zIndex: 99998
           }}
           onClick={toggleExpanded}
         />
