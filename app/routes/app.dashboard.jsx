@@ -1363,10 +1363,13 @@ export default function Index() {
       // Highlight the folders column to draw attention
       setHighlightFolders(true);
       setTimeout(() => setHighlightFolders(false), 3000);
-      // Animate the Back to Folders button
-      setAnimateBackToFolders(true);
-      setTimeout(() => setAnimateBackToFolders(false), 2000);
+      // Hide error message after 4 seconds
       setTimeout(() => setAlertMessage(''), 4000);
+      // Animate the Back to Folders button after error message disappears
+      setTimeout(() => {
+        setAnimateBackToFolders(true);
+        setTimeout(() => setAnimateBackToFolders(false), 2000);
+      }, 4000);
       return;
     }
 
@@ -4756,10 +4759,13 @@ export default function Index() {
                       if (!selectedFolder) {
                         setAlertMessage('Please select a folder first to create a new note');
                         setAlertType('error');
-                        // Animate the Back to Folders button
-                        setAnimateBackToFolders(true);
-                        setTimeout(() => setAnimateBackToFolders(false), 2000);
+                        // Hide error message after 4 seconds
                         setTimeout(() => setAlertMessage(''), 4000);
+                        // Animate the Back to Folders button after error message disappears
+                        setTimeout(() => {
+                          setAnimateBackToFolders(true);
+                          setTimeout(() => setAnimateBackToFolders(false), 2000);
+                        }, 4000);
                         return;
                       }
                       handleNewNote();
