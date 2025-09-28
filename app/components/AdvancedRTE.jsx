@@ -95,6 +95,15 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Cleanup effect to restore body overflow when component unmounts
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.body.classList.remove('editor-fullscreen-active');
+    };
+  }, []);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -316,6 +325,18 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const toggleExpanded = () => {
     const newExpandedState = !isExpanded;
     setIsExpanded(newExpandedState);
+    
+    // Prevent body and html scrolling when in fullscreen mode
+    if (newExpandedState) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+      document.body.classList.add('editor-fullscreen-active');
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.body.classList.remove('editor-fullscreen-active');
+    }
+    
     // Notify parent component about fullscreen state change
     if (onFullscreenChange) {
       console.log('AdvancedRTE: Notifying parent of fullscreen state change:', newExpandedState);
@@ -424,6 +445,32 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           .advanced-rte-container.fixed {
             z-index: 999999 !important;
             position: fixed !important;
+          }
+          
+          /* Fullscreen mode - prevent outer container from scrolling */
+          .advanced-rte-container.fixed .advanced-rte-content {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+          }
+          
+          /* Ensure no double scrollbars in fullscreen */
+          .advanced-rte-container.fixed > div {
+            overflow: hidden !important;
+          }
+          
+          /* Prevent all parent containers from scrolling when editor is fullscreen */
+          body.editor-fullscreen-active {
+            overflow: hidden !important;
+          }
+          
+          body.editor-fullscreen-active * {
+            overflow: hidden !important;
+          }
+          
+          /* Allow only the editor content to scroll */
+          body.editor-fullscreen-active .advanced-rte-content {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
           }
         `}
       </style>
@@ -925,8 +972,10 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           overflow: "hidden", // Prevent outer container from scrolling
           ...(isExpanded && {
             height: "calc(100vh - 60px)", // Full height minus toolbar
+            maxHeight: "calc(100vh - 60px)", // Ensure it doesn't exceed viewport
             display: "flex",
-            flexDirection: "column"
+            flexDirection: "column",
+            overflow: "hidden" // Explicitly prevent any scrolling on outer container
           }),
           ...(isMobile && {
             minHeight: "500px",
