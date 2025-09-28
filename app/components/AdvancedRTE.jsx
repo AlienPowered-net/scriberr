@@ -413,6 +413,12 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               user-select: text !important;
             }
           }
+          
+          /* Ensure fullscreen editor appears above all elements */
+          .advanced-rte-container.fixed {
+            z-index: 999999 !important;
+            position: fixed !important;
+          }
         `}
       </style>
       <div 
@@ -429,7 +435,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           left: '0',
           right: '0',
           bottom: '0',
-          zIndex: 99999,
+          zIndex: 999999,
           height: '100vh',
           width: '100vw',
           maxHeight: '100vh',
@@ -2127,7 +2133,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           style={{
             backgroundColor: "rgba(0, 0, 0, 0.75)",
             backdropFilter: "blur(4px)",
-            zIndex: 99998
+            zIndex: 999998
           }}
           onClick={toggleExpanded}
         />

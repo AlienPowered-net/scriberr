@@ -2731,6 +2731,12 @@ export default function Index() {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
+          
+          /* Ensure fullscreen editor appears above all other elements */
+          .advanced-rte-container.fixed {
+            z-index: 999999 !important;
+            position: fixed !important;
+          }
         `}</style>
       </Page>
     );
