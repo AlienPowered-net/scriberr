@@ -5493,78 +5493,145 @@ export default function Index() {
                 </div>
               )}
               
-              {/* Current View Display */}
+              {/* Current Folder Pill/Tag Indicator */}
               <div style={{
-                padding: '12px',
-                backgroundColor: '#f6fff8',
-                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
                 marginBottom: '16px',
-                border: '1px solid #008060'
+                flexWrap: 'wrap'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <i className="far fa-folder-open" style={{ color: '#008060' }}></i>
-                  <span style={{ fontWeight: '500' }}>
-                    {selectedFolder ? localFolders.find(f => f.id === selectedFolder)?.name : 'All Notes'}
+                {/* Current Folder Pill */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  backgroundColor: selectedFolder ? '#e3f2fd' : '#f5f5f5',
+                  border: selectedFolder ? '1px solid #1976d2' : '1px solid #e0e0e0',
+                  borderRadius: '20px',
+                  padding: '8px 12px',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}>
+                  <span style={{ color: selectedFolder ? '#1976d2' : '#666666' }}>
+                    Current Folder:
                   </span>
-                  {selectedFolder && (
-                    <button
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#008060',
-                        cursor: 'pointer',
-                        marginLeft: 'auto'
-                      }}
-                      onClick={() => setSelectedFolder(null)}
-                    >
-                      <i className="fas fa-times"></i>
-                    </button>
-                  )}
-                </div>
-                {selectedTags.length > 0 && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                    {selectedTags.map((tag, index) => (
-                      <span
-                        key={index}
+                  <span style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    backgroundColor: selectedFolder ? '#1976d2' : '#666666',
+                    color: 'white',
+                    padding: '4px 10px',
+                    borderRadius: '16px',
+                    fontSize: '13px'
+                  }}>
+                    {selectedFolder ? localFolders.find(f => f.id === selectedFolder)?.name : 'Viewing all notes'}
+                    {selectedFolder && (
+                      <button
                         style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'white',
+                          cursor: 'pointer',
+                          padding: '0',
+                          marginLeft: '4px',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '4px',
-                          backgroundColor: '#008060',
-                          color: 'white',
-                          padding: '4px 8px',
-                          borderRadius: '12px',
-                          fontSize: '12px'
+                          justifyContent: 'center',
+                          width: '16px',
+                          height: '16px',
+                          borderRadius: '50%',
+                          transition: 'background-color 0.2s ease'
                         }}
+                        onClick={() => setSelectedFolder(null)}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.2)'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                       >
-                        <i className="fas fa-tag" style={{ fontSize: '10px' }}></i>
-                        {tag}
-                        <button
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            color: 'white',
-                            cursor: 'pointer',
-                            padding: '0',
-                            marginLeft: '4px'
-                          }}
-                          onClick={() => {
-                            const newTags = selectedTags.filter((_, i) => i !== index);
-                            setSelectedTags(newTags);
-                            if (newTags.length === 0) {
-                              setGlobalSearchQuery("");
-                            } else {
-                              setGlobalSearchQuery(`tag:${newTags.join(' tag:')}`);
-                            }
-                          }}
-                        >
-                          <i className="fas fa-times" style={{ fontSize: '10px' }}></i>
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
+                        ✕
+                      </button>
+                    )}
+                  </span>
+                </div>
+
+                {/* Change/Select Folder Button */}
+                <Button
+                  variant="secondary"
+                  size="slim"
+                  onClick={() => setMobileActiveSection('folders')}
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    padding: '6px 12px',
+                    borderRadius: '16px',
+                    backgroundColor: '#f8f9fa',
+                    border: '1px solid #e0e0e0',
+                    color: '#333333'
+                  }}
+                >
+                  {selectedFolder ? 'Change Folder' : 'Select a Folder'}
+                </Button>
               </div>
+
+              {/* Selected Tags (if any) */}
+              {selectedTags.length > 0 && (
+                <div style={{ 
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  gap: '6px',
+                  marginBottom: '16px'
+                }}>
+                  {selectedTags.map((tag, index) => (
+                    <span
+                      key={index}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        backgroundColor: '#008060',
+                        color: 'white',
+                        padding: '6px 12px',
+                        borderRadius: '16px',
+                        fontSize: '13px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      <i className="fas fa-tag" style={{ fontSize: '11px' }}></i>
+                      {tag}
+                      <button
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'white',
+                          cursor: 'pointer',
+                          padding: '0',
+                          marginLeft: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '16px',
+                          height: '16px',
+                          borderRadius: '50%',
+                          transition: 'background-color 0.2s ease'
+                        }}
+                        onClick={() => {
+                          const newTags = selectedTags.filter((_, i) => i !== index);
+                          setSelectedTags(newTags);
+                          if (newTags.length === 0) {
+                            setGlobalSearchQuery("");
+                          } else {
+                            setGlobalSearchQuery(`tag:${newTags.join(' tag:')}`);
+                          }
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.2)'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
 
               {/* Notes List */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
