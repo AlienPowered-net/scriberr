@@ -10,25 +10,89 @@ import {
   List,
   InlineStack,
   Badge,
+  Modal,
+  TextField,
 } from "@shopify/polaris";
 import { useState } from "react";
 
 export default function Settings() {
   const [selectedSubscription, setSelectedSubscription] = useState("basic");
+  
+  // Modal states for delete confirmations
+  const [showDeleteNotesModal, setShowDeleteNotesModal] = useState(false);
+  const [showDeleteFoldersModal, setShowDeleteFoldersModal] = useState(false);
+  const [showDeleteContentModal, setShowDeleteContentModal] = useState(false);
+  const [confirmationText, setConfirmationText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const handleDeleteAllNotes = () => {
-    // TODO: Implement delete all notes functionality
-    console.log("Delete all notes clicked");
+    setShowDeleteNotesModal(true);
+    setConfirmationText("");
   };
 
   const handleDeleteAllFolders = () => {
-    // TODO: Implement delete all folders functionality
-    console.log("Delete all folders clicked");
+    setShowDeleteFoldersModal(true);
+    setConfirmationText("");
   };
 
   const handleDeleteAllContent = () => {
-    // TODO: Implement delete all content functionality
-    console.log("Delete all content clicked");
+    setShowDeleteContentModal(true);
+    setConfirmationText("");
+  };
+
+  const performDelete = async (endpoint, actionName) => {
+    if (confirmationText !== "DELETE") {
+      setAlertMessage("Please type 'DELETE' to confirm this action.");
+      return;
+    }
+
+    setIsDeleting(true);
+    setAlertMessage("");
+
+    try {
+      const formData = new FormData();
+      formData.append("confirmation", confirmationText);
+
+      const response = await fetch(`/api/${endpoint}`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setAlertMessage(`Success: ${result.message}`);
+        // Close the modal
+        if (endpoint === "delete-all-notes") {
+          setShowDeleteNotesModal(false);
+        } else if (endpoint === "delete-all-folders") {
+          setShowDeleteFoldersModal(false);
+        } else if (endpoint === "delete-all-content") {
+          setShowDeleteContentModal(false);
+        }
+        setConfirmationText("");
+        // Reload the page to reflect changes
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        setAlertMessage(result.error || `Failed to ${actionName}`);
+      }
+    } catch (error) {
+      console.error(`Error ${actionName}:`, error);
+      setAlertMessage(`Failed to ${actionName}. Please try again.`);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const closeModal = () => {
+    setShowDeleteNotesModal(false);
+    setShowDeleteFoldersModal(false);
+    setShowDeleteContentModal(false);
+    setConfirmationText("");
+    setAlertMessage("");
   };
 
   const subscriptionPlans = [
@@ -184,7 +248,145 @@ export default function Settings() {
             </BlockStack>
           </div>
         </Card>
+
+        {/* Alert Message */}
+        {alertMessage && (
+          <Banner tone={alertMessage.startsWith("Success:") ? "success" : "critical"}>
+            <Text as="p" variant="bodyMd">
+              {alertMessage}
+            </Text>
+          </Banner>
+        )}
       </BlockStack>
+
+      {/* Delete All Notes Confirmation Modal */}
+      <Modal
+        open={showDeleteNotesModal}
+        onClose={closeModal}
+        title="Delete All Notes"
+        primaryAction={{
+          content: 'Delete All Notes',
+          onAction: () => performDelete("delete-all-notes", "delete all notes"),
+          destructive: true,
+          loading: isDeleting,
+          disabled: confirmationText !== "DELETE" || isDeleting
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: closeModal,
+            disabled: isDeleting
+          },
+        ]}
+      >
+        <Modal.Section>
+          <BlockStack gap="400">
+            <Banner tone="critical">
+              <Text as="p" variant="bodyMd">
+                <strong>Warning:</strong> This action will permanently delete ALL notes in your account. This action cannot be undone.
+              </Text>
+            </Banner>
+            
+            <Text as="p" variant="bodyMd">
+              To confirm this action, please type <strong>DELETE</strong> in the field below:
+            </Text>
+            
+            <TextField
+              label="Confirmation"
+              value={confirmationText}
+              onChange={setConfirmationText}
+              placeholder="Type DELETE to confirm"
+              autoComplete="off"
+            />
+          </BlockStack>
+        </Modal.Section>
+      </Modal>
+
+      {/* Delete All Folders Confirmation Modal */}
+      <Modal
+        open={showDeleteFoldersModal}
+        onClose={closeModal}
+        title="Delete All Folders"
+        primaryAction={{
+          content: 'Delete All Folders',
+          onAction: () => performDelete("delete-all-folders", "delete all folders"),
+          destructive: true,
+          loading: isDeleting,
+          disabled: confirmationText !== "DELETE" || isDeleting
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: closeModal,
+            disabled: isDeleting
+          },
+        ]}
+      >
+        <Modal.Section>
+          <BlockStack gap="400">
+            <Banner tone="critical">
+              <Text as="p" variant="bodyMd">
+                <strong>Warning:</strong> This action will permanently delete ALL folders and ALL notes in your account. This action cannot be undone.
+              </Text>
+            </Banner>
+            
+            <Text as="p" variant="bodyMd">
+              To confirm this action, please type <strong>DELETE</strong> in the field below:
+            </Text>
+            
+            <TextField
+              label="Confirmation"
+              value={confirmationText}
+              onChange={setConfirmationText}
+              placeholder="Type DELETE to confirm"
+              autoComplete="off"
+            />
+          </BlockStack>
+        </Modal.Section>
+      </Modal>
+
+      {/* Delete All Content Confirmation Modal */}
+      <Modal
+        open={showDeleteContentModal}
+        onClose={closeModal}
+        title="Delete All Content"
+        primaryAction={{
+          content: 'Delete All Content',
+          onAction: () => performDelete("delete-all-content", "delete all content"),
+          destructive: true,
+          loading: isDeleting,
+          disabled: confirmationText !== "DELETE" || isDeleting
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: closeModal,
+            disabled: isDeleting
+          },
+        ]}
+      >
+        <Modal.Section>
+          <BlockStack gap="400">
+            <Banner tone="critical">
+              <Text as="p" variant="bodyMd">
+                <strong>Warning:</strong> This action will permanently delete ALL content in your account (all folders and all notes). This action cannot be undone.
+              </Text>
+            </Banner>
+            
+            <Text as="p" variant="bodyMd">
+              To confirm this action, please type <strong>DELETE</strong> in the field below:
+            </Text>
+            
+            <TextField
+              label="Confirmation"
+              value={confirmationText}
+              onChange={setConfirmationText}
+              placeholder="Type DELETE to confirm"
+              autoComplete="off"
+            />
+          </BlockStack>
+        </Modal.Section>
+      </Modal>
     </Page>
   );
 }
