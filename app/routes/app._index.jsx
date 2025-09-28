@@ -1260,7 +1260,7 @@ export default function Index() {
     // Now create the new note
     const formData = new FormData();
     formData.append('title', '');
-    formData.append('body', 'Type your note here...');
+    formData.append('body', '');
     formData.append('folderId', currentFolderId);
     formData.append('tags', JSON.stringify([]));
     

@@ -1410,7 +1410,7 @@ export default function Index() {
     // Now create the new note
     const formData = new FormData();
     formData.append('title', '');
-    formData.append('body', 'Type your note here...');
+    formData.append('body', '');
     formData.append('folderId', currentFolderId);
     formData.append('tags', JSON.stringify([]));
     
@@ -1438,7 +1438,7 @@ export default function Index() {
           // Set the new note as the editing note and populate editor
           setEditingNoteId(newNote.id);
           setTitle(newNote.title || '');
-          setBody(newNote.content || 'Type your note here...');
+          setBody(newNote.content || '');
           setFolderId(newNote.folderId || currentFolderId);
           setNoteTags(newNote.tags || []);
           setHasUnsavedChanges(false);
