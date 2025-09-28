@@ -1359,51 +1359,61 @@ export default function Index() {
       return;
     }
 
-    // If there's an open note being edited, save it first
+    // If there's an open note being edited, save it first (only if it has content)
     if (editingNoteId && (title.trim() || body.trim())) {
       const trimmedTitle = removeEmojis(title.trim());
       const trimmedBody = removeEmojis(body.trim());
       const trimmedFolderId = folderId.trim();
 
-      if (!trimmedBody) {
+      // If the current note has no content, just discard it instead of saving
+      if (!trimmedBody && !trimmedTitle) {
+        // Just clear the current note and continue with creating new one
+        setEditingNoteId(null);
+        setTitle('');
+        setBody('');
+        setFolderId('');
+        setNoteTags([]);
+        setHasUnsavedChanges(false);
+        setWasJustSaved(false);
+      } else if (!trimmedBody) {
         setAlertMessage('Please provide content for the note');
         setAlertType('error');
         setTimeout(() => setAlertMessage(''), 3000);
         return;
-      }
-
-      const formData = new FormData();
-      formData.append('noteId', editingNoteId);
-      formData.append('title', trimmedTitle);
-      formData.append('body', trimmedBody);
-      formData.append('folderId', trimmedFolderId);
-      formData.append('tags', JSON.stringify(noteTags.map(tag => removeEmojis(tag))));
-      
-
-      
-      try {
-        const response = await fetch('/api/update-note', {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Accept-Charset': 'utf-8'
-          },
-          body: formData
-        });
+      } else {
+        const formData = new FormData();
+        formData.append('noteId', editingNoteId);
+        formData.append('title', trimmedTitle);
+        formData.append('body', trimmedBody);
+        formData.append('folderId', trimmedFolderId);
+        formData.append('tags', JSON.stringify(noteTags.map(tag => removeEmojis(tag))));
         
-        if (!response.ok) {
-          const result = await response.json();
-          setAlertMessage(result.error || 'Failed to save current note');
+
+        
+        try {
+          const response = await fetch('/api/update-note', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Accept-Charset': 'utf-8'
+            },
+            body: formData
+          });
+          
+          if (!response.ok) {
+            const result = await response.json();
+            setAlertMessage(result.error || 'Failed to save current note');
+            setAlertType('error');
+            setTimeout(() => setAlertMessage(''), 3000);
+            return;
+          }
+        } catch (error) {
+          console.error('Error saving current note:', error);
+          setAlertMessage('Failed to save current note');
           setAlertType('error');
           setTimeout(() => setAlertMessage(''), 3000);
           return;
         }
-      } catch (error) {
-        console.error('Error saving current note:', error);
-        setAlertMessage('Failed to save current note');
-        setAlertType('error');
-        setTimeout(() => setAlertMessage(''), 3000);
-        return;
       }
     }
 
@@ -3340,6 +3350,17 @@ export default function Index() {
                 </span>
               </div>
               
+              {/* New Note Button */}
+              <div style={{ marginTop: "16px" }}>
+                <Button 
+                  onClick={handleNewNote}
+                  variant="primary" 
+                  tone="warning"
+                  fullWidth
+                >
+                  New Note
+                </Button>
+              </div>
             </div>
 
             {/* Scrollable Notes Section */}
