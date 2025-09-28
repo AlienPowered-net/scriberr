@@ -454,6 +454,7 @@ export default function Index() {
   const [wasJustSaved, setWasJustSaved] = useState(false);
   const [isNewlyCreated, setIsNewlyCreated] = useState(false);
   const [highlightFolders, setHighlightFolders] = useState(false);
+  const [animateBackToFolders, setAnimateBackToFolders] = useState(false);
   
   // Format dates with exact time like "9 Sep 2024, 2:30 PM"
   const formatDateTime = (date) => {
@@ -1362,6 +1363,9 @@ export default function Index() {
       // Highlight the folders column to draw attention
       setHighlightFolders(true);
       setTimeout(() => setHighlightFolders(false), 3000);
+      // Animate the Back to Folders button
+      setAnimateBackToFolders(true);
+      setTimeout(() => setAnimateBackToFolders(false), 2000);
       setTimeout(() => setAlertMessage(''), 4000);
       return;
     }
@@ -2668,6 +2672,13 @@ export default function Index() {
               
               .column-drag-handle:active {
                 cursor: grabbing;
+              }
+              
+              /* Shake animation for Back to Folders button */
+              @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
               }
         `}</style>
 
@@ -4717,7 +4728,7 @@ export default function Index() {
                   onClick={() => setMobileActiveSection('notes')}
                   style={{ fontSize: '14px', fontWeight: '500' }}
                 >
-                  View notes
+                  View Notes
                 </Button>
               )}
               {mobileActiveSection === 'notes' && (
@@ -4726,7 +4737,15 @@ export default function Index() {
                     variant="secondary"
                     size="slim"
                     onClick={() => setMobileActiveSection('folders')}
-                    style={{ fontSize: '14px', fontWeight: '500', backgroundColor: '#000000', color: '#ffffff', borderColor: '#000000' }}
+                    style={{ 
+                      fontSize: '14px', 
+                      fontWeight: '500', 
+                      backgroundColor: animateBackToFolders ? '#16A34A' : '#000000', 
+                      color: '#ffffff', 
+                      borderColor: animateBackToFolders ? '#16A34A' : '#000000',
+                      animation: animateBackToFolders ? 'shake 0.5s ease-in-out' : 'none',
+                      transition: 'all 0.3s ease'
+                    }}
                   >
                     Back to Folders
                   </Button>
@@ -4737,6 +4756,9 @@ export default function Index() {
                       if (!selectedFolder) {
                         setAlertMessage('Please select a folder first to create a new note');
                         setAlertType('error');
+                        // Animate the Back to Folders button
+                        setAnimateBackToFolders(true);
+                        setTimeout(() => setAnimateBackToFolders(false), 2000);
                         setTimeout(() => setAlertMessage(''), 4000);
                         return;
                       }
@@ -4754,7 +4776,15 @@ export default function Index() {
                     variant="secondary"
                     size="slim"
                     onClick={() => setMobileActiveSection('folders')}
-                    style={{ fontSize: '14px', fontWeight: '500', backgroundColor: '#000000', color: '#ffffff', borderColor: '#000000' }}
+                    style={{ 
+                      fontSize: '14px', 
+                      fontWeight: '500', 
+                      backgroundColor: animateBackToFolders ? '#16A34A' : '#000000', 
+                      color: '#ffffff', 
+                      borderColor: animateBackToFolders ? '#16A34A' : '#000000',
+                      animation: animateBackToFolders ? 'shake 0.5s ease-in-out' : 'none',
+                      transition: 'all 0.3s ease'
+                    }}
                   >
                     Back to Folders
                   </Button>
