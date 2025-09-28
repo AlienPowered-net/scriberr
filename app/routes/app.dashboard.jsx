@@ -452,6 +452,7 @@ export default function Index() {
   const [tagPopupPosition, setTagPopupPosition] = useState({ x: 0, y: 0 });
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [wasJustSaved, setWasJustSaved] = useState(false);
+  const [isNewlyCreated, setIsNewlyCreated] = useState(false);
   const [highlightFolders, setHighlightFolders] = useState(false);
   
   // Format dates with exact time like "9 Sep 2024, 2:30 PM"
@@ -1166,7 +1167,12 @@ export default function Index() {
       JSON.stringify(noteTags) !== JSON.stringify(currentNote.tags || []);
 
     setHasUnsavedChanges(hasChanges);
-  }, [title, body, noteTags, editingNoteId, localNotes]);
+    
+    // Reset isNewlyCreated when user starts editing
+    if (hasChanges && isNewlyCreated) {
+      setIsNewlyCreated(false);
+    }
+  }, [title, body, noteTags, editingNoteId, localNotes, isNewlyCreated]);
 
   // Track when a note was just saved
   useEffect(() => {
@@ -1252,6 +1258,7 @@ export default function Index() {
     setNoteTags(note.tags || []);
     setHasUnsavedChanges(false);
     setWasJustSaved(false); // Reset when opening existing note
+    setIsNewlyCreated(false); // Reset when opening existing note
     // Automatically select the folder associated with this note
     if (note.folderId) {
       setSelectedFolder(note.folderId);
@@ -1458,6 +1465,7 @@ export default function Index() {
           setNoteTags(newNote.tags || []);
           setHasUnsavedChanges(false);
           setWasJustSaved(false);
+          setIsNewlyCreated(true);
           
           // Navigate to editor section on mobile
           if (isMobile) {
@@ -1494,6 +1502,7 @@ export default function Index() {
     setNoteTags([]);
     setHasUnsavedChanges(false);
     setWasJustSaved(false);
+    setIsNewlyCreated(false);
     setAutoSaveNotification('');
   };
 
@@ -3783,6 +3792,7 @@ export default function Index() {
                       autoSaveTime={autoSaveNotification}
                       editingNoteId={editingNoteId}
                       wasJustSaved={wasJustSaved}
+                      isNewlyCreated={isNewlyCreated}
                     />
                   ) : (
                     <AdvancedRTE
@@ -5830,6 +5840,7 @@ export default function Index() {
                       autoSaveTime={autoSaveNotification}
                       editingNoteId={editingNoteId}
                       wasJustSaved={wasJustSaved}
+                      isNewlyCreated={isNewlyCreated}
                     />
                   ) : (
                     <AdvancedRTE

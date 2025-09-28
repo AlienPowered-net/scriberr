@@ -11,7 +11,8 @@ const MobileEditorButton = ({
   lastSavedTime = null,
   autoSaveTime = null,
   editingNoteId = null,
-  wasJustSaved = false
+  wasJustSaved = false,
+  isNewlyCreated = false
 }) => {
   const [showEditorModal, setShowEditorModal] = useState(false);
 
@@ -52,7 +53,7 @@ const MobileEditorButton = ({
   const getSaveStatus = () => {
     // 1. Blue - "New note" - When you make a new note, before you type anything into it
     // This includes newly created notes that haven't been edited yet
-    if ((!hasContent && !editingNoteId) || 
+    if (isNewlyCreated || (!hasContent && !editingNoteId) || 
         (editingNoteId && !hasUnsavedChanges && !wasJustSaved && !lastSavedTime && !autoSaveTime)) {
       return {
         text: "New note",
