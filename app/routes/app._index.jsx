@@ -3107,10 +3107,24 @@ export default function Index() {
                   }}>
                     {folderId ? (
                       <>
-                        <span style={{ fontWeight: "500" }}>
+                        {/* Blue pill for folder name on mobile */}
+                        <div style={{
+                          padding: '4px 12px',
+                          borderRadius: '16px',
+                          backgroundColor: '#e3f2fd',
+                          border: '1px solid #007bff',
+                          color: '#007bff',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          textAlign: 'center',
+                          whiteSpace: 'nowrap',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          <i className="far fa-folder" style={{ fontSize: '12px' }}></i>
                           {folders.find(f => f.id === folderId)?.name}
-                        </span>
-                        <span>/</span>
+                        </div>
                         <span style={{ fontWeight: "600", color: "#202223" }}>
                           {title || "(untitled)"}
                         </span>
