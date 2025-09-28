@@ -2227,16 +2227,33 @@ export default function Index() {
         });
 
         if (response.ok) {
-          console.log('Note duplicated successfully');
-          window.location.reload();
+          const result = await response.json();
+          if (result.success && result.note) {
+            // Add the duplicated note to local state instead of reloading
+            const duplicatedNote = result.note;
+            setLocalNotes(prevNotes => insertNoteAfterOldestPin(duplicatedNote, prevNotes));
+            
+            setAlertMessage('Note duplicated successfully!');
+            setAlertType('success');
+            setTimeout(() => setAlertMessage(''), 3000);
+          } else {
+            console.error('Failed to duplicate note');
+            setAlertMessage(result.error || 'Failed to duplicate note');
+            setAlertType('error');
+            setTimeout(() => setAlertMessage(''), 3000);
+          }
         } else {
           const error = await response.json();
           console.error('Failed to duplicate note:', error.error);
-          alert(`Failed to duplicate note: ${error.error}`);
+          setAlertMessage(error.error || 'Failed to duplicate note');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
         }
       } catch (error) {
         console.error('Error duplicating note:', error);
-        alert('Error duplicating note');
+        setAlertMessage('Failed to duplicate note');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
       }
     } else if (type === "different") {
       // Show folder selector popover
@@ -2270,12 +2287,27 @@ export default function Index() {
         });
 
         if (response.ok) {
-          console.log('Note duplicated successfully');
-          window.location.reload();
+          const result = await response.json();
+          if (result.success && result.note) {
+            // Add the duplicated note to local state instead of reloading
+            const duplicatedNote = result.note;
+            setLocalNotes(prevNotes => insertNoteAfterOldestPin(duplicatedNote, prevNotes));
+            
+            setAlertMessage('Note duplicated successfully!');
+            setAlertType('success');
+            setTimeout(() => setAlertMessage(''), 3000);
+          } else {
+            console.error('Failed to duplicate note');
+            setAlertMessage(result.error || 'Failed to duplicate note');
+            setAlertType('error');
+            setTimeout(() => setAlertMessage(''), 3000);
+          }
         } else {
           const error = await response.json();
           console.error('Failed to duplicate note:', error.error);
-          alert(`Failed to duplicate note: ${error.error}`);
+          setAlertMessage(error.error || 'Failed to duplicate note');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
         }
       } else if (folderSelectorAction === 'move') {
         const formData = new FormData();
@@ -2288,17 +2320,39 @@ export default function Index() {
         });
 
         if (response.ok) {
-          console.log('Note moved successfully');
-          window.location.reload();
+          const result = await response.json();
+          if (result.success) {
+            // Update the note's folder in local state instead of reloading
+            setLocalNotes(prevNotes => 
+              prevNotes.map(note => 
+                note.id === folderSelectorNoteId 
+                  ? { ...note, folderId: folderId, folder: { id: folderId, name: localFolders.find(f => f.id === folderId)?.name || "Unknown Folder" } }
+                  : note
+              )
+            );
+            
+            setAlertMessage('Note moved successfully!');
+            setAlertType('success');
+            setTimeout(() => setAlertMessage(''), 3000);
+          } else {
+            console.error('Failed to move note');
+            setAlertMessage(result.error || 'Failed to move note');
+            setAlertType('error');
+            setTimeout(() => setAlertMessage(''), 3000);
+          }
         } else {
           const error = await response.json();
           console.error('Failed to move note:', error.error);
-          alert(`Failed to move note: ${error.error}`);
+          setAlertMessage(error.error || 'Failed to move note');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
         }
       }
     } catch (error) {
       console.error(`Error ${folderSelectorAction}ing note:`, error);
-      alert(`Error ${folderSelectorAction}ing note`);
+      setAlertMessage(`Error ${folderSelectorAction}ing note`);
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
     } finally {
       // Close popover and reset state
       setShowFolderSelector(false);
@@ -4857,9 +4911,12 @@ export default function Index() {
                 <div style={{ marginTop: '12px', maxHeight: '200px', overflowY: 'auto' }}>
                   <ActionList
                     items={localFolders
-                      .filter(folder => 
-                        folder.name.toLowerCase().includes(folderSelectorSearchQuery.toLowerCase())
-                      )
+                      .filter(folder => {
+                        // Filter out current folder and match search query
+                        const currentNote = localNotes.find(n => n.id === folderSelectorNoteId);
+                        const isCurrentFolder = currentNote && folder.id === currentNote.folderId;
+                        return !isCurrentFolder && folder.name.toLowerCase().includes(folderSelectorSearchQuery.toLowerCase());
+                      })
                       .map(folder => ({
                         content: folder.name,
                         onAction: () => handleFolderSelection(folder.id),
@@ -6314,6 +6371,102 @@ export default function Index() {
                 </div>
               )}
 
+              {/* Delete Note Confirmation Modal */}
+              {showDeleteNoteConfirm && (
+                <div className="modal-overlay" style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 99999,
+                  padding: "16px"
+                }}>
+                  <div style={{
+                    backgroundColor: "white",
+                    padding: "24px",
+                    borderRadius: "8px",
+                    maxWidth: "400px",
+                    width: "100%",
+                    maxHeight: "90vh",
+                    overflow: "auto"
+                  }}>
+                    <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                      Delete Note
+                    </Text>
+                    <Text as="p" style={{ marginBottom: "24px" }}>
+                      Are you sure you want to delete this note? This action is permanent and cannot be undone.
+                    </Text>
+                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setShowDeleteNoteConfirm(null)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        tone="critical"
+                        onClick={() => handleDeleteNote(showDeleteNoteConfirm)}
+                      >
+                        Delete Note
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Delete Multiple Notes Confirmation Modal */}
+              {showDeleteMultipleConfirm && (
+                <div className="modal-overlay" style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 99999,
+                  padding: "16px"
+                }}>
+                  <div style={{
+                    backgroundColor: "white",
+                    padding: "24px",
+                    borderRadius: "8px",
+                    maxWidth: "400px",
+                    width: "100%",
+                    maxHeight: "90vh",
+                    overflow: "auto"
+                  }}>
+                    <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                      Delete Multiple Notes
+                    </Text>
+                    <Text as="p" style={{ marginBottom: "24px" }}>
+                      Are you sure you want to delete {selectedNotes.length} selected note{selectedNotes.length > 1 ? 's' : ''}? This action is permanent and cannot be undone.
+                    </Text>
+                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setShowDeleteMultipleConfirm(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        tone="critical"
+                        onClick={() => handleDeleteMultipleNotes()}
+                      >
+                        Delete Notes
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Rename Folder Modal */}
               {showRenameFolderModal && (
                 <div className="modal-overlay" style={{
@@ -6930,9 +7083,12 @@ export default function Index() {
                       borderRadius: '8px'
                     }}>
                       {localFolders
-                        .filter(folder => 
-                          folder.name.toLowerCase().includes(folderSelectorSearchQuery.toLowerCase())
-                        )
+                        .filter(folder => {
+                          // Filter out current folder and match search query
+                          const currentNote = localNotes.find(n => n.id === folderSelectorNoteId);
+                          const isCurrentFolder = currentNote && folder.id === currentNote.folderId;
+                          return !isCurrentFolder && folder.name.toLowerCase().includes(folderSelectorSearchQuery.toLowerCase());
+                        })
                         .map(folder => (
                           <div
                             key={folder.id}
