@@ -648,7 +648,7 @@ export default function Index() {
                 <Text variant="bodyMd" style={{ fontWeight: '500' }}>{note.title || 'Untitled'}</Text>
                 {note.content && (
                   <Text variant="bodySm" style={{ color: '#6d7175', marginTop: '4px' }}>
-                    {note.content.substring(0, 50)}...
+                    {note.content.substring(0, 150)}...
                   </Text>
                 )}
               </div>
@@ -698,7 +698,7 @@ export default function Index() {
                     {selectedNote.title || 'Untitled'}
                   </Text>
                   <Text variant="bodySm" style={{ color: '#6d7175' }}>
-                    {selectedNote.content ? selectedNote.content.substring(0, 100) + '...' : 'No content'}
+                    {selectedNote.content ? selectedNote.content.substring(0, 200) + '...' : 'No content'}
                   </Text>
                 </div>
               ) : (
@@ -2166,10 +2166,10 @@ export default function Index() {
           /* Preview text clamp fallback */
           .preview-clip {
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 4;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            max-height: calc(1.4em * 2);
+            max-height: calc(1.4em * 4);
           }
           
           body, html {

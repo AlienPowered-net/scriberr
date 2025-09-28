@@ -36,12 +36,12 @@ const MobileEditorButton = ({
     return null;
   }
 
-  // Get preview text (first 150 characters of content)
+  // Get preview text (first 300 characters of content)
   const getPreviewText = () => {
     if (!value) return 'No content yet. Tap to start writing...';
     // Strip HTML tags for preview
     const textOnly = value.replace(/<[^>]*>/g, '').trim();
-    return textOnly.length > 150 ? textOnly.substring(0, 150) + '...' : textOnly;
+    return textOnly.length > 300 ? textOnly.substring(0, 300) + '...' : textOnly;
   };
 
   // Get current date/time for display
@@ -189,7 +189,7 @@ const MobileEditorButton = ({
             <Text variant="bodyMd" color={hasContent ? "base" : "subdued"} style={{
               lineHeight: '1.5',
               display: '-webkit-box',
-              WebkitLineClamp: 3,
+              WebkitLineClamp: 5,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden'
             }}>

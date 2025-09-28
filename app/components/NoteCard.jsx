@@ -303,7 +303,7 @@ const NoteCard = ({
             lineHeight: 1.5,
             overflow: "hidden",
             display: "-webkit-box",
-            WebkitLineClamp: 3,
+            WebkitLineClamp: 5,
             WebkitBoxOrient: "vertical"
           }}
         >
