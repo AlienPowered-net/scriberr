@@ -1800,10 +1800,23 @@ export default function Index() {
         });
         
         await Promise.all(movePromises);
+        
+        // Update notes in local state instead of reloading
+        setLocalNotes(prevNotes => 
+          prevNotes.map(note => 
+            selectedNotes.includes(note.id)
+              ? { ...note, folderId: duplicateFolderId, folder: { id: duplicateFolderId, name: localFolders.find(f => f.id === duplicateFolderId)?.name || "Unknown Folder" } }
+              : note
+          )
+        );
+        
         setSelectedNotes([]);
         setShowMoveModal(null);
         setDuplicateFolderId("");
-        window.location.reload();
+        
+        setAlertMessage('Notes moved successfully!');
+        setAlertType('success');
+        setTimeout(() => setAlertMessage(''), 3000);
       } else {
         // Move single note
         const formData = new FormData();
@@ -1822,9 +1835,21 @@ export default function Index() {
         if (response.ok) {
           const result = await response.json();
           if (result.success) {
+            // Update note in local state instead of reloading
+            setLocalNotes(prevNotes => 
+              prevNotes.map(note => 
+                note.id === moveType
+                  ? { ...note, folderId: duplicateFolderId, folder: { id: duplicateFolderId, name: localFolders.find(f => f.id === duplicateFolderId)?.name || "Unknown Folder" } }
+                  : note
+              )
+            );
+            
             setShowMoveModal(null);
             setDuplicateFolderId("");
-            window.location.reload();
+            
+            setAlertMessage('Note moved successfully!');
+            setAlertType('success');
+            setTimeout(() => setAlertMessage(''), 3000);
           } else {
             setAlertMessage(result.error || 'Failed to move note');
             setAlertType('error');
@@ -7120,6 +7145,90 @@ export default function Index() {
                             </span>
                           </div>
                         ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Mobile Move Notes Modal */}
+              {showMoveModal && (
+                <div className="modal-overlay" style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 99999,
+                  padding: "16px"
+                }}>
+                  <div style={{
+                    backgroundColor: "white",
+                    padding: "24px",
+                    borderRadius: "8px",
+                    maxWidth: "400px",
+                    width: "100%",
+                    maxHeight: "90vh",
+                    overflow: "auto"
+                  }}>
+                    <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                      {showMoveModal === 'bulk' ? 'Move Selected Notes' : 'Move Note'}
+                    </Text>
+                    <div style={{ marginBottom: "24px" }}>
+                      <label htmlFor="mobileMoveFolderSelect" style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                        Select a folder to move the note{showMoveModal === 'bulk' ? 's' : ''} to:
+                      </label>
+                      <select
+                        id="mobileMoveFolderSelect"
+                        value={duplicateFolderId}
+                        onChange={(e) => setDuplicateFolderId(e.target.value)}
+                        style={{
+                          width: "100%",
+                          padding: "12px 16px",
+                          border: "1px solid #c9cccf",
+                          borderRadius: "8px",
+                          fontSize: "16px",
+                          backgroundColor: "white"
+                        }}
+                      >
+                        <option value="">Select a folder...</option>
+                        {localFolders
+                          .filter(folder => {
+                            // Filter out current folder if moving single note
+                            if (showMoveModal !== 'bulk') {
+                              const currentNote = localNotes.find(n => n.id === showMoveModal);
+                              const isCurrentFolder = currentNote && folder.id === currentNote.folderId;
+                              return !isCurrentFolder;
+                            }
+                            return true;
+                          })
+                          .map(folder => (
+                            <option key={folder.id} value={folder.id}>
+                              {folder.name}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          setShowMoveModal(null);
+                          setDuplicateFolderId('');
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={() => handleMoveNote(showMoveModal)}
+                        disabled={!duplicateFolderId}
+                      >
+                        Move Note{showMoveModal === 'bulk' ? 's' : ''}
+                      </Button>
                     </div>
                   </div>
                 </div>
