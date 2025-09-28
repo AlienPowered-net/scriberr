@@ -3966,7 +3966,7 @@ export default function Index() {
                       placeholder="Type your note here..."
                       isMobile={isMobile}
                       hasUnsavedChanges={hasUnsavedChanges}
-                      lastSavedTime={autoSaveNotification ? null : (editingNoteId ? getLastSavedTime() : null)}
+                      lastSavedTime={autoSaveNotification ? null : (editingNoteId ? (wasJustSaved ? "Just now" : getLastSavedTime()) : null)}
                       autoSaveTime={autoSaveNotification}
                       editingNoteId={editingNoteId}
                       wasJustSaved={wasJustSaved}
@@ -6039,7 +6039,7 @@ export default function Index() {
                       placeholder="Type your note here..."
                       isMobile={isMobile}
                       hasUnsavedChanges={hasUnsavedChanges}
-                      lastSavedTime={autoSaveNotification ? null : (editingNoteId ? getLastSavedTime() : null)}
+                      lastSavedTime={autoSaveNotification ? null : (editingNoteId ? (wasJustSaved ? "Just now" : getLastSavedTime()) : null)}
                       autoSaveTime={autoSaveNotification}
                       editingNoteId={editingNoteId}
                       wasJustSaved={wasJustSaved}
