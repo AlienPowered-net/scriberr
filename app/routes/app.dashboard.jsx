@@ -1,6 +1,7 @@
 // app/routes/app._index.jsx
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, Form } from "@remix-run/react";
+import { createPortal } from "react-dom";
 import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
@@ -24,11 +25,21 @@ import {
   Popover,
   ActionList,
   TextContainer,
+  Tag,
 } from "@shopify/polaris";
-import { SaveIcon, DragDropIcon } from "@shopify/polaris-icons";
+import { 
+  SaveIcon, 
+  DragDropIcon,
+  DragHandleIcon,
+  CollectionFilledIcon,
+  ExchangeIcon,
+  FolderIcon,
+  ProductFilledIcon
+} from "@shopify/polaris-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
 import QuillEditor from "../components/LexicalEditor";
 import AdvancedRTE from "../components/AdvancedRTE";
+import MobileEditorButton from "../components/MobileEditorButton";
 import FolderIconPicker from "../components/FolderIconPicker";
 import NewFolderModal from "../components/NewFolderModal";
 import DraggableFolder from "../components/DraggableFolder";
@@ -54,7 +65,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 /* ------------------ SortableColumn Component ------------------ */
-function SortableColumn({ id, children, ...props }) {
+function SortableColumn({ id, children, isEditorFullscreen, ...props }) {
   const {
     attributes,
     listeners,
@@ -82,32 +93,34 @@ function SortableColumn({ id, children, ...props }) {
       {...attributes}
       {...props}
     >
-      {/* Drag handle positioned lower with more space from top */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '8px',
-          left: '8px',
-          zIndex: 10,
-          cursor: 'grab',
-          padding: '6px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '28px',
-          height: '28px'
-        }}
-        {...listeners}
-      >
-        <div style={{ 
-          fontSize: "14px", 
-          color: "#6d7175",
-          userSelect: "none",
-          cursor: "grab"
-        }}>
-          ⋮⋮
+      {/* Drag handle positioned lower with more space from top - hidden when editor is fullscreen */}
+      {!isEditorFullscreen && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '8px',
+            left: '8px',
+            zIndex: 10,
+            cursor: 'grab',
+            padding: '6px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '28px',
+            height: '28px'
+          }}
+          {...listeners}
+        >
+          <div style={{ 
+            fontSize: "14px", 
+            color: "#6d7175",
+            userSelect: "none",
+            cursor: "grab"
+          }}>
+            ⋮⋮
+          </div>
         </div>
-      </div>
+      )}
       {children}
     </div>
   );
@@ -264,7 +277,7 @@ export async function loader({ request }) {
         n."updatedAt" DESC
     `;
   } else {
-    notes = await prisma.note.findMany({
+    const notesWithoutPinnedAt = await prisma.note.findMany({
       where: { shopId },
       orderBy: { updatedAt: "desc" },
       select: {
@@ -283,6 +296,12 @@ export async function loader({ request }) {
         updatedAt: true,
       },
     });
+    
+    // Explicitly set pinnedAt to null for all notes when column doesn't exist
+    notes = notesWithoutPinnedAt.map(note => ({
+      ...note,
+      pinnedAt: null
+    }));
   }
 
 
@@ -423,11 +442,16 @@ export default function Index() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState(""); // "error" or "success"
   
+  // Mobile detection state - moved early to avoid initialization issues
+  const [isMobile, setIsMobile] = useState(false);
+  
+  
   // Note editing states
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [selectedNoteId, setSelectedNoteId] = useState(null);
   const [selectedNote, setSelectedNote] = useState(null);
   const [openNoteMenu, setOpenNoteMenu] = useState(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [showDeleteNoteConfirm, setShowDeleteNoteConfirm] = useState(null);
   const [showChangeFolderModal, setShowChangeFolderModal] = useState(null);
   const [showMoveModal, setShowMoveModal] = useState(null);
@@ -435,7 +459,33 @@ export default function Index() {
   const [showTagPopup, setShowTagPopup] = useState(null);
   const [tagPopupPosition, setTagPopupPosition] = useState({ x: 0, y: 0 });
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [wasJustSaved, setWasJustSaved] = useState(false);
+  const [isNewlyCreated, setIsNewlyCreated] = useState(false);
   const [highlightFolders, setHighlightFolders] = useState(false);
+  const [animateBackToFolders, setAnimateBackToFolders] = useState(false);
+  
+  // Format dates with exact time like "9 Sep 2024, 2:30 PM"
+  const formatDateTime = (date) => {
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const day = date.getDate();
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    return `${day} ${month} ${year}, ${displayHours}:${minutes} ${ampm}`;
+  };
+  
+  // Get the last saved time for the current note
+  const getLastSavedTime = () => {
+    if (!editingNoteId) return null;
+    const currentNote = localNotes.find(note => note.id === editingNoteId);
+    if (!currentNote || !currentNote.updatedAt) return null;
+    
+    const updatedDate = new Date(currentNote.updatedAt);
+    return formatDateTime(updatedDate);
+  };
   const [globalSearchQuery, setGlobalSearchQuery] = useState("");
   const [folderSearchQuery, setFolderSearchQuery] = useState("");
   const [noteTags, setNoteTags] = useState([]);
@@ -472,6 +522,21 @@ export default function Index() {
     }
     return ['folders', 'notes', 'editor'];
   });
+
+  // State to track if any editor is in fullscreen mode
+  const [isEditorFullscreen, setIsEditorFullscreen] = useState(false);
+
+  // Debug logging for fullscreen state changes
+  useEffect(() => {
+    console.log('Editor fullscreen state changed:', isEditorFullscreen);
+  }, [isEditorFullscreen]);
+
+  // Cleanup effect to reset fullscreen state when component unmounts
+  useEffect(() => {
+    return () => {
+      setIsEditorFullscreen(false);
+    };
+  }, []);
   
   // Ref to hold the current columnOrder for use in event handlers
   const columnOrderRef = useRef(columnOrder);
@@ -570,145 +635,523 @@ export default function Index() {
   const renderColumnContent = (columnId) => {
     if (columnId === 'folders') {
       return (
-        <div style={{ 
-          padding: '16px', 
-          backgroundColor: '#fafafa', 
-          minHeight: '200px',
-          width: '380px',
-          borderRadius: '8px',
-          border: '1px solid #e1e3e5'
+        <Card style={{
+          flex: "1",
+          display: "flex",
+          flexDirection: "column",
+          backgroundColor: "#fff",
+          height: "100%",
+          minHeight: "100%",
+          padding: "0",
+          margin: "0",
+          borderRadius: "8px",
+          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+          border: "1px solid #e1e3e5",
+          width: "380px",
+          minWidth: "380px",
+          maxWidth: "380px",
+          overflow: "hidden"
         }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ 
-              padding: '12px', 
-              backgroundColor: '#fff', 
-              borderRadius: '4px', 
-              border: '1px solid #e1e3e5',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              marginBottom: '8px'
-            }}>
-              <i className="far fa-folder-open" style={{ color: '#008060' }}></i>
-              <Text variant="bodyMd" style={{ fontWeight: '600' }}>Folders & Tags</Text>
+          {/* Fixed Header Section */}
+          <div style={{ 
+            padding: "16px", 
+            borderBottom: "1px solid #e1e3e5",
+            backgroundColor: "white",
+            flexShrink: 0
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <i className="far fa-folder-open"></i>
+                Folders
+              </Text>
             </div>
-            {folders.slice(0, 4).map((folder) => (
-              <div key={folder.id} style={{ 
-                padding: '8px 12px', 
-                backgroundColor: '#fff', 
-                borderRadius: '4px', 
-                border: '1px solid #e1e3e5',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <div style={{ fontSize: '16px' }}>{folder.icon}</div>
-                <Text variant="bodyMd">{folder.name}</Text>
+            
+            {/* Global Search */}
+            <div style={{ marginBottom: "16px", position: "relative" }}>
+              <input
+                type="text"
+                style={{
+                  border: "none",
+                  outline: "none",
+                  fontSize: "14px",
+                  color: "#1E1E1E",
+                  padding: "12px 16px",
+                  paddingRight: "44px",
+                  borderRadius: "24px",
+                  cursor: "text",
+                  width: "100%",
+                  backgroundColor: "#FAFAF8",
+                  fontFamily: "inherit",
+                  transition: "all 0.2s ease",
+                  boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+                }}
+                value={globalSearchQuery}
+                readOnly
+                placeholder="Search all notes..."
+              />
+              <span 
+                style={{
+                  position: "absolute",
+                  right: "16px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  fontSize: "18px",
+                  color: "#6B7280",
+                  pointerEvents: "none"
+                }}
+              >
+                <i className="fas fa-search"></i>
+              </span>
+            </div>
+
+            {/* All Notes and All Tags Buttons */}
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+                <div 
+                  style={{ 
+                    padding: "8px 12px", 
+                    flex: "1",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: selectedFolder === null ? "#f6fff8" : "#F8F9FA",
+                    border: selectedFolder === null ? "2px solid #008060" : "2px solid #E1E3E5",
+                    borderRadius: "8px",
+                    position: "relative",
+                    transition: "all 0.2s ease",
+                    boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                  }}
+                >
+                  <Text as="span" variant="bodyMd" style={{ 
+                    fontWeight: "600", 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "6px",
+                    color: selectedFolder === null ? "#008060" : "rgba(48, 48, 48, 1)",
+                    fontSize: "14px"
+                  }}>
+                    <i className="far fa-note-sticky" style={{ fontSize: "16px" }}></i>
+                    All Notes
+                  </Text>
+                </div>
+
+                <div 
+                  style={{ 
+                    padding: "8px 12px", 
+                    flex: "1",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: showTagsSection ? "#f6fff8" : "#F8F9FA",
+                    border: showTagsSection ? "2px solid #008060" : "2px solid #E1E3E5",
+                    borderRadius: "8px",
+                    position: "relative",
+                    transition: "all 0.2s ease",
+                    boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                  }}
+                >
+                  <Text as="span" variant="bodyMd" style={{ 
+                    fontWeight: "600", 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "6px",
+                    color: showTagsSection ? "#008060" : "rgba(48, 48, 48, 1)",
+                    fontSize: "14px"
+                  }}>
+                    <i className="far fa-bookmark" style={{ fontSize: "16px" }}></i>
+                    All Tags
+                  </Text>
+                </div>
               </div>
-            ))}
-            {folders.length > 4 && (
+            </div>
+          </div>
+
+          {/* Scrollable Content */}
+          <div style={{ 
+            flex: "1", 
+            overflowY: "auto", 
+            padding: "16px",
+            backgroundColor: "#fff"
+          }}>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleFolderDragEnd}
+            >
+              <SortableContext
+                items={localFolders.map(f => f.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div>
+                {localFolders.slice(0, 6).map((folder) => (
+                  <DraggableFolder 
+                    key={folder.id} 
+                    folder={folder}
+                    selectedFolder={selectedFolder}
+                    onFolderClick={() => {}}
+                    openFolderMenu={null}
+                    setOpenFolderMenu={() => {}}
+                  >
+                    <div style={{ display: 'none' }}>
+                    </div>
+                  </DraggableFolder>
+                ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+            {localFolders.length > 6 && (
               <Text variant="bodyMd" style={{ color: '#6d7175', fontStyle: 'italic', textAlign: 'center', padding: '8px' }}>
-                +{folders.length - 4} more folders...
+                +{localFolders.length - 6} more folders...
               </Text>
             )}
           </div>
-        </div>
+        </Card>
       );
     } else if (columnId === 'notes') {
       return (
-        <div style={{ 
-          padding: '16px', 
-          backgroundColor: '#fafafa', 
-          minHeight: '200px',
-          width: '380px',
-          borderRadius: '8px',
-          border: '1px solid #e1e3e5'
+        <Card style={{ 
+          flex: "1", 
+          display: "flex", 
+          flexDirection: "column", 
+          backgroundColor: "#fff", 
+          height: "100%", 
+          minHeight: "100%", 
+          padding: "0", 
+          margin: "0", 
+          borderRadius: "8px", 
+          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", 
+          border: "1px solid #e1e3e5",
+          width: "380px",
+          minWidth: "380px",
+          maxWidth: "380px",
+          overflow: "hidden"
         }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ 
-              padding: '12px', 
-              backgroundColor: '#fff', 
-              borderRadius: '4px', 
-              border: '1px solid #e1e3e5',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              marginBottom: '8px'
-            }}>
-              <i className="far fa-note-sticky" style={{ color: '#008060' }}></i>
-              <Text variant="bodyMd" style={{ fontWeight: '600' }}>Notes</Text>
+          {/* Fixed Header Section */}
+          <div style={{ 
+            padding: "16px", 
+            borderBottom: "1px solid #e1e3e5",
+            backgroundColor: "white",
+            flexShrink: 0
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <i className="far fa-note-sticky"></i>
+                Notes
+              </Text>
             </div>
-            {notes.slice(0, 4).map((note) => (
-              <div key={note.id} style={{ 
-                padding: '8px 12px', 
-                backgroundColor: '#fff', 
-                borderRadius: '4px', 
-                border: '1px solid #e1e3e5'
-              }}>
-                <Text variant="bodyMd" style={{ fontWeight: '500' }}>{note.title || 'Untitled'}</Text>
-                {note.content && (
-                  <Text variant="bodySm" style={{ color: '#6d7175', marginTop: '4px' }}>
-                    {note.content.substring(0, 150)}...
-                  </Text>
-                )}
-              </div>
-            ))}
-            {notes.length > 4 && (
+          </div>
+
+          {/* Scrollable Content */}
+          <div style={{ 
+            flex: "1", 
+            overflowY: "auto", 
+            padding: "16px",
+            backgroundColor: "#fff"
+          }}>
+            <div className="note-grid" style={{ 
+              display: "grid", 
+              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", 
+              gap: "16px",
+              padding: "0"
+            }}>
+              {filteredNotes.slice(0, 4).map((note) => {
+                const createdAt = new Date(note.createdAt).toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric', 
+                  year: 'numeric' 
+                });
+                const updatedAt = note.updatedAt ? new Date(note.updatedAt).toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric', 
+                  year: 'numeric' 
+                }) : null;
+                const isSelected = selectedNote && selectedNote.id === note.id;
+                
+                return (
+                  <NoteCard
+                    key={note.id}
+                    title={note.title}
+                    content={note.content}
+                    tags={note.tags || []}
+                    createdAt={createdAt}
+                    updatedAt={updatedAt}
+                    folder={note.folder?.name}
+                    isSelected={isSelected}
+                    inContext={false}
+                    isPinned={note.pinnedAt !== null}
+                    onClick={() => {}}
+                    onSelect={() => {}}
+                    onManage={() => {}}
+                    onDelete={() => {}}
+                    onTagClick={() => {}}
+                    onDuplicate={() => {}}
+                    onMove={() => {}}
+                    onPin={() => {}}
+                    isSelectButtonClicked={false}
+                  />
+                );
+              })}
+            </div>
+            {filteredNotes.length > 4 && (
               <Text variant="bodyMd" style={{ color: '#6d7175', fontStyle: 'italic', textAlign: 'center', padding: '8px' }}>
-                +{notes.length - 4} more notes...
+                +{filteredNotes.length - 4} more notes...
               </Text>
             )}
           </div>
-        </div>
+        </Card>
       );
     } else if (columnId === 'editor') {
       return (
-        <div style={{ 
-          padding: '16px', 
-          backgroundColor: '#fafafa', 
-          minHeight: '200px',
-          width: '400px',
-          borderRadius: '8px',
-          border: '1px solid #e1e3e5'
+        <Card style={{ 
+          flex: "1", 
+          display: "flex", 
+          flexDirection: "column", 
+          backgroundColor: "#fff", 
+          height: "100%", 
+          minHeight: "100%", 
+          padding: "0", 
+          margin: "0", 
+          borderRadius: "8px", 
+          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", 
+          border: "1px solid #e1e3e5",
+          flex: "1",
+          minWidth: "400px",
+          transition: "all 0.3s ease"
         }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ 
-              padding: '12px', 
-              backgroundColor: '#fff', 
-              borderRadius: '4px', 
-              border: '1px solid #e1e3e5',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              marginBottom: '8px'
-            }}>
-              <i className="far fa-edit" style={{ color: '#008060' }}></i>
-              <Text variant="bodyMd" style={{ fontWeight: '600' }}>Note Editor</Text>
-            </div>
-            <div style={{ 
-              padding: '12px', 
-              backgroundColor: '#fff', 
-              borderRadius: '4px', 
-              border: '1px solid #e1e3e5',
-              minHeight: '120px'
-            }}>
-              {selectedNote ? (
-                <div>
-                  <Text variant="bodyMd" style={{ fontWeight: '500', marginBottom: '8px' }}>
-                    {selectedNote.title || 'Untitled'}
-                  </Text>
-                  <Text variant="bodySm" style={{ color: '#6d7175' }}>
-                    {selectedNote.content ? selectedNote.content.substring(0, 200) + '...' : 'No content'}
-                  </Text>
+          <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <i className="far fa-edit" style={{ fontSize: "20px" }}></i>
+                Note Editor
+              </Text>
+              {(autoSaveNotification || hasUnsavedChanges) && (
+                <div style={{ marginTop: "4px" }}>
+                  {autoSaveNotification && (
+                    <Text as="p" style={{ 
+                      fontSize: "14px", 
+                      color: "#008060", 
+                      fontWeight: "500", 
+                      marginBottom: hasUnsavedChanges ? "4px" : "0",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px"
+                    }}>
+                      <i className="fas fa-check-circle" style={{ fontSize: "16px", color: "#008060" }}></i>
+                      {autoSaveNotification}
+                    </Text>
+                  )}
+                  {hasUnsavedChanges && (
+                    <Text as="p" style={{ 
+                      fontSize: "14px", 
+                      color: "rgba(199, 10, 36, 1)", 
+                      fontWeight: "600", 
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px"
+                    }}>
+                      <i className="fas fa-exclamation-triangle" style={{ fontSize: "16px", color: "rgba(199, 10, 36, 1)" }}></i>
+                      You have unsaved changes
+                    </Text>
+                  )}
                 </div>
-              ) : (
-                <Text variant="bodyMd" style={{ color: '#6d7175', fontStyle: 'italic' }}>
-                  Select a note to edit
-                </Text>
               )}
             </div>
+            <InlineStack gap="200">
+              {editingNoteId ? (
+                <>
+                  <Button 
+                    variant="primary"
+                    tone="success"
+                    disabled
+                  >
+                    Save Note
+                  </Button>
+                  <Button 
+                    variant="primary"
+                    tone="base"
+                    disabled
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="primary"
+                    tone="critical"
+                    disabled
+                  >
+                    Delete Note
+                  </Button>
+                </>
+              ) : (
+                <Button 
+                  variant="primary"
+                  tone="success"
+                  disabled
+                >
+                  Save Note
+                </Button>
+              )}
+            </InlineStack>
           </div>
-        </div>
+          <div style={{ padding: "16px 16px 16px 16px", flex: "1", overflowY: "auto" }}>
+            <BlockStack gap="300">
+              <div>
+                <div style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: "8px", 
+                  fontSize: "14px", 
+                  color: "#6d7175",
+                  marginBottom: "16px"
+                }}>
+                  {folderId ? (
+                    <>
+                      <span style={{ fontWeight: "500" }}>
+                        {folders.find(f => f.id === folderId)?.name}
+                      </span>
+                      <span>/</span>
+                      <span style={{ fontWeight: "600", color: "#202223" }}>
+                        {title || "(untitled)"}
+                      </span>
+                    </>
+                  ) : (
+                    <span style={{ fontStyle: "italic", color: "#8c9196" }}>
+                      Select a folder to start
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                  Tags
+                </label>
+                <div style={{ marginBottom: "8px" }}>
+                  <input
+                    type="text"
+                    style={{
+                      border: "none",
+                      outline: "none",
+                      fontSize: "14px",
+                      color: "#202223",
+                      padding: "8px 0",
+                      borderBottom: "1px solid #e1e3e5",
+                      cursor: "text",
+                      width: "100%",
+                      backgroundColor: "transparent",
+                      fontFamily: "inherit",
+                      transition: "border-color 0.2s ease"
+                    }}
+                    value={newTagInput}
+                    readOnly
+                    placeholder="Add a tag and press Enter..."
+                  />
+                </div>
+                {noteTags.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                    {noteTags.map((tag, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          padding: "4px 8px",
+                          backgroundColor: "#f6fff8",
+                          border: "1px solid #008060",
+                          borderRadius: "16px",
+                          fontSize: "12px",
+                          color: "#008060"
+                        }}
+                      >
+                        <span>{tag}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div>
+                <input
+                  type="text"
+                  value={title}
+                  readOnly
+                  placeholder="Add a title to your note here..."
+                  maxLength={35}
+                  style={{
+                    border: "none",
+                    outline: "none",
+                    fontSize: "24px",
+                    fontWeight: "600",
+                    color: "#202223",
+                    padding: "8px 0",
+                    borderBottom: "1px solid #e1e3e5",
+                    cursor: "text",
+                    width: "100%",
+                    backgroundColor: "transparent",
+                    fontFamily: "inherit",
+                    transition: "border-color 0.2s ease"
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
+                  Body
+                </label>
+                <div style={{
+                  border: "1px solid #e1e3e5",
+                  borderRadius: "8px",
+                  padding: "16px",
+                  minHeight: "200px",
+                  backgroundColor: "#f8f9fa",
+                  fontSize: "14px",
+                  lineHeight: "1.5",
+                  color: "#6d7175"
+                }}>
+                  {body ? (
+                    <div dangerouslySetInnerHTML={{ __html: body.substring(0, 300) + (body.length > 300 ? '...' : '') }} />
+                  ) : (
+                    <span style={{ fontStyle: "italic" }}>Type your note here...</span>
+                  )}
+                </div>
+              </div>
+              <div style={{ marginTop: "20px" }}>
+                <InlineStack gap="300">
+                {editingNoteId ? (
+                  <>
+                    <Button 
+                      variant="primary"
+                      tone="success"
+                      disabled
+                    >
+                      Save Note
+                    </Button>
+                    <Button 
+                      variant="primary"
+                      tone="base"
+                      disabled
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      variant="primary"
+                      tone="critical"
+                      disabled
+                    >
+                      Delete Note
+                    </Button>
+                  </>
+                ) : (
+                  <Button 
+                    variant="primary"
+                    tone="success"
+                    disabled
+                  >
+                    Save Note
+                  </Button>
+                )}
+                </InlineStack>
+              </div>
+            </BlockStack>
+          </div>
+        </Card>
       );
     }
     return null;
@@ -728,17 +1171,102 @@ export default function Index() {
   const [newFolderIconColor, setNewFolderIconColor] = useState('rgba(255, 184, 0, 1)');
   const [localFolders, setLocalFolders] = useState(folders);
   
+  // Mobile icon picker states
+  const [mobileSelectedIcon, setMobileSelectedIcon] = useState('folder');
+  const [mobileSelectedColor, setMobileSelectedColor] = useState('rgba(255, 184, 0, 1)');
+  
+  // Mobile new folder modal states
+  const [mobileFolderName, setMobileFolderName] = useState('');
+  const [mobileNewFolderIcon, setMobileNewFolderIcon] = useState('folder');
+  const [mobileNewFolderColor, setMobileNewFolderColor] = useState('rgba(255, 184, 0, 1)');
+  
   // Folder selection popover states
   const [showFolderSelector, setShowFolderSelector] = useState(false);
   const [folderSelectorAction, setFolderSelectorAction] = useState(null); // 'duplicate' or 'move'
   const [folderSelectorNoteId, setFolderSelectorNoteId] = useState(null);
   const [folderSelectorSearchQuery, setFolderSelectorSearchQuery] = useState("");
+
+  // Mobile layout state
+  const [mobileActiveSection, setMobileActiveSection] = useState('folders'); // 'folders', 'notes'
+  const [showMobileTags, setShowMobileTags] = useState(false);
+  const [mobileOpenFolderMenu, setMobileOpenFolderMenu] = useState(null);
+  
+  // Initialize mobile icon picker state when modal opens
+  useEffect(() => {
+    if (showIconPicker && isMobile) {
+      const currentFolder = localFolders.find(f => f.id === showIconPicker);
+      setMobileSelectedIcon(currentFolder?.icon || "folder");
+      setMobileSelectedColor(currentFolder?.iconColor || "rgba(255, 184, 0, 1)");
+    }
+  }, [showIconPicker, isMobile, localFolders]);
+  
+  // Initialize mobile new folder modal state when modal opens
+  useEffect(() => {
+    if (showNewFolderModal && isMobile) {
+      setMobileFolderName('');
+      setMobileNewFolderIcon('folder');
+      setMobileNewFolderColor('rgba(255, 184, 0, 1)');
+    }
+  }, [showNewFolderModal, isMobile]);
   
   
   // Update local folders when loader data changes
   useEffect(() => {
     setLocalFolders(folders);
   }, [folders]);
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Mobile folder drag handlers - use same DND system as desktop
+  const handleMobileFolderDragEnd = async (event) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = localFolders.findIndex((folder) => folder.id === active.id);
+    const newIndex = localFolders.findIndex((folder) => folder.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) {
+      console.error('Could not find folder indices:', { oldIndex, newIndex, activeId: active.id, overId: over.id });
+      return;
+    }
+
+    const reorderedFolders = arrayMove(localFolders, oldIndex, newIndex);
+    setLocalFolders(reorderedFolders);
+
+    // Send the new order to the server - use same endpoint as desktop
+    try {
+      const response = await fetch('/api/reorder-folders-drag', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          folderIds: reorderedFolders.map(f => f.id)
+        })
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to reorder folders');
+        // Revert on error
+        setLocalFolders(localFolders);
+      }
+    } catch (error) {
+      console.error('Error reordering folders:', error);
+      // Revert on error
+      setLocalFolders(localFolders);
+    }
+  };
 
   
   // Drag and drop sensors
@@ -864,8 +1392,16 @@ export default function Index() {
       }
       
       // Close note menu if clicking outside
-      if (openNoteMenu && !event.target.closest('.note-card-container')) {
+      if (openNoteMenu && !event.target.closest('.note-card-container') && 
+          !event.target.closest('[data-dropdown-menu]') &&
+          !event.target.closest('[data-manage-button]') &&
+          !event.target.closest('.mobile-note-actions')) {
         setOpenNoteMenu(null);
+      }
+      
+      // Close mobile folder menu if clicking outside
+      if (mobileOpenFolderMenu && !event.target.closest('[data-mobile-folder-menu]') && !event.target.closest('.mobile-folder-menu')) {
+        setMobileOpenFolderMenu(null);
       }
     };
 
@@ -873,7 +1409,7 @@ export default function Index() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [openFolderMenu, openNoteMenu]);
+  }, [openFolderMenu, openNoteMenu, mobileOpenFolderMenu]);
 
   // Create portal dropdown when folder menu opens
   useEffect(() => {
@@ -1033,7 +1569,28 @@ export default function Index() {
       JSON.stringify(noteTags) !== JSON.stringify(currentNote.tags || []);
 
     setHasUnsavedChanges(hasChanges);
-  }, [title, body, noteTags, editingNoteId, localNotes]);
+    
+    // Reset isNewlyCreated when user starts editing
+    if (hasChanges && isNewlyCreated) {
+      setIsNewlyCreated(false);
+    }
+  }, [title, body, noteTags, editingNoteId, localNotes, isNewlyCreated]);
+
+  // Track when a note was just saved
+  useEffect(() => {
+    if (hasUnsavedChanges === false && editingNoteId) {
+      // If we just went from having unsaved changes to no unsaved changes, 
+      // and we have an editingNoteId, it means we just saved
+      setWasJustSaved(true);
+      
+      // Reset wasJustSaved after a short delay
+      const timer = setTimeout(() => {
+        setWasJustSaved(false);
+      }, 3000); // Show "Saved changes" for 3 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [hasUnsavedChanges, editingNoteId]);
 
   // Restore selected note and folder from localStorage on page load
   useEffect(() => {
@@ -1102,6 +1659,8 @@ export default function Index() {
     setFolderId(note.folderId || "");
     setNoteTags(note.tags || []);
     setHasUnsavedChanges(false);
+    setWasJustSaved(false); // Reset when opening existing note
+    setIsNewlyCreated(false); // Reset when opening existing note
     // Automatically select the folder associated with this note
     if (note.folderId) {
       setSelectedFolder(note.folderId);
@@ -1113,6 +1672,118 @@ export default function Index() {
     if (!str) return str;
     // Remove emoji characters using regex
     return str.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1F018}-\u{1F270}]|[\u{238C}-\u{2454}]|[\u{20D0}-\u{20FF}]|[\u{FE00}-\u{FE0F}]|[\u{1F900}-\u{1F9FF}]|[\u{1F018}-\u{1F270}]|[\u{238C}-\u{2454}]|[\u{20D0}-\u{20FF}]|[\u{FE00}-\u{FE0F}]/gu, '');
+  };
+
+  // Handle mobile save - maintains editing state and shows saved status
+  const handleMobileSave = async () => {
+    const trimmedTitle = removeEmojis(title.trim());
+    const trimmedBody = removeEmojis(body.trim());
+    const trimmedFolderId = folderId.trim();
+
+    // Check if at least title or body is provided
+    if (!trimmedTitle && !trimmedBody) {
+      setAlertMessage('Please provide a title or content for the note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
+    // Check if a folder is selected
+    if (!trimmedFolderId) {
+      setAlertMessage('Please select a folder for the note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('title', trimmedTitle);
+    formData.append('body', trimmedBody);
+    formData.append('folderId', trimmedFolderId);
+    formData.append('tags', JSON.stringify(noteTags.map(tag => removeEmojis(tag))));
+    
+    try {
+      const endpoint = editingNoteId ? '/api/update-note' : '/api/create-note';
+      if (editingNoteId) {
+        formData.append('noteId', editingNoteId);
+      }
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Accept-Charset': 'utf-8'
+        },
+        body: formData
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          if (editingNoteId) {
+            // Update existing note in the notes list
+            const updatedNote = {
+              id: editingNoteId,
+              title: trimmedTitle || "Untitled",
+              content: trimmedBody,
+              tags: noteTags.map(tag => removeEmojis(tag)),
+              folderId: trimmedFolderId,
+              updatedAt: new Date().toISOString()
+            };
+            
+            setLocalNotes(prevNotes => 
+              prevNotes.map(note => 
+                note.id === editingNoteId ? { ...note, ...updatedNote } : note
+              )
+            );
+          } else {
+            // Add new note to the notes list
+            const newNote = {
+              id: result.noteId,
+              title: trimmedTitle || "Untitled",
+              content: trimmedBody,
+              tags: noteTags.map(tag => removeEmojis(tag)),
+              folderId: trimmedFolderId,
+              pinnedAt: null,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              folder: {
+                id: trimmedFolderId,
+                name: folders.find(f => f.id === trimmedFolderId)?.name || "Unknown Folder"
+              }
+            };
+            
+            setLocalNotes(prevNotes => insertNoteAfterOldestPin(newNote, prevNotes));
+            setEditingNoteId(result.noteId);
+          }
+          
+          // Keep the form open and show saved state
+          setHasUnsavedChanges(false);
+          setWasJustSaved(true);
+          
+          // Reset wasJustSaved after 3 seconds
+          setTimeout(() => setWasJustSaved(false), 3000);
+          
+          // Show success message
+          setAlertMessage('Note saved successfully');
+          setAlertType('success');
+          setTimeout(() => setAlertMessage(''), 3000);
+        } else {
+          setAlertMessage(result.error || 'Failed to save note');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
+        }
+      } else {
+        setAlertMessage('Failed to save note');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error saving note:', error);
+      setAlertMessage('Failed to save note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+    }
   };
 
   // Handle saving note changes
@@ -1159,14 +1830,22 @@ export default function Index() {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          // Store current context before clearing
-          const currentFolderId = selectedFolder;
-          const currentNoteId = editingNoteId;
+          // Update the notes list to reflect the changes
+          const updatedNote = {
+            id: editingNoteId,
+            title: trimmedTitle || "Untitled",
+            content: trimmedBody,
+            tags: noteTags.map(tag => removeEmojis(tag)),
+            folderId: trimmedFolderId,
+            updatedAt: new Date().toISOString()
+          };
           
-          // Store the note ID and folder ID in localStorage BEFORE reload
-          localStorage.setItem('selectedNoteId', currentNoteId);
-          localStorage.setItem('selectedFolderId', currentFolderId);
-          
+          // Update the notes list
+          setLocalNotes(prevNotes => 
+            prevNotes.map(note => 
+              note.id === editingNoteId ? { ...note, ...updatedNote } : note
+            )
+          );
           
           // Clear the form
           setEditingNoteId(null);
@@ -1174,9 +1853,13 @@ export default function Index() {
           setBody('');
           setFolderId('');
           setNoteTags([]);
+          setHasUnsavedChanges(false);
+          setWasJustSaved(true);
           
-          // Reload the page but maintain context
-          window.location.reload();
+          // Show success message
+          setAlertMessage('Note updated successfully');
+          setAlertType('success');
+          setTimeout(() => setAlertMessage(''), 3000);
         } else {
           setAlertMessage(result.error || 'Failed to update note');
           setAlertType('error');
@@ -1200,60 +1883,85 @@ export default function Index() {
     const currentFolderId = selectedFolder || "";
     
     if (!currentFolderId) {
-      setAlertMessage('Please select a folder first');
+      setAlertMessage('Please select a folder first to create a new note');
       setAlertType('error');
       // Highlight the folders column to draw attention
       setHighlightFolders(true);
       setTimeout(() => setHighlightFolders(false), 3000);
-      setTimeout(() => setAlertMessage(''), 3000);
+      // Hide error message after 4 seconds
+      setTimeout(() => setAlertMessage(''), 4000);
+      // Animate the Back to Folders button after error message disappears
+      setTimeout(() => {
+        console.log('Starting Back to Folders animation');
+        setAnimateBackToFolders(true);
+        setTimeout(() => {
+          console.log('Stopping Back to Folders animation');
+          setAnimateBackToFolders(false);
+        }, 2000);
+      }, 4000);
       return;
     }
 
-    // If there's an open note being edited, save it first
+    // If there's an open note being edited, save it first (only if it has content)
     if (editingNoteId && (title.trim() || body.trim())) {
       const trimmedTitle = removeEmojis(title.trim());
       const trimmedBody = removeEmojis(body.trim());
       const trimmedFolderId = folderId.trim();
 
-      if (!trimmedBody) {
-        setAlertMessage('Please provide content for the note');
-        setAlertType('error');
-        setTimeout(() => setAlertMessage(''), 3000);
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('noteId', editingNoteId);
-      formData.append('title', trimmedTitle);
-      formData.append('body', trimmedBody);
-      formData.append('folderId', trimmedFolderId);
-      formData.append('tags', JSON.stringify(noteTags.map(tag => removeEmojis(tag))));
-      
-
-      
-      try {
-        const response = await fetch('/api/update-note', {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Accept-Charset': 'utf-8'
-          },
-          body: formData
-        });
+      // If the current note has no content, just discard it instead of saving
+      if (!trimmedBody && !trimmedTitle) {
+        // Just clear the current note and continue with creating new one
+        setEditingNoteId(null);
+        setTitle('');
+        setBody('');
+        setFolderId('');
+        setNoteTags([]);
+        setHasUnsavedChanges(false);
+        setWasJustSaved(false);
+      } else if (!trimmedBody) {
+        // If note has title but no body, discard it when creating new note
+        // (Don't block new note creation)
+        setEditingNoteId(null);
+        setTitle('');
+        setBody('');
+        setFolderId('');
+        setNoteTags([]);
+        setHasUnsavedChanges(false);
+        setWasJustSaved(false);
+      } else {
+        const formData = new FormData();
+        formData.append('noteId', editingNoteId);
+        formData.append('title', trimmedTitle);
+        formData.append('body', trimmedBody);
+        formData.append('folderId', trimmedFolderId);
+        formData.append('tags', JSON.stringify(noteTags.map(tag => removeEmojis(tag))));
         
-        if (!response.ok) {
-          const result = await response.json();
-          setAlertMessage(result.error || 'Failed to save current note');
+
+        
+        try {
+          const response = await fetch('/api/update-note', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Accept-Charset': 'utf-8'
+            },
+            body: formData
+          });
+          
+          if (!response.ok) {
+            const result = await response.json();
+            setAlertMessage(result.error || 'Failed to save current note');
+            setAlertType('error');
+            setTimeout(() => setAlertMessage(''), 3000);
+            return;
+          }
+        } catch (error) {
+          console.error('Error saving current note:', error);
+          setAlertMessage('Failed to save current note');
           setAlertType('error');
           setTimeout(() => setAlertMessage(''), 3000);
           return;
         }
-      } catch (error) {
-        console.error('Error saving current note:', error);
-        setAlertMessage('Failed to save current note');
-        setAlertType('error');
-        setTimeout(() => setAlertMessage(''), 3000);
-        return;
       }
     }
 
@@ -1282,8 +1990,23 @@ export default function Index() {
           // Add new note to the notes list immediately
           const newNote = result.note;
           
-          // Update notes state to include new note (add to beginning of array)
-          window.location.reload(); // Temporary - will implement proper state update
+          // Update notes state to include new note (add after oldest pinned note)
+          setLocalNotes(prevNotes => insertNoteAfterOldestPin(newNote, prevNotes));
+          
+          // Set the new note as the editing note and populate editor
+          setEditingNoteId(newNote.id);
+          setTitle(newNote.title || '');
+          setBody(newNote.content || '');
+          setFolderId(newNote.folderId || currentFolderId);
+          setNoteTags(newNote.tags || []);
+          setHasUnsavedChanges(false);
+          setWasJustSaved(false);
+          setIsNewlyCreated(true);
+          
+          // Navigate to editor section on mobile
+          if (isMobile) {
+            setMobileActiveSection('editor');
+          }
           
           setAlertMessage('New note created successfully!');
           setAlertType('success');
@@ -1314,6 +2037,8 @@ export default function Index() {
     setFolderId('');
     setNoteTags([]);
     setHasUnsavedChanges(false);
+    setWasJustSaved(false);
+    setIsNewlyCreated(false);
     setAutoSaveNotification('');
   };
 
@@ -1336,7 +2061,19 @@ export default function Index() {
         const result = await response.json();
         if (result.success) {
           setShowDeleteNoteConfirm(null);
-          window.location.reload();
+          // Remove the note from local state instead of reloading
+          setLocalNotes(prevNotes => prevNotes.filter(note => note.id !== noteId));
+          // If we were editing this note, clear the editor
+          if (editingNoteId === noteId) {
+            setEditingNoteId(null);
+            setTitle('');
+            setBody('');
+            setFolderId('');
+            setNoteTags([]);
+            setHasUnsavedChanges(false);
+            setWasJustSaved(false);
+            setIsNewlyCreated(false);
+          }
         } else {
           setAlertMessage(result.error || 'Failed to delete note');
           setAlertType('error');
@@ -1458,10 +2195,23 @@ export default function Index() {
         });
         
         await Promise.all(movePromises);
+        
+        // Update notes in local state instead of reloading
+        setLocalNotes(prevNotes => 
+          prevNotes.map(note => 
+            selectedNotes.includes(note.id)
+              ? { ...note, folderId: duplicateFolderId, folder: { id: duplicateFolderId, name: localFolders.find(f => f.id === duplicateFolderId)?.name || "Unknown Folder" } }
+              : note
+          )
+        );
+        
         setSelectedNotes([]);
         setShowMoveModal(null);
         setDuplicateFolderId("");
-        window.location.reload();
+        
+        setAlertMessage('Notes moved successfully!');
+        setAlertType('success');
+        setTimeout(() => setAlertMessage(''), 3000);
       } else {
         // Move single note
         const formData = new FormData();
@@ -1480,9 +2230,21 @@ export default function Index() {
         if (response.ok) {
           const result = await response.json();
           if (result.success) {
+            // Update note in local state instead of reloading
+            setLocalNotes(prevNotes => 
+              prevNotes.map(note => 
+                note.id === moveType
+                  ? { ...note, folderId: duplicateFolderId, folder: { id: duplicateFolderId, name: localFolders.find(f => f.id === duplicateFolderId)?.name || "Unknown Folder" } }
+                  : note
+              )
+            );
+            
             setShowMoveModal(null);
             setDuplicateFolderId("");
-            window.location.reload();
+            
+            setAlertMessage('Note moved successfully!');
+            setAlertType('success');
+            setTimeout(() => setAlertMessage(''), 3000);
           } else {
             setAlertMessage(result.error || 'Failed to move note');
             setAlertType('error');
@@ -1517,9 +2279,24 @@ export default function Index() {
       });
       
       await Promise.all(deletePromises);
+      
+      // Remove deleted notes from local state instead of reloading
+      setLocalNotes(prevNotes => prevNotes.filter(note => !selectedNotes.includes(note.id)));
+      
+      // If we were editing one of the deleted notes, clear the editor
+      if (selectedNotes.includes(editingNoteId)) {
+        setEditingNoteId(null);
+        setTitle('');
+        setBody('');
+        setFolderId('');
+        setNoteTags([]);
+        setHasUnsavedChanges(false);
+        setWasJustSaved(false);
+        setIsNewlyCreated(false);
+      }
+      
       setSelectedNotes([]);
       setShowDeleteMultipleConfirm(false);
-      window.location.reload();
     } catch (error) {
       console.error('Error deleting multiple notes:', error);
       setAlertMessage('Failed to delete some notes');
@@ -1539,8 +2316,180 @@ export default function Index() {
     });
   };
 
+  // Close mobile note menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Don't close if clicking on the dropdown itself or manage button
+      if (event.target.closest('[data-dropdown-menu]') || 
+          event.target.closest('[data-manage-button]') ||
+          event.target.closest('.mobile-note-actions')) {
+        return;
+      }
+      setOpenNoteMenu(null);
+    };
+    
+    if (openNoteMenu) {
+      // Add a small delay to prevent immediate closing
+      const timeoutId = setTimeout(() => {
+        document.addEventListener('click', handleClickOutside);
+      }, 100);
+      
+      return () => {
+        clearTimeout(timeoutId);
+        document.removeEventListener('click', handleClickOutside);
+      };
+    }
+  }, [openNoteMenu]);
+
+  // Position folder selector activator in notes column
+  useEffect(() => {
+    if (showFolderSelector && !isMobile) {
+      const activator = document.getElementById('folder-selector-activator');
+      const notesColumn = document.querySelector('[data-notes-column]');
+      
+      if (activator && notesColumn) {
+        const notesRect = notesColumn.getBoundingClientRect();
+        const notesCenterX = notesRect.left + (notesRect.width / 2);
+        const notesCenterY = notesRect.top + (notesRect.height / 2);
+        
+        activator.style.position = 'fixed';
+        activator.style.left = `${notesCenterX}px`;
+        activator.style.top = `${notesCenterY}px`;
+        activator.style.transform = 'translate(-50%, -50%)';
+      }
+    }
+  }, [showFolderSelector, isMobile]);
+
+  // Portal-based dropdown component
+  const PortalDropdown = ({ isOpen, position, onClose, note }) => {
+    if (!isOpen || !note) return null;
+
+    return createPortal(
+      <div
+        data-dropdown-menu
+        style={{
+          position: 'fixed',
+          top: position.top,
+          left: position.left,
+          backgroundColor: 'white',
+          border: '1px solid #e1e3e5',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          zIndex: 10001,
+          minWidth: '200px',
+          maxWidth: '250px',
+          // Mobile-friendly touch targets
+          touchAction: 'manipulation'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          style={{
+            padding: '12px 16px',
+            cursor: 'pointer',
+            borderBottom: '1px solid #f1f3f4',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            minHeight: '44px', // iOS recommended touch target size
+            transition: 'background-color 0.2s ease'
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            console.log('Mobile Pin clicked for note:', note.id);
+            handlePinNote(note.id);
+            onClose();
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+          onTouchStart={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onTouchEnd={(e) => e.target.style.backgroundColor = 'white'}
+        >
+          <i className="fas fa-thumbtack" style={{ fontSize: '12px' }}></i>
+          {note.pinnedAt ? "Unpin" : "Pin"}
+        </div>
+        <div
+          style={{
+            padding: '12px 16px',
+            cursor: 'pointer',
+            borderBottom: '1px solid #f1f3f4',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            minHeight: '44px',
+            transition: 'background-color 0.2s ease'
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            console.log('Mobile Duplicate current clicked for note:', note.id);
+            handleDuplicateFromMenu(note.id, "current");
+            onClose();
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+          onTouchStart={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onTouchEnd={(e) => e.target.style.backgroundColor = 'white'}
+        >
+          <i className="fas fa-copy" style={{ fontSize: '12px' }}></i>
+          Duplicate to current folder
+        </div>
+        <div
+          style={{
+            padding: '12px 16px',
+            cursor: 'pointer',
+            borderBottom: '1px solid #f1f3f4',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            minHeight: '44px',
+            transition: 'background-color 0.2s ease'
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            console.log('Mobile Duplicate different clicked for note:', note.id);
+            handleDuplicateFromMenu(note.id, "different");
+            onClose();
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+          onTouchStart={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onTouchEnd={(e) => e.target.style.backgroundColor = 'white'}
+        >
+          <i className="fas fa-copy" style={{ fontSize: '12px' }}></i>
+          Duplicate to different folder
+        </div>
+        <div
+          style={{
+            padding: '12px 16px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            minHeight: '44px',
+            transition: 'background-color 0.2s ease'
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            console.log('Mobile Move clicked for note:', note.id);
+            handleMoveFromMenu(note.id);
+            onClose();
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+          onTouchStart={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+          onTouchEnd={(e) => e.target.style.backgroundColor = 'white'}
+        >
+          <i className="fas fa-folder" style={{ fontSize: '12px' }}></i>
+          Move to different folder
+        </div>
+      </div>,
+      document.body
+    );
+  };
+
   // Handle select button clicks
   const handleSelectButtonClick = (noteId) => {
+    // Update visual selection state
     setSelectButtonClicked(prev => {
       const newSet = new Set(prev);
       if (newSet.has(noteId)) {
@@ -1550,6 +2499,41 @@ export default function Index() {
       }
       return newSet;
     });
+    
+    // Update bulk selection state for bulk actions
+    setSelectedNotes(prev => {
+      if (prev.includes(noteId)) {
+        return prev.filter(id => id !== noteId);
+      } else {
+        return [...prev, noteId];
+      }
+    });
+  };
+
+  // Helper function to insert new note after oldest pinned note
+  const insertNoteAfterOldestPin = (newNote, notes) => {
+    // Find the oldest pinned note (last in the pinned section)
+    const pinnedNotes = notes.filter(note => note.pinnedAt !== null);
+    
+    if (pinnedNotes.length === 0) {
+      // No pinned notes, add to beginning
+      return [newNote, ...notes];
+    }
+    
+    // Sort pinned notes by pinnedAt DESC (newest first)
+    const sortedPinnedNotes = pinnedNotes.sort((a, b) => 
+      new Date(b.pinnedAt) - new Date(a.pinnedAt)
+    );
+    
+    // Find the oldest pinned note (last in sorted array)
+    const oldestPinnedNote = sortedPinnedNotes[sortedPinnedNotes.length - 1];
+    const oldestPinnedIndex = notes.findIndex(note => note.id === oldestPinnedNote.id);
+    
+    // Insert new note after the oldest pinned note
+    const newNotes = [...notes];
+    newNotes.splice(oldestPinnedIndex + 1, 0, newNote);
+    
+    return newNotes;
   };
 
   // Handle pin note with optimistic updates
@@ -1663,16 +2647,33 @@ export default function Index() {
         });
 
         if (response.ok) {
-          console.log('Note duplicated successfully');
-          window.location.reload();
+          const result = await response.json();
+          if (result.success && result.note) {
+            // Add the duplicated note to local state instead of reloading
+            const duplicatedNote = result.note;
+            setLocalNotes(prevNotes => insertNoteAfterOldestPin(duplicatedNote, prevNotes));
+            
+            setAlertMessage('Note duplicated successfully!');
+            setAlertType('success');
+            setTimeout(() => setAlertMessage(''), 3000);
+          } else {
+            console.error('Failed to duplicate note');
+            setAlertMessage(result.error || 'Failed to duplicate note');
+            setAlertType('error');
+            setTimeout(() => setAlertMessage(''), 3000);
+          }
         } else {
           const error = await response.json();
           console.error('Failed to duplicate note:', error.error);
-          alert(`Failed to duplicate note: ${error.error}`);
+          setAlertMessage(error.error || 'Failed to duplicate note');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
         }
       } catch (error) {
         console.error('Error duplicating note:', error);
-        alert('Error duplicating note');
+        setAlertMessage('Failed to duplicate note');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
       }
     } else if (type === "different") {
       // Show folder selector popover
@@ -1706,12 +2707,27 @@ export default function Index() {
         });
 
         if (response.ok) {
-          console.log('Note duplicated successfully');
-          window.location.reload();
+          const result = await response.json();
+          if (result.success && result.note) {
+            // Add the duplicated note to local state instead of reloading
+            const duplicatedNote = result.note;
+            setLocalNotes(prevNotes => insertNoteAfterOldestPin(duplicatedNote, prevNotes));
+            
+            setAlertMessage('Note duplicated successfully!');
+            setAlertType('success');
+            setTimeout(() => setAlertMessage(''), 3000);
+          } else {
+            console.error('Failed to duplicate note');
+            setAlertMessage(result.error || 'Failed to duplicate note');
+            setAlertType('error');
+            setTimeout(() => setAlertMessage(''), 3000);
+          }
         } else {
           const error = await response.json();
           console.error('Failed to duplicate note:', error.error);
-          alert(`Failed to duplicate note: ${error.error}`);
+          setAlertMessage(error.error || 'Failed to duplicate note');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
         }
       } else if (folderSelectorAction === 'move') {
         const formData = new FormData();
@@ -1724,17 +2740,39 @@ export default function Index() {
         });
 
         if (response.ok) {
-          console.log('Note moved successfully');
-          window.location.reload();
+          const result = await response.json();
+          if (result.success) {
+            // Update the note's folder in local state instead of reloading
+            setLocalNotes(prevNotes => 
+              prevNotes.map(note => 
+                note.id === folderSelectorNoteId 
+                  ? { ...note, folderId: folderId, folder: { id: folderId, name: localFolders.find(f => f.id === folderId)?.name || "Unknown Folder" } }
+                  : note
+              )
+            );
+            
+            setAlertMessage('Note moved successfully!');
+            setAlertType('success');
+            setTimeout(() => setAlertMessage(''), 3000);
+          } else {
+            console.error('Failed to move note');
+            setAlertMessage(result.error || 'Failed to move note');
+            setAlertType('error');
+            setTimeout(() => setAlertMessage(''), 3000);
+          }
         } else {
           const error = await response.json();
           console.error('Failed to move note:', error.error);
-          alert(`Failed to move note: ${error.error}`);
+          setAlertMessage(error.error || 'Failed to move note');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
         }
       }
     } catch (error) {
       console.error(`Error ${folderSelectorAction}ing note:`, error);
-      alert(`Error ${folderSelectorAction}ing note`);
+      setAlertMessage(`Error ${folderSelectorAction}ing note`);
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
     } finally {
       // Close popover and reset state
       setShowFolderSelector(false);
@@ -1863,13 +2901,24 @@ export default function Index() {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          // Store current context before clearing
-          const currentFolderId = selectedFolder;
-          const newNoteId = result.noteId; // For new notes, we get the ID back
+          // Add the new note to the notes list
+          const newNote = {
+            id: result.noteId,
+            title: trimmedTitle || "Untitled",
+            content: trimmedBody,
+            tags: noteTags.map(tag => removeEmojis(tag)),
+            folderId: trimmedFolderId,
+            pinnedAt: null, // Explicitly set to null for new notes
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            folder: {
+              id: trimmedFolderId,
+              name: folders.find(f => f.id === trimmedFolderId)?.name || "Unknown Folder"
+            }
+          };
           
-          // Store the note ID and folder ID in localStorage BEFORE reload
-          localStorage.setItem('selectedNoteId', newNoteId || editingNoteId);
-          localStorage.setItem('selectedFolderId', currentFolderId);
+          // Add the new note to the notes list (after oldest pinned note)
+          setLocalNotes(prevNotes => insertNoteAfterOldestPin(newNote, prevNotes));
           
           // Clear the form
           setEditingNoteId(null);
@@ -1877,9 +2926,13 @@ export default function Index() {
           setBody('');
           setFolderId('');
           setNoteTags([]);
+          setHasUnsavedChanges(false);
+          setWasJustSaved(true);
           
-          // Reload the page but maintain context
-          window.location.reload();
+          // Show success message
+          setAlertMessage('Note created successfully');
+          setAlertType('success');
+          setTimeout(() => setAlertMessage(''), 3000);
         } else {
           setAlertMessage(result.error || 'Failed to save note');
           setAlertType('error');
@@ -2073,13 +3126,22 @@ export default function Index() {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
+          
+          /* Ensure fullscreen editor appears above all other elements */
+          .advanced-rte-container.fixed {
+            z-index: 999999 !important;
+            position: fixed !important;
+          }
         `}</style>
       </Page>
     );
   }
 
-      return (
-              <Page title="Scriberr" style={{ paddingBottom: "160px", marginBottom: "10%" }}>
+  return (
+    <>
+      {/* Desktop Layout */}
+      {!isMobile && (
+        <Page title="Scriberr" style={{ paddingBottom: "160px", marginBottom: "10%" }}>
         {/* Material Symbols Rounded CDN */}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
@@ -2129,6 +3191,19 @@ export default function Index() {
             }
             .Polaris-Card {
               margin-bottom: 12px;
+            }
+            
+            /* Desktop mobile view - match note card styling */
+            .col-editor .mobile-note-card {
+              width: 100% !important;
+              margin: 0 !important;
+              border-radius: 8px !important;
+            }
+            
+            /* Ensure editor container matches note card */
+            .col-editor {
+              padding: 16px !important;
+              box-sizing: border-box !important;
             }
           }
 
@@ -2283,25 +3358,154 @@ export default function Index() {
               .column-drag-handle:active {
                 cursor: grabbing;
               }
+              
+              /* Shake animation for Back to Folders button */
+              @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+                20%, 40%, 60%, 80% { transform: translateX(8px); }
+              }
+              
+              /* Glow animation for Back to Folders button */
+              @keyframes glow {
+                0%, 100% { box-shadow: 0 0 5px #16A34A; }
+                50% { box-shadow: 0 0 20px #16A34A, 0 0 30px #16A34A; }
+              }
+              
+              /* Animation class for Back to Folders button */
+              .back-to-folders-animate {
+                background-color: #16A34A !important;
+                border-color: #16A34A !important;
+                animation: shake 0.6s ease-in-out, glow 1s ease-in-out infinite !important;
+                transition: all 0.3s ease !important;
+                transform: scale(1.05) !important;
+              }
         `}</style>
 
-        {/* Custom Alert */}
-        {alertMessage && (
-          <div style={{
-            position: "fixed",
-            top: "20px",
-            right: "20px",
-            padding: "12px 16px",
-            borderRadius: "6px",
-            color: "white",
-            fontSize: "14px",
-            fontWeight: "500",
-            zIndex: 3000,
-            maxWidth: "300px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-            animation: "slideIn 0.3s ease-out",
-            backgroundColor: alertType === 'error' ? "#d82c0d" : "#008060"
-          }}>
+        {/* Mobile and Tablet Styles */}
+        <style>{`
+          /* Ensure modals are visible on mobile */
+          @media (max-width: 1024px) {
+            .modal-overlay {
+              z-index: 10001 !important;
+              position: fixed !important;
+              top: 0 !important;
+              left: 0 !important;
+              right: 0 !important;
+              bottom: 0 !important;
+            }
+            
+            /* Polaris Modal mobile fixes */
+            [data-polaris-portal] {
+              z-index: 10001 !important;
+            }
+            
+            .Polaris-Modal-Dialog {
+              z-index: 10001 !important;
+            }
+          }
+          
+          @media (max-width: 1024px) {
+            .mobile-layout {
+              display: flex !important;
+              flex-direction: column;
+              height: 100vh;
+              overflow: hidden;
+              position: fixed;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background-color: white !important;
+              z-index: 10000;
+              isolation: isolate;
+            }
+            
+            .mobile-section {
+              flex: 1;
+              overflow-y: auto;
+              -webkit-overflow-scrolling: touch;
+            }
+            
+            .mobile-bottom-nav {
+              position: fixed;
+              bottom: 0;
+              left: 0;
+              right: 0;
+              background-color: white;
+              border-top: 1px solid #e1e3e5;
+              display: flex;
+              justify-content: center;
+              gap: 60px;
+              padding: 8px 0;
+              z-index: 1000;
+              box-shadow: 0 -1px 6px rgba(0,0,0,0.08);
+            }
+            
+            .mobile-nav-item {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 2px;
+              padding: 6px 8px;
+              cursor: pointer;
+              border-radius: 6px;
+              min-width: 50px;
+            }
+            
+            .mobile-header {
+              padding: 16px;
+              border-bottom: 1px solid #e1e3e5;
+              background-color: white;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            }
+            
+            .mobile-title {
+              margin: 0;
+              font-size: 20px;
+              font-weight: 600;
+            }
+            
+            .mobile-back-btn {
+              background: none;
+              border: none;
+              font-size: 18px;
+              cursor: pointer;
+              padding: 8px;
+              border-radius: 4px;
+            }
+          }
+          
+          /* Desktop layout - hide mobile elements */
+          @media (min-width: 1025px) {
+            .mobile-layout {
+              display: none !important;
+            }
+          }
+        `}</style>
+
+        {/* Custom Alert - Desktop Only */}
+        {!isMobile && alertMessage && (
+          <div 
+            style={{
+              position: "fixed",
+              top: "20px",
+              right: "20px",
+              padding: "12px 16px",
+              borderRadius: "6px",
+              color: "white",
+              fontSize: "14px",
+              fontWeight: "500",
+              zIndex: 10002,
+              maxWidth: "300px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              animation: "slideIn 0.3s ease-out",
+              backgroundColor: alertType === 'error' ? "#d82c0d" : "#008060",
+              textAlign: "left"
+            }}
+          >
             {alertMessage}
           </div>
         )}
@@ -2344,7 +3548,7 @@ export default function Index() {
                   onClick={() => toggleColumnCollapse('folders')}
                   variant="secondary"
                   size="large"
-                  accessibilityLabel="Expand Folders & Tags"
+                  accessibilityLabel="Expand Folders"
                   style={{ height: "60px" }}
                 >
                   <i className="far fa-folder-open" style={{ color: "rgba(255, 184, 0, 1)", fontSize: "20px" }}></i>
@@ -2370,7 +3574,9 @@ export default function Index() {
                   <SortableColumn 
                     key="folders"
                     id="folders"
+                    isEditorFullscreen={isEditorFullscreen}
                     style={{ width: "380px", minWidth: "380px", maxWidth: "380px", overflow: "hidden" }}
+                    data-column-id="folders"
                   >
           <Card
             style={{
@@ -2401,112 +3607,6 @@ export default function Index() {
               backgroundColor: "white",
               flexShrink: 0
             }}>
-              {/* Tags Section */}
-              <div style={{ marginBottom: "24px" }}>
-                {/* Tags List */}
-                {(showTagsSection || selectedTags.length > 0) && (
-                  <div style={{ 
-                    marginBottom: "12px",
-                    padding: "12px",
-                    backgroundColor: "#f8f9fa",
-                    borderRadius: "8px",
-                    border: "1px solid #e1e3e5"
-                  }}>
-                    {getAllTagsWithCounts().length === 0 ? (
-                      <Text as="p" style={{ color: "#6d7175", fontSize: "14px" }}>No tags created yet</Text>
-                    ) : (
-                      <div style={{ 
-                        display: "flex", 
-                        flexWrap: "wrap", 
-                        gap: "6px",
-                        padding: "8px 0"
-                      }}>
-                        {getAllTagsWithCounts().map(({ tag, count }) => (
-                          <div
-                            key={tag}
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "6px",
-                              padding: "4px 8px",
-                              backgroundColor: selectedTags.includes(tag) ? "#008060" : "transparent",
-                              borderRadius: "16px",
-                              border: selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060",
-                              cursor: "pointer",
-                              transition: "all 0.15s ease",
-                              position: "relative",
-                              fontSize: "12px",
-                              fontWeight: "400",
-                              color: selectedTags.includes(tag) ? "white" : "#008060",
-                              minHeight: "24px",
-                              justifyContent: "center",
-                              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                            }}
-                            onClick={() => handleTagClick(tag)}
-                            onMouseEnter={(e) => {
-                              if (!selectedTags.includes(tag)) {
-                                e.currentTarget.style.backgroundColor = "#e1e3e5";
-                                e.currentTarget.style.borderColor = "#aeb4b9";
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!selectedTags.includes(tag)) {
-                                e.currentTarget.style.backgroundColor = "#f6f6f7";
-                                e.currentTarget.style.borderColor = "#d1d3d4";
-                              }
-                            }}
-                          >
-                            <span>{tag}</span>
-                            <span style={{ 
-                              fontSize: "11px", 
-                              color: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175", 
-                              backgroundColor: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)", 
-                              padding: "1px 4px", 
-                              borderRadius: "2px",
-                              fontWeight: "500"
-                            }}>
-                              {count}
-                            </span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowDeleteTagConfirm(tag);
-                              }}
-                              style={{
-                                background: "none",
-                                border: "none",
-                                cursor: "pointer",
-                                fontSize: "12px",
-                                color: selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.8)" : "#6d7175",
-                                padding: "2px",
-                                borderRadius: "2px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                transition: "all 0.15s ease",
-                                marginLeft: "2px",
-                                width: "16px",
-                                height: "16px",
-                                opacity: "0.8"
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)";
-                                e.target.style.opacity = "1";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = "transparent";
-                                e.target.style.opacity = "0.8";
-                              }}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
 
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
                 <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -2517,7 +3617,7 @@ export default function Index() {
                   onClick={() => toggleColumnCollapse('folders')}
                   variant="tertiary"
                   size="slim"
-                  accessibilityLabel="Collapse Folders & Tags"
+                  accessibilityLabel="Collapse Folders"
                 >
                   <i className="fas fa-chevron-left"></i>
                 </Button>
@@ -2633,7 +3733,15 @@ export default function Index() {
                       transition: "all 0.2s ease",
                       boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
                     }}
-                    onClick={() => setShowTagsSection(!showTagsSection)}
+                    onClick={() => {
+                      if (showTagsSection) {
+                        // When closing All Tags section, keep only selected tags visible
+                        setShowTagsSection(false);
+                      } else {
+                        // When opening All Tags section, show all tags
+                        setShowTagsSection(true);
+                      }
+                    }}
                     onMouseEnter={(e) => {
                       if (!showTagsSection) {
                         e.currentTarget.style.backgroundColor = "#f6fff8";
@@ -2677,6 +3785,139 @@ export default function Index() {
                   </div>
                 )}
               </div>
+
+              {/* Tags Section - Under All Notes & All Tags Buttons */}
+              {(showTagsSection || selectedTags.length > 0) && (
+                <div style={{ 
+                  marginBottom: "12px",
+                  padding: "12px",
+                  backgroundColor: "#f8f9fa",
+                  borderRadius: "8px",
+                  border: "1px solid #e1e3e5"
+                }}>
+                  {getAllTagsWithCounts().length === 0 ? (
+                    <Text as="p" style={{ color: "#6d7175", fontSize: "14px" }}>No tags created yet</Text>
+                  ) : (
+                    <div style={{ 
+                      display: "flex", 
+                      flexWrap: "wrap", 
+                      gap: "6px",
+                      padding: "8px 0"
+                    }}>
+                      {(showTagsSection ? getAllTagsWithCounts() : getAllTagsWithCounts().filter(({ tag }) => selectedTags.includes(tag))).map(({ tag, count }) => (
+                        <div
+                          key={tag}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: showTagsSection ? "6px" : "6px",
+                            padding: showTagsSection ? "6px 10px" : "4px 8px",
+                            backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "#008060" : "#f6fff8") : (selectedTags.includes(tag) ? "#f6fff8" : "transparent"),
+                            borderRadius: "16px",
+                            border: showTagsSection ? (selectedTags.includes(tag) ? "none" : "1px solid #008060") : (selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060"),
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
+                            position: "relative",
+                            fontSize: showTagsSection ? "12px" : "12px",
+                            fontWeight: showTagsSection ? "500" : "400",
+                            color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "#008060" : "#008060"),
+                            minHeight: showTagsSection ? "28px" : "24px",
+                            justifyContent: "center",
+                            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                            boxShadow: showTagsSection ? (selectedTags.includes(tag) ? "0 2px 4px rgba(0, 128, 96, 0.2)" : "none") : "none"
+                          }}
+                          onClick={() => handleTagClick(tag)}
+                          onMouseEnter={(e) => {
+                            if (showTagsSection) {
+                              if (selectedTags.includes(tag)) {
+                                e.currentTarget.style.backgroundColor = "#006b52";
+                                e.currentTarget.style.transform = "translateY(-1px)";
+                                e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 128, 96, 0.3)";
+                              } else {
+                                e.currentTarget.style.backgroundColor = "#e8f5f0";
+                                e.currentTarget.style.borderColor = "#008060";
+                              }
+                            } else if (!selectedTags.includes(tag)) {
+                              e.currentTarget.style.backgroundColor = "#e1e3e5";
+                              e.currentTarget.style.borderColor = "#aeb4b9";
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (showTagsSection) {
+                              if (selectedTags.includes(tag)) {
+                                e.currentTarget.style.backgroundColor = "#008060";
+                                e.currentTarget.style.transform = "translateY(0)";
+                                e.currentTarget.style.boxShadow = "0 2px 4px rgba(0, 128, 96, 0.2)";
+                              } else {
+                                e.currentTarget.style.backgroundColor = "#f6fff8";
+                                e.currentTarget.style.borderColor = "#008060";
+                              }
+                            } else if (!selectedTags.includes(tag)) {
+                              e.currentTarget.style.backgroundColor = "#f6f6f7";
+                              e.currentTarget.style.borderColor = "#d1d3d4";
+                            }
+                          }}
+                        >
+                          {(showTagsSection || selectedTags.includes(tag)) && (
+                            <ProductFilledIcon style={{ width: '14px', height: '14px', color: (showTagsSection && selectedTags.includes(tag)) ? 'white' : '#008060' }} />
+                          )}
+                          <span>{tag}</span>
+                          <span style={{ 
+                            fontSize: showTagsSection ? "11px" : "11px", 
+                            color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "#008060" : "#6d7175"), 
+                            backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 128, 96, 0.1)") : (selectedTags.includes(tag) ? "rgba(0, 128, 96, 0.1)" : "rgba(0, 0, 0, 0.1)"), 
+                            padding: showTagsSection ? "2px 5px" : "1px 4px", 
+                            borderRadius: "10px",
+                            fontWeight: showTagsSection ? "600" : "500"
+                          }}>
+                            {count}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowDeleteTagConfirm(tag);
+                            }}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              fontSize: showTagsSection ? "12px" : "12px",
+                              color: showTagsSection ? (selectedTags.includes(tag) ? "#dc2626" : "#dc2626") : (selectedTags.includes(tag) ? "#dc2626" : "#6d7175"),
+                              padding: "2px",
+                              borderRadius: "2px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              transition: "all 0.15s ease",
+                              marginLeft: "3px",
+                              width: showTagsSection ? "18px" : "16px",
+                              height: showTagsSection ? "18px" : "16px",
+                              opacity: "0.8",
+                              fontWeight: "bold"
+                            }}
+                            onMouseEnter={(e) => {
+                              if (showTagsSection) {
+                                e.target.style.backgroundColor = "rgba(220, 38, 38, 0.1)";
+                                e.target.style.color = "#b91c1c";
+                              } else {
+                                e.target.style.backgroundColor = selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)";
+                              }
+                              e.target.style.opacity = "1";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.backgroundColor = "transparent";
+                              e.target.style.color = showTagsSection ? "#dc2626" : (selectedTags.includes(tag) ? "#dc2626" : "#6d7175");
+                              e.target.style.opacity = "0.8";
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
             </div>
 
@@ -2758,7 +3999,9 @@ export default function Index() {
                   <SortableColumn 
                     key="notes"
                     id="notes"
+                    isEditorFullscreen={isEditorFullscreen}
                     style={{ width: "380px", minWidth: "380px", maxWidth: "380px", overflow: "hidden" }}
+                    data-column-id="notes"
                   >
           <Card style={{ flex: "1", display: "flex", flexDirection: "column", backgroundColor: "#fff", height: "100%", minHeight: "100%", padding: "0", margin: "0", borderRadius: "8px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", border: "1px solid #e1e3e5" }}>
             {/* Fixed Header Section */}
@@ -2840,7 +4083,7 @@ export default function Index() {
               <div style={{ marginTop: "16px" }}>
                 <Button 
                   onClick={handleNewNote}
-                  variant="primary"
+                  variant="primary" 
                   tone="warning"
                   fullWidth
                 >
@@ -2850,13 +4093,15 @@ export default function Index() {
             </div>
 
             {/* Scrollable Notes Section */}
-            <div style={{ 
-              flex: "1",
-              overflowY: filteredNotes.length > 1 ? "auto" : "visible",
-              overflowX: "hidden",
-              padding: "16px 20px 16px 16px",
-              maxHeight: filteredNotes.length > 1 ? "calc(100vh - 200px)" : "none"
-            }}>
+            <div 
+              data-notes-column
+              style={{ 
+                flex: "1",
+                overflowY: filteredNotes.length > 1 ? "auto" : "visible",
+                overflowX: "hidden",
+                padding: "16px 20px 16px 16px",
+                maxHeight: filteredNotes.length > 1 ? "calc(100vh - 200px)" : "none"
+              }}>
               
               {/* Multi-select action buttons */}
               {selectedNotes.length > 0 && (
@@ -3007,6 +4252,7 @@ export default function Index() {
                   <SortableColumn 
                     key="editor"
                     id="editor"
+                    isEditorFullscreen={isEditorFullscreen}
                     style={{ 
                       ...(collapsedColumns.folders && collapsedColumns.notes ? {
                         flex: "1",
@@ -3018,6 +4264,7 @@ export default function Index() {
                       }),
                       transition: "all 0.3s ease"
                     }}
+                    data-column-id="editor"
                   >
           <Card style={{ flex: "1", display: "flex", flexDirection: "column", backgroundColor: "#fff", height: "100%", minHeight: "100%", padding: "0", margin: "0", borderRadius: "8px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", border: "1px solid #e1e3e5" }}>
             <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -3107,24 +4354,10 @@ export default function Index() {
                   }}>
                     {folderId ? (
                       <>
-                        {/* Blue pill for folder name on mobile */}
-                        <div style={{
-                          padding: '4px 12px',
-                          borderRadius: '16px',
-                          backgroundColor: '#e3f2fd',
-                          border: '1px solid #007bff',
-                          color: '#007bff',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          textAlign: 'center',
-                          whiteSpace: 'nowrap',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px'
-                        }}>
-                          <i className="far fa-folder" style={{ fontSize: '12px' }}></i>
+                        <span style={{ fontWeight: "500" }}>
                           {folders.find(f => f.id === folderId)?.name}
-                        </div>
+                        </span>
+                        <span>/</span>
                         <span style={{ fontWeight: "600", color: "#202223" }}>
                           {title || "(untitled)"}
                         </span>
@@ -3265,11 +4498,28 @@ export default function Index() {
                   <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
                     Body
                   </label>
-                  <AdvancedRTE
-                    value={body}
-                    onChange={setBody}
-                    placeholder="Type your note here..."
-                  />
+                  {isMobile ? (
+                    <MobileEditorButton
+                      value={body}
+                      onChange={setBody}
+                      placeholder="Type your note here..."
+                      isMobile={isMobile}
+                      hasUnsavedChanges={hasUnsavedChanges}
+                      lastSavedTime={autoSaveNotification ? null : (editingNoteId ? (wasJustSaved ? "Just now" : getLastSavedTime()) : null)}
+                      autoSaveTime={autoSaveNotification}
+                      editingNoteId={editingNoteId}
+                      wasJustSaved={wasJustSaved}
+                      isNewlyCreated={isNewlyCreated}
+                      onFullscreenChange={setIsEditorFullscreen}
+                    />
+                  ) : (
+                    <AdvancedRTE
+                      value={body}
+                      onChange={setBody}
+                      placeholder="Type your note here..."
+                      onFullscreenChange={setIsEditorFullscreen}
+                    />
+                  )}
                 </div>
                 <div style={{ marginTop: "20px" }}>
                   <InlineStack gap="300">
@@ -3323,9 +4573,9 @@ export default function Index() {
           </div>
           </SortableContext>
         
-        {/* Delete Confirmation Modal */}
-        {showDeleteConfirm && (
-          <div style={{
+        {/* Delete Confirmation Modal - Desktop Only */}
+        {!isMobile && showDeleteConfirm && (
+          <div className="modal-overlay" style={{
             position: "fixed",
             top: 0,
             left: 0,
@@ -3335,14 +4585,17 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 10001,
+            padding: "16px"
           }}>
             <div style={{
               backgroundColor: "white",
               padding: "24px",
               borderRadius: "8px",
               maxWidth: "400px",
-              width: "90%"
+              width: "100%",
+              maxHeight: "90vh",
+              overflow: "auto"
             }}>
               <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
                 Delete Folder
@@ -3372,7 +4625,11 @@ export default function Index() {
                       if (response.ok) {
                         const result = await response.json();
                         if (result.success) {
-                          window.location.reload();
+                          // Remove folder from local state and clear selected folder if it was deleted
+                          setLocalFolders(prevFolders => prevFolders.filter(folder => folder.id !== showDeleteConfirm));
+                          if (selectedFolder === showDeleteConfirm) {
+                            setSelectedFolder(null);
+                          }
                         } else {
                           setAlertMessage(result.error || 'Failed to delete folder');
                           setAlertType('error');
@@ -3411,7 +4668,7 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 10001
           }}>
             <div style={{
               backgroundColor: "white",
@@ -3457,7 +4714,7 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 10001
           }}>
             <div style={{
               backgroundColor: "white",
@@ -3525,7 +4782,7 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 10001
           }}>
             <div style={{
               backgroundColor: "white",
@@ -3595,7 +4852,7 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 10001
           }}>
             <div style={{
               backgroundColor: "white",
@@ -3665,7 +4922,7 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 10001
           }}>
             <div style={{
               backgroundColor: "white",
@@ -3711,7 +4968,7 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 10001
           }}>
             <div style={{
               backgroundColor: "white",
@@ -3745,9 +5002,9 @@ export default function Index() {
           </div>
         )}
 
-        {/* Delete Tag Confirmation Modal */}
-        {showDeleteTagConfirm && (
-          <div style={{
+        {/* Delete Tag Confirmation Modal - Desktop Only */}
+        {!isMobile && showDeleteTagConfirm && (
+          <div className="modal-overlay" style={{
             position: "fixed",
             top: 0,
             left: 0,
@@ -3757,14 +5014,17 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 10001,
+            padding: "16px"
           }}>
             <div style={{
               backgroundColor: "white",
               padding: "24px",
               borderRadius: "8px",
               maxWidth: "400px",
-              width: "90%"
+              width: "100%",
+              maxHeight: "90vh",
+              overflow: "auto"
             }}>
               <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
                 Delete Tag
@@ -3791,9 +5051,9 @@ export default function Index() {
           </div>
         )}
 
-        {/* Rename Folder Modal */}
-        {showRenameFolderModal && (
-          <div style={{
+        {/* Rename Folder Modal - Desktop Only */}
+        {!isMobile && showRenameFolderModal && (
+          <div className="modal-overlay" style={{
             position: "fixed",
             top: 0,
             left: 0,
@@ -3803,14 +5063,17 @@ export default function Index() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: 2000
+            zIndex: 10001,
+            padding: "16px"
           }}>
             <div style={{
               backgroundColor: "white",
               padding: "24px",
               borderRadius: "8px",
               maxWidth: "400px",
-              width: "90%"
+              width: "100%",
+              maxHeight: "90vh",
+              overflow: "auto"
             }}>
               <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
                 Rename Folder
@@ -3952,17 +5215,16 @@ export default function Index() {
           <DragOverlay>
             {activeId ? (
               <div style={{
-                opacity: 0.98,
-                transform: 'rotate(3deg) scale(1.05)',
-                boxShadow: '0 32px 64px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 128, 96, 0.2)',
-                borderRadius: '12px',
+                opacity: 0.95,
+                transform: 'rotate(2deg) scale(1.02)',
+                boxShadow: '0 20px 40px -8px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 128, 96, 0.3)',
+                borderRadius: '8px',
                 overflow: 'hidden',
-                backgroundColor: '#fff',
-                border: '3px solid #008060',
-                zIndex: 9999,
+                zIndex: 10001,
                 cursor: 'grabbing',
                 maxHeight: '80vh',
-                maxWidth: '90vw'
+                maxWidth: '90vw',
+                pointerEvents: 'none'
               }}>
                 {renderColumnContent(activeId)}
               </div>
@@ -4019,25 +5281,19 @@ export default function Index() {
           </div>
         </div>
 
-        {/* New Folder Modal */}
-        <NewFolderModal
-          isOpen={showNewFolderModal}
-          onClose={() => setShowNewFolderModal(false)}
-          onCreateFolder={handleCreateFolderFromModal}
-          initialName=""
-        />
 
 
-        {/* Folder Icon Picker Modal */}
-        {showIconPicker && (
+        {/* Folder Icon Picker Modal - Desktop Only */}
+        {!isMobile && showIconPicker && (
           <FolderIconPicker
             isOpen={true}
             onClose={() => setShowIconPicker(null)}
             onSelectIcon={(iconData) => {
               handleIconChange(showIconPicker, iconData);
+              setShowIconPicker(null);
             }}
-            currentIcon="folder"
-            currentColor="rgba(255, 184, 0, 1)"
+            currentIcon={localFolders.find(f => f.id === showIconPicker)?.icon || "folder"}
+            currentColor={localFolders.find(f => f.id === showIconPicker)?.iconColor || "rgba(255, 184, 0, 1)"}
             folderName={localFolders.find(f => f.id === showIconPicker)?.name || "Folder"}
           />
         )}
@@ -4046,7 +5302,20 @@ export default function Index() {
         <Popover
           active={showFolderSelector}
           activator={
-            <div style={{ display: 'none' }} />
+            <div 
+              id="folder-selector-activator"
+              style={{ 
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '1px',
+                height: '1px',
+                opacity: 0,
+                pointerEvents: 'none',
+                zIndex: -1
+              }} 
+            />
           }
           onClose={() => {
             setShowFolderSelector(false);
@@ -4075,9 +5344,12 @@ export default function Index() {
                 <div style={{ marginTop: '12px', maxHeight: '200px', overflowY: 'auto' }}>
                   <ActionList
                     items={localFolders
-                      .filter(folder => 
-                        folder.name.toLowerCase().includes(folderSelectorSearchQuery.toLowerCase())
-                      )
+                      .filter(folder => {
+                        // Filter out current folder and match search query
+                        const currentNote = localNotes.find(n => n.id === folderSelectorNoteId);
+                        const isCurrentFolder = currentNote && folder.id === currentNote.folderId;
+                        return !isCurrentFolder && folder.name.toLowerCase().includes(folderSelectorSearchQuery.toLowerCase());
+                      })
                       .map(folder => ({
                         content: folder.name,
                         onAction: () => handleFolderSelection(folder.id),
@@ -4090,6 +5362,2301 @@ export default function Index() {
             </div>
           </Popover.Pane>
         </Popover>
-      </Page>
-    );
-  }
+        </Page>
+      )}
+
+      {/* Mobile Layout */}
+      {isMobile && (
+        <div 
+          className="mobile-layout"
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'white',
+            zIndex: 10000,
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+          
+          {/* Mobile Alert */}
+          {alertMessage && (
+            <div 
+              style={{
+                position: "fixed",
+                top: "10px",
+                left: "10px",
+                right: "10px",
+                padding: "16px 20px",
+                borderRadius: "8px",
+                color: "white",
+                fontSize: "16px",
+                fontWeight: "600",
+                zIndex: 10001,
+                boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
+                animation: "slideIn 0.3s ease-out",
+                backgroundColor: alertType === 'error' ? "#d82c0d" : "#008060",
+                textAlign: "center",
+                border: "2px solid rgba(255,255,255,0.3)"
+              }}
+            >
+              {alertMessage}
+            </div>
+          )}
+          {/* Mobile Header */}
+          <div style={{
+            padding: '16px',
+            borderBottom: '1px solid #e1e3e5',
+            backgroundColor: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            {/* Left Navigation */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {mobileActiveSection === 'folders' && (
+                <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
+                  Folders
+                </h1>
+              )}
+              {mobileActiveSection === 'notes' && (
+                <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
+                  Notes
+                </h1>
+              )}
+              {editingNoteId && mobileActiveSection === 'editor' && (
+                <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
+                  Note Editor
+                </h1>
+              )}
+            </div>
+            
+            {/* Right Navigation */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {mobileActiveSection === 'folders' && (
+                <Button
+                  variant="primary"
+                  size="slim"
+                  onClick={() => setMobileActiveSection('notes')}
+                  style={{ fontSize: '14px', fontWeight: '500' }}
+                >
+                  View Notes
+                </Button>
+              )}
+              {mobileActiveSection === 'notes' && (
+                <>
+                  <Button
+                    variant="secondary"
+                    size="slim"
+                    onClick={() => setMobileActiveSection('folders')}
+                    className={animateBackToFolders ? 'back-to-folders-animate' : ''}
+                    style={{ 
+                      fontSize: '14px', 
+                      fontWeight: '500', 
+                      backgroundColor: '#000000', 
+                      color: '#ffffff', 
+                      borderColor: '#000000'
+                    }}
+                  >
+                    Back to Folders
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="slim"
+                    onClick={() => {
+                      if (!selectedFolder) {
+                        setAlertMessage('Please select a folder first to create a new note');
+                        setAlertType('error');
+                        // Hide error message after 4 seconds
+                        setTimeout(() => setAlertMessage(''), 4000);
+                        // Animate the Back to Folders button after error message disappears
+                        setTimeout(() => {
+                          console.log('Starting Back to Folders animation (mobile)');
+                          setAnimateBackToFolders(true);
+                          setTimeout(() => {
+                            console.log('Stopping Back to Folders animation (mobile)');
+                            setAnimateBackToFolders(false);
+                          }, 2000);
+                        }, 4000);
+                        return;
+                      }
+                      handleNewNote();
+                    }}
+                    style={{ fontSize: '14px', fontWeight: '500' }}
+                  >
+                    Create Note
+                  </Button>
+                </>
+              )}
+              {editingNoteId && mobileActiveSection === 'editor' && (
+                <>
+                  <Button
+                    variant="secondary"
+                    size="slim"
+                    onClick={() => setMobileActiveSection('folders')}
+                    className={animateBackToFolders ? 'back-to-folders-animate' : ''}
+                    style={{ 
+                      fontSize: '14px', 
+                      fontWeight: '500', 
+                      backgroundColor: '#000000', 
+                      color: '#ffffff', 
+                      borderColor: '#000000'
+                    }}
+                  >
+                    Back to Folders
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="slim"
+                    onClick={() => setMobileActiveSection('notes')}
+                    style={{ fontSize: '14px', fontWeight: '500', backgroundColor: '#000000', color: '#ffffff', borderColor: '#000000' }}
+                  >
+                    Back to Notes
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile Sections */}
+          <div style={{ 
+            display: mobileActiveSection === 'folders' ? 'block' : 'none',
+            flex: 1,
+            overflowY: 'auto',
+            padding: '16px',
+            WebkitOverflowScrolling: 'touch'
+          }}>
+            {/* Folders Section Content */}
+            <div style={{ 
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '20px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{ marginBottom: '16px' }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Folders</h2>
+              </div>
+              
+              {/* All Notes and All Tags Buttons - Mobile */}
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+                  {/* All Notes Button */}
+                  <div 
+                    style={{ 
+                      padding: "8px 12px", 
+                      flex: "1",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      backgroundColor: selectedFolder === null ? "#f6fff8" : "#F8F9FA",
+                      border: selectedFolder === null ? "2px solid #008060" : "2px solid #E1E3E5",
+                      borderRadius: "8px",
+                      position: "relative",
+                      transition: "all 0.2s ease",
+                      boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                    }}
+                    onClick={() => setSelectedFolder(null)}
+                  >
+                    <span style={{ 
+                      fontWeight: "600", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: "6px",
+                      color: selectedFolder === null ? "#008060" : "rgba(48, 48, 48, 1)",
+                      fontSize: "14px"
+                    }}>
+                      <i className="far fa-note-sticky" style={{ fontSize: "16px" }}></i>
+                      All Notes
+                    </span>
+                  </div>
+
+                  {/* All Tags Button */}
+                  <div 
+                    style={{ 
+                      padding: "8px 12px", 
+                      flex: "1",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      backgroundColor: showTagsSection ? "#f6fff8" : "#F8F9FA",
+                      border: showTagsSection ? "2px solid #008060" : "2px solid #E1E3E5",
+                      borderRadius: "8px",
+                      position: "relative",
+                      transition: "all 0.2s ease",
+                      boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                    }}
+                    onClick={() => {
+                      if (showTagsSection) {
+                        // When closing All Tags section, keep only selected tags visible
+                        setShowTagsSection(false);
+                      } else {
+                        // When opening All Tags section, show all tags
+                        setShowTagsSection(true);
+                      }
+                    }}
+                  >
+                    <span style={{ 
+                      fontWeight: "600", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: "6px",
+                      color: showTagsSection ? "#008060" : "rgba(48, 48, 48, 1)",
+                      fontSize: "14px"
+                    }}>
+                      <i className="far fa-bookmark" style={{ fontSize: "16px" }}></i>
+                      All Tags
+                    </span>
+                  </div>
+                </div>
+
+                {/* Create New Folder Button - Mobile Top (only show when 6+ folders) */}
+                {localFolders.length >= 6 && (
+                  <div style={{ marginBottom: "12px" }}>
+                    <Button
+                      variant="primary"
+                      fullWidth
+                      onClick={() => setShowNewFolderModal(true)}
+                      style={{ backgroundColor: '#008060', borderColor: '#008060' }}
+                    >
+                      <span style={{ color: 'white' }}>Create New Folder</span>
+                    </Button>
+                  </div>
+                )}
+              </div>
+              
+              <>
+                {/* Tags Section - Mobile */}
+                {(showTagsSection || selectedTags.length > 0) && (
+                <div style={{ marginBottom: '24px' }}>
+                  <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600', color: '#374151' }}>Tags</h3>
+                  <p style={{ color: '#6d7175', margin: '0 0 16px 0', fontSize: '14px' }}>Filter notes by tags</p>
+                  
+                  {/* Tags List - Mobile */}
+                  {(showTagsSection || selectedTags.length > 0) && (
+                    <div style={{ 
+                      marginBottom: "12px",
+                      padding: "12px",
+                      backgroundColor: "#f8f9fa",
+                      borderRadius: "8px",
+                      border: "1px solid #e1e3e5"
+                    }}>
+                      {getAllTagsWithCounts().length === 0 ? (
+                        <p style={{ color: "#6d7175", fontSize: "14px", margin: 0 }}>No tags created yet</p>
+                      ) : (
+                        <div style={{ 
+                          display: "flex", 
+                          flexWrap: "wrap", 
+                          gap: "6px",
+                          padding: "8px 0"
+                        }}>
+                          {(showTagsSection ? getAllTagsWithCounts() : getAllTagsWithCounts().filter(({ tag }) => selectedTags.includes(tag))).map(({ tag, count }) => (
+                            <div
+                              key={tag}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: showTagsSection ? "6px" : "6px",
+                                padding: showTagsSection ? "6px 10px" : "4px 8px",
+                                backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "#008060" : "#f6fff8") : (selectedTags.includes(tag) ? "#f6fff8" : "transparent"),
+                                borderRadius: "16px",
+                                border: showTagsSection ? (selectedTags.includes(tag) ? "none" : "1px solid #008060") : (selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060"),
+                                cursor: "pointer",
+                                transition: "all 0.15s ease",
+                                position: "relative",
+                                fontSize: showTagsSection ? "12px" : "12px",
+                                fontWeight: showTagsSection ? "500" : "400",
+                                color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "#008060" : "#008060"),
+                                minHeight: showTagsSection ? "28px" : "24px",
+                                justifyContent: "center",
+                                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                                boxShadow: showTagsSection ? (selectedTags.includes(tag) ? "0 2px 4px rgba(0, 128, 96, 0.2)" : "none") : "none"
+                              }}
+                              onClick={() => handleTagClick(tag)}
+                              onMouseEnter={(e) => {
+                                if (showTagsSection) {
+                                  if (selectedTags.includes(tag)) {
+                                    e.currentTarget.style.backgroundColor = "#006b52";
+                                    e.currentTarget.style.transform = "translateY(-1px)";
+                                    e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 128, 96, 0.3)";
+                                  } else {
+                                    e.currentTarget.style.backgroundColor = "#e8f5f0";
+                                    e.currentTarget.style.borderColor = "#008060";
+                                  }
+                                } else if (!selectedTags.includes(tag)) {
+                                  e.currentTarget.style.backgroundColor = "#e1e3e5";
+                                  e.currentTarget.style.borderColor = "#aeb4b9";
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (showTagsSection) {
+                                  if (selectedTags.includes(tag)) {
+                                    e.currentTarget.style.backgroundColor = "#008060";
+                                    e.currentTarget.style.transform = "translateY(0)";
+                                    e.currentTarget.style.boxShadow = "0 2px 4px rgba(0, 128, 96, 0.2)";
+                                  } else {
+                                    e.currentTarget.style.backgroundColor = "#f6fff8";
+                                    e.currentTarget.style.borderColor = "#008060";
+                                  }
+                                } else if (!selectedTags.includes(tag)) {
+                                  e.currentTarget.style.backgroundColor = "#f6f6f7";
+                                  e.currentTarget.style.borderColor = "#d1d3d4";
+                                }
+                              }}
+                            >
+                              {(showTagsSection || selectedTags.includes(tag)) && (
+                                <ProductFilledIcon style={{ width: '14px', height: '14px', color: (showTagsSection && selectedTags.includes(tag)) ? 'white' : '#008060' }} />
+                              )}
+                              <span>{tag}</span>
+                              <span style={{ 
+                                fontSize: showTagsSection ? "11px" : "11px", 
+                                color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "#008060" : "#6d7175"), 
+                                backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 128, 96, 0.1)") : (selectedTags.includes(tag) ? "rgba(0, 128, 96, 0.1)" : "rgba(0, 0, 0, 0.1)"), 
+                                padding: showTagsSection ? "2px 5px" : "1px 4px", 
+                                borderRadius: "10px",
+                                fontWeight: showTagsSection ? "600" : "500"
+                              }}>
+                                {count}
+                              </span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowDeleteTagConfirm(tag);
+                                }}
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  fontSize: showTagsSection ? "12px" : "12px",
+                                  color: showTagsSection ? (selectedTags.includes(tag) ? "#dc2626" : "#dc2626") : (selectedTags.includes(tag) ? "#dc2626" : "#6d7175"),
+                                  padding: "2px",
+                                  borderRadius: "2px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  transition: "all 0.15s ease",
+                                  marginLeft: "3px",
+                                  width: showTagsSection ? "18px" : "16px",
+                                  height: showTagsSection ? "18px" : "16px",
+                                  opacity: "0.8",
+                                  fontWeight: "bold"
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (showTagsSection) {
+                                    e.target.style.backgroundColor = "rgba(220, 38, 38, 0.1)";
+                                    e.target.style.color = "#b91c1c";
+                                  } else {
+                                    e.target.style.backgroundColor = selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)";
+                                  }
+                                  e.target.style.opacity = "1";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.target.style.backgroundColor = "transparent";
+                                  e.target.style.color = showTagsSection ? "#dc2626" : (selectedTags.includes(tag) ? "#dc2626" : "#6d7175");
+                                  e.target.style.opacity = "0.8";
+                                }}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                )}
+
+                {/* Folders Section - Always Visible */}
+                <div style={{ marginBottom: '24px' }}>
+                  <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600', color: '#374151' }}>Folders</h3>
+                  <p style={{ color: '#6d7175', margin: '0 0 16px 0', fontSize: '14px' }}>Select a folder to view its notes</p>
+                  
+                  {/* All Notes Option */}
+                  <div style={{ 
+                    padding: "12px 16px", 
+                    marginBottom: "8px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    backgroundColor: selectedFolder === null ? "#f6fff8" : "#F8F9FA",
+                    border: selectedFolder === null ? "2px solid #008060" : "2px solid #E1E3E5",
+                    borderRadius: "8px",
+                    position: "relative",
+                    transition: "all 0.2s ease",
+                    boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)",
+                    cursor: "pointer"
+                  }}
+                  onClick={() => setSelectedFolder(null)}
+                  >
+                    <span style={{ 
+                      fontWeight: "700", 
+                      display: "flex", 
+                      alignItems: "center", 
+                      gap: "8px",
+                      color: selectedFolder === null ? "#008060" : "#374151",
+                      fontSize: "14px"
+                    }}>
+                      <i className="far fa-sticky-note" style={{ 
+                        fontSize: "18px", 
+                        color: selectedFolder === null ? "#008060" : "#6d7175"
+                      }}></i>
+                      All Notes
+                    </span>
+                    {selectedFolder === null && (
+                      <span style={{ 
+                        fontSize: "12px", 
+                        color: "#008060", 
+                        backgroundColor: "rgba(0, 128, 96, 0.1)", 
+                        padding: "2px 6px", 
+                        borderRadius: "4px",
+                        fontWeight: "600"
+                      }}>
+                        Active
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Folders List */}
+                  {localFolders.length === 0 ? (
+                    <div style={{ 
+                      padding: "20px", 
+                      textAlign: "center", 
+                      color: "#6d7175",
+                      backgroundColor: "#f8f9fa",
+                      borderRadius: "8px",
+                      border: "1px solid #e1e3e5"
+                    }}>
+                      <i className="far fa-folder" style={{ fontSize: "24px", marginBottom: "8px", display: "block" }}></i>
+                      <p style={{ margin: 0, fontSize: "14px" }}>No folders created yet</p>
+                    </div>
+                  ) : (
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleFolderDragEnd}
+                    >
+                      <SortableContext
+                        items={localFolders.map(f => f.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <div>
+                          {localFolders.map((folder) => (
+                            <DraggableFolder 
+                              key={folder.id} 
+                              folder={folder}
+                              selectedFolder={selectedFolder}
+                              openFolderMenu={mobileOpenFolderMenu}
+                              setOpenFolderMenu={setMobileOpenFolderMenu}
+                              onFolderClick={(folderId) => setSelectedFolder(selectedFolder === folderId ? null : folderId)}
+                            >
+                              {mobileOpenFolderMenu === folder.id && (
+                                <div className="mobile-folder-menu" style={{
+                                  position: 'absolute',
+                                  top: '100%',
+                                  right: '8px',
+                                  backgroundColor: 'white',
+                                  border: '1px solid #e1e3e5',
+                                  borderRadius: '8px',
+                                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                                  zIndex: 1000,
+                                  minWidth: '120px',
+                                  padding: '4px 0'
+                                }}>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowRenameFolderModal(folder.id);
+                                      setEditingFolderName(folder.name);
+                                      setMobileOpenFolderMenu(null);
+                                    }}
+                                    style={{
+                                      width: '100%',
+                                      padding: '8px 12px',
+                                      border: 'none',
+                                      background: 'none',
+                                      textAlign: 'left',
+                                      cursor: 'pointer',
+                                      fontSize: '14px',
+                                      color: '#374151',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '8px'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.target.style.backgroundColor = '#f6fff8';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.target.style.backgroundColor = 'transparent';
+                                    }}
+                                  >
+                                    <i className="far fa-edit" style={{ fontSize: '12px' }}></i>
+                                    Rename
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowIconPicker(folder.id);
+                                      setMobileOpenFolderMenu(null);
+                                    }}
+                                    style={{
+                                      width: '100%',
+                                      padding: '8px 12px',
+                                      border: 'none',
+                                      background: 'none',
+                                      textAlign: 'left',
+                                      cursor: 'pointer',
+                                      fontSize: '14px',
+                                      color: '#374151',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '8px'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.target.style.backgroundColor = '#f6fff8';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.target.style.backgroundColor = 'transparent';
+                                    }}
+                                  >
+                                    <ExchangeIcon style={{ width: '15px', height: '15px' }} />
+                                    Change Icon
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowDeleteConfirm(folder.id);
+                                      setMobileOpenFolderMenu(null);
+                                    }}
+                                    style={{
+                                      width: '100%',
+                                      padding: '8px 12px',
+                                      border: 'none',
+                                      background: 'none',
+                                      textAlign: 'left',
+                                      cursor: 'pointer',
+                                      fontSize: '14px',
+                                      color: '#dc2626',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '8px'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.target.style.backgroundColor = '#fef2f2';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.target.style.backgroundColor = 'transparent';
+                                    }}
+                                  >
+                                    <i className="far fa-trash-alt" style={{ fontSize: '12px' }}></i>
+                                    Delete
+                                  </button>
+                                </div>
+                              )}
+                            </DraggableFolder>
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
+                  )}
+                  
+                  {/* Create New Folder Button */}
+                  <div style={{ marginTop: '16px' }}>
+                    <Button
+                      variant="primary"
+                      fullWidth
+                      onClick={() => setShowNewFolderModal(true)}
+                      style={{ backgroundColor: '#008060', borderColor: '#008060' }}
+                    >
+                      <span style={{ color: 'white' }}>Create New Folder</span>
+                    </Button>
+                  </div>
+                </div>
+
+              </>
+            </div>
+          </div>
+
+          <div style={{ 
+            display: mobileActiveSection === 'notes' ? 'block' : 'none',
+            flex: 1,
+            overflowY: 'auto',
+            padding: '16px',
+            WebkitOverflowScrolling: 'touch'
+          }}>
+            {/* Notes Section Content */}
+            <div style={{ 
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '20px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Notes</h2>
+              </div>
+              
+              {/* Mobile Multi-select action buttons */}
+              {selectedNotes.length > 0 && (
+                <div style={{ 
+                  marginBottom: "16px",
+                  display: "flex",
+                  gap: "8px",
+                  flexDirection: "column"
+                }}>
+                  <Button
+                    variant="primary"
+                    tone="critical"
+                    onClick={() => setShowDeleteMultipleConfirm(true)}
+                    style={{
+                      backgroundColor: "#d82c0d",
+                      border: "none",
+                      color: "white",
+                      padding: "10px 16px",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      fontWeight: "500"
+                    }}
+                  >
+                    Delete {selectedNotes.length} Selected Note{selectedNotes.length > 1 ? 's' : ''}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => setShowMoveModal('bulk')}
+                    style={{
+                      backgroundColor: "rgba(48, 48, 48, 1)",
+                      border: "none",
+                      color: "white",
+                      padding: "10px 16px",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      fontWeight: "500"
+                    }}
+                  >
+                    Move {selectedNotes.length} Selected Note{selectedNotes.length > 1 ? 's' : ''}
+                  </Button>
+                </div>
+              )}
+              
+              {/* Current Folder Pill/Tag Indicator */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                marginBottom: '16px',
+                flexWrap: 'wrap'
+              }}>
+                {/* Current Folder Pill */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  backgroundColor: selectedFolder ? '#e3f2fd' : '#f5f5f5',
+                  border: selectedFolder ? '1px solid #1976d2' : '1px solid #e0e0e0',
+                  borderRadius: '20px',
+                  padding: '8px 12px',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}>
+                  <span style={{ color: selectedFolder ? '#1976d2' : '#666666' }}>
+                    Current Folder:
+                  </span>
+                  <span style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    backgroundColor: selectedFolder ? '#1976d2' : '#666666',
+                    color: 'white',
+                    padding: '4px 10px',
+                    borderRadius: '16px',
+                    fontSize: '13px'
+                  }}>
+                    {selectedFolder ? localFolders.find(f => f.id === selectedFolder)?.name : 'Viewing all notes'}
+                    {selectedFolder && (
+                      <button
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'white',
+                          cursor: 'pointer',
+                          padding: '0',
+                          marginLeft: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '16px',
+                          height: '16px',
+                          borderRadius: '50%',
+                          transition: 'background-color 0.2s ease'
+                        }}
+                        onClick={() => setSelectedFolder(null)}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.2)'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </span>
+                </div>
+
+                {/* Change/Select Folder Button */}
+                <Button
+                  variant="secondary"
+                  size="slim"
+                  onClick={() => setMobileActiveSection('folders')}
+                  style={{
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    padding: '6px 12px',
+                    borderRadius: '16px',
+                    backgroundColor: '#f8f9fa',
+                    border: '1px solid #e0e0e0',
+                    color: '#333333'
+                  }}
+                >
+                  {selectedFolder ? 'Change Folder' : 'Select a Folder'}
+                </Button>
+              </div>
+
+              {/* Selected Tags (if any) */}
+              {selectedTags.length > 0 && (
+                <div style={{ 
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  gap: '6px',
+                  marginBottom: '16px'
+                }}>
+                  {selectedTags.map((tag, index) => (
+                    <span
+                      key={index}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        backgroundColor: '#008060',
+                        color: 'white',
+                        padding: '6px 12px',
+                        borderRadius: '16px',
+                        fontSize: '13px',
+                        fontWeight: '500'
+                      }}
+                    >
+                      <i className="fas fa-tag" style={{ fontSize: '11px' }}></i>
+                      {tag}
+                      <button
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'white',
+                          cursor: 'pointer',
+                          padding: '0',
+                          marginLeft: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '16px',
+                          height: '16px',
+                          borderRadius: '50%',
+                          transition: 'background-color 0.2s ease'
+                        }}
+                        onClick={() => {
+                          const newTags = selectedTags.filter((_, i) => i !== index);
+                          setSelectedTags(newTags);
+                          if (newTags.length === 0) {
+                            setGlobalSearchQuery("");
+                          } else {
+                            setGlobalSearchQuery(`tag:${newTags.join(' tag:')}`);
+                          }
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.2)'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Notes List */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {localNotes
+                  .filter(note => {
+                    if (selectedFolder && note.folderId !== selectedFolder) return false;
+                    if (selectedTags.length > 0) {
+                      const noteTags = note.tags || [];
+                      return selectedTags.some(tag => noteTags.includes(tag));
+                    }
+                    return true;
+                  })
+                  .map((note) => {
+                    const createdDate = new Date(note.createdAt);
+                    const updatedDate = new Date(note.updatedAt);
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    
+                    // Format dates with exact time like "9 Sep 2024, 2:30 PM"
+                    const formatDateTime = (date) => {
+                      const day = date.getDate();
+                      const month = monthNames[date.getMonth()];
+                      const year = date.getFullYear();
+                      const hours = date.getHours();
+                      const minutes = date.getMinutes().toString().padStart(2, '0');
+                      const ampm = hours >= 12 ? 'PM' : 'AM';
+                      const displayHours = hours % 12 || 12;
+                      return `${day} ${month} ${year}, ${displayHours}:${minutes} ${ampm}`;
+                    };
+                    
+                    const createdAt = formatDateTime(createdDate);
+                    const updatedAt = formatDateTime(updatedDate);
+                    const wasEdited = note.updatedAt !== note.createdAt;
+                    
+                    return (
+                      <div
+                        key={note.id}
+                        style={{
+                          padding: '16px',
+                          border: selectButtonClicked.has(note.id) ? '1px solid #FF8C00' : '1px solid #D1D3D4',
+                          borderRadius: '12px',
+                          backgroundColor: selectButtonClicked.has(note.id) ? '#fffbf8' : 'white',
+                          position: 'relative',
+                          boxShadow: selectButtonClicked.has(note.id) ? '0 4px 12px rgba(255, 140, 0, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
+                          transition: 'all 0.2s ease',
+                          cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          if (selectButtonClicked.has(note.id)) {
+                            e.currentTarget.style.boxShadow = '0 6px 16px rgba(255, 140, 0, 0.4)';
+                            e.currentTarget.style.borderColor = '#FF8C00';
+                          } else {
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                            e.currentTarget.style.borderColor = '#D0D7E2';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          if (selectButtonClicked.has(note.id)) {
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 140, 0, 0.3)';
+                            e.currentTarget.style.borderColor = '#FF8C00';
+                          } else {
+                            e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+                            e.currentTarget.style.borderColor = '#D1D3D4';
+                          }
+                        }}
+                      >
+                        {/* Note Header */}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+                          <div style={{ flex: 1 }}>
+                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>
+                              {note.title || 'Untitled'}
+                            </h3>
+                            {/* Folder Badge */}
+                            {note.folderId && localFolders.find(f => f.id === note.folderId) && (
+                              <div style={{ marginTop: '4px' }}>
+                                <span style={{
+                                  display: 'inline-block',
+                                  backgroundColor: '#E3F2FD',
+                                  color: '#1976D2',
+                                  border: '1px solid #BBDEFB',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  fontSize: '10px',
+                                  fontWeight: '500'
+                                }}>
+                                  {localFolders.find(f => f.id === note.folderId)?.name}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          {/* Pin Icon */}
+                          {note.pinnedAt && (
+                            <div style={{ marginLeft: '8px' }}>
+                              <i className="fas fa-thumbtack" style={{ 
+                                color: '#008060', 
+                                fontSize: '14px',
+                                transform: 'rotate(45deg)'
+                              }}></i>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Note Content */}
+                        {note.content && (
+                          <p style={{ 
+                            margin: '0 0 8px 0', 
+                            color: '#6d7175', 
+                            fontSize: '14px',
+                            lineHeight: '1.4',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 4,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                          }}>
+                            {note.content.replace(/<[^>]*>/g, '').substring(0, 200)}...
+                          </p>
+                        )}
+                        
+                        {/* Tags */}
+                        {note.tags && note.tags.length > 0 && (
+                          <div style={{ marginBottom: '12px' }}>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                              {note.tags.slice(0, 3).map((tag, index) => (
+                                <span
+                                  key={index}
+                                  style={{
+                                    backgroundColor: '#E8F5E8',
+                                    color: '#008060',
+                                    border: '1px solid #B8E6B8',
+                                    padding: '4px 8px',
+                                    borderRadius: '12px',
+                                    fontSize: '12px',
+                                    fontWeight: '500'
+                                  }}
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                              {note.tags.length > 3 && (
+                                <span style={{ 
+                                  fontSize: '12px', 
+                                  color: '#6d7175',
+                                  backgroundColor: '#F5F5F5',
+                                  border: '1px solid #E0E0E0',
+                                  padding: '4px 8px',
+                                  borderRadius: '12px',
+                                  fontWeight: '500'
+                                }}>
+                                  +{note.tags.length - 3}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Date Information and Action Buttons */}
+                        <div style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center',
+                          borderTop: '1px solid #f1f3f4',
+                          paddingTop: '8px',
+                          marginTop: '8px'
+                        }}>
+                          {/* Date Information - Left Side */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <span style={{ fontSize: '12px', color: '#8C9196', fontWeight: '500' }}>
+                              <strong>Created:</strong> {createdAt}
+                            </span>
+                            {wasEdited && (
+                              <span style={{ fontSize: '12px', color: '#8C9196', fontWeight: '500' }}>
+                                <strong>Edited:</strong> {updatedAt}
+                              </span>
+                            )}
+                          </div>
+                          
+                          {/* Action Buttons - Right Side */}
+                          <div className="mobile-note-actions" style={{ display: 'flex', gap: '4px', position: 'relative', zIndex: 2 }}>
+                            {/* Select Button */}
+                            <Button
+                              size="slim"
+                              variant={selectButtonClicked.has(note.id) ? "primary" : "secondary"}
+                              tone={selectButtonClicked.has(note.id) ? "warning" : "base"}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectButtonClick(note.id);
+                              }}
+                            >
+                              Select
+                            </Button>
+                            
+                            {/* Manage Button */}
+                            <Button
+                              data-manage-button
+                              size="slim"
+                              variant="secondary"
+                              tone="warning"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const buttonRect = e.currentTarget.getBoundingClientRect();
+                                const viewportWidth = window.innerWidth;
+                                
+                                // Position dropdown with mobile-friendly positioning
+                                let left = buttonRect.left;
+                                let top = buttonRect.bottom + 4;
+                                
+                                // Ensure menu doesn't go off-screen on mobile
+                                if (left + 200 > viewportWidth) {
+                                  left = viewportWidth - 220; // 200px menu width + 20px margin
+                                }
+                                
+                                // If menu would go below viewport, position it above the button
+                                if (top + 200 > window.innerHeight) {
+                                  top = buttonRect.top - 204; // 200px menu height + 4px margin
+                                }
+                                
+                                setDropdownPosition({ top, left });
+                                setOpenNoteMenu(openNoteMenu === note.id ? null : note.id);
+                              }}
+                            >
+                              Manage
+                            </Button>
+                            
+                            {/* Delete Button */}
+                            <Button
+                              size="slim"
+                              variant="secondary"
+                              tone="critical"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowDeleteNoteConfirm(note.id);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {/* Click to Edit Overlay */}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            cursor: 'pointer',
+                            zIndex: 1
+                          }}
+                          onClick={() => {
+                            handleEditNote(note);
+                            setMobileActiveSection('editor');
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+              </div>
+
+            </div>
+          </div>
+
+          {/* Portal Dropdown for Mobile */}
+          <PortalDropdown
+            isOpen={openNoteMenu !== null}
+            position={dropdownPosition}
+            onClose={() => setOpenNoteMenu(null)}
+            note={(() => {
+              const foundNote = localNotes.find(n => n.id === openNoteMenu);
+              console.log('Mobile PortalDropdown - openNoteMenu:', openNoteMenu, 'foundNote:', foundNote);
+              return foundNote;
+            })()}
+          />
+
+          <div style={{ 
+            display: mobileActiveSection === 'editor' ? 'block' : 'none',
+            flex: 1,
+            overflowY: 'auto',
+            padding: '16px',
+            WebkitOverflowScrolling: 'touch',
+            position: 'relative',
+            zIndex: 1
+          }}>
+            {/* Editor Section Content */}
+            <div style={{ 
+              backgroundColor: 'transparent',
+              borderRadius: '0px',
+              padding: '0px',
+              boxShadow: 'none',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              border: 'none'
+            }}>
+              {/* Editor Header */}
+              <div style={{ 
+                padding: "12px 16px", 
+                borderBottom: "1px solid #e1e3e5",
+                marginBottom: "16px",
+                backgroundColor: "#f8f9fa",
+                borderRadius: "8px 8px 0 0"
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                  <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>Note Editor</h2>
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    <button
+                      style={{
+                        padding: "6px 12px",
+                        backgroundColor: "#008060",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        fontWeight: "500"
+                      }}
+                      onClick={handleMobileSave}
+                    >
+                      Save
+                    </button>
+                    <button
+                      style={{
+                        padding: "6px 12px",
+                        backgroundColor: "#6d7175",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        fontWeight: "500"
+                      }}
+                      onClick={() => setMobileActiveSection('notes')}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Folder Path */}
+                {selectedFolder && (
+                  <div style={{ 
+                    fontSize: "12px", 
+                    color: "#6d7175",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    backgroundColor: "white",
+                    padding: "6px 8px",
+                    borderRadius: "4px",
+                    border: "1px solid #e1e3e5"
+                  }}>
+                    <FolderIcon style={{ width: '14px', height: '14px' }} />
+                    {localFolders.find(f => f.id === selectedFolder)?.name}
+                  </div>
+                )}
+
+              </div>
+
+              {/* Title Input */}
+              <div style={{ marginBottom: "12px" }}>
+                <label style={{ 
+                  display: "block", 
+                  fontSize: "12px", 
+                  fontWeight: "600", 
+                  color: "#374151", 
+                  marginBottom: "4px" 
+                }}>
+                  Title
+                </label>
+                <input
+                  type="text"
+                  placeholder="Note title..."
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "10px 12px",
+                    border: "1px solid #e1e3e5",
+                    borderRadius: "6px",
+                    fontSize: "15px",
+                    fontWeight: "600",
+                    backgroundColor: "white"
+                  }}
+                />
+              </div>
+
+              {/* Tags Input */}
+              <div style={{ marginBottom: "12px" }}>
+                <label style={{ 
+                  display: "block", 
+                  fontSize: "12px", 
+                  fontWeight: "600", 
+                  color: "#374151", 
+                  marginBottom: "4px" 
+                }}>
+                  Tags
+                </label>
+                <input
+                  type="text"
+                  placeholder="Add tags (comma separated)..."
+                  value={newTagInput}
+                  onChange={(e) => setNewTagInput(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      const tags = newTagInput.split(',').map(tag => tag.trim()).filter(tag => tag);
+                      setNoteTags([...noteTags, ...tags]);
+                      setNewTagInput('');
+                    }
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "10px 12px",
+                    border: "1px solid #e1e3e5",
+                    borderRadius: "6px",
+                    fontSize: "13px",
+                    backgroundColor: "white"
+                  }}
+                />
+                {noteTags.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "8px" }}>
+                    {noteTags.map((tag, index) => (
+                      <span
+                        key={index}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          backgroundColor: "#008060",
+                          color: "white",
+                          padding: "4px 8px",
+                          borderRadius: "12px",
+                          fontSize: "12px"
+                        }}
+                      >
+                        {tag}
+                        <button
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "white",
+                            cursor: "pointer",
+                            padding: "0",
+                            marginLeft: "4px"
+                          }}
+                          onClick={() => {
+                            const newTags = noteTags.filter((_, i) => i !== index);
+                            setNoteTags(newTags);
+                          }}
+                        >
+                          <i className="fas fa-times" style={{ fontSize: "10px" }}></i>
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Rich Text Editor */}
+              <div style={{ 
+                flex: 1, 
+                minHeight: "250px",
+                border: "none",
+                borderRadius: "8px",
+                overflow: "hidden"
+              }}>
+                <div style={{ height: "100%" }}>
+                  {isMobile ? (
+                    <MobileEditorButton
+                      value={body}
+                      onChange={setBody}
+                      placeholder="Type your note here..."
+                      isMobile={isMobile}
+                      hasUnsavedChanges={hasUnsavedChanges}
+                      lastSavedTime={autoSaveNotification ? null : (editingNoteId ? (wasJustSaved ? "Just now" : getLastSavedTime()) : null)}
+                      autoSaveTime={autoSaveNotification}
+                      editingNoteId={editingNoteId}
+                      wasJustSaved={wasJustSaved}
+                      isNewlyCreated={isNewlyCreated}
+                      onFullscreenChange={setIsEditorFullscreen}
+                    />
+                  ) : (
+                    <AdvancedRTE
+                      value={body}
+                      onChange={setBody}
+                      placeholder="Type your note here..."
+                      onFullscreenChange={setIsEditorFullscreen}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          {/* Mobile Modals - rendered inside mobile layout */}
+          {isMobile && (
+            <>
+              {/* Delete Confirmation Modal */}
+              {showDeleteConfirm && (
+                <div className="modal-overlay" style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 99999,
+                  padding: "16px"
+                }}>
+                  <div style={{
+                    backgroundColor: "white",
+                    padding: "24px",
+                    borderRadius: "8px",
+                    maxWidth: "400px",
+                    width: "100%",
+                    maxHeight: "90vh",
+                    overflow: "auto"
+                  }}>
+                    <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                      Delete Folder
+                    </Text>
+                    <Text as="p" style={{ marginBottom: "24px" }}>
+                      Are you sure you want to delete this folder? This action will permanently delete the folder and all notes inside it. This action cannot be undone.
+                    </Text>
+                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setShowDeleteConfirm(null)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        tone="critical"
+                        onClick={async () => {
+                          const formData = new FormData();
+                          formData.append('folderId', showDeleteConfirm);
+                          
+                          try {
+                            const response = await fetch('/api/delete-folder', {
+                              method: 'POST',
+                              body: formData
+                            });
+                            
+                            if (response.ok) {
+                              const result = await response.json();
+                              if (result.success) {
+                                // Remove folder from local state and clear selected folder if it was deleted
+                                setLocalFolders(prevFolders => prevFolders.filter(folder => folder.id !== showDeleteConfirm));
+                                if (selectedFolder === showDeleteConfirm) {
+                                  setSelectedFolder(null);
+                                }
+                                setShowDeleteConfirm(null);
+                              } else {
+                                setAlertMessage(result.error || 'Failed to delete folder');
+                                setShowDeleteConfirm(null);
+                              }
+                            } else {
+                              setAlertMessage('Failed to delete folder');
+                              setShowDeleteConfirm(null);
+                            }
+                          } catch (error) {
+                            console.error('Error deleting folder:', error);
+                            setAlertMessage('Failed to delete folder');
+                            setShowDeleteConfirm(null);
+                          }
+                        }}
+                      >
+                        Delete Folder
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Delete Tag Confirmation Modal */}
+              {showDeleteTagConfirm && (
+                <div className="modal-overlay" style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 10001,
+                  padding: "16px"
+                }}>
+                  <div style={{
+                    backgroundColor: "white",
+                    padding: "24px",
+                    borderRadius: "8px",
+                    maxWidth: "400px",
+                    width: "100%",
+                    maxHeight: "90vh",
+                    overflow: "auto"
+                  }}>
+                    <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                      Delete Tag
+                    </Text>
+                    <Text as="p" style={{ marginBottom: "24px" }}>
+                      Are you sure you want to delete the tag "{showDeleteTagConfirm}" from all notes? This action is permanent and cannot be undone.
+                    </Text>
+                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setShowDeleteTagConfirm(null)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        tone="critical"
+                        onClick={() => handleDeleteTag(showDeleteTagConfirm)}
+                      >
+                        Delete Tag
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Delete Note Confirmation Modal */}
+              {showDeleteNoteConfirm && (
+                <div className="modal-overlay" style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 99999,
+                  padding: "16px"
+                }}>
+                  <div style={{
+                    backgroundColor: "white",
+                    padding: "24px",
+                    borderRadius: "8px",
+                    maxWidth: "400px",
+                    width: "100%",
+                    maxHeight: "90vh",
+                    overflow: "auto"
+                  }}>
+                    <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                      Delete Note
+                    </Text>
+                    <Text as="p" style={{ marginBottom: "24px" }}>
+                      Are you sure you want to delete this note? This action is permanent and cannot be undone.
+                    </Text>
+                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setShowDeleteNoteConfirm(null)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        tone="critical"
+                        onClick={() => handleDeleteNote(showDeleteNoteConfirm)}
+                      >
+                        Delete Note
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Delete Multiple Notes Confirmation Modal */}
+              {showDeleteMultipleConfirm && (
+                <div className="modal-overlay" style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 99999,
+                  padding: "16px"
+                }}>
+                  <div style={{
+                    backgroundColor: "white",
+                    padding: "24px",
+                    borderRadius: "8px",
+                    maxWidth: "400px",
+                    width: "100%",
+                    maxHeight: "90vh",
+                    overflow: "auto"
+                  }}>
+                    <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                      Delete Multiple Notes
+                    </Text>
+                    <Text as="p" style={{ marginBottom: "24px" }}>
+                      Are you sure you want to delete {selectedNotes.length} selected note{selectedNotes.length > 1 ? 's' : ''}? This action is permanent and cannot be undone.
+                    </Text>
+                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setShowDeleteMultipleConfirm(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        tone="critical"
+                        onClick={() => handleDeleteMultipleNotes()}
+                      >
+                        Delete Notes
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Rename Folder Modal */}
+              {showRenameFolderModal && (
+                <div className="modal-overlay" style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 10001,
+                  padding: "16px"
+                }}>
+                  <div style={{
+                    backgroundColor: "white",
+                    padding: "24px",
+                    borderRadius: "8px",
+                    maxWidth: "400px",
+                    width: "100%",
+                    maxHeight: "90vh",
+                    overflow: "auto"
+                  }}>
+                    <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                      Rename Folder
+                    </Text>
+                    <div style={{ marginBottom: "24px" }}>
+                      <label htmlFor="renameFolderInput" style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                        Enter new folder name:
+                      </label>
+                      <input
+                        id="renameFolderInput"
+                        type="text"
+                        value={editingFolderName}
+                        onChange={(e) => {
+                          const newValue = e.target.value;
+                          // Remove emojis from folder name input
+                          const cleanValue = removeEmojis(newValue);
+                          if (cleanValue.length <= 30) {
+                            setEditingFolderName(cleanValue);
+                          }
+                        }}
+                        maxLength={30}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSaveFolderName(showRenameFolderModal);
+                          } else if (e.key === 'Escape') {
+                            setShowRenameFolderModal(null);
+                            setEditingFolderName("");
+                          }
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "8px 12px",
+                          border: "1px solid #d1d3d4",
+                          borderRadius: "4px",
+                          fontSize: "14px",
+                          outline: "none"
+                        }}
+                        autoFocus
+                      />
+                    </div>
+                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          setShowRenameFolderModal(null);
+                          setEditingFolderName("");
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={() => handleSaveFolderName(showRenameFolderModal)}
+                        disabled={!editingFolderName.trim()}
+                      >
+                        Rename Folder
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Folder Icon Picker Modal - Mobile */}
+              {showIconPicker && (() => {
+                const currentFolder = localFolders.find(f => f.id === showIconPicker);
+                
+                const folderIcons = [
+                  { icon: "folder", name: "Folder" },
+                  { icon: "folder-open", name: "Folder Open" },
+                  { icon: "image", name: "Image" },
+                  { icon: "house", name: "House" },
+                  { icon: "face-smile", name: "Smile" },
+                  { icon: "star", name: "Star" },
+                  { icon: "heart", name: "Heart" },
+                  { icon: "address-book", name: "Address Book" },
+                  { icon: "bookmark", name: "Bookmark" },
+                  { icon: "pen-to-square", name: "Compose" },
+                  { icon: "user", name: "User" },
+                  { icon: "gem", name: "Gem" },
+                  { icon: "square-check", name: "Check" },
+                  { icon: "trash-can", name: "Trash" },
+                  { icon: "flag", name: "Flag" },
+                  { icon: "calendar", name: "Calendar" },
+                  { icon: "lightbulb", name: "Light Bulb" },
+                  { icon: "bell", name: "Bell" },
+                  { icon: "truck", name: "Truck" },
+                  { icon: "file-code", name: "Code" }
+                ];
+
+                const iconColors = [
+                  { color: "rgba(1, 75, 64, 1)", name: "Green" },
+                  { color: "rgba(199, 10, 36, 1)", name: "Red" },
+                  { color: "rgba(255, 184, 0, 1)", name: "Orange" },
+                  { color: "rgba(255, 230, 0, 1)", name: "Yellow" },
+                  { color: "rgba(227, 227, 227, 1)", name: "White" },
+                  { color: "rgba(48, 48, 48, 1)", name: "Black" },
+                  { color: "rgba(0, 91, 211, 1)", name: "Blue" },
+                  { color: "rgba(128, 81, 255, 1)", name: "Purple" }
+                ];
+
+                const handleSave = () => {
+                  handleIconChange(showIconPicker, { icon: mobileSelectedIcon, color: mobileSelectedColor });
+                  setShowIconPicker(null);
+                };
+
+                return (
+                  <div className="modal-overlay" style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: "rgba(0,0,0,0.5)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 10002,
+                    padding: "16px"
+                  }}>
+                    <div style={{
+                      backgroundColor: "white",
+                      padding: "16px",
+                      borderRadius: "8px",
+                      maxWidth: "350px",
+                      width: "100%",
+                      maxHeight: "85vh",
+                      overflow: "auto",
+                      boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)"
+                    }}>
+                      <div style={{ marginBottom: '12px' }}>
+                        <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>
+                          Change Icon for "{currentFolder?.name || "Folder"}"
+                        </h2>
+                      </div>
+                      
+                      <div style={{ marginBottom: '12px' }}>
+                        <p style={{ margin: '0 0 6px 0', fontSize: '13px' }}>
+                          Current: <i className={`far fa-${currentFolder?.icon || "folder"}`} style={{ fontSize: '18px', marginLeft: '6px', color: currentFolder?.iconColor || "rgba(255, 184, 0, 1)" }}></i>
+                        </p>
+                      </div>
+                      
+                      <div style={{ marginBottom: '12px' }}>
+                        <p style={{ margin: '0 0 6px 0', fontSize: '13px' }}>
+                          Selected: <i className={`far fa-${mobileSelectedIcon}`} style={{ fontSize: '18px', marginLeft: '6px', color: mobileSelectedColor }}></i>
+                        </p>
+                      </div>
+
+                      <h3 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600' }}>
+                        Choose an icon:
+                      </h3>
+                      
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(5, 1fr)',
+                        gap: '6px',
+                        marginBottom: '20px',
+                        padding: '8px',
+                        border: '1px solid #e1e3e5',
+                        borderRadius: '8px',
+                        backgroundColor: '#fafbfb'
+                      }}>
+                        {folderIcons.map((iconData, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setMobileSelectedIcon(iconData.icon)}
+                            style={{
+                              width: '45px',
+                              height: '45px',
+                              border: mobileSelectedIcon === iconData.icon ? '2px solid #2e7d32' : '1px solid #e1e3e5',
+                              borderRadius: '6px',
+                              backgroundColor: mobileSelectedIcon === iconData.icon ? '#e8f5e8' : 'white',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '16px',
+                              transition: 'all 0.2s ease',
+                              padding: '2px'
+                            }}
+                            title={iconData.name}
+                          >
+                            <i className={`far fa-${iconData.icon}`} style={{ color: mobileSelectedColor }}></i>
+                          </button>
+                        ))}
+                      </div>
+
+                      <h3 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600' }}>
+                        Choose a color:
+                      </h3>
+                      
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(4, 1fr)',
+                        gap: '6px',
+                        marginBottom: '20px',
+                        padding: '8px',
+                        border: '1px solid #e1e3e5',
+                        borderRadius: '8px',
+                        backgroundColor: '#fafbfb'
+                      }}>
+                        {iconColors.map((colorData, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setMobileSelectedColor(colorData.color)}
+                            style={{
+                              width: '35px',
+                              height: '35px',
+                              border: mobileSelectedColor === colorData.color ? '2px solid #2e7d32' : '1px solid #e1e3e5',
+                              borderRadius: '50%',
+                              backgroundColor: colorData.color,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s ease',
+                              boxShadow: colorData.color === 'rgba(227, 227, 227, 1)' ? 'inset 0 0 0 1px #e1e3e5' : 'none'
+                            }}
+                            title={colorData.name}
+                          >
+                            {mobileSelectedColor === colorData.color && (
+                              <i className="fas fa-check" style={{ 
+                                color: colorData.color === 'rgba(255, 230, 0, 1)' || colorData.color === 'rgba(227, 227, 227, 1)' ? 'rgba(48, 48, 48, 1)' : 'white',
+                                fontSize: '12px' 
+                              }}></i>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '8px' }}>
+                        <button
+                          onClick={() => setShowIconPicker(null)}
+                          style={{
+                            padding: '8px 12px',
+                            border: '1px solid #e1e3e5',
+                            borderRadius: '4px',
+                            backgroundColor: 'white',
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            minWidth: '60px'
+                          }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSave}
+                          style={{
+                            padding: '8px 12px',
+                            border: 'none',
+                            borderRadius: '4px',
+                            backgroundColor: '#008060',
+                            color: 'white',
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            fontWeight: '500',
+                            minWidth: '80px'
+                          }}
+                        >
+                          Save Icon
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* New Folder Modal - Mobile */}
+              {showNewFolderModal && (() => {
+                
+                const folderIcons = [
+                  { icon: "folder", name: "Folder" },
+                  { icon: "folder-open", name: "Folder Open" },
+                  { icon: "image", name: "Image" },
+                  { icon: "house", name: "House" },
+                  { icon: "face-smile", name: "Smile" },
+                  { icon: "star", name: "Star" },
+                  { icon: "heart", name: "Heart" },
+                  { icon: "address-book", name: "Address Book" },
+                  { icon: "bookmark", name: "Bookmark" },
+                  { icon: "pen-to-square", name: "Compose" },
+                  { icon: "user", name: "User" },
+                  { icon: "gem", name: "Gem" },
+                  { icon: "square-check", name: "Check" },
+                  { icon: "trash-can", name: "Trash" },
+                  { icon: "flag", name: "Flag" },
+                  { icon: "calendar", name: "Calendar" },
+                  { icon: "lightbulb", name: "Light Bulb" },
+                  { icon: "bell", name: "Bell" },
+                  { icon: "truck", name: "Truck" },
+                  { icon: "file-code", name: "Code" }
+                ];
+
+                const iconColors = [
+                  { color: "rgba(1, 75, 64, 1)", name: "Green" },
+                  { color: "rgba(199, 10, 36, 1)", name: "Red" },
+                  { color: "rgba(255, 184, 0, 1)", name: "Orange" },
+                  { color: "rgba(255, 230, 0, 1)", name: "Yellow" },
+                  { color: "rgba(227, 227, 227, 1)", name: "White" },
+                  { color: "rgba(48, 48, 48, 1)", name: "Black" },
+                  { color: "rgba(0, 91, 211, 1)", name: "Blue" },
+                  { color: "rgba(128, 81, 255, 1)", name: "Purple" }
+                ];
+
+                const handleCreate = () => {
+                  if (!mobileFolderName.trim()) {
+                    return;
+                  }
+                  
+                  handleCreateFolderFromModal({
+                    name: mobileFolderName.trim(),
+                    icon: mobileNewFolderIcon,
+                    color: mobileNewFolderColor
+                  });
+                  
+                  // Reset form
+                  setMobileFolderName('');
+                  setMobileNewFolderIcon('folder');
+                  setMobileNewFolderColor('rgba(255, 184, 0, 1)');
+                  setShowNewFolderModal(false);
+                };
+
+                return (
+                  <div className="modal-overlay" style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: "rgba(0,0,0,0.5)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 10002,
+                    padding: "16px"
+                  }}>
+                    <div style={{
+                      backgroundColor: "white",
+                      padding: "16px",
+                      borderRadius: "8px",
+                      maxWidth: "350px",
+                      width: "100%",
+                      maxHeight: "85vh",
+                      overflow: "auto",
+                      boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)"
+                    }}>
+                      <div style={{ marginBottom: '12px' }}>
+                        <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>
+                          Create New Folder
+                        </h2>
+                      </div>
+                      
+                      <div style={{ marginBottom: '12px' }}>
+                        <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', fontWeight: '500' }}>
+                          Folder Name
+                        </label>
+                        <input
+                          type="text"
+                          value={mobileFolderName}
+                          onChange={(e) => {
+                            const cleanValue = e.target.value.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '');
+                            if (cleanValue.length <= 30) {
+                              setMobileFolderName(cleanValue);
+                            }
+                          }}
+                          placeholder="Enter folder name..."
+                          maxLength={30}
+                          style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            border: '1px solid #e1e3e5',
+                            borderRadius: '4px',
+                            fontSize: '14px',
+                            boxSizing: 'border-box'
+                          }}
+                        />
+                        <div style={{ fontSize: '12px', color: '#6d7175', marginTop: '4px' }}>
+                          {mobileFolderName.length}/30 characters
+                        </div>
+                      </div>
+                      
+                      <div style={{ marginBottom: '12px' }}>
+                        <p style={{ margin: '0 0 6px 0', fontSize: '13px' }}>
+                          Preview: <i className={`far fa-${mobileNewFolderIcon}`} style={{ fontSize: '18px', marginLeft: '6px', color: mobileNewFolderColor }}></i> {mobileFolderName || 'Folder Name'}
+                        </p>
+                      </div>
+
+                      <h3 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600' }}>
+                        Choose an icon:
+                      </h3>
+                      
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(5, 1fr)',
+                        gap: '6px',
+                        marginBottom: '20px',
+                        padding: '8px',
+                        border: '1px solid #e1e3e5',
+                        borderRadius: '8px',
+                        backgroundColor: '#fafbfb'
+                      }}>
+                        {folderIcons.map((iconData, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setMobileNewFolderIcon(iconData.icon)}
+                            style={{
+                              width: '45px',
+                              height: '45px',
+                              border: mobileNewFolderIcon === iconData.icon ? '2px solid #2e7d32' : '1px solid #e1e3e5',
+                              borderRadius: '6px',
+                              backgroundColor: mobileNewFolderIcon === iconData.icon ? '#e8f5e8' : 'white',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '16px',
+                              transition: 'all 0.2s ease',
+                              padding: '2px'
+                            }}
+                            title={iconData.name}
+                          >
+                            <i className={`far fa-${iconData.icon}`} style={{ color: mobileNewFolderColor }}></i>
+                          </button>
+                        ))}
+                      </div>
+
+                      <h3 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600' }}>
+                        Choose a color:
+                      </h3>
+                      
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(4, 1fr)',
+                        gap: '6px',
+                        marginBottom: '20px',
+                        padding: '8px',
+                        border: '1px solid #e1e3e5',
+                        borderRadius: '8px',
+                        backgroundColor: '#fafbfb'
+                      }}>
+                        {iconColors.map((colorData, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setMobileNewFolderColor(colorData.color)}
+                            style={{
+                              width: '35px',
+                              height: '35px',
+                              border: mobileNewFolderColor === colorData.color ? '2px solid #2e7d32' : '1px solid #e1e3e5',
+                              borderRadius: '50%',
+                              backgroundColor: colorData.color,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              transition: 'all 0.2s ease',
+                              boxShadow: colorData.color === 'rgba(227, 227, 227, 1)' ? 'inset 0 0 0 1px #e1e3e5' : 'none'
+                            }}
+                            title={colorData.name}
+                          >
+                            {mobileNewFolderColor === colorData.color && (
+                              <i className="fas fa-check" style={{ 
+                                color: colorData.color === 'rgba(255, 230, 0, 1)' || colorData.color === 'rgba(227, 227, 227, 1)' ? 'rgba(48, 48, 48, 1)' : 'white',
+                                fontSize: '12px' 
+                              }}></i>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '8px' }}>
+                        <button
+                          onClick={() => setShowNewFolderModal(false)}
+                          style={{
+                            padding: '8px 12px',
+                            border: '1px solid #e1e3e5',
+                            borderRadius: '4px',
+                            backgroundColor: 'white',
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            minWidth: '60px'
+                          }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleCreate}
+                          disabled={!mobileFolderName.trim()}
+                          style={{
+                            padding: '8px 12px',
+                            border: 'none',
+                            borderRadius: '4px',
+                            backgroundColor: mobileFolderName.trim() ? '#008060' : '#ccc',
+                            color: 'white',
+                            cursor: mobileFolderName.trim() ? 'pointer' : 'not-allowed',
+                            fontSize: '13px',
+                            fontWeight: '500',
+                            minWidth: '80px'
+                          }}
+                        >
+                          Create Folder
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+              
+              {/* Mobile Folder Selector Popover */}
+              {showFolderSelector && (
+                <div className="modal-overlay" style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  zIndex: 10002,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '20px'
+                }}>
+                  <div style={{
+                    backgroundColor: 'white',
+                    borderRadius: '12px',
+                    padding: '24px',
+                    width: '100%',
+                    maxWidth: '400px',
+                    maxHeight: '80vh',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '20px'
+                    }}>
+                      <h3 style={{
+                        margin: 0,
+                        fontSize: '18px',
+                        fontWeight: '600',
+                        color: '#202223'
+                      }}>
+                        {folderSelectorAction === 'duplicate' ? 'Duplicate to folder' : 'Move to folder'}
+                      </h3>
+                      <button
+                        onClick={() => {
+                          setShowFolderSelector(false);
+                          setFolderSelectorAction(null);
+                          setFolderSelectorNoteId(null);
+                          setFolderSelectorSearchQuery("");
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          fontSize: '20px',
+                          cursor: 'pointer',
+                          color: '#6d7175',
+                          padding: '4px'
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                    
+                    <div style={{ marginBottom: '16px' }}>
+                      <input
+                        type="text"
+                        placeholder="Search folders..."
+                        value={folderSelectorSearchQuery}
+                        onChange={(e) => setFolderSelectorSearchQuery(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '12px 16px',
+                          border: '1px solid #d1d3d4',
+                          borderRadius: '8px',
+                          fontSize: '16px',
+                          outline: 'none'
+                        }}
+                        autoComplete="off"
+                      />
+                    </div>
+                    
+                    <div style={{
+                      flex: 1,
+                      overflowY: 'auto',
+                      border: '1px solid #e1e3e5',
+                      borderRadius: '8px'
+                    }}>
+                      {localFolders
+                        .filter(folder => {
+                          // Filter out current folder and match search query
+                          const currentNote = localNotes.find(n => n.id === folderSelectorNoteId);
+                          const isCurrentFolder = currentNote && folder.id === currentNote.folderId;
+                          return !isCurrentFolder && folder.name.toLowerCase().includes(folderSelectorSearchQuery.toLowerCase());
+                        })
+                        .map(folder => (
+                          <div
+                            key={folder.id}
+                            onClick={() => handleFolderSelection(folder.id)}
+                            style={{
+                              padding: '16px',
+                              borderBottom: '1px solid #f1f3f4',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              transition: 'background-color 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                            onTouchStart={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                            onTouchEnd={(e) => e.target.style.backgroundColor = 'white'}
+                          >
+                            <i className="fas fa-folder" style={{
+                              fontSize: '16px',
+                              color: '#6d7175'
+                            }}></i>
+                            <span style={{
+                              fontSize: '16px',
+                              color: '#202223',
+                              fontWeight: '500'
+                            }}>
+                              {folder.name}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Mobile Move Notes Modal */}
+              {showMoveModal && (
+                <div className="modal-overlay" style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 99999,
+                  padding: "16px"
+                }}>
+                  <div style={{
+                    backgroundColor: "white",
+                    padding: "24px",
+                    borderRadius: "8px",
+                    maxWidth: "400px",
+                    width: "100%",
+                    maxHeight: "90vh",
+                    overflow: "auto"
+                  }}>
+                    <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
+                      {showMoveModal === 'bulk' ? 'Move Selected Notes' : 'Move Note'}
+                    </Text>
+                    <div style={{ marginBottom: "24px" }}>
+                      <label htmlFor="mobileMoveFolderSelect" style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
+                        Select a folder to move the note{showMoveModal === 'bulk' ? 's' : ''} to:
+                      </label>
+                      <select
+                        id="mobileMoveFolderSelect"
+                        value={duplicateFolderId}
+                        onChange={(e) => setDuplicateFolderId(e.target.value)}
+                        style={{
+                          width: "100%",
+                          padding: "12px 16px",
+                          border: "1px solid #c9cccf",
+                          borderRadius: "8px",
+                          fontSize: "16px",
+                          backgroundColor: "white"
+                        }}
+                      >
+                        <option value="">Select a folder...</option>
+                        {localFolders
+                          .filter(folder => {
+                            // Filter out current folder if moving single note
+                            if (showMoveModal !== 'bulk') {
+                              const currentNote = localNotes.find(n => n.id === showMoveModal);
+                              const isCurrentFolder = currentNote && folder.id === currentNote.folderId;
+                              return !isCurrentFolder;
+                            }
+                            return true;
+                          })
+                          .map(folder => (
+                            <option key={folder.id} value={folder.id}>
+                              {folder.name}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                    <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          setShowMoveModal(null);
+                          setDuplicateFolderId('');
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={() => handleMoveNote(showMoveModal)}
+                        disabled={!duplicateFolderId}
+                      >
+                        Move Note{showMoveModal === 'bulk' ? 's' : ''}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* New Folder Modal - Desktop */}
+      {!isMobile && (
+        <NewFolderModal
+          isOpen={showNewFolderModal}
+          onClose={() => setShowNewFolderModal(false)}
+          onCreateFolder={handleCreateFolderFromModal}
+          initialName=""
+        />
+      )}
+    </>
+  );
+}
