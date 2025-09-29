@@ -39,8 +39,8 @@ import {
 } from "@shopify/polaris-icons";
 
 export const loader = async ({ request }) => {
-  const { admin } = await shopify.authenticate.admin(request);
-  const shopId = await getOrCreateShopId(admin.graphql, admin.rest);
+  const { session } = await shopify.authenticate.admin(request);
+  const shopId = await getOrCreateShopId(session.shop);
 
   // Get stats
   const [folders, notes] = await Promise.all([
