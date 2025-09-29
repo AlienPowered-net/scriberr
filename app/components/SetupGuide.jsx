@@ -13,7 +13,6 @@ import {
 } from '@shopify/polaris';
 import {
   CheckIcon,
-  CircleMinusIcon,
   ChevronUpIcon,
   FolderIcon,
   NoteIcon,
@@ -119,7 +118,14 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
                     {step.completed ? (
                       <Icon source={CheckIcon} tone="success" />
                     ) : (
-                      <Icon source={CircleMinusIcon} tone="subdued" />
+                      <Box 
+                        padding="100"
+                        background="bg-surface-secondary"
+                        borderRadius="100"
+                        style={{ width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        <Text variant="bodySm" tone="subdued" style={{ fontSize: '10px' }}>○</Text>
+                      </Box>
                     )}
                   </Box>
                   <BlockStack gap="100">
