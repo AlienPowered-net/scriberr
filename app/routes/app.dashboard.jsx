@@ -3129,7 +3129,7 @@ export default function Index() {
           
           /* Ensure fullscreen editor appears above all other elements */
           .advanced-rte-container.fixed {
-            z-index: 999999 !important;
+            z-index: 9999999 !important;
             position: fixed !important;
           }
         `}</style>
