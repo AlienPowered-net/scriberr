@@ -56,6 +56,10 @@ export default function Settings() {
 
       const response = await fetch(`/api/${endpoint}`, {
         method: "POST",
+        headers: {
+          'Accept': 'application/json',
+          'Accept-Charset': 'utf-8'
+        },
         body: formData,
       });
 
@@ -72,10 +76,10 @@ export default function Settings() {
           setShowDeleteContentModal(false);
         }
         setConfirmationText("");
-        // Reload the page to reflect changes
+        // Clear success message after 5 seconds
         setTimeout(() => {
-          window.location.reload();
-        }, 2000);
+          setAlertMessage("");
+        }, 5000);
       } else {
         setAlertMessage(result.error || `Failed to ${actionName}`);
       }
@@ -252,9 +256,20 @@ export default function Settings() {
         {/* Alert Message */}
         {alertMessage && (
           <Banner tone={alertMessage.startsWith("Success:") ? "success" : "critical"}>
-            <Text as="p" variant="bodyMd">
-              {alertMessage}
-            </Text>
+            <BlockStack gap="200">
+              <Text as="p" variant="bodyMd">
+                {alertMessage}
+              </Text>
+              {alertMessage.startsWith("Success:") && (
+                <Button 
+                  size="slim" 
+                  variant="secondary"
+                  onClick={() => window.location.reload()}
+                >
+                  Refresh Page
+                </Button>
+              )}
+            </BlockStack>
           </Banner>
         )}
       </BlockStack>
