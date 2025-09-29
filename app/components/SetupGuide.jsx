@@ -45,8 +45,8 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
     },
     {
       id: 2,
-      title: "Create your first note",
-      description: "Select a folder and create your first note to start writing",
+      title: "Start Writing Your First Note",
+      description: "Pick a folder and create your very first note. Begin capturing your thoughts and building your collection.",
       action: hasNotes ? null : "Create note",
       actionUrl: "/app/dashboard",
       completed: hasNotes,
@@ -54,8 +54,8 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
     },
     {
       id: 3,
-      title: "Organize your workspace",
-      description: "Create additional folders and organize your notes by category",
+      title: "Keep Things Organized",
+      description: "Create extra folders to group your notes by topic or project. Rearrange them anytime with simple drag-and-drop.",
       action: hasMultipleFolders ? null : "Create more folders",
       actionUrl: "/app/dashboard",
       completed: hasMultipleFolders,
@@ -63,8 +63,8 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
     },
     {
       id: 4,
-      title: "Pin important notes",
-      description: "Pin your most important notes for quick access",
+      title: "Keep Priorities Front and Center",
+      description: "Pin your most important notes to the top of your workspace. This makes it easy to quickly revisit ideas, reminders, or tasks you use most often.",
       action: hasPinnedNotes ? null : "Pin a note",
       actionUrl: "/app/dashboard",
       completed: hasPinnedNotes,
