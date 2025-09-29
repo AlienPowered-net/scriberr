@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   BlockStack,
@@ -14,6 +14,7 @@ import {
 import {
   CheckIcon,
   ChevronUpIcon,
+  ChevronDownIcon,
   FolderIcon,
   NoteIcon,
   StarIcon,
@@ -22,6 +23,12 @@ import {
 
 export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNotes = 0 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [stepStates, setStepStates] = useState({
+    step1: false,
+    step2: false,
+    step3: false,
+    step4: false,
+  });
   
   // Calculate progress based on actual user data
   const hasFolders = totalFolders > 0;
@@ -32,6 +39,36 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
   const completedSteps = [hasFolders, hasNotes, hasMultipleFolders, hasPinnedNotes].filter(Boolean).length;
   const totalSteps = 4;
   const progress = (completedSteps / totalSteps) * 100;
+
+  // Determine which step should be expanded by default
+  useEffect(() => {
+    const newStepStates = {
+      step1: false,
+      step2: false,
+      step3: false,
+      step4: false,
+    };
+
+    // Find the next incomplete step and expand it
+    if (!hasFolders) {
+      newStepStates.step1 = true;
+    } else if (!hasNotes) {
+      newStepStates.step2 = true;
+    } else if (!hasMultipleFolders) {
+      newStepStates.step3 = true;
+    } else if (!hasPinnedNotes) {
+      newStepStates.step4 = true;
+    }
+
+    setStepStates(newStepStates);
+  }, [hasFolders, hasNotes, hasMultipleFolders, hasPinnedNotes]);
+
+  const toggleStep = (stepId) => {
+    setStepStates(prev => ({
+      ...prev,
+      [stepId]: !prev[stepId]
+    }));
+  };
 
   const steps = [
     {
@@ -111,44 +148,80 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
             </BlockStack>
 
             {/* Steps */}
-            <BlockStack gap="300">
-              {steps.map((step) => (
-                <InlineStack key={step.id} gap="300" align="space-between">
-                  <InlineStack gap="300" align="start">
-                    <Box padding="100">
-                      {step.completed ? (
-                        <Icon source={CheckIcon} tone="success" />
-                      ) : (
-                        <Box 
-                          padding="100"
-                          background="bg-surface-secondary"
-                          borderRadius="100"
-                          style={{ width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                        >
-                          <Text variant="bodySm" tone="subdued" style={{ fontSize: '10px' }}>○</Text>
-                        </Box>
-                      )}
-                    </Box>
-                    <BlockStack gap="100">
-                      <Text variant="bodyMd" fontWeight="medium">
-                        {step.title}
-                      </Text>
-                      <Text variant="bodySm" tone="subdued">
-                        {step.description}
-                      </Text>
-                    </BlockStack>
-                  </InlineStack>
-                  {step.action && (
-                    <Button
-                      variant="primary"
-                      size="slim"
-                      url={step.actionUrl}
+            <BlockStack gap="200">
+              {steps.map((step) => {
+                const stepKey = `step${step.id}`;
+                const isStepOpen = stepStates[stepKey];
+                
+                return (
+                  <Box key={step.id} padding="0">
+                    {/* Clickable Step Header */}
+                    <Box
+                      padding="400"
+                      background={isStepOpen ? "bg-surface-secondary" : "bg-surface"}
+                      borderRadius="200"
+                      style={{ 
+                        cursor: 'pointer',
+                        border: '1px solid var(--p-color-border-subdued)',
+                        transition: 'all 0.2s ease-in-out'
+                      }}
+                      onClick={() => toggleStep(stepKey)}
                     >
-                      {step.action}
-                    </Button>
-                  )}
-                </InlineStack>
-              ))}
+                      <InlineStack align="space-between">
+                        <InlineStack gap="300" align="start">
+                          <Box padding="100">
+                            {step.completed ? (
+                              <Icon source={CheckIcon} tone="success" />
+                            ) : (
+                              <Box 
+                                padding="100"
+                                background="bg-surface-secondary"
+                                borderRadius="100"
+                                style={{ width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                              >
+                                <Text variant="bodySm" tone="subdued" style={{ fontSize: '10px' }}>○</Text>
+                              </Box>
+                            )}
+                          </Box>
+                          <Text variant="bodyMd" fontWeight="medium">
+                            {step.title}
+                          </Text>
+                        </InlineStack>
+                        <InlineStack gap="200">
+                          {step.action && (
+                            <Button
+                              variant="primary"
+                              tone="success"
+                              size="slim"
+                              url={step.actionUrl}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {step.action}
+                            </Button>
+                          )}
+                          <Icon 
+                            source={isStepOpen ? ChevronUpIcon : ChevronDownIcon} 
+                            tone="subdued"
+                          />
+                        </InlineStack>
+                      </InlineStack>
+                    </Box>
+
+                    {/* Collapsible Content */}
+                    <Collapsible
+                      open={isStepOpen}
+                      id={`step-${step.id}-collapsible`}
+                      transition={{ duration: '200ms', timingFunction: 'ease-in-out' }}
+                    >
+                      <Box padding="400" paddingBlockStart="300">
+                        <Text variant="bodySm" tone="subdued">
+                          {step.description}
+                        </Text>
+                      </Box>
+                    </Collapsible>
+                  </Box>
+                );
+              })}
             </BlockStack>
 
             {/* Footer */}
