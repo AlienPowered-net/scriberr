@@ -10,6 +10,7 @@ import {
   Collapsible,
   Link,
   Box,
+  Divider,
 } from '@shopify/polaris';
 import {
   CheckIcon,
@@ -148,79 +149,84 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
             </BlockStack>
 
             {/* Steps */}
-            <BlockStack gap="200">
-              {steps.map((step) => {
+            <BlockStack gap="0">
+              {steps.map((step, index) => {
                 const stepKey = `step${step.id}`;
                 const isStepOpen = stepStates[stepKey];
                 
                 return (
-                  <Box key={step.id} padding="0">
-                    {/* Clickable Step Header */}
-                    <Box
-                      padding="400"
-                      background={isStepOpen ? "bg-surface-secondary" : "bg-surface"}
-                      borderRadius="200"
-                      style={{ 
-                        cursor: 'pointer',
-                        border: '1px solid var(--p-color-border-subdued)',
-                        transition: 'all 0.2s ease-in-out'
-                      }}
-                      onClick={() => toggleStep(stepKey)}
-                    >
-                      <InlineStack align="space-between">
-                        <InlineStack gap="300" align="start">
-                          <Box padding="100">
-                            {step.completed ? (
-                              <Icon source={CheckIcon} tone="success" />
-                            ) : (
-                              <Box 
-                                padding="100"
-                                background="bg-surface-secondary"
-                                borderRadius="100"
-                                style={{ width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                              >
-                                <Text variant="bodySm" tone="subdued" style={{ fontSize: '10px' }}>○</Text>
-                              </Box>
-                            )}
-                          </Box>
-                          <Text variant="bodyMd" fontWeight="medium">
-                            {step.title}
-                          </Text>
+                  <React.Fragment key={step.id}>
+                    <Box padding="0">
+                      {/* Clickable Step Header */}
+                      <Box
+                        padding="400"
+                        background={isStepOpen ? "bg-surface-secondary" : "bg-surface"}
+                        borderRadius="200"
+                        style={{ 
+                          cursor: 'pointer',
+                          border: '1px solid var(--p-color-border-subdued)',
+                          transition: 'all 0.2s ease-in-out'
+                        }}
+                        onClick={() => toggleStep(stepKey)}
+                      >
+                        <InlineStack align="space-between">
+                          <InlineStack gap="300" align="start">
+                            <Box padding="100">
+                              {step.completed ? (
+                                <Icon source={CheckIcon} tone="success" />
+                              ) : (
+                                <Box 
+                                  padding="100"
+                                  background="bg-surface-secondary"
+                                  borderRadius="100"
+                                  style={{ width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                  <Text variant="bodySm" tone="subdued" style={{ fontSize: '10px' }}>○</Text>
+                                </Box>
+                              )}
+                            </Box>
+                            <Text variant="bodyMd" fontWeight="medium">
+                              {step.title}
+                            </Text>
+                          </InlineStack>
+                          <Icon 
+                            source={isStepOpen ? ChevronUpIcon : ChevronDownIcon} 
+                            tone="subdued"
+                          />
                         </InlineStack>
-                        <Icon 
-                          source={isStepOpen ? ChevronUpIcon : ChevronDownIcon} 
-                          tone="subdued"
-                        />
-                      </InlineStack>
-                    </Box>
-
-                    {/* Collapsible Content */}
-                    <Collapsible
-                      open={isStepOpen}
-                      id={`step-${step.id}-collapsible`}
-                      transition={{ duration: '200ms', timingFunction: 'ease-in-out' }}
-                    >
-                      <Box padding="400" paddingBlockStart="300">
-                        <BlockStack gap="300">
-                          <Text variant="bodySm" tone="subdued">
-                            {step.description}
-                          </Text>
-                          {step.action && (
-                            <InlineStack align="start">
-                              <Button
-                                variant="primary"
-                                tone="success"
-                                size="slim"
-                                url={step.actionUrl}
-                              >
-                                {step.action}
-                              </Button>
-                            </InlineStack>
-                          )}
-                        </BlockStack>
                       </Box>
-                    </Collapsible>
-                  </Box>
+
+                      {/* Collapsible Content */}
+                      <Collapsible
+                        open={isStepOpen}
+                        id={`step-${step.id}-collapsible`}
+                        transition={{ duration: '200ms', timingFunction: 'ease-in-out' }}
+                      >
+                        <Box padding="400" paddingBlockStart="300">
+                          <BlockStack gap="300">
+                            <Text variant="bodySm" tone="subdued">
+                              {step.description}
+                            </Text>
+                            {step.action && (
+                              <InlineStack align="start">
+                                <Button
+                                  variant="primary"
+                                  tone="success"
+                                  size="slim"
+                                  url={step.actionUrl}
+                                >
+                                  {step.action}
+                                </Button>
+                              </InlineStack>
+                            )}
+                          </BlockStack>
+                        </Box>
+                      </Collapsible>
+                    </Box>
+                    
+                    {/* Add divider between steps, but not after the last step */}
+                    {index < steps.length - 1 && <Divider />}
+                  </React.Fragment>
                 );
               })}
             </BlockStack>
