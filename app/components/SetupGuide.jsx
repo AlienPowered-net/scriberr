@@ -154,8 +154,7 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
             {/* Footer */}
             <BlockStack gap="200">
               <Text variant="bodySm">
-                Don't forget to explore all the features available in your dashboard. 
-                If you experience any issues or have any questions, don't hesitate to contact us via live chat within the app.
+                Be sure to explore all the features in your dashboard. If you run into any issues or have questions, reach out to us anytime through the in-app live chat.
               </Text>
             </BlockStack>
           </BlockStack>
