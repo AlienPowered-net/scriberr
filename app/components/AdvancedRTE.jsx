@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TableKit } from '@tiptap/extension-table';
@@ -352,6 +353,545 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     );
   }
 
+  // Fullscreen editor component that will be rendered via portal
+  const FullscreenEditor = () => (
+    <div 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999999,
+        backgroundColor: '#ffffff',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 10px 20px -5px rgba(0, 0, 0, 0.3)'
+      }}
+    >
+      {/* Toolbar */}
+      <div style={{ 
+        borderBottom: "1px solid #e1e5e9", 
+        padding: "8px 12px", 
+        backgroundColor: "#f8f9fa", 
+        position: "relative"
+      }}>
+        {/* Fullscreen Button - Top Right */}
+        <button
+          onClick={toggleExpanded}
+          style={{
+            position: "absolute",
+            top: "6px",
+            right: "8px",
+            padding: "6px 8px",
+            border: "1px solid #dee2e6",
+            borderRadius: "4px",
+            backgroundColor: "white",
+            color: "#495057",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            fontSize: "12px",
+            zIndex: 10
+          }}
+          title="Exit Fullscreen"
+        >
+          <i className="fas fa-compress"></i>
+        </button>
+        
+        <div style={{ 
+          display: "flex", 
+          gap: "4px", 
+          alignItems: "center", 
+          paddingRight: "60px",
+          flexWrap: "wrap"
+        }}>
+          {/* Text Formatting */}
+          <button
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive('bold') ? '#007bff' : 'white',
+              color: editor.isActive('bold') ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Bold"
+          >
+            <i className="fas fa-bold"></i>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive('italic') ? '#007bff' : 'white',
+              color: editor.isActive('italic') ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Italic"
+          >
+            <i className="fas fa-italic"></i>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive('underline') ? '#007bff' : 'white',
+              color: editor.isActive('underline') ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Underline"
+          >
+            <i className="fas fa-underline"></i>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().unsetAllMarks().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: "white",
+              color: "#495057",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Clear Marks"
+          >
+            <i className="fas fa-eraser"></i>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().setHardBreak().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: "white",
+              color: "#495057",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Hard Break"
+          >
+            <i className="fas fa-level-down-alt"></i>
+          </button>
+          
+          <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
+
+          {/* Paragraph Button */}
+          <button
+            onClick={() => editor.chain().focus().setParagraph().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive('paragraph') ? '#007bff' : 'white',
+              color: editor.isActive('paragraph') ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "12px",
+              fontWeight: "600",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Paragraph"
+          >
+            P
+          </button>
+
+          {/* Headings */}
+          {[1, 2, 3].map((level) => (
+            <button
+              key={level}
+              onClick={() => editor.chain().focus().toggleHeading({ level }).run()}
+              style={{
+                padding: "6px 8px",
+                border: "1px solid #dee2e6",
+                borderRadius: "4px",
+                backgroundColor: editor.isActive('heading', { level }) ? '#007bff' : 'white',
+                color: editor.isActive('heading', { level }) ? 'white' : '#495057',
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                fontSize: "12px",
+                fontWeight: "600",
+                minWidth: "32px",
+                height: "32px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+              title={`Heading ${level}`}
+            >
+              H{level}
+            </button>
+          ))}
+          
+          <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
+
+          {/* Lists */}
+          <button
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive('bulletList') ? '#007bff' : 'white',
+              color: editor.isActive('bulletList') ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Bullet List"
+          >
+            <i className="fas fa-list-ul"></i>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive('orderedList') ? '#007bff' : 'white',
+              color: editor.isActive('orderedList') ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Numbered List"
+          >
+            <i className="fas fa-list-ol"></i>
+          </button>
+          
+          <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
+
+          {/* Horizontal Rule */}
+          <button
+            onClick={() => editor.chain().focus().setHorizontalRule().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: "white",
+              color: "#495057",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Horizontal Rule"
+          >
+            <i className="fas fa-minus"></i>
+          </button>
+          
+          <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
+
+          {/* Text Alignment */}
+          <button
+            onClick={() => editor.chain().focus().setTextAlign('left').run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive({ textAlign: 'left' }) ? '#007bff' : 'white',
+              color: editor.isActive({ textAlign: 'left' }) ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Align Left"
+          >
+            <i className="fas fa-align-left"></i>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().setTextAlign('center').run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive({ textAlign: 'center' }) ? '#007bff' : 'white',
+              color: editor.isActive({ textAlign: 'center' }) ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Align Center"
+          >
+            <i className="fas fa-align-center"></i>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().setTextAlign('right').run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive({ textAlign: 'right' }) ? '#007bff' : 'white',
+              color: editor.isActive({ textAlign: 'right' }) ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Align Right"
+          >
+            <i className="fas fa-align-right"></i>
+          </button>
+          
+          <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
+
+          {/* Insert Elements */}
+          <button
+            onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: "white",
+              color: "#495057",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Insert Table"
+          >
+            <i className="fas fa-table"></i>
+          </button>
+          <button
+            onClick={() => setShowLinkModal(true)}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive('link') ? '#007bff' : 'white',
+              color: editor.isActive('link') ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Insert Link"
+          >
+            <i className="fas fa-link"></i>
+          </button>
+          <button
+            onClick={() => setShowImageModal(true)}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: "white",
+              color: "#495057",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Insert Image"
+          >
+            <i className="fas fa-image"></i>
+          </button>
+          
+          <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
+
+          {/* Advanced Formatting */}
+          <button
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive('blockquote') ? '#007bff' : 'white',
+              color: editor.isActive('blockquote') ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Blockquote"
+          >
+            <i className="fas fa-quote-left"></i>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive('codeBlock') ? '#007bff' : 'white',
+              color: editor.isActive('codeBlock') ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Code Block"
+          >
+            <i className="fas fa-code"></i>
+          </button>
+          
+          <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
+
+        </div>
+      </div>
+
+      {/* Editor Content */}
+      <div 
+        style={{
+          flex: 1,
+          backgroundColor: "#ffffff",
+          cursor: "text",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column"
+        }}
+        onClick={() => {
+          if (editor) {
+            editor.commands.focus();
+          }
+        }}
+      >
+        <div style={{ position: 'relative', flex: 1 }}>
+          <EditorContent 
+            editor={editor} 
+            style={{
+              height: "100%",
+              minHeight: "100%",
+              maxHeight: "100%",
+              overflowY: "auto",
+              overflowX: "hidden",
+              padding: "24px",
+              border: "none",
+              outline: "none",
+              fontSize: "16px",
+              lineHeight: "1.6",
+              color: "#212529",
+              cursor: "text",
+              width: "100%",
+              backgroundColor: "#ffffff"
+            }}
+          />
+          {editor && <TiptapDragHandle editor={editor} />}
+        </div>
+        
+        {/* Character Count */}
+        {editor && (
+          <div style={{
+            padding: "8px 20px",
+            borderTop: "1px solid #dee2e6",
+            backgroundColor: "#f8f9fa",
+            fontSize: "12px",
+            color: "#6c757d",
+            textAlign: "right"
+          }}>
+            {editor.storage.characterCount.characters()} characters • {editor.storage.characterCount.words()} words
+          </div>
+        )}
+      </div>
+
+      {/* Overlay for expanded mode */}
+      <div 
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0, 0, 0, 0.75)",
+          backdropFilter: "blur(4px)",
+          zIndex: -1,
+          pointerEvents: 'none'
+        }}
+      />
+    </div>
+  );
+
   return (
     <>
       <style>
@@ -441,23 +981,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             }
           }
           
-          /* Ensure fullscreen editor appears above all elements */
-          .advanced-rte-container.fixed {
-            z-index: 9999999 !important;
-            position: fixed !important;
-          }
-          
-          /* Fullscreen mode - prevent outer container from scrolling */
-          .advanced-rte-container.fixed .advanced-rte-content {
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
-          }
-          
-          /* Ensure no double scrollbars in fullscreen */
-          .advanced-rte-container.fixed > div {
-            overflow: hidden !important;
-          }
-          
           /* Prevent all parent containers from scrolling when editor is fullscreen */
           body.editor-fullscreen-active {
             overflow: hidden !important;
@@ -474,6 +997,15 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           }
         `}
       </style>
+
+      {/* Render fullscreen editor via portal when expanded */}
+      {isExpanded && typeof document !== 'undefined' && createPortal(
+        <FullscreenEditor />,
+        document.body
+      )}
+
+      {/* Regular editor container - only show when not expanded */}
+      {!isExpanded && (
       <div 
         className={`advanced-rte-container relative transition-all duration-300 ${
           isExpanded ? 'fixed inset-4 z-50 shadow-2xl' : 'w-full'
@@ -2181,19 +2713,96 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       </Modal>
 
 
-      {/* Overlay for expanded mode */}
-      {isExpanded && (
-        <div 
-          className="fixed inset-0"
-          style={{
-            backgroundColor: "rgba(0, 0, 0, 0.75)",
-            backdropFilter: "blur(4px)",
-            zIndex: 9999998
-          }}
-          onClick={toggleExpanded}
-        />
-      )}
+      {/* Modals */}
+      <Modal
+        open={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        title="Insert Image"
+        primaryAction={{
+          content: 'Insert',
+          onAction: insertImage,
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: () => setShowImageModal(false),
+          },
+        ]}
+      >
+        <Modal.Section>
+          <TextField
+            label="Image URL"
+            value={imageUrl}
+            onChange={setImageUrl}
+            placeholder="https://example.com/image.jpg"
+            autoComplete="off"
+          />
+        </Modal.Section>
+      </Modal>
+
+      <Modal
+        open={showVideoModal}
+        onClose={() => setShowVideoModal(false)}
+        title="Insert Video"
+        primaryAction={{
+          content: 'Insert',
+          onAction: insertVideo,
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: () => setShowVideoModal(false),
+          },
+        ]}
+      >
+        <Modal.Section>
+          <TextField
+            label="YouTube URL"
+            value={videoUrl}
+            onChange={setVideoUrl}
+            placeholder="https://www.youtube.com/watch?v=..."
+            autoComplete="off"
+          />
+        </Modal.Section>
+      </Modal>
+
+      <Modal
+        open={showLinkModal}
+        onClose={() => setShowLinkModal(false)}
+        title="Insert Link"
+        primaryAction={{
+          content: 'Insert',
+          onAction: insertLink,
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: () => setShowLinkModal(false),
+          },
+        ]}
+      >
+        <Modal.Section>
+          <TextField
+            label="Link URL"
+            value={linkUrl}
+            onChange={setLinkUrl}
+            placeholder="https://example.com"
+            autoComplete="off"
+          />
+          <div style={{ marginTop: '12px' }}>
+            <TextField
+              label="Link Text (optional)"
+              value={linkText}
+              onChange={setLinkText}
+              placeholder="Click here"
+              autoComplete="off"
+              helpText="Leave empty to use selected text"
+            />
+          </div>
+        </Modal.Section>
+      </Modal>
     </div>
+      )}
     </>
   );
 };
