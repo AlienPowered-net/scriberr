@@ -1,6 +1,7 @@
 // app/routes/app._index.jsx - Home Page
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { useState } from "react";
 import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
@@ -24,17 +25,17 @@ import {
   Divider,
   Box,
   Grid,
-  DisplayText,
+  Collapsible,
 } from "@shopify/polaris";
 import { 
-  FolderMajor,
-  NoteMajor,
-  CalendarMajor,
-  StarMajor,
-  CheckMajor,
-  ArrowRightMajor,
-  InformationMajor,
-  RocketMajor,
+  FolderIcon,
+  NoteIcon,
+  CalendarIcon,
+  StarIcon,
+  CheckIcon,
+  ArrowRightIcon,
+  InfoIcon,
+  StarFilledIcon,
 } from "@shopify/polaris-icons";
 
 export const loader = async ({ request }) => {
@@ -72,6 +73,7 @@ export const loader = async ({ request }) => {
 
 export default function HomePage() {
   const { folders, notes, totalFolders, totalNotes, version } = useLoaderData();
+  const [showOnboarding, setShowOnboarding] = useState(true);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -91,21 +93,43 @@ export default function HomePage() {
   return (
     <Page title="Welcome to Scriberr" subtitle={`Version ${version}`}>
       <Layout>
-        {/* Welcome Banner */}
+        {/* Dismissible Onboarding Banner */}
         <Layout.Section>
-          <Banner
-            title="Welcome to Scriberr!"
-            tone="success"
-            action={{
-              content: "Go to Dashboard",
-              url: "/app/dashboard",
-            }}
+          <Collapsible
+            open={showOnboarding}
+            id="onboarding-banner"
+            transition={{ duration: '200ms', timingFunction: 'ease-in-out' }}
           >
-            <p>
-              Your personal note-taking companion. Organize your thoughts, 
-              create folders, and never lose track of your ideas again.
-            </p>
-          </Banner>
+            <Banner
+              title="Welcome to Scriberr! 🎉"
+              tone="success"
+              onDismiss={() => setShowOnboarding(false)}
+              action={{
+                content: "Go to Dashboard",
+                url: "/app/dashboard",
+              }}
+            >
+              <BlockStack gap="300">
+                <Text variant="bodyMd">
+                  Your personal note-taking companion. Here's how to get started:
+                </Text>
+                <BlockStack gap="200">
+                  <InlineStack gap="200">
+                    <Icon source={FolderIcon} tone="base" />
+                    <Text variant="bodySm">1. Create folders to organize your notes</Text>
+                  </InlineStack>
+                  <InlineStack gap="200">
+                    <Icon source={NoteIcon} tone="base" />
+                    <Text variant="bodySm">2. Select a folder, then create notes</Text>
+                  </InlineStack>
+                  <InlineStack gap="200">
+                    <Icon source={StarIcon} tone="base" />
+                    <Text variant="bodySm">3. Pin important notes for quick access</Text>
+                  </InlineStack>
+                </BlockStack>
+              </BlockStack>
+            </Banner>
+          </Collapsible>
         </Layout.Section>
 
         {/* Stats Section */}
@@ -119,10 +143,10 @@ export default function HomePage() {
                 <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
                   <Box padding="400" background="bg-surface-secondary" borderRadius="200">
                     <BlockStack gap="200" align="center">
-                      <Icon source={FolderMajor} tone="base" />
-                      <DisplayText size="small" as="h3">
+                      <Icon source={FolderIcon} tone="base" />
+                      <Text variant="heading2xl" as="h3">
                         {totalFolders}
-                      </DisplayText>
+                      </Text>
                       <Text variant="bodyMd" tone="subdued">
                         Folders
                       </Text>
@@ -132,10 +156,10 @@ export default function HomePage() {
                 <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
                   <Box padding="400" background="bg-surface-secondary" borderRadius="200">
                     <BlockStack gap="200" align="center">
-                      <Icon source={NoteMajor} tone="base" />
-                      <DisplayText size="small" as="h3">
+                      <Icon source={NoteIcon} tone="base" />
+                      <Text variant="heading2xl" as="h3">
                         {totalNotes}
-                      </DisplayText>
+                      </Text>
                       <Text variant="bodyMd" tone="subdued">
                         Notes
                       </Text>
@@ -145,10 +169,10 @@ export default function HomePage() {
                 <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
                   <Box padding="400" background="bg-surface-secondary" borderRadius="200">
                     <BlockStack gap="200" align="center">
-                      <Icon source={CalendarMajor} tone="base" />
-                      <DisplayText size="small" as="h3">
+                      <Icon source={CalendarIcon} tone="base" />
+                      <Text variant="heading2xl" as="h3">
                         {notes.length > 0 ? formatDate(notes[0].updatedAt) : 'N/A'}
-                      </DisplayText>
+                      </Text>
                       <Text variant="bodyMd" tone="subdued">
                         Last Updated
                       </Text>
@@ -158,10 +182,10 @@ export default function HomePage() {
                 <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
                   <Box padding="400" background="bg-surface-secondary" borderRadius="200">
                     <BlockStack gap="200" align="center">
-                      <Icon source={StarMajor} tone="base" />
-                      <DisplayText size="small" as="h3">
+                      <Icon source={StarIcon} tone="base" />
+                      <Text variant="heading2xl" as="h3">
                         {notes.filter(note => note.pinnedAt).length}
-                      </DisplayText>
+                      </Text>
                       <Text variant="bodyMd" tone="subdued">
                         Pinned Notes
                       </Text>
@@ -275,7 +299,7 @@ export default function HomePage() {
                               <BlockStack gap="100">
                                 <InlineStack gap="200" align="start">
                                   {pinnedAt && (
-                                    <Icon source={StarMajor} tone="warning" />
+                                    <Icon source={StarIcon} tone="warning" />
                                   )}
                                   <Text variant="bodyMd" fontWeight="medium" as="h3">
                                     {title || 'Untitled Note'}
@@ -334,7 +358,7 @@ export default function HomePage() {
                     <BlockStack gap="300">
                       <InlineStack gap="200" align="start">
                         <Box padding="200" background="bg-surface-brand" borderRadius="100">
-                          <Icon source={FolderMajor} tone="base" />
+                          <Icon source={FolderIcon} tone="base" />
                         </Box>
                         <BlockStack gap="100">
                           <Text variant="bodyMd" fontWeight="medium" as="h3">
@@ -354,7 +378,7 @@ export default function HomePage() {
                     <BlockStack gap="300">
                       <InlineStack gap="200" align="start">
                         <Box padding="200" background="bg-surface-brand" borderRadius="100">
-                          <Icon source={NoteMajor} tone="base" />
+                          <Icon source={NoteIcon} tone="base" />
                         </Box>
                         <BlockStack gap="100">
                           <Text variant="bodyMd" fontWeight="medium" as="h3">
@@ -374,7 +398,7 @@ export default function HomePage() {
                     <BlockStack gap="300">
                       <InlineStack gap="200" align="start">
                         <Box padding="200" background="bg-surface-brand" borderRadius="100">
-                          <Icon source={CheckMajor} tone="base" />
+                          <Icon source={CheckIcon} tone="base" />
                         </Box>
                         <BlockStack gap="100">
                           <Text variant="bodyMd" fontWeight="medium" as="h3">
@@ -394,7 +418,7 @@ export default function HomePage() {
                     <BlockStack gap="300">
                       <InlineStack gap="200" align="start">
                         <Box padding="200" background="bg-surface-brand" borderRadius="100">
-                          <Icon source={StarMajor} tone="base" />
+                          <Icon source={StarIcon} tone="base" />
                         </Box>
                         <BlockStack gap="100">
                           <Text variant="bodyMd" fontWeight="medium" as="h3">
@@ -417,7 +441,7 @@ export default function HomePage() {
                   variant="primary"
                   size="large"
                   url="/app/dashboard"
-                  icon={ArrowRightMajor}
+                  icon={ArrowRightIcon}
                 >
                   Start Using Scriberr
                 </Button>
@@ -454,19 +478,19 @@ export default function HomePage() {
                     </Text>
                     <BlockStack gap="100">
                       <InlineStack gap="200">
-                        <Icon source={CheckMajor} tone="success" />
+                        <Icon source={CheckIcon} tone="success" />
                         <Text variant="bodySm">Enhanced folder organization</Text>
                       </InlineStack>
                       <InlineStack gap="200">
-                        <Icon source={CheckMajor} tone="success" />
+                        <Icon source={CheckIcon} tone="success" />
                         <Text variant="bodySm">Improved note editor with rich text support</Text>
                       </InlineStack>
                       <InlineStack gap="200">
-                        <Icon source={CheckMajor} tone="success" />
+                        <Icon source={CheckIcon} tone="success" />
                         <Text variant="bodySm">Better mobile responsiveness</Text>
                       </InlineStack>
                       <InlineStack gap="200">
-                        <Icon source={CheckMajor} tone="success" />
+                        <Icon source={CheckIcon} tone="success" />
                         <Text variant="bodySm">Pin important notes for quick access</Text>
                       </InlineStack>
                     </BlockStack>
@@ -488,23 +512,23 @@ export default function HomePage() {
                     </Text>
                     <BlockStack gap="100">
                       <InlineStack gap="200">
-                        <Icon source={RocketMajor} tone="info" />
+                        <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">AI-powered note suggestions and summaries</Text>
                       </InlineStack>
                       <InlineStack gap="200">
-                        <Icon source={RocketMajor} tone="info" />
+                        <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Collaborative note sharing and team workspaces</Text>
                       </InlineStack>
                       <InlineStack gap="200">
-                        <Icon source={RocketMajor} tone="info" />
+                        <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Advanced search and tagging system</Text>
                       </InlineStack>
                       <InlineStack gap="200">
-                        <Icon source={RocketMajor} tone="info" />
+                        <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Export to PDF, Word, and other formats</Text>
                       </InlineStack>
                       <InlineStack gap="200">
-                        <Icon source={RocketMajor} tone="info" />
+                        <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Mobile app for iOS and Android</Text>
                       </InlineStack>
                     </BlockStack>
@@ -526,19 +550,19 @@ export default function HomePage() {
                     </Text>
                     <BlockStack gap="100">
                       <InlineStack gap="200">
-                        <Icon source={InformationMajor} tone="info" />
+                        <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Use descriptive folder names to categorize your notes</Text>
                       </InlineStack>
                       <InlineStack gap="200">
-                        <Icon source={InformationMajor} tone="info" />
+                        <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Pin frequently accessed notes to the top</Text>
                       </InlineStack>
                       <InlineStack gap="200">
-                        <Icon source={InformationMajor} tone="info" />
+                        <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Use tags to add extra categorization to your notes</Text>
                       </InlineStack>
                       <InlineStack gap="200">
-                        <Icon source={InformationMajor} tone="info" />
+                        <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Regularly review and organize your folders</Text>
                       </InlineStack>
                     </BlockStack>
