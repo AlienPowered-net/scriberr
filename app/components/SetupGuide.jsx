@@ -134,7 +134,7 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
           <BlockStack gap="400">
             {/* Description */}
             <Text variant="bodyMd">
-              Use this guide to get started with your note-taking workspace.
+              Get started with ease — this guide will walk you through setting up and organizing your workspace.
             </Text>
 
             {/* Progress */}
