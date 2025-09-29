@@ -155,10 +155,7 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
             <BlockStack gap="200">
               <Text variant="bodySm">
                 Don't forget to explore all the features available in your dashboard. 
-                If you experience any issues or have any questions, just send us an email to{' '}
-                <Link url="mailto:support@scriberr.com">
-                  support@scriberr.com
-                </Link>
+                If you experience any issues or have any questions, don't hesitate to contact us via live chat within the app.
               </Text>
             </BlockStack>
           </BlockStack>
