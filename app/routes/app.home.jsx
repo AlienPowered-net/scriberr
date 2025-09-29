@@ -106,7 +106,7 @@ export default function HomePage() {
               onDismiss={() => setShowOnboarding(false)}
               action={{
                 content: "Go to Dashboard",
-                url: "/app",
+                url: "/app/dashboard",
               }}
             >
               <BlockStack gap="300">
@@ -254,7 +254,7 @@ export default function HomePage() {
                       heading="No folders yet"
                       action={{
                         content: "Create your first folder",
-                        url: "/app",
+                        url: "/app/dashboard",
                       }}
                       image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
                     >
@@ -331,7 +331,7 @@ export default function HomePage() {
                       heading="No notes yet"
                       action={{
                         content: "Create your first note",
-                        url: "/app",
+                        url: "/app/dashboard",
                       }}
                       image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
                     >
