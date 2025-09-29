@@ -187,23 +187,10 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
                             {step.title}
                           </Text>
                         </InlineStack>
-                        <InlineStack gap="200">
-                          {step.action && (
-                            <Button
-                              variant="primary"
-                              tone="success"
-                              size="slim"
-                              url={step.actionUrl}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {step.action}
-                            </Button>
-                          )}
-                          <Icon 
-                            source={isStepOpen ? ChevronUpIcon : ChevronDownIcon} 
-                            tone="subdued"
-                          />
-                        </InlineStack>
+                        <Icon 
+                          source={isStepOpen ? ChevronUpIcon : ChevronDownIcon} 
+                          tone="subdued"
+                        />
                       </InlineStack>
                     </Box>
 
@@ -214,9 +201,23 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
                       transition={{ duration: '200ms', timingFunction: 'ease-in-out' }}
                     >
                       <Box padding="400" paddingBlockStart="300">
-                        <Text variant="bodySm" tone="subdued">
-                          {step.description}
-                        </Text>
+                        <BlockStack gap="300">
+                          <Text variant="bodySm" tone="subdued">
+                            {step.description}
+                          </Text>
+                          {step.action && (
+                            <InlineStack align="start">
+                              <Button
+                                variant="primary"
+                                tone="success"
+                                size="slim"
+                                url={step.actionUrl}
+                              >
+                                {step.action}
+                              </Button>
+                            </InlineStack>
+                          )}
+                        </BlockStack>
                       </Box>
                     </Collapsible>
                   </Box>
