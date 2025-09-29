@@ -113,40 +113,40 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
             {/* Steps */}
             <BlockStack gap="300">
               {steps.map((step) => (
-                <InlineStack key={step.id} gap="300" align="start">
-                  <Box padding="100">
-                    {step.completed ? (
-                      <Icon source={CheckIcon} tone="success" />
-                    ) : (
-                      <Box 
-                        padding="100"
-                        background="bg-surface-secondary"
-                        borderRadius="100"
-                        style={{ width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      >
-                        <Text variant="bodySm" tone="subdued" style={{ fontSize: '10px' }}>○</Text>
-                      </Box>
-                    )}
-                  </Box>
-                  <BlockStack gap="100">
-                    <InlineStack gap="200" align="space-between">
+                <InlineStack key={step.id} gap="300" align="space-between">
+                  <InlineStack gap="300" align="start">
+                    <Box padding="100">
+                      {step.completed ? (
+                        <Icon source={CheckIcon} tone="success" />
+                      ) : (
+                        <Box 
+                          padding="100"
+                          background="bg-surface-secondary"
+                          borderRadius="100"
+                          style={{ width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <Text variant="bodySm" tone="subdued" style={{ fontSize: '10px' }}>○</Text>
+                        </Box>
+                      )}
+                    </Box>
+                    <BlockStack gap="100">
                       <Text variant="bodyMd" fontWeight="medium">
                         {step.title}
                       </Text>
-                      {step.action && (
-                        <Button
-                          variant="primary"
-                          size="slim"
-                          url={step.actionUrl}
-                        >
-                          {step.action}
-                        </Button>
-                      )}
-                    </InlineStack>
-                    <Text variant="bodySm" tone="subdued">
-                      {step.description}
-                    </Text>
-                  </BlockStack>
+                      <Text variant="bodySm" tone="subdued">
+                        {step.description}
+                      </Text>
+                    </BlockStack>
+                  </InlineStack>
+                  {step.action && (
+                    <Button
+                      variant="primary"
+                      size="slim"
+                      url={step.actionUrl}
+                    >
+                      {step.action}
+                    </Button>
+                  )}
                 </InlineStack>
               ))}
             </BlockStack>
