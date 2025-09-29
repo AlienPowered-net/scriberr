@@ -1,0 +1,163 @@
+import React, { useState } from 'react';
+import {
+  Card,
+  BlockStack,
+  InlineStack,
+  Text,
+  Button,
+  ProgressBar,
+  Icon,
+  Collapsible,
+  Link,
+  Box,
+} from '@shopify/polaris';
+import {
+  CheckIcon,
+  CircleIcon,
+  ChevronUpIcon,
+  FolderIcon,
+  NoteIcon,
+  StarIcon,
+  SettingsIcon,
+} from '@shopify/polaris-icons';
+
+export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNotes = 0 }) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  
+  // Calculate progress based on actual user data
+  const hasFolders = totalFolders > 0;
+  const hasNotes = totalNotes > 0;
+  const hasMultipleFolders = totalFolders > 1;
+  const hasPinnedNotes = pinnedNotes > 0;
+  
+  const completedSteps = [hasFolders, hasNotes, hasMultipleFolders, hasPinnedNotes].filter(Boolean).length;
+  const totalSteps = 4;
+  const progress = (completedSteps / totalSteps) * 100;
+
+  const steps = [
+    {
+      id: 1,
+      title: "Start here",
+      description: "Create your first folder to organize your notes",
+      action: hasFolders ? null : "Create folder",
+      actionUrl: "/app/dashboard",
+      completed: hasFolders,
+      icon: FolderIcon,
+    },
+    {
+      id: 2,
+      title: "Create your first note",
+      description: "Select a folder and create your first note to start writing",
+      action: hasNotes ? null : "Create note",
+      actionUrl: "/app/dashboard",
+      completed: hasNotes,
+      icon: NoteIcon,
+    },
+    {
+      id: 3,
+      title: "Organize your workspace",
+      description: "Create additional folders and organize your notes by category",
+      action: hasMultipleFolders ? null : "Create more folders",
+      actionUrl: "/app/dashboard",
+      completed: hasMultipleFolders,
+      icon: SettingsIcon,
+    },
+    {
+      id: 4,
+      title: "Pin important notes",
+      description: "Pin your most important notes for quick access",
+      action: hasPinnedNotes ? null : "Pin a note",
+      actionUrl: "/app/dashboard",
+      completed: hasPinnedNotes,
+      icon: StarIcon,
+    },
+  ];
+
+  return (
+    <Card>
+      <BlockStack gap="400">
+        {/* Header */}
+        <InlineStack align="space-between">
+          <Text variant="headingMd" as="h2">
+            Setup guide
+          </Text>
+          <Button
+            variant="plain"
+            size="slim"
+            icon={ChevronUpIcon}
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            accessibilityLabel={isCollapsed ? "Expand setup guide" : "Collapse setup guide"}
+          />
+        </InlineStack>
+
+        <Collapsible
+          open={!isCollapsed}
+          id="setup-guide-content"
+          transition={{ duration: '200ms', timingFunction: 'ease-in-out' }}
+        >
+          <BlockStack gap="400">
+            {/* Description */}
+            <Text variant="bodyMd">
+              Use this guide to get started with your note-taking workspace.
+            </Text>
+
+            {/* Progress */}
+            <BlockStack gap="200">
+              <InlineStack align="space-between">
+                <Text variant="bodySm">
+                  {completedSteps} of {totalSteps} tasks complete
+                </Text>
+              </InlineStack>
+              <ProgressBar progress={progress} size="small" />
+            </BlockStack>
+
+            {/* Steps */}
+            <BlockStack gap="300">
+              {steps.map((step) => (
+                <InlineStack key={step.id} gap="300" align="start">
+                  <Box padding="100">
+                    {step.completed ? (
+                      <Icon source={CheckIcon} tone="success" />
+                    ) : (
+                      <Icon source={CircleIcon} tone="subdued" />
+                    )}
+                  </Box>
+                  <BlockStack gap="100">
+                    <InlineStack gap="200" align="space-between">
+                      <Text variant="bodyMd" fontWeight="medium">
+                        {step.title}
+                      </Text>
+                      {step.action && (
+                        <Button
+                          variant="primary"
+                          size="slim"
+                          url={step.actionUrl}
+                        >
+                          {step.action}
+                        </Button>
+                      )}
+                    </InlineStack>
+                    <Text variant="bodySm" tone="subdued">
+                      {step.description}
+                    </Text>
+                  </BlockStack>
+                </InlineStack>
+              ))}
+            </BlockStack>
+
+            {/* Footer */}
+            <BlockStack gap="200">
+              <Text variant="bodySm">
+                Don't forget to explore all the features available in your dashboard. 
+                If you experience any issues or have any questions, just send us an email to{' '}
+                <Link url="mailto:support@scriberr.com">
+                  support@scriberr.com
+                </Link>
+              </Text>
+            </BlockStack>
+          </BlockStack>
+        </Collapsible>
+      </BlockStack>
+    </Card>
+  );
+}

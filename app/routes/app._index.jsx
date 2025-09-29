@@ -6,6 +6,7 @@ import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
 import packageJson from "../../package.json" with { type: "json" };
+import SetupGuide from "../components/SetupGuide";
 
 import {
   Page,
@@ -73,7 +74,6 @@ export const loader = async ({ request }) => {
 
 export default function HomePage() {
   const { folders, notes, totalFolders, totalNotes, version } = useLoaderData();
-  const [showOnboarding, setShowOnboarding] = useState(true);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -93,43 +93,13 @@ export default function HomePage() {
   return (
     <Page title="Welcome to Scriberr" subtitle={`Version ${version}`}>
       <Layout>
-        {/* Dismissible Onboarding Banner */}
+        {/* Setup Guide */}
         <Layout.Section>
-          <Collapsible
-            open={showOnboarding}
-            id="onboarding-banner"
-            transition={{ duration: '200ms', timingFunction: 'ease-in-out' }}
-          >
-            <Banner
-              title="Welcome to Scriberr! 🎉"
-              tone="success"
-              onDismiss={() => setShowOnboarding(false)}
-              action={{
-                content: "Go to Dashboard",
-                url: "/app/dashboard",
-              }}
-            >
-              <BlockStack gap="300">
-                <Text variant="bodyMd">
-                  Your personal note-taking companion. Here's how to get started:
-                </Text>
-                <BlockStack gap="200">
-                  <InlineStack gap="200">
-                    <Icon source={FolderIcon} tone="base" />
-                    <Text variant="bodySm">1. Create folders to organize your notes</Text>
-                  </InlineStack>
-                  <InlineStack gap="200">
-                    <Icon source={NoteIcon} tone="base" />
-                    <Text variant="bodySm">2. Select a folder, then create notes</Text>
-                  </InlineStack>
-                  <InlineStack gap="200">
-                    <Icon source={StarIcon} tone="base" />
-                    <Text variant="bodySm">3. Pin important notes for quick access</Text>
-                  </InlineStack>
-                </BlockStack>
-              </BlockStack>
-            </Banner>
-          </Collapsible>
+          <SetupGuide 
+            totalFolders={totalFolders}
+            totalNotes={totalNotes}
+            pinnedNotes={notes.filter(note => note.pinnedAt).length}
+          />
         </Layout.Section>
 
         {/* Stats Section */}
