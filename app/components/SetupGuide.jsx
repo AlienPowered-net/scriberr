@@ -36,8 +36,8 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
   const steps = [
     {
       id: 1,
-      title: "Start here",
-      description: "Create your first folder to organize your notes",
+      title: "Create a Folder to Get Started",
+      description: "Before you add notes, set up your first folder. Folders make it simple to organize, manage, and revisit your notes whenever you need them.",
       action: hasFolders ? null : "Create folder",
       actionUrl: "/app/dashboard",
       completed: hasFolders,
