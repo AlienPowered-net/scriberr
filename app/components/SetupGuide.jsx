@@ -13,7 +13,7 @@ import {
 } from '@shopify/polaris';
 import {
   CheckIcon,
-  CircleIcon,
+  CircleMinusIcon,
   ChevronUpIcon,
   FolderIcon,
   NoteIcon,
@@ -119,7 +119,7 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
                     {step.completed ? (
                       <Icon source={CheckIcon} tone="success" />
                     ) : (
-                      <Icon source={CircleIcon} tone="subdued" />
+                      <Icon source={CircleMinusIcon} tone="subdued" />
                     )}
                   </Box>
                   <BlockStack gap="100">
