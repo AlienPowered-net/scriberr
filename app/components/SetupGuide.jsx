@@ -163,61 +163,62 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
                     onClick={() => toggleStep(stepKey)}
                     verticalAlignment="leading"
                   >
-                    <BlockStack gap="0">
-                      {/* Step Header */}
-                      <InlineStack align="space-between">
-                        <InlineStack gap="300" align="start">
-                          <Box padding="100">
-                            {step.completed ? (
-                              <Icon source={CheckIcon} tone="success" />
-                            ) : (
-                              <Box 
-                                padding="100"
-                                background="bg-surface-secondary"
-                                borderRadius="100"
-                                style={{ width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                              >
-                                <Text variant="bodySm" tone="subdued" style={{ fontSize: '10px' }}>○</Text>
-                              </Box>
-                            )}
-                          </Box>
+                    <InlineStack align="space-between" blockAlign="start">
+                      {/* Left Side - Icon and Content */}
+                      <InlineStack gap="300" align="start">
+                        <Box padding="100">
+                          {step.completed ? (
+                            <Icon source={CheckIcon} tone="success" />
+                          ) : (
+                            <Box 
+                              padding="100"
+                              background="bg-surface-secondary"
+                              borderRadius="100"
+                              style={{ width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            >
+                              <Text variant="bodySm" tone="subdued" style={{ fontSize: '10px' }}>○</Text>
+                            </Box>
+                          )}
+                        </Box>
+                        <BlockStack gap="0">
                           <Text variant="bodyMd" fontWeight="medium">
                             {step.title}
                           </Text>
-                        </InlineStack>
-                        <Icon 
-                          source={isStepOpen ? ChevronUpIcon : ChevronDownIcon} 
-                          tone="subdued"
-                        />
+                          {/* Collapsible Content */}
+                          <Collapsible
+                            open={isStepOpen}
+                            id={`step-${step.id}-collapsible`}
+                            transition={{ duration: '200ms', timingFunction: 'ease-in-out' }}
+                          >
+                            <Box paddingBlockStart="300">
+                              <BlockStack gap="300">
+                                <Text variant="bodySm" tone="subdued">
+                                  {step.description}
+                                </Text>
+                                {step.action && (
+                                  <InlineStack align="start">
+                                    <Button
+                                      variant="primary"
+                                      tone="success"
+                                      size="slim"
+                                      url={step.actionUrl}
+                                    >
+                                      {step.action}
+                                    </Button>
+                                  </InlineStack>
+                                )}
+                              </BlockStack>
+                            </Box>
+                          </Collapsible>
+                        </BlockStack>
                       </InlineStack>
-
-                      {/* Collapsible Content */}
-                      <Collapsible
-                        open={isStepOpen}
-                        id={`step-${step.id}-collapsible`}
-                        transition={{ duration: '200ms', timingFunction: 'ease-in-out' }}
-                      >
-                        <Box paddingBlockStart="300" paddingInlineStart="500">
-                          <BlockStack gap="300">
-                            <Text variant="bodySm" tone="subdued">
-                              {step.description}
-                            </Text>
-                            {step.action && (
-                              <InlineStack align="start">
-                                <Button
-                                  variant="primary"
-                                  tone="success"
-                                  size="slim"
-                                  url={step.actionUrl}
-                                >
-                                  {step.action}
-                                </Button>
-                              </InlineStack>
-                            )}
-                          </BlockStack>
-                        </Box>
-                      </Collapsible>
-                    </BlockStack>
+                      
+                      {/* Right Side - Chevron Icon */}
+                      <Icon 
+                        source={isStepOpen ? ChevronUpIcon : ChevronDownIcon} 
+                        tone="subdued"
+                      />
+                    </InlineStack>
                   </ResourceItem>
                 );
               }}
