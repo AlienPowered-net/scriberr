@@ -117,7 +117,7 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
         {/* Header */}
         <InlineStack align="space-between">
           <Text variant="headingMd" as="h2">
-            Setup guide
+            Getting Started
           </Text>
           <Button
             variant="plain"
