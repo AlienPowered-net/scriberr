@@ -47,3 +47,21 @@
 [class*="mantine-"][class*="shadow"] {
   box-shadow: none !important;
 }
+
+/* Prevent mobile zoom on input focus - iOS Safari Fix */
+/* Setting minimum 16px font-size prevents auto-zoom on iOS */
+input,
+textarea,
+select {
+  font-size: 16px !important;
+}
+
+/* Ensure Polaris and Mantine inputs also have 16px minimum */
+.Polaris-TextField__Input,
+.Polaris-TextField__Input:focus,
+.mantine-Input-input,
+.mantine-Input-input:focus,
+.mantine-Textarea-input,
+.mantine-Textarea-input:focus {
+  font-size: 16px !important;
+}

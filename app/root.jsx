@@ -23,7 +23,7 @@ export const links = () => [
 export const meta = () => [
   { title: "Shopify Notepad App" },
   { name: "description", content: "A powerful notepad app for Shopify" },
-  { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" },
+  { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" },
 ];
 
 export default function App() {

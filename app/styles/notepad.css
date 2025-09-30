@@ -99,7 +99,15 @@
   margin-bottom: 10px;
 }
 .titleRow .Polaris-TextField__Input {
-  font-size: 28px; font-weight: 700;
+  font-size: 28px !important; 
+  font-weight: 700;
+}
+
+/* Ensure minimum 16px on all screens to prevent iOS auto-zoom */
+@media (max-width: 768px) {
+  .titleRow .Polaris-TextField__Input {
+    font-size: 20px !important;
+  }
 }
 
 .contentRow .Polaris-TextField__Input {
@@ -209,6 +217,7 @@
     min-height: 200px !important;
     max-height: 400px !important;
     overflow-y: auto !important;
+    font-size: 16px !important;
   }
   
   .editor {
