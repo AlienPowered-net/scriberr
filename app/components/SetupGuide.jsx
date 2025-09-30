@@ -163,7 +163,7 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
                     onClick={() => toggleStep(stepKey)}
                     verticalAlignment="leading"
                   >
-                    <InlineStack align="space-between" blockAlign="start">
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', width: '100%' }}>
                       {/* Left Side - Icon and Content */}
                       <InlineStack gap="300" align="start">
                         <Box padding="100">
@@ -214,11 +214,13 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
                       </InlineStack>
                       
                       {/* Right Side - Chevron Icon */}
-                      <Icon 
-                        source={isStepOpen ? ChevronUpIcon : ChevronDownIcon} 
-                        tone="subdued"
-                      />
-                    </InlineStack>
+                      <div style={{ marginLeft: 'auto', paddingLeft: '16px', flexShrink: 0 }}>
+                        <Icon 
+                          source={isStepOpen ? ChevronUpIcon : ChevronDownIcon} 
+                          tone="subdued"
+                        />
+                      </div>
+                    </div>
                   </ResourceItem>
                 );
               }}
