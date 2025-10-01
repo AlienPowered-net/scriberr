@@ -356,3 +356,34 @@
   border-color: #3b82f6;
   box-shadow: 0 0 0 1px #3b82f6;
 }
+/* Mention Styles */
+.mention {
+  background-color: #e1e3e5;
+  border-radius: 4px;
+  padding: 2px 6px;
+  color: #37352f;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.mention:hover {
+  background-color: #d4d6d9;
+}
+
+/* Bubble Menu and Toolbar Button Hover Effects */
+.notion-bubble-menu button,
+.advanced-rte-toolbar button {
+  transition: all 0.2s ease;
+}
+
+.notion-bubble-menu button:hover,
+.advanced-rte-toolbar button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.notion-bubble-menu button:active,
+.advanced-rte-toolbar button:active {
+  transform: scale(0.98);
+}

@@ -59,6 +59,10 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [tempHeaderTextColor, setTempHeaderTextColor] = useState('#000000');
   const [showBorderColorPicker, setShowBorderColorPicker] = useState(false);
   const [borderColor, setBorderColor] = useState('#d1d5db');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showHighlightPicker, setShowHighlightPicker] = useState(false);
+  const [showFontFamilyPicker, setShowFontFamilyPicker] = useState(false);
+  const [showToolbarTextColorPicker, setShowToolbarTextColorPicker] = useState(false);
   const [tempBorderColor, setTempBorderColor] = useState('#d1d5db');
   const [isMobile, setIsMobile] = useState(false);
   const editorRef = useRef(null);
@@ -142,17 +146,148 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         HTMLAttributes: {
           class: 'mention',
         },
+        renderHTML({ options, node }) {
+          return ['span', { class: 'mention', 'data-id': node.attrs.id }, `@${node.attrs.label ?? node.attrs.id}`];
+        },
         suggestion: {
           items: ({ query }) => {
-            return [
-              'Lea Thompson', 'Cyndi Lauper', 'Tom Cruise', 'Madonna', 'Jerry Hall',
-              'Joan Collins', 'Winona Ryder', 'Christina Applegate', 'Alyssa Milano',
-              'Molly Ringwald', 'Ally Sheedy', 'Debbie Harry', 'Olivia Newton-John',
-              'Elton John', 'Michael J. Fox', 'Axl Rose', 'Emilio Estevez', 'Ralph Macchio',
-              'Rob Lowe', 'Jennifer Grey', 'Mickey Rourke', 'John Cusack', 'Matthew Broderick',
-              'Justine Bateman', 'Lisa Bonet',
-            ].filter(item => item.toLowerCase().startsWith(query.toLowerCase())).slice(0, 5);
+            const suggestions = [
+              { id: 'lea-thompson', label: 'Lea Thompson' },
+              { id: 'cyndi-lauper', label: 'Cyndi Lauper' },
+              { id: 'tom-cruise', label: 'Tom Cruise' },
+              { id: 'madonna', label: 'Madonna' },
+              { id: 'jerry-hall', label: 'Jerry Hall' },
+              { id: 'joan-collins', label: 'Joan Collins' },
+              { id: 'winona-ryder', label: 'Winona Ryder' },
+              { id: 'christina-applegate', label: 'Christina Applegate' },
+              { id: 'alyssa-milano', label: 'Alyssa Milano' },
+              { id: 'molly-ringwald', label: 'Molly Ringwald' }
+            ];
+            return suggestions
+              .filter(item => item.label.toLowerCase().startsWith(query.toLowerCase()))
+              .slice(0, 5);
           },
+          render: () => {
+            let component;
+            let popup;
+
+            return {
+              onStart: props => {
+                component = document.createElement('div');
+                component.className = 'mention-suggestions';
+                component.style.cssText = `
+                  position: fixed;
+                  background: white;
+                  border: 1px solid #dee2e6;
+                  border-radius: 6px;
+                  padding: 6px;
+                  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                  z-index: 10000;
+                  max-height: 200px;
+                  overflow-y: auto;
+                `;
+
+                props.items.forEach((item, index) => {
+                  const button = document.createElement('button');
+                  button.className = 'mention-item';
+                  button.textContent = item.label;
+                  button.style.cssText = `
+                    display: block;
+                    width: 100%;
+                    text-align: left;
+                    padding: 8px 12px;
+                    border: none;
+                    background: ${index === props.selectedIndex ? '#f0f0f0' : 'transparent'};
+                    cursor: pointer;
+                    border-radius: 4px;
+                    transition: background 0.2s;
+                  `;
+                  button.addEventListener('click', () => props.command({ id: item.id, label: item.label }));
+                  button.addEventListener('mouseenter', () => {
+                    button.style.background = '#f0f0f0';
+                  });
+                  button.addEventListener('mouseleave', () => {
+                    button.style.background = index === props.selectedIndex ? '#f0f0f0' : 'transparent';
+                  });
+                  component.appendChild(button);
+                });
+
+                document.body.appendChild(component);
+
+                if (props.clientRect) {
+                  const rect = props.clientRect();
+                  component.style.left = `${rect.left}px`;
+                  component.style.top = `${rect.bottom + 8}px`;
+                }
+              },
+              onUpdate(props) {
+                if (!component) return;
+
+                component.innerHTML = '';
+                props.items.forEach((item, index) => {
+                  const button = document.createElement('button');
+                  button.className = 'mention-item';
+                  button.textContent = item.label;
+                  button.style.cssText = `
+                    display: block;
+                    width: 100%;
+                    text-align: left;
+                    padding: 8px 12px;
+                    border: none;
+                    background: ${index === props.selectedIndex ? '#f0f0f0' : 'transparent'};
+                    cursor: pointer;
+                    border-radius: 4px;
+                    transition: background 0.2s;
+                  `;
+                  button.addEventListener('click', () => props.command({ id: item.id, label: item.label }));
+                  button.addEventListener('mouseenter', () => {
+                    button.style.background = '#f0f0f0';
+                  });
+                  button.addEventListener('mouseleave', () => {
+                    button.style.background = index === props.selectedIndex ? '#f0f0f0' : 'transparent';
+                  });
+                  component.appendChild(button);
+                });
+
+                if (props.clientRect) {
+                  const rect = props.clientRect();
+                  component.style.left = `${rect.left}px`;
+                  component.style.top = `${rect.bottom + 8}px`;
+                }
+              },
+              onKeyDown(props) {
+                if (props.event.key === 'Escape') {
+                  if (component) {
+                    component.remove();
+                    component = null;
+                  }
+                  return true;
+                }
+
+                if (props.event.key === 'ArrowUp' || props.event.key === 'ArrowDown') {
+                  return false;
+                }
+
+                if (props.event.key === 'Enter') {
+                  if (props.items[props.selectedIndex]) {
+                    props.command({ 
+                      id: props.items[props.selectedIndex].id, 
+                      label: props.items[props.selectedIndex].label 
+                    });
+                  }
+                  return true;
+                }
+
+                return false;
+              },
+              onExit() {
+                if (component) {
+                  component.remove();
+                  component = null;
+                }
+              }
+            };
+          }
         },
       }),
       FontFamily.configure({
@@ -844,18 +979,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <i className="fab fa-youtube"></i>
           </button>
           <button
-            onClick={() => {
-              const emoji = prompt('Enter an emoji:');
-              if (emoji) {
-                editor.chain().focus().insertContent(emoji).run();
-              }
-            }}
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             style={{
               padding: "6px 8px",
               border: "1px solid #dee2e6",
               borderRadius: "4px",
-              backgroundColor: "white",
-              color: "#495057",
+              backgroundColor: showEmojiPicker ? '#007bff' : 'white',
+              color: showEmojiPicker ? 'white' : '#495057',
               cursor: "pointer",
               transition: "all 0.2s ease",
               fontSize: "13px",
@@ -870,13 +1000,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <i className="fas fa-smile"></i>
           </button>
           <button
-            onClick={() => editor.chain().focus().toggleHighlight({ color: '#fef3c7' }).run()}
+            onClick={() => setShowHighlightPicker(!showHighlightPicker)}
             style={{
               padding: "6px 8px",
               border: "1px solid #dee2e6",
               borderRadius: "4px",
-              backgroundColor: editor.isActive('highlight') ? '#fef3c7' : 'white',
-              color: "#495057",
+              backgroundColor: showHighlightPicker ? '#007bff' : (editor.isActive('highlight') ? '#fef3c7' : 'white'),
+              color: showHighlightPicker ? 'white' : '#495057',
               cursor: "pointer",
               transition: "all 0.2s ease",
               fontSize: "13px",
@@ -889,6 +1019,48 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             title="Highlight Text"
           >
             <i className="fas fa-highlighter"></i>
+          </button>
+          <button
+            onClick={() => setShowToolbarTextColorPicker(!showToolbarTextColorPicker)}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: showToolbarTextColorPicker ? '#007bff' : 'white',
+              color: showToolbarTextColorPicker ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Text Color"
+          >
+            <i className="fas fa-palette"></i>
+          </button>
+          <button
+            onClick={() => setShowFontFamilyPicker(!showFontFamilyPicker)}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: showFontFamilyPicker ? '#007bff' : 'white',
+              color: showFontFamilyPicker ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Font Family"
+          >
+            <i className="fas fa-font"></i>
           </button>
           
           <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
@@ -1669,18 +1841,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <i className="fab fa-youtube"></i>
           </button>
           <button
-            onClick={() => {
-              const emoji = prompt('Enter an emoji:');
-              if (emoji) {
-                editor.chain().focus().insertContent(emoji).run();
-              }
-            }}
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             style={{
               padding: "6px 8px",
               border: "1px solid #dee2e6",
               borderRadius: "4px",
-              backgroundColor: "white",
-              color: "#495057",
+              backgroundColor: showEmojiPicker ? '#007bff' : 'white',
+              color: showEmojiPicker ? 'white' : '#495057',
               cursor: "pointer",
               transition: "all 0.2s ease",
               fontSize: "13px",
@@ -1695,13 +1862,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <i className="fas fa-smile"></i>
           </button>
           <button
-            onClick={() => editor.chain().focus().toggleHighlight({ color: '#fef3c7' }).run()}
+            onClick={() => setShowHighlightPicker(!showHighlightPicker)}
             style={{
               padding: "6px 8px",
               border: "1px solid #dee2e6",
               borderRadius: "4px",
-              backgroundColor: editor.isActive('highlight') ? '#fef3c7' : 'white',
-              color: "#495057",
+              backgroundColor: showHighlightPicker ? '#007bff' : (editor.isActive('highlight') ? '#fef3c7' : 'white'),
+              color: showHighlightPicker ? 'white' : '#495057',
               cursor: "pointer",
               transition: "all 0.2s ease",
               fontSize: "13px",
@@ -1714,6 +1881,48 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             title="Highlight Text"
           >
             <i className="fas fa-highlighter"></i>
+          </button>
+          <button
+            onClick={() => setShowToolbarTextColorPicker(!showToolbarTextColorPicker)}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: showToolbarTextColorPicker ? '#007bff' : 'white',
+              color: showToolbarTextColorPicker ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Text Color"
+          >
+            <i className="fas fa-palette"></i>
+          </button>
+          <button
+            onClick={() => setShowFontFamilyPicker(!showFontFamilyPicker)}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: showFontFamilyPicker ? '#007bff' : 'white',
+              color: showFontFamilyPicker ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Font Family"
+          >
+            <i className="fas fa-font"></i>
           </button>
           
           <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
@@ -3080,6 +3289,300 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           </div>
         </Modal.Section>
       </Modal>
+
+      {/* Emoji Picker Popup */}
+      {showEmojiPicker && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: 'white',
+          border: '1px solid #dee2e6',
+          borderRadius: '8px',
+          padding: '16px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 10000,
+          maxWidth: '400px',
+          maxHeight: '400px',
+          overflowY: 'auto'
+        }}>
+          <div style={{ marginBottom: '12px', fontWeight: 'bold', fontSize: '16px' }}>Select an Emoji</div>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(8, 1fr)', 
+            gap: '8px'
+          }}>
+            {['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '🥲', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '🥸', '😎', '🤓', '🧐', '😕', '😟', '🙁', '☹️', '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠', '🤬', '👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '👇', '☝️', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🫀', '🫁', '🦷', '🦴', '👀', '👁️', '👅', '👄', '💋', '🩸', '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '⭐', '🌟', '✨', '⚡', '🔥', '💥', '💯', '✅', '❌', '⚠️', '🎉', '🎊', '🎈', '🎁', '🏆', '🥇', '🥈', '🥉', '🎯', '🎮', '🎲', '🎭', '🎨', '🎪', '🎬', '🎤', '🎧', '🎼', '🎹', '🎺', '🎸', '🪕', '🎻', '🥁', '🪘', '📱', '💻', '⌨️', '🖥️', '🖨️', '🖱️', '🖲️', '💾', '💿', '📀', '📹', '📷', '📸', '📞', '☎️', '📠', '📺', '📻', '⏰', '⏱️', '⏲️', '🕰️', '⌚', '📡', '🔋', '🔌', '💡', '🔦', '🕯️', '🧯', '🛢️', '💸', '💵', '💴', '💶', '💷', '🪙', '💰', '💳', '🧾', '📧', '📨', '📩', '📤', '📥', '📦', '📫', '📪', '📬', '📭', '📮', '🗳️', '✏️', '✒️', '🖋️', '🖊️', '🖌️', '🖍️', '📝', '💼', '📁', '📂', '🗂️', '📅', '📆', '🗒️', '🗓️', '📇', '📈', '📉', '📊', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️', '🗃️', '🗄️', '🗑️'].map((emoji) => (
+              <button
+                key={emoji}
+                onClick={() => {
+                  editor.chain().focus().insertContent(emoji).run();
+                  setShowEmojiPicker(false);
+                }}
+                style={{
+                  fontSize: '24px',
+                  padding: '8px',
+                  border: 'none',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  borderRadius: '4px',
+                  transition: 'background 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.background = '#f0f0f0'}
+                onMouseLeave={(e) => e.target.style.background = 'transparent'}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+          <div style={{ marginTop: '12px', textAlign: 'right' }}>
+            <button 
+              onClick={() => setShowEmojiPicker(false)}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Highlight Color Picker */}
+      {showHighlightPicker && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: 'white',
+          border: '1px solid #dee2e6',
+          borderRadius: '8px',
+          padding: '16px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 10000,
+          minWidth: '250px'
+        }}>
+          <div style={{ marginBottom: '12px', fontWeight: 'bold' }}>Select Highlight Color</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {[
+              { name: 'Yellow', color: '#fef3c7' },
+              { name: 'Green', color: '#d1fae5' },
+              { name: 'Blue', color: '#dbeafe' },
+              { name: 'Pink', color: '#fce7f3' },
+              { name: 'Purple', color: '#f3e8ff' },
+              { name: 'Orange', color: '#fed7aa' },
+              { name: 'Red', color: '#fee2e2' },
+              { name: 'Remove Highlight', color: null }
+            ].map((item) => (
+              <button
+                key={item.name}
+                onClick={() => {
+                  if (item.color) {
+                    editor.chain().focus().setHighlight({ color: item.color }).run();
+                  } else {
+                    editor.chain().focus().unsetHighlight().run();
+                  }
+                  setShowHighlightPicker(false);
+                }}
+                style={{
+                  padding: '10px',
+                  border: '1px solid #dee2e6',
+                  borderRadius: '4px',
+                  backgroundColor: item.color || 'white',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.transform = 'scale(1.02)'}
+                onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+              >
+                {item.name}
+              </button>
+            ))}
+          </div>
+          <div style={{ marginTop: '12px', textAlign: 'right' }}>
+            <button 
+              onClick={() => setShowHighlightPicker(false)}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Text Color Picker */}
+      {showToolbarTextColorPicker && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: 'white',
+          border: '1px solid #dee2e6',
+          borderRadius: '8px',
+          padding: '16px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 10000,
+          minWidth: '250px'
+        }}>
+          <div style={{ marginBottom: '12px', fontWeight: 'bold' }}>Select Text Color</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {[
+              { name: 'Black (Default)', color: '#000000' },
+              { name: 'Red', color: '#ef4444' },
+              { name: 'Orange', color: '#f97316' },
+              { name: 'Yellow', color: '#eab308' },
+              { name: 'Green', color: '#22c55e' },
+              { name: 'Blue', color: '#3b82f6' },
+              { name: 'Purple', color: '#a855f7' },
+              { name: 'Pink', color: '#ec4899' },
+              { name: 'Gray', color: '#6b7280' }
+            ].map((item) => (
+              <button
+                key={item.name}
+                onClick={() => {
+                  if (item.color === '#000000') {
+                    editor.chain().focus().unsetColor().run();
+                  } else {
+                    editor.chain().focus().setColor(item.color).run();
+                  }
+                  setShowToolbarTextColorPicker(false);
+                }}
+                style={{
+                  padding: '10px',
+                  border: '1px solid #dee2e6',
+                  borderRadius: '4px',
+                  backgroundColor: 'white',
+                  color: item.color,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontWeight: 'bold',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'scale(1.02)';
+                  e.target.style.backgroundColor = '#f0f0f0';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'scale(1)';
+                  e.target.style.backgroundColor = 'white';
+                }}
+              >
+                {item.name}
+              </button>
+            ))}
+          </div>
+          <div style={{ marginTop: '12px', textAlign: 'right' }}>
+            <button 
+              onClick={() => setShowToolbarTextColorPicker(false)}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Font Family Picker */}
+      {showFontFamilyPicker && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: 'white',
+          border: '1px solid #dee2e6',
+          borderRadius: '8px',
+          padding: '16px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 10000,
+          minWidth: '280px'
+        }}>
+          <div style={{ marginBottom: '12px', fontWeight: 'bold' }}>Select Font Family</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {[
+              { name: 'Default', font: null },
+              { name: 'Arial', font: 'Arial, sans-serif' },
+              { name: 'Courier New', font: 'Courier New, monospace' },
+              { name: 'Georgia', font: 'Georgia, serif' },
+              { name: 'Times New Roman', font: 'Times New Roman, serif' },
+              { name: 'Verdana', font: 'Verdana, sans-serif' },
+              { name: 'Comic Sans MS', font: 'Comic Sans MS, cursive' },
+              { name: 'Impact', font: 'Impact, sans-serif' }
+            ].map((item) => (
+              <button
+                key={item.name}
+                onClick={() => {
+                  if (item.font) {
+                    editor.chain().focus().setFontFamily(item.font).run();
+                  } else {
+                    editor.chain().focus().unsetFontFamily().run();
+                  }
+                  setShowFontFamilyPicker(false);
+                }}
+                style={{
+                  padding: '10px',
+                  border: '1px solid #dee2e6',
+                  borderRadius: '4px',
+                  backgroundColor: 'white',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontFamily: item.font || 'inherit',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'scale(1.02)';
+                  e.target.style.backgroundColor = '#f0f0f0';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'scale(1)';
+                  e.target.style.backgroundColor = 'white';
+                }}
+              >
+                {item.name}
+              </button>
+            ))}
+          </div>
+          <div style={{ marginTop: '12px', textAlign: 'right' }}>
+            <button 
+              onClick={() => setShowFontFamilyPicker(false)}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
       )}
     </>
