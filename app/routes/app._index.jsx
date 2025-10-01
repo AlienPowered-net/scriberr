@@ -503,12 +503,13 @@ export default function HomePage() {
               </Text>
               
               <BlockStack gap="300">
-                <Box padding="400" background="bg-surface-secondary" borderRadius="200" style={{ textAlign: 'left' }}>
-                  <BlockStack gap="200" align="start">
-                    <InlineStack gap="200" align="start">
-                      <Badge tone="success" size="small">
-                        New
-                      </Badge>
+                <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                  <div style={{ textAlign: 'left', width: '100%' }}>
+                    <BlockStack gap="200" align="start">
+                      <InlineStack gap="200" align="start">
+                        <Badge tone="success" size="small">
+                          New
+                        </Badge>
                         <Text variant="bodyMd" fontWeight="medium" as="h3">
                           Scriberr v{version} Released
                         </Text>
@@ -548,15 +549,17 @@ export default function HomePage() {
                         </div>
                       </BlockStack>
                     </div>
-                  </BlockStack>
+                    </BlockStack>
+                  </div>
                 </Box>
 
-                <Box padding="400" background="bg-surface-secondary" borderRadius="200" style={{ textAlign: 'left' }}>
-                  <BlockStack gap="200" align="start">
-                    <InlineStack gap="200" align="start">
-                      <Badge tone="info" size="small">
-                        Coming Soon
-                      </Badge>
+                <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                  <div style={{ textAlign: 'left', width: '100%' }}>
+                    <BlockStack gap="200" align="start">
+                      <InlineStack gap="200" align="start">
+                        <Badge tone="info" size="small">
+                          Coming Soon
+                        </Badge>
                       <Text variant="bodyMd" fontWeight="medium" as="h3">
                         Future App Integrations
                       </Text>
@@ -598,15 +601,17 @@ export default function HomePage() {
                         </div>
                       </BlockStack>
                     </div>
-                  </BlockStack>
+                    </BlockStack>
+                  </div>
                 </Box>
 
-                <Box padding="400" background="bg-surface-secondary" borderRadius="200" style={{ textAlign: 'left' }}>
-                  <BlockStack gap="200" align="start">
-                    <InlineStack gap="200" align="start">
-                      <Badge tone="warning" size="small">
-                        Tip
-                      </Badge>
+                <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                  <div style={{ textAlign: 'left', width: '100%' }}>
+                    <BlockStack gap="200" align="start">
+                      <InlineStack gap="200" align="start">
+                        <Badge tone="warning" size="small">
+                          Tip
+                        </Badge>
                       <Text variant="bodyMd" fontWeight="medium" as="h3">
                         Pro Tips for Better Organization
                       </Text>
@@ -642,7 +647,8 @@ export default function HomePage() {
                         </div>
                       </BlockStack>
                     </div>
-                  </BlockStack>
+                    </BlockStack>
+                  </div>
                 </Box>
               </BlockStack>
             </BlockStack>
