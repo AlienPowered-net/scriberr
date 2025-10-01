@@ -484,7 +484,7 @@ export default function HomePage() {
                 <Button
                   variant="primary"
                   size="large"
-                  url="/app"
+                  url="/app/dashboard"
                   icon={ArrowRightIcon}
                 >
                   Start Using Scriberr
