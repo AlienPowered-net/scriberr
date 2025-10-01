@@ -65,3 +65,10 @@ select {
 .mantine-Textarea-input:focus {
   font-size: 16px !important;
 }
+
+/* Custom icon sizes for workspace stats section */
+/* Target icons within the stats grid specifically */
+.Polaris-Grid .Polaris-Box .Polaris-Icon {
+  height: 2.00rem !important;
+  width: 2.00rem !important;
+}
