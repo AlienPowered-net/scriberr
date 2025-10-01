@@ -22,6 +22,7 @@ import CharacterCount from '@tiptap/extension-character-count';
 import TiptapDragHandle from './TiptapDragHandle';
 import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack } from '@shopify/polaris';
+import { CheckboxIcon } from '@shopify/polaris-icons';
 
 const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobileProp = false, onFullscreenChange }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -609,6 +610,27 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             title="Numbered List"
           >
             <i className="fas fa-list-ol"></i>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleTaskList().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive('taskList') ? '#007bff' : 'white',
+              color: editor.isActive('taskList') ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Task List"
+          >
+            <CheckboxIcon />
           </button>
           
           <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
@@ -1276,6 +1298,27 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             title="Numbered List"
           >
             <i className="fas fa-list-ol"></i>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleTaskList().run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive('taskList') ? '#007bff' : 'white',
+              color: editor.isActive('taskList') ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Task List"
+          >
+            <CheckboxIcon />
           </button>
           
           <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
