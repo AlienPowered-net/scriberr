@@ -104,89 +104,75 @@ export default function HomePage() {
 
         {/* Stats Section */}
         <Layout.Section>
-          <BlockStack gap="500">
-            <Text variant="headingMd" as="h2">
-              Your Scriberr Workspace Insights
-            </Text>
-            <Grid>
-              <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
-                <Card>
-                  <Box padding="600" background="bg-surface" borderRadius="300">
-                    <BlockStack gap="400" align="center">
-                      <Box padding="300" background="bg-surface-brand" borderRadius="200">
-                        <Icon source={FolderIcon} tone="base" />
-                      </Box>
-                      <BlockStack gap="200" align="center">
-                        <Text variant="heading3xl" as="h3" fontWeight="bold">
+          <Card>
+            <BlockStack gap="400">
+              <Text variant="headingMd" as="h2">
+                Your Scriberr Workspace Insights
+              </Text>
+              <Grid>
+                <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
+                  <Box padding="300" background="bg-surface-secondary" borderRadius="200">
+                    <InlineStack gap="300" align="center">
+                      <Icon source={FolderIcon} tone="base" />
+                      <BlockStack gap="100">
+                        <Text variant="headingLg" as="h3" fontWeight="semibold">
                           {totalFolders}
                         </Text>
-                        <Text variant="bodyLg" tone="subdued" fontWeight="medium">
+                        <Text variant="bodySm" tone="subdued">
                           Folders
                         </Text>
                       </BlockStack>
-                    </BlockStack>
+                    </InlineStack>
                   </Box>
-                </Card>
-              </Grid.Cell>
-              <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
-                <Card>
-                  <Box padding="600" background="bg-surface" borderRadius="300">
-                    <BlockStack gap="400" align="center">
-                      <Box padding="300" background="bg-surface-brand" borderRadius="200">
-                        <Icon source={NoteIcon} tone="base" />
-                      </Box>
-                      <BlockStack gap="200" align="center">
-                        <Text variant="heading3xl" as="h3" fontWeight="bold">
+                </Grid.Cell>
+                <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
+                  <Box padding="300" background="bg-surface-secondary" borderRadius="200">
+                    <InlineStack gap="300" align="center">
+                      <Icon source={NoteIcon} tone="base" />
+                      <BlockStack gap="100">
+                        <Text variant="headingLg" as="h3" fontWeight="semibold">
                           {totalNotes}
                         </Text>
-                        <Text variant="bodyLg" tone="subdued" fontWeight="medium">
+                        <Text variant="bodySm" tone="subdued">
                           Notes
                         </Text>
                       </BlockStack>
-                    </BlockStack>
+                    </InlineStack>
                   </Box>
-                </Card>
-              </Grid.Cell>
-              <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
-                <Card>
-                  <Box padding="600" background="bg-surface" borderRadius="300">
-                    <BlockStack gap="400" align="center">
-                      <Box padding="300" background="bg-surface-brand" borderRadius="200">
-                        <Icon source={CalendarIcon} tone="base" />
-                      </Box>
-                      <BlockStack gap="200" align="center">
-                        <Text variant="heading3xl" as="h3" fontWeight="bold">
+                </Grid.Cell>
+                <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
+                  <Box padding="300" background="bg-surface-secondary" borderRadius="200">
+                    <InlineStack gap="300" align="center">
+                      <Icon source={CalendarIcon} tone="base" />
+                      <BlockStack gap="100">
+                        <Text variant="headingLg" as="h3" fontWeight="semibold">
                           {notes.length > 0 ? formatDate(notes[0].updatedAt) : 'N/A'}
                         </Text>
-                        <Text variant="bodyLg" tone="subdued" fontWeight="medium">
+                        <Text variant="bodySm" tone="subdued">
                           Last Updated
                         </Text>
                       </BlockStack>
-                    </BlockStack>
+                    </InlineStack>
                   </Box>
-                </Card>
-              </Grid.Cell>
-              <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
-                <Card>
-                  <Box padding="600" background="bg-surface" borderRadius="300">
-                    <BlockStack gap="400" align="center">
-                      <Box padding="300" background="bg-surface-brand" borderRadius="200">
-                        <Icon source={StarIcon} tone="base" />
-                      </Box>
-                      <BlockStack gap="200" align="center">
-                        <Text variant="heading3xl" as="h3" fontWeight="bold">
+                </Grid.Cell>
+                <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
+                  <Box padding="300" background="bg-surface-secondary" borderRadius="200">
+                    <InlineStack gap="300" align="center">
+                      <Icon source={StarIcon} tone="base" />
+                      <BlockStack gap="100">
+                        <Text variant="headingLg" as="h3" fontWeight="semibold">
                           {notes.filter(note => note.pinnedAt).length}
                         </Text>
-                        <Text variant="bodyLg" tone="subdued" fontWeight="medium">
+                        <Text variant="bodySm" tone="subdued">
                           Pinned Notes
                         </Text>
                       </BlockStack>
-                    </BlockStack>
+                    </InlineStack>
                   </Box>
-                </Card>
-              </Grid.Cell>
-            </Grid>
-          </BlockStack>
+                </Grid.Cell>
+              </Grid>
+            </BlockStack>
+          </Card>
         </Layout.Section>
 
         <Layout.Section>
