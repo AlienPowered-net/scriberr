@@ -156,11 +156,66 @@ function ClientQuill({ value, onChange, placeholder }) {
               margin-right: 8px !important;
             }
           }
+          
+          /* Checkbox styles for Quill editor */
+          .quill-checkbox-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            padding: 4px 0;
+            cursor: pointer;
+          }
+          
+          .quill-checkbox {
+            margin-right: 8px;
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+            accent-color: #3b82f6;
+          }
+          
+          .quill-checkbox-text {
+            flex: 1;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+          }
+          
+          .quill-checkbox-text:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-radius: 4px;
+            padding: 2px 4px;
+            margin: -2px -4px;
+          }
+          
+          /* Toolbar checkbox button styling */
+          .ql-toolbar .ql-checkbox::before {
+            content: "☑";
+            font-size: 18px;
+            line-height: 1;
+          }
         `;
         document.head.appendChild(style);
       });
     }
   }, []);
+
+  // Custom checkbox handler
+  const addCheckboxHandler = (quill) => {
+    const checkboxHandler = () => {
+      const range = quill.getSelection();
+      if (range) {
+        // Insert checkbox HTML at current position
+        const checkboxHtml = '<div class="quill-checkbox-item"><input type="checkbox" class="quill-checkbox"> <span class="quill-checkbox-text">Checkbox item</span></div>';
+        quill.clipboard.dangerouslyPasteHTML(range.index, checkboxHtml);
+        quill.setSelection(range.index + 1);
+      }
+    };
+    
+    // Add checkbox button to toolbar
+    const toolbar = quill.getModule('toolbar');
+    toolbar.addHandler('checkbox', checkboxHandler);
+  };
 
   // Quill modules to attach to editor - comprehensive toolbar with table UI
   const modules = {
@@ -175,7 +230,7 @@ function ClientQuill({ value, onChange, placeholder }) {
       [{ 'indent': '-1'}, { 'indent': '+1' }],
       [{ 'direction': 'rtl' }, { 'align': [] }],
       ['link', 'image', 'video'],
-      ['table'],
+      ['table', 'checkbox'],
       ['clean']
     ],
     clipboard: {
@@ -192,7 +247,7 @@ function ClientQuill({ value, onChange, placeholder }) {
     }
   };
 
-  // Quill editor formats - all available formats including table
+  // Quill editor formats - all available formats including table and checkbox
   const formats = [
     'header',
     'font',
@@ -204,7 +259,7 @@ function ClientQuill({ value, onChange, placeholder }) {
     'indent',
     'direction', 'align',
     'link', 'image', 'video',
-    'table',
+    'table', 'checkbox',
     'clean'
   ];
 
@@ -235,6 +290,67 @@ function ClientQuill({ value, onChange, placeholder }) {
       </div>
     );
   }
+
+  // Initialize checkbox handler when Quill is ready
+  useEffect(() => {
+    if (quillRef.current && ReactQuill) {
+      const quill = quillRef.current.getEditor();
+      if (quill) {
+        addCheckboxHandler(quill);
+        
+        // Add event listeners for checkbox interactions
+        const editorElement = quill.container.querySelector('.ql-editor');
+        if (editorElement) {
+          const handleCheckboxClick = (e) => {
+            if (e.target.type === 'checkbox') {
+              e.preventDefault();
+              e.target.checked = !e.target.checked;
+              
+              // Update the text styling based on checkbox state
+              const checkboxText = e.target.nextElementSibling;
+              if (checkboxText) {
+                if (e.target.checked) {
+                  checkboxText.style.textDecoration = 'line-through';
+                  checkboxText.style.color = '#6b7280';
+                } else {
+                  checkboxText.style.textDecoration = 'none';
+                  checkboxText.style.color = 'inherit';
+                }
+              }
+            }
+          };
+          
+          const handleCheckboxTextClick = (e) => {
+            if (e.target.classList.contains('quill-checkbox-text')) {
+              e.preventDefault();
+              const checkbox = e.target.previousElementSibling;
+              if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                
+                // Update the text styling
+                if (checkbox.checked) {
+                  e.target.style.textDecoration = 'line-through';
+                  e.target.style.color = '#6b7280';
+                } else {
+                  e.target.style.textDecoration = 'none';
+                  e.target.style.color = 'inherit';
+                }
+              }
+            }
+          };
+          
+          editorElement.addEventListener('click', handleCheckboxClick);
+          editorElement.addEventListener('click', handleCheckboxTextClick);
+          
+          // Cleanup function
+          return () => {
+            editorElement.removeEventListener('click', handleCheckboxClick);
+            editorElement.removeEventListener('click', handleCheckboxTextClick);
+          };
+        }
+      }
+    }
+  }, [ReactQuill]);
 
   return (
     <div className="editor-container" style={{ 
