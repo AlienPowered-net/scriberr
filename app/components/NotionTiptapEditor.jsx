@@ -420,6 +420,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     );
   }
 
+  // Debug: Log editor extensions
+  console.log('Editor loaded:', editor);
+  console.log('Available extensions:', editor.extensionManager.extensions.map(ext => ext.name));
+  console.log('TaskList extension:', editor.extensionManager.extensions.find(ext => ext.name === 'taskList'));
+
   return (
     <div className="notion-tiptap-container">
       {/* Toolbar - Notion-like minimal toolbar */}
@@ -526,7 +531,10 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               <Button
                 size="slim"
                 pressed={editor.isActive('bulletList')}
-                onClick={() => editor.chain().focus().toggleBulletList().run()}
+                onClick={() => {
+                  console.log('Bullet List clicked');
+                  editor.chain().focus().toggleBulletList().run();
+                }}
               >
                 <TextIcon icon="bulletList" />
               </Button>
@@ -535,7 +543,10 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               <Button
                 size="slim"
                 pressed={editor.isActive('orderedList')}
-                onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                onClick={() => {
+                  console.log('Numbered List clicked');
+                  editor.chain().focus().toggleOrderedList().run();
+                }}
               >
                 <TextIcon icon="numberedList" />
               </Button>
@@ -544,7 +555,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               <Button
                 size="slim"
                 pressed={editor.isActive('taskList')}
-                onClick={() => editor.chain().focus().toggleTaskList().run()}
+                onClick={() => {
+                  console.log('Task List clicked');
+                  console.log('Editor can toggle task list:', editor.can().toggleTaskList());
+                  editor.chain().focus().toggleTaskList().run();
+                }}
               >
                 <TextIcon icon="checkbox" />
               </Button>
