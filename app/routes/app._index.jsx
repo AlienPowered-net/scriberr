@@ -504,45 +504,50 @@ export default function HomePage() {
               
               <BlockStack gap="300">
                 <Box padding="400" background="bg-surface-secondary" borderRadius="200">
-                  <BlockStack gap="200">
-                    <InlineStack gap="200" align="start">
-                      <Badge tone="success" size="small">
-                        New
-                      </Badge>
-                      <Text variant="bodyMd" fontWeight="medium" as="h3">
-                        Scriberr v{version} Released
+                  <div style={{ textAlign: 'left', width: '100%' }}>
+                    <BlockStack gap="200" align="start">
+                      <InlineStack gap="200" align="start">
+                        <Badge tone="success" size="small">
+                          New
+                        </Badge>
+                        <Text variant="bodyMd" fontWeight="medium" as="h3">
+                          Scriberr v{version} Released
+                        </Text>
+                      </InlineStack>
+                      <Text variant="bodySm" tone="subdued">
+                        Welcome to the latest version of Scriberr! We've improved the user interface, 
+                        added better organization features, and enhanced the note-taking experience.
                       </Text>
-                    </InlineStack>
-                    <Text variant="bodySm" tone="subdued">
-                      Welcome to the latest version of Scriberr! We've improved the user interface, 
-                      added better organization features, and enhanced the note-taking experience.
-                    </Text>
-                    <Text variant="bodySm" tone="subdued">
-                      <strong>What's New:</strong>
-                    </Text>
-                    <BlockStack gap="100">
-                      <InlineStack gap="200" align="start">
-                        <Icon source={CheckIcon} tone="success" />
-                        <Text variant="bodySm">Enhanced folder organization</Text>
-                      </InlineStack>
-                      <InlineStack gap="200" align="start">
-                        <Icon source={CheckIcon} tone="success" />
-                        <Text variant="bodySm">Improved note editor with rich text support</Text>
-                      </InlineStack>
-                      <InlineStack gap="200" align="start">
-                        <Icon source={CheckIcon} tone="success" />
-                        <Text variant="bodySm">Better mobile responsiveness</Text>
-                      </InlineStack>
-                      <InlineStack gap="200" align="start">
-                        <Icon source={CheckIcon} tone="success" />
-                        <Text variant="bodySm">Pin important notes for quick access</Text>
-                      </InlineStack>
+                      <Text variant="bodySm" tone="subdued">
+                        <strong>What's New:</strong>
+                      </Text>
+                    <div style={{ textAlign: 'left', width: '100%' }}>
+                      <BlockStack gap="100" align="start">
+                        <InlineStack gap="200" align="start">
+                          <Icon source={CheckIcon} tone="success" />
+                          <Text variant="bodySm">Enhanced folder organization</Text>
+                        </InlineStack>
+                        <InlineStack gap="200" align="start">
+                          <Icon source={CheckIcon} tone="success" />
+                          <Text variant="bodySm">Improved note editor with rich text support</Text>
+                        </InlineStack>
+                        <InlineStack gap="200" align="start">
+                          <Icon source={CheckIcon} tone="success" />
+                          <Text variant="bodySm">Better mobile responsiveness</Text>
+                        </InlineStack>
+                        <InlineStack gap="200" align="start">
+                          <Icon source={CheckIcon} tone="success" />
+                          <Text variant="bodySm">Pin important notes for quick access</Text>
+                        </InlineStack>
+                      </BlockStack>
+                    </div>
                     </BlockStack>
-                  </BlockStack>
+                  </div>
                 </Box>
 
                 <Box padding="400" background="bg-surface-secondary" borderRadius="200">
-                  <BlockStack gap="200">
+                  <div style={{ textAlign: 'left', width: '100%' }}>
+                    <BlockStack gap="200" align="start">
                     <InlineStack gap="200" align="start">
                       <Badge tone="info" size="small">
                         Coming Soon
@@ -554,37 +559,41 @@ export default function HomePage() {
                     <Text variant="bodySm" tone="subdued">
                       We're working on exciting new features and integrations to make Scriberr even more powerful:
                     </Text>
-                    <BlockStack gap="100">
-                      <InlineStack gap="200" align="start">
-                        <Icon source={InfoIcon} tone="info" />
-                        <Text variant="bodySm">AI-powered note suggestions and summaries</Text>
-                      </InlineStack>
-                      <InlineStack gap="200" align="start">
-                        <Icon source={InfoIcon} tone="info" />
-                        <Text variant="bodySm">Collaborative note sharing and team workspaces</Text>
-                      </InlineStack>
-                      <InlineStack gap="200" align="start">
-                        <Icon source={InfoIcon} tone="info" />
-                        <Text variant="bodySm">Advanced search and tagging system</Text>
-                      </InlineStack>
-                      <InlineStack gap="200" align="start">
-                        <Icon source={InfoIcon} tone="info" />
-                        <Text variant="bodySm">Export to PDF, Word, and other formats</Text>
-                      </InlineStack>
-                      <InlineStack gap="200" align="start">
-                        <Icon source={InfoIcon} tone="info" />
-                        <Text variant="bodySm">Mobile app for iOS and Android</Text>
-                      </InlineStack>
+                    <div style={{ textAlign: 'left', width: '100%' }}>
+                      <BlockStack gap="100" align="start">
+                        <InlineStack gap="200" align="start">
+                          <Icon source={InfoIcon} tone="info" />
+                          <Text variant="bodySm">AI-powered note suggestions and summaries</Text>
+                        </InlineStack>
+                        <InlineStack gap="200" align="start">
+                          <Icon source={InfoIcon} tone="info" />
+                          <Text variant="bodySm">Collaborative note sharing and team workspaces</Text>
+                        </InlineStack>
+                        <InlineStack gap="200" align="start">
+                          <Icon source={InfoIcon} tone="info" />
+                          <Text variant="bodySm">Advanced search and tagging system</Text>
+                        </InlineStack>
+                        <InlineStack gap="200" align="start">
+                          <Icon source={InfoIcon} tone="info" />
+                          <Text variant="bodySm">Export to PDF, Word, and other formats</Text>
+                        </InlineStack>
+                        <InlineStack gap="200" align="start">
+                          <Icon source={InfoIcon} tone="info" />
+                          <Text variant="bodySm">Mobile app for iOS and Android</Text>
+                        </InlineStack>
+                      </BlockStack>
+                    </div>
                     </BlockStack>
-                  </BlockStack>
+                  </div>
                 </Box>
 
                 <Box padding="400" background="bg-surface-secondary" borderRadius="200">
-                  <BlockStack gap="200">
-                    <InlineStack gap="200" align="start">
-                      <Badge tone="warning" size="small">
-                        Tip
-                      </Badge>
+                  <div style={{ textAlign: 'left', width: '100%' }}>
+                    <BlockStack gap="200" align="start">
+                      <InlineStack gap="200" align="start">
+                        <Badge tone="warning" size="small">
+                          Tip
+                        </Badge>
                       <Text variant="bodyMd" fontWeight="medium" as="h3">
                         Pro Tips for Better Organization
                       </Text>
@@ -592,25 +601,28 @@ export default function HomePage() {
                     <Text variant="bodySm" tone="subdued">
                       Make the most of Scriberr with these organization tips:
                     </Text>
-                    <BlockStack gap="100">
-                      <InlineStack gap="200" align="start">
-                        <Icon source={InfoIcon} tone="info" />
-                        <Text variant="bodySm">Use descriptive folder names to categorize your notes</Text>
-                      </InlineStack>
-                      <InlineStack gap="200" align="start">
-                        <Icon source={InfoIcon} tone="info" />
-                        <Text variant="bodySm">Pin frequently accessed notes to the top</Text>
-                      </InlineStack>
-                      <InlineStack gap="200" align="start">
-                        <Icon source={InfoIcon} tone="info" />
-                        <Text variant="bodySm">Use tags to add extra categorization to your notes</Text>
-                      </InlineStack>
-                      <InlineStack gap="200" align="start">
-                        <Icon source={InfoIcon} tone="info" />
-                        <Text variant="bodySm">Regularly review and organize your folders</Text>
-                      </InlineStack>
+                    <div style={{ textAlign: 'left', width: '100%' }}>
+                      <BlockStack gap="100" align="start">
+                        <InlineStack gap="200" align="start">
+                          <Icon source={InfoIcon} tone="info" />
+                          <Text variant="bodySm">Use descriptive folder names to categorize your notes</Text>
+                        </InlineStack>
+                        <InlineStack gap="200" align="start">
+                          <Icon source={InfoIcon} tone="info" />
+                          <Text variant="bodySm">Pin frequently accessed notes to the top</Text>
+                        </InlineStack>
+                        <InlineStack gap="200" align="start">
+                          <Icon source={InfoIcon} tone="info" />
+                          <Text variant="bodySm">Use tags to add extra categorization to your notes</Text>
+                        </InlineStack>
+                        <InlineStack gap="200" align="start">
+                          <Icon source={InfoIcon} tone="info" />
+                          <Text variant="bodySm">Regularly review and organize your folders</Text>
+                        </InlineStack>
+                      </BlockStack>
+                    </div>
                     </BlockStack>
-                  </BlockStack>
+                  </div>
                 </Box>
               </BlockStack>
             </BlockStack>
