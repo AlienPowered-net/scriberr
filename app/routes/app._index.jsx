@@ -141,6 +141,112 @@ export default function HomePage() {
           />
         </Layout.Section>
 
+        {/* Onboarding Section */}
+        <Layout.Section>
+          <Card>
+            <BlockStack gap="400">
+              <Text variant="headingMd" as="h2">
+                Getting Started with Scriberr
+              </Text>
+              
+              <Grid>
+                <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
+                  <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                    <BlockStack gap="300">
+                      <InlineStack gap="200" align="start">
+                        <Box padding="200" background="bg-surface-brand" borderRadius="100">
+                          <Icon source={FolderIcon} tone="base" />
+                        </Box>
+                        <BlockStack gap="100">
+                          <Text variant="bodyMd" fontWeight="medium" as="h3">
+                            Create Folders
+                          </Text>
+                          <Text variant="bodySm" tone="subdued">
+                            Organize your notes by creating folders. Click the "New Folder" button in the dashboard to get started.
+                          </Text>
+                        </BlockStack>
+                      </InlineStack>
+                    </BlockStack>
+                  </Box>
+                </Grid.Cell>
+
+                <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
+                  <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                    <BlockStack gap="300">
+                      <InlineStack gap="200" align="start">
+                        <Box padding="200" background="bg-surface-brand" borderRadius="100">
+                          <Icon source={NoteIcon} tone="base" />
+                        </Box>
+                        <BlockStack gap="100">
+                          <Text variant="bodyMd" fontWeight="medium" as="h3">
+                            Create Notes
+                          </Text>
+                          <Text variant="bodySm" tone="subdued">
+                            Select a folder first, then click "New Note" to create your first note. Notes must belong to a folder.
+                          </Text>
+                        </BlockStack>
+                      </InlineStack>
+                    </BlockStack>
+                  </Box>
+                </Grid.Cell>
+
+                <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
+                  <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                    <BlockStack gap="300">
+                      <InlineStack gap="200" align="start">
+                        <Box padding="200" background="bg-surface-brand" borderRadius="100">
+                          <Icon source={CheckIcon} tone="base" />
+                        </Box>
+                        <BlockStack gap="100">
+                          <Text variant="bodyMd" fontWeight="medium" as="h3">
+                            Select Before Creating
+                          </Text>
+                          <Text variant="bodySm" tone="subdued">
+                            Always select a folder before creating a new note. This helps keep your notes organized and easy to find.
+                          </Text>
+                        </BlockStack>
+                      </InlineStack>
+                    </BlockStack>
+                  </Box>
+                </Grid.Cell>
+
+                <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
+                  <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                    <BlockStack gap="300">
+                      <InlineStack gap="200" align="start">
+                        <Box padding="200" background="bg-surface-brand" borderRadius="100">
+                          <Icon source={StarIcon} tone="base" />
+                        </Box>
+                        <BlockStack gap="100">
+                          <Text variant="bodyMd" fontWeight="medium" as="h3">
+                            Pin Important Notes
+                          </Text>
+                          <Text variant="bodySm" tone="subdued">
+                            Pin your most important notes to keep them at the top of your list for quick access.
+                          </Text>
+                        </BlockStack>
+                      </InlineStack>
+                    </BlockStack>
+                  </Box>
+                </Grid.Cell>
+              </Grid>
+
+              <Divider />
+
+              <InlineStack align="center">
+                <Button
+                  variant="primary"
+                  size="large"
+                  url="/app/dashboard"
+                  icon={ArrowRightIcon}
+                >
+                  Start Using Scriberr
+                </Button>
+              </InlineStack>
+            </BlockStack>
+          </Card>
+        </Layout.Section>
+
         {/* Stats Section */}
         <Layout.Section>
           <Card>
@@ -386,112 +492,6 @@ export default function HomePage() {
               </Card>
             </Layout.Section>
           </Layout>
-        </Layout.Section>
-
-        {/* Onboarding Section */}
-        <Layout.Section>
-          <Card>
-            <BlockStack gap="400">
-              <Text variant="headingMd" as="h2">
-                Getting Started with Scriberr
-              </Text>
-              
-              <Grid>
-                <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
-                  <Box padding="400" background="bg-surface-secondary" borderRadius="200">
-                    <BlockStack gap="300">
-                      <InlineStack gap="200" align="start">
-                        <Box padding="200" background="bg-surface-brand" borderRadius="100">
-                          <Icon source={FolderIcon} tone="base" />
-                        </Box>
-                        <BlockStack gap="100">
-                          <Text variant="bodyMd" fontWeight="medium" as="h3">
-                            Create Folders
-                          </Text>
-                          <Text variant="bodySm" tone="subdued">
-                            Organize your notes by creating folders. Click the "New Folder" button in the dashboard to get started.
-                          </Text>
-                        </BlockStack>
-                      </InlineStack>
-                    </BlockStack>
-                  </Box>
-                </Grid.Cell>
-
-                <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
-                  <Box padding="400" background="bg-surface-secondary" borderRadius="200">
-                    <BlockStack gap="300">
-                      <InlineStack gap="200" align="start">
-                        <Box padding="200" background="bg-surface-brand" borderRadius="100">
-                          <Icon source={NoteIcon} tone="base" />
-                        </Box>
-                        <BlockStack gap="100">
-                          <Text variant="bodyMd" fontWeight="medium" as="h3">
-                            Create Notes
-                          </Text>
-                          <Text variant="bodySm" tone="subdued">
-                            Select a folder first, then click "New Note" to create your first note. Notes must belong to a folder.
-                          </Text>
-                        </BlockStack>
-                      </InlineStack>
-                    </BlockStack>
-                  </Box>
-                </Grid.Cell>
-
-                <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
-                  <Box padding="400" background="bg-surface-secondary" borderRadius="200">
-                    <BlockStack gap="300">
-                      <InlineStack gap="200" align="start">
-                        <Box padding="200" background="bg-surface-brand" borderRadius="100">
-                          <Icon source={CheckIcon} tone="base" />
-                        </Box>
-                        <BlockStack gap="100">
-                          <Text variant="bodyMd" fontWeight="medium" as="h3">
-                            Select Before Creating
-                          </Text>
-                          <Text variant="bodySm" tone="subdued">
-                            Always select a folder before creating a new note. This helps keep your notes organized and easy to find.
-                          </Text>
-                        </BlockStack>
-                      </InlineStack>
-                    </BlockStack>
-                  </Box>
-                </Grid.Cell>
-
-                <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
-                  <Box padding="400" background="bg-surface-secondary" borderRadius="200">
-                    <BlockStack gap="300">
-                      <InlineStack gap="200" align="start">
-                        <Box padding="200" background="bg-surface-brand" borderRadius="100">
-                          <Icon source={StarIcon} tone="base" />
-                        </Box>
-                        <BlockStack gap="100">
-                          <Text variant="bodyMd" fontWeight="medium" as="h3">
-                            Pin Important Notes
-                          </Text>
-                          <Text variant="bodySm" tone="subdued">
-                            Pin your most important notes to keep them at the top of your list for quick access.
-                          </Text>
-                        </BlockStack>
-                      </InlineStack>
-                    </BlockStack>
-                  </Box>
-                </Grid.Cell>
-              </Grid>
-
-              <Divider />
-
-              <InlineStack align="center">
-                <Button
-                  variant="primary"
-                  size="large"
-                  url="/app/dashboard"
-                  icon={ArrowRightIcon}
-                >
-                  Start Using Scriberr
-                </Button>
-              </InlineStack>
-            </BlockStack>
-          </Card>
         </Layout.Section>
 
         {/* News & Updates Section */}
