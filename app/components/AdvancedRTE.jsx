@@ -977,7 +977,14 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             margin: 0.25rem 0;
           }
 
-          .advanced-rte-content ul[data-type="taskList"] li,
+          .advanced-rte-content ul[data-type="taskList"] li {
+            display: flex;
+            align-items: flex-start;
+            margin: -1.5rem 0;
+            line-height: 1.4;
+            min-height: 1.4em;
+          }
+
           .advanced-rte-content ul[data-type="bulletList"] li,
           .advanced-rte-content ol[data-type="orderedList"] li {
             display: flex;
@@ -990,12 +997,17 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           .advanced-rte-content ul[data-type="taskList"] li > label {
             flex: 0 0 auto;
             margin-right: 0.5rem;
+            margin-top: 0.125rem;
             user-select: none;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
           }
 
-          .advanced-rte-content ul[data-type="taskList"] li > div,
+          .advanced-rte-content ul[data-type="taskList"] li > div {
+            flex: 1 1 auto;
+            min-height: 1.4em;
+          }
+
           .advanced-rte-content ul[data-type="bulletList"] li > div,
           .advanced-rte-content ol[data-type="orderedList"] li > div {
             flex: 1 1 auto;
