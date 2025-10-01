@@ -180,6 +180,10 @@ function DropIndicator({
 export async function loader({ request }) {
   const { session } = await shopify.authenticate.admin(request);
   const shopId = await getOrCreateShopId(session.shop);
+  
+  // Extract folderId from URL parameters
+  const url = new URL(request.url);
+  const folderId = url.searchParams.get('folderId');
 
   // Try to load folders with all fields, fallback if migration not applied
   let folders;
@@ -306,7 +310,7 @@ export async function loader({ request }) {
 
 
 
-  return json({ folders, notes, version: packageJson.version }, {
+  return json({ folders, notes, version: packageJson.version, folderId }, {
     headers: {
       "Content-Type": "application/json; charset=utf-8"
     }
@@ -404,7 +408,7 @@ export async function action({ request }) {
 
 /* ------------------ UI ------------------ */
 export default function Index() {
-  const { folders, notes, version } = useLoaderData();
+  const { folders, notes, version, folderId: initialFolderId } = useLoaderData();
   const [localNotes, setLocalNotes] = useState(notes);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -414,6 +418,13 @@ export default function Index() {
   useEffect(() => {
     setLocalNotes(notes);
   }, [notes]);
+  
+  // Set selected folder from URL parameter
+  useEffect(() => {
+    if (initialFolderId) {
+      setSelectedFolder(initialFolderId);
+    }
+  }, [initialFolderId]);
   const [folderName, setFolderName] = useState("");
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [isLoading, setIsLoading] = useState(true);

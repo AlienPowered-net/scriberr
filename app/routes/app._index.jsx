@@ -218,7 +218,7 @@ export default function HomePage() {
                         return (
                           <ResourceItem
                             id={id}
-                            url="/app"
+                            url={`/app/dashboard?folderId=${id}`}
                             accessibilityLabel={`View folder ${name}`}
                           >
                             <InlineStack gap="300" align="space-between">
