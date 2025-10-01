@@ -971,15 +971,15 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
           .advanced-rte-content ul[data-type="taskList"] li {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             margin: 0.25rem 0;
             line-height: 1.5;
+            min-height: 1.5em;
           }
 
           .advanced-rte-content ul[data-type="taskList"] li > label {
             flex: 0 0 auto;
             margin-right: 0.5rem;
-            margin-top: 0.125rem;
             user-select: none;
             display: flex;
             align-items: center;
@@ -987,6 +987,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
           .advanced-rte-content ul[data-type="taskList"] li > div {
             flex: 1 1 auto;
+            display: flex;
+            align-items: center;
             min-height: 1.5em;
           }
 
@@ -996,6 +998,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             cursor: pointer;
             margin: 0;
             accent-color: #007bff;
+            vertical-align: middle;
+            position: relative;
+            top: 0;
           }
 
           .advanced-rte-content ul[data-type="taskList"] li[data-checked="true"] > div {
