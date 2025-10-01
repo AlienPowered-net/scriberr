@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useEditor, EditorContent } from '@tiptap/react';
+import { BubbleMenu } from '@tiptap/extension-bubble-menu';
 import StarterKit from '@tiptap/starter-kit';
 import { TableKit } from '@tiptap/extension-table';
 import Image from '@tiptap/extension-image';
@@ -12,6 +13,8 @@ import Highlight from '@tiptap/extension-highlight';
 import Blockquote from '@tiptap/extension-blockquote';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { Emoji } from '@tiptap/extension-emoji';
+import Mention from '@tiptap/extension-mention';
+import { FontFamily } from '@tiptap/extension-font-family';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
@@ -22,7 +25,15 @@ import CharacterCount from '@tiptap/extension-character-count';
 import TiptapDragHandle from './TiptapDragHandle';
 import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack } from '@shopify/polaris';
-import { CheckboxIcon } from '@shopify/polaris-icons';
+import { 
+  CheckboxIcon,
+  SmileyHappyIcon,
+  LogoYoutubeIcon,
+  EditIcon,
+  TextColorIcon,
+  TextFontIcon,
+  MegaphoneIcon
+} from '@shopify/polaris-icons';
 
 const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobileProp = false, onFullscreenChange }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -126,6 +137,26 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       }),
       Emoji.configure({
         enableEmoticons: true,
+      }),
+      Mention.configure({
+        HTMLAttributes: {
+          class: 'mention',
+        },
+        suggestion: {
+          items: ({ query }) => {
+            return [
+              'Lea Thompson', 'Cyndi Lauper', 'Tom Cruise', 'Madonna', 'Jerry Hall',
+              'Joan Collins', 'Winona Ryder', 'Christina Applegate', 'Alyssa Milano',
+              'Molly Ringwald', 'Ally Sheedy', 'Debbie Harry', 'Olivia Newton-John',
+              'Elton John', 'Michael J. Fox', 'Axl Rose', 'Emilio Estevez', 'Ralph Macchio',
+              'Rob Lowe', 'Jennifer Grey', 'Mickey Rourke', 'John Cusack', 'Matthew Broderick',
+              'Justine Bateman', 'Lisa Bonet',
+            ].filter(item => item.toLowerCase().startsWith(query.toLowerCase())).slice(0, 5);
+          },
+        },
+      }),
+      FontFamily.configure({
+        types: ['textStyle'],
       }),
       HorizontalRule,
       TableKit.configure({
@@ -790,6 +821,74 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             title="Insert Image"
           >
             <i className="fas fa-image"></i>
+          </button>
+          <button
+            onClick={() => setShowVideoModal(true)}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: "white",
+              color: "#495057",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Insert YouTube Video"
+          >
+            <i className="fab fa-youtube"></i>
+          </button>
+          <button
+            onClick={() => {
+              const emoji = prompt('Enter an emoji:');
+              if (emoji) {
+                editor.chain().focus().insertContent(emoji).run();
+              }
+            }}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: "white",
+              color: "#495057",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Insert Emoji"
+          >
+            <i className="fas fa-smile"></i>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleHighlight({ color: '#fef3c7' }).run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive('highlight') ? '#fef3c7' : 'white',
+              color: "#495057",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Highlight Text"
+          >
+            <i className="fas fa-highlighter"></i>
           </button>
           
           <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
@@ -1547,6 +1646,74 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             title="Insert Image"
           >
             <i className="fas fa-image"></i>
+          </button>
+          <button
+            onClick={() => setShowVideoModal(true)}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: "white",
+              color: "#495057",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Insert YouTube Video"
+          >
+            <i className="fab fa-youtube"></i>
+          </button>
+          <button
+            onClick={() => {
+              const emoji = prompt('Enter an emoji:');
+              if (emoji) {
+                editor.chain().focus().insertContent(emoji).run();
+              }
+            }}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: "white",
+              color: "#495057",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Insert Emoji"
+          >
+            <i className="fas fa-smile"></i>
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleHighlight({ color: '#fef3c7' }).run()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: editor.isActive('highlight') ? '#fef3c7' : 'white',
+              color: "#495057",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Highlight Text"
+          >
+            <i className="fas fa-highlighter"></i>
           </button>
           
           <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
