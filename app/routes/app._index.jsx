@@ -203,7 +203,7 @@ export default function HomePage() {
                     <Button
                       variant="plain"
                       size="slim"
-                      url="/app"
+                      url="/app/dashboard"
                     >
                       View All
                     </Button>
