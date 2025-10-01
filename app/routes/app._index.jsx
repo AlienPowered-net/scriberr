@@ -119,6 +119,20 @@ export default function HomePage() {
     }
   };
 
+  // Handle "View All" click for Recent Notes
+  const handleViewAllNotes = () => {
+    const isMobile = window.innerWidth <= 1024;
+    if (isMobile) {
+      // On mobile, navigate to notes section with All Notes selected
+      localStorage.setItem('mobileActiveSection', 'notes');
+      localStorage.setItem('selectedFolder', 'null'); // String 'null' to indicate All Notes
+      navigate('/app/dashboard');
+    } else {
+      // On desktop, navigate to dashboard with All Notes selected (no folderId param)
+      navigate('/app/dashboard');
+    }
+  };
+
   return (
     <Page title="Welcome to Scriberr" subtitle={`Version ${version}`}>
       <Layout>
@@ -301,7 +315,7 @@ export default function HomePage() {
                     <Button
                       variant="plain"
                       size="slim"
-                      url="/app"
+                      onClick={handleViewAllNotes}
                     >
                       View All
                     </Button>

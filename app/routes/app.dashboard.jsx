@@ -1606,7 +1606,22 @@ export default function Index() {
   useEffect(() => {
     const savedNoteId = localStorage.getItem('selectedNoteId');
     const savedFolderId = localStorage.getItem('selectedFolderId');
+    const savedMobileSection = localStorage.getItem('mobileActiveSection');
+    const savedSelectedFolder = localStorage.getItem('selectedFolder');
     
+    // Handle mobile section restoration
+    if (savedMobileSection) {
+      setMobileActiveSection(savedMobileSection);
+      localStorage.removeItem('mobileActiveSection');
+    }
+    
+    // Handle "All Notes" selection restoration
+    if (savedSelectedFolder === 'null') {
+      setSelectedFolder(null);
+      localStorage.removeItem('selectedFolder');
+    }
+    
+    // Handle note selection restoration
     if (savedNoteId && savedFolderId) {
       // Find the note in the current notes list
       const noteToSelect = localNotes.find(note => note.id === savedNoteId);
