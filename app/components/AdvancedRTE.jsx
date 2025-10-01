@@ -962,14 +962,24 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             }
           }
           
-          /* Task list styles for proper alignment */
+          /* List styles for proper alignment */
+          .advanced-rte-content ul[data-type="taskList"],
+          .advanced-rte-content ul[data-type="bulletList"],
+          .advanced-rte-content ol[data-type="orderedList"] {
+            list-style: none;
+            padding: 0;
+            margin: 0.25rem 0;
+          }
+
           .advanced-rte-content ul[data-type="taskList"] {
             list-style: none;
             padding: 0;
             margin: 0.25rem 0;
           }
 
-          .advanced-rte-content ul[data-type="taskList"] li {
+          .advanced-rte-content ul[data-type="taskList"] li,
+          .advanced-rte-content ul[data-type="bulletList"] li,
+          .advanced-rte-content ol[data-type="orderedList"] li {
             display: flex;
             align-items: center;
             margin: -1.5rem 0;
@@ -985,7 +995,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             align-items: center;
           }
 
-          .advanced-rte-content ul[data-type="taskList"] li > div {
+          .advanced-rte-content ul[data-type="taskList"] li > div,
+          .advanced-rte-content ul[data-type="bulletList"] li > div,
+          .advanced-rte-content ol[data-type="orderedList"] li > div {
             flex: 1 1 auto;
             display: flex;
             align-items: center;
