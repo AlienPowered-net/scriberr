@@ -521,19 +521,19 @@ export default function HomePage() {
                       <strong>What's New:</strong>
                     </Text>
                     <BlockStack gap="100">
-                      <InlineStack gap="200">
+                      <InlineStack gap="200" align="start">
                         <Icon source={CheckIcon} tone="success" />
                         <Text variant="bodySm">Enhanced folder organization</Text>
                       </InlineStack>
-                      <InlineStack gap="200">
+                      <InlineStack gap="200" align="start">
                         <Icon source={CheckIcon} tone="success" />
                         <Text variant="bodySm">Improved note editor with rich text support</Text>
                       </InlineStack>
-                      <InlineStack gap="200">
+                      <InlineStack gap="200" align="start">
                         <Icon source={CheckIcon} tone="success" />
                         <Text variant="bodySm">Better mobile responsiveness</Text>
                       </InlineStack>
-                      <InlineStack gap="200">
+                      <InlineStack gap="200" align="start">
                         <Icon source={CheckIcon} tone="success" />
                         <Text variant="bodySm">Pin important notes for quick access</Text>
                       </InlineStack>
@@ -555,23 +555,23 @@ export default function HomePage() {
                       We're working on exciting new features and integrations to make Scriberr even more powerful:
                     </Text>
                     <BlockStack gap="100">
-                      <InlineStack gap="200">
+                      <InlineStack gap="200" align="start">
                         <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">AI-powered note suggestions and summaries</Text>
                       </InlineStack>
-                      <InlineStack gap="200">
+                      <InlineStack gap="200" align="start">
                         <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Collaborative note sharing and team workspaces</Text>
                       </InlineStack>
-                      <InlineStack gap="200">
+                      <InlineStack gap="200" align="start">
                         <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Advanced search and tagging system</Text>
                       </InlineStack>
-                      <InlineStack gap="200">
+                      <InlineStack gap="200" align="start">
                         <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Export to PDF, Word, and other formats</Text>
                       </InlineStack>
-                      <InlineStack gap="200">
+                      <InlineStack gap="200" align="start">
                         <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Mobile app for iOS and Android</Text>
                       </InlineStack>
@@ -593,19 +593,19 @@ export default function HomePage() {
                       Make the most of Scriberr with these organization tips:
                     </Text>
                     <BlockStack gap="100">
-                      <InlineStack gap="200">
+                      <InlineStack gap="200" align="start">
                         <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Use descriptive folder names to categorize your notes</Text>
                       </InlineStack>
-                      <InlineStack gap="200">
+                      <InlineStack gap="200" align="start">
                         <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Pin frequently accessed notes to the top</Text>
                       </InlineStack>
-                      <InlineStack gap="200">
+                      <InlineStack gap="200" align="start">
                         <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Use tags to add extra categorization to your notes</Text>
                       </InlineStack>
-                      <InlineStack gap="200">
+                      <InlineStack gap="200" align="start">
                         <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Regularly review and organize your folders</Text>
                       </InlineStack>
