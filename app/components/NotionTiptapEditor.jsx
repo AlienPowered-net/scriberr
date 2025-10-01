@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TableKit } from '@tiptap/extension-table';
 import Image from '@tiptap/extension-image';
@@ -11,6 +11,8 @@ import Highlight from '@tiptap/extension-highlight';
 import Blockquote from '@tiptap/extension-blockquote';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { Emoji } from '@tiptap/extension-emoji';
+import Mention from '@tiptap/extension-mention';
+import { FontFamily } from '@tiptap/extension-font-family';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
@@ -40,6 +42,12 @@ import {
   Badge
 } from '@shopify/polaris';
 import { 
+  SmileyHappyIcon,
+  LogoYoutubeIcon,
+  EditIcon,
+  TextColorIcon,
+  TextFontIcon,
+  MegaphoneIcon
 } from '@shopify/polaris-icons';
 import './NotionTiptapEditor.css';
 
@@ -102,6 +110,10 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   const [showFormatPopover, setShowFormatPopover] = useState(false);
   const [showAlignPopover, setShowAlignPopover] = useState(false);
   const [showHeadingPopover, setShowHeadingPopover] = useState(false);
+  const [showTextColorPopover, setShowTextColorPopover] = useState(false);
+  const [showHighlightColorPopover, setShowHighlightColorPopover] = useState(false);
+  const [showFontFamilyPopover, setShowFontFamilyPopover] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const editorRef = useRef(null);
   const slashMenuRef = useRef(null);
 
@@ -156,6 +168,26 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       }),
       Emoji.configure({
         enableEmoticons: true,
+      }),
+      Mention.configure({
+        HTMLAttributes: {
+          class: 'mention',
+        },
+        suggestion: {
+          items: ({ query }) => {
+            return [
+              'Lea Thompson', 'Cyndi Lauper', 'Tom Cruise', 'Madonna', 'Jerry Hall',
+              'Joan Collins', 'Winona Ryder', 'Christina Applegate', 'Alyssa Milano',
+              'Molly Ringwald', 'Ally Sheedy', 'Debbie Harry', 'Olivia Newton-John',
+              'Elton John', 'Michael J. Fox', 'Axl Rose', 'Emilio Estevez', 'Ralph Macchio',
+              'Rob Lowe', 'Jennifer Grey', 'Mickey Rourke', 'John Cusack', 'Matthew Broderick',
+              'Justine Bateman', 'Lisa Bonet',
+            ].filter(item => item.toLowerCase().startsWith(query.toLowerCase())).slice(0, 5);
+          },
+        },
+      }),
+      FontFamily.configure({
+        types: ['textStyle'],
       }),
       HorizontalRule,
       TableKit.configure({
@@ -601,6 +633,238 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             />
           </Popover>
 
+          {/* Font Family Dropdown */}
+          <Popover
+            active={showFontFamilyPopover}
+            activator={
+              <Tooltip content="Font Family">
+                <Button
+                  size="slim"
+                  disclosure
+                  onClick={() => setShowFontFamilyPopover(!showFontFamilyPopover)}
+                >
+                  <Icon source={TextFontIcon} />
+                </Button>
+              </Tooltip>
+            }
+            onClose={() => setShowFontFamilyPopover(false)}
+          >
+            <ActionList
+              items={[
+                {
+                  content: 'Default',
+                  onAction: () => {
+                    editor.chain().focus().unsetFontFamily().run();
+                    setShowFontFamilyPopover(false);
+                  }
+                },
+                {
+                  content: 'Arial',
+                  onAction: () => {
+                    editor.chain().focus().setFontFamily('Arial, sans-serif').run();
+                    setShowFontFamilyPopover(false);
+                  }
+                },
+                {
+                  content: 'Courier New',
+                  onAction: () => {
+                    editor.chain().focus().setFontFamily('Courier New, monospace').run();
+                    setShowFontFamilyPopover(false);
+                  }
+                },
+                {
+                  content: 'Georgia',
+                  onAction: () => {
+                    editor.chain().focus().setFontFamily('Georgia, serif').run();
+                    setShowFontFamilyPopover(false);
+                  }
+                },
+                {
+                  content: 'Times New Roman',
+                  onAction: () => {
+                    editor.chain().focus().setFontFamily('Times New Roman, serif').run();
+                    setShowFontFamilyPopover(false);
+                  }
+                },
+                {
+                  content: 'Verdana',
+                  onAction: () => {
+                    editor.chain().focus().setFontFamily('Verdana, sans-serif').run();
+                    setShowFontFamilyPopover(false);
+                  }
+                },
+              ]}
+            />
+          </Popover>
+
+          {/* Text Color */}
+          <Popover
+            active={showTextColorPopover}
+            activator={
+              <Tooltip content="Text Color">
+                <Button
+                  size="slim"
+                  disclosure
+                  onClick={() => setShowTextColorPopover(!showTextColorPopover)}
+                >
+                  <Icon source={TextColorIcon} />
+                </Button>
+              </Tooltip>
+            }
+            onClose={() => setShowTextColorPopover(false)}
+          >
+            <ActionList
+              items={[
+                {
+                  content: 'Default',
+                  onAction: () => {
+                    editor.chain().focus().unsetColor().run();
+                    setShowTextColorPopover(false);
+                  }
+                },
+                {
+                  content: 'Red',
+                  onAction: () => {
+                    editor.chain().focus().setColor('#ef4444').run();
+                    setShowTextColorPopover(false);
+                  }
+                },
+                {
+                  content: 'Orange',
+                  onAction: () => {
+                    editor.chain().focus().setColor('#f97316').run();
+                    setShowTextColorPopover(false);
+                  }
+                },
+                {
+                  content: 'Yellow',
+                  onAction: () => {
+                    editor.chain().focus().setColor('#eab308').run();
+                    setShowTextColorPopover(false);
+                  }
+                },
+                {
+                  content: 'Green',
+                  onAction: () => {
+                    editor.chain().focus().setColor('#22c55e').run();
+                    setShowTextColorPopover(false);
+                  }
+                },
+                {
+                  content: 'Blue',
+                  onAction: () => {
+                    editor.chain().focus().setColor('#3b82f6').run();
+                    setShowTextColorPopover(false);
+                  }
+                },
+                {
+                  content: 'Purple',
+                  onAction: () => {
+                    editor.chain().focus().setColor('#a855f7').run();
+                    setShowTextColorPopover(false);
+                  }
+                },
+                {
+                  content: 'Pink',
+                  onAction: () => {
+                    editor.chain().focus().setColor('#ec4899').run();
+                    setShowTextColorPopover(false);
+                  }
+                },
+              ]}
+            />
+          </Popover>
+
+          {/* Highlight Color */}
+          <Popover
+            active={showHighlightColorPopover}
+            activator={
+              <Tooltip content="Highlight">
+                <Button
+                  size="slim"
+                  disclosure
+                  pressed={editor.isActive('highlight')}
+                  onClick={() => setShowHighlightColorPopover(!showHighlightColorPopover)}
+                >
+                  <Icon source={EditIcon} />
+                </Button>
+              </Tooltip>
+            }
+            onClose={() => setShowHighlightColorPopover(false)}
+          >
+            <ActionList
+              items={[
+                {
+                  content: 'Remove Highlight',
+                  onAction: () => {
+                    editor.chain().focus().unsetHighlight().run();
+                    setShowHighlightColorPopover(false);
+                  }
+                },
+                {
+                  content: 'Yellow',
+                  onAction: () => {
+                    editor.chain().focus().setHighlight({ color: '#fef3c7' }).run();
+                    setShowHighlightColorPopover(false);
+                  }
+                },
+                {
+                  content: 'Green',
+                  onAction: () => {
+                    editor.chain().focus().setHighlight({ color: '#d1fae5' }).run();
+                    setShowHighlightColorPopover(false);
+                  }
+                },
+                {
+                  content: 'Blue',
+                  onAction: () => {
+                    editor.chain().focus().setHighlight({ color: '#dbeafe' }).run();
+                    setShowHighlightColorPopover(false);
+                  }
+                },
+                {
+                  content: 'Pink',
+                  onAction: () => {
+                    editor.chain().focus().setHighlight({ color: '#fce7f3' }).run();
+                    setShowHighlightColorPopover(false);
+                  }
+                },
+                {
+                  content: 'Purple',
+                  onAction: () => {
+                    editor.chain().focus().setHighlight({ color: '#f3e8ff' }).run();
+                    setShowHighlightColorPopover(false);
+                  }
+                },
+              ]}
+            />
+          </Popover>
+
+          {/* Emoji Button */}
+          <Tooltip content="Insert Emoji">
+            <Button
+              size="slim"
+              onClick={() => {
+                const emoji = prompt('Enter an emoji:');
+                if (emoji) {
+                  editor.chain().focus().insertContent(emoji).run();
+                }
+              }}
+            >
+              <Icon source={SmileyHappyIcon} />
+            </Button>
+          </Tooltip>
+
+          {/* YouTube Button */}
+          <Tooltip content="Insert YouTube Video">
+            <Button
+              size="slim"
+              onClick={() => setShowVideoModal(true)}
+            >
+              <Icon source={LogoYoutubeIcon} />
+            </Button>
+          </Tooltip>
+
           {/* More formatting */}
           <Popover
             active={showFormatPopover}
@@ -696,6 +960,148 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       <div className="notion-editor-wrapper" ref={editorRef}>
         <EditorContent editor={editor} />
         {editor && <TiptapDragHandle editor={editor} />}
+        
+        {/* Bubble Menu */}
+        {editor && (
+          <BubbleMenu 
+            editor={editor} 
+            tippyOptions={{ duration: 100 }}
+            className="notion-bubble-menu"
+          >
+            <ButtonGroup variant="segmented">
+              <Tooltip content="Bold">
+                <Button
+                  size="micro"
+                  pressed={editor.isActive('bold')}
+                  onClick={() => editor.chain().focus().toggleBold().run()}
+                >
+                  <TextIcon icon="bold" />
+                </Button>
+              </Tooltip>
+              <Tooltip content="Italic">
+                <Button
+                  size="micro"
+                  pressed={editor.isActive('italic')}
+                  onClick={() => editor.chain().focus().toggleItalic().run()}
+                >
+                  <TextIcon icon="italic" />
+                </Button>
+              </Tooltip>
+              <Tooltip content="Underline">
+                <Button
+                  size="micro"
+                  pressed={editor.isActive('underline')}
+                  onClick={() => editor.chain().focus().toggleUnderline().run()}
+                >
+                  <TextIcon icon="underline" />
+                </Button>
+              </Tooltip>
+              <Tooltip content="Strikethrough">
+                <Button
+                  size="micro"
+                  pressed={editor.isActive('strike')}
+                  onClick={() => editor.chain().focus().toggleStrike().run()}
+                >
+                  <TextIcon icon="strikethrough" />
+                </Button>
+              </Tooltip>
+              <Tooltip content="Text Color">
+                <Popover
+                  active={showTextColorPopover}
+                  activator={
+                    <Button
+                      size="micro"
+                      disclosure
+                      onClick={() => setShowTextColorPopover(!showTextColorPopover)}
+                    >
+                      <Icon source={TextColorIcon} />
+                    </Button>
+                  }
+                  onClose={() => setShowTextColorPopover(false)}
+                >
+                  <ActionList
+                    items={[
+                      {
+                        content: 'Default',
+                        onAction: () => {
+                          editor.chain().focus().unsetColor().run();
+                          setShowTextColorPopover(false);
+                        }
+                      },
+                      {
+                        content: 'Red',
+                        onAction: () => {
+                          editor.chain().focus().setColor('#ef4444').run();
+                          setShowTextColorPopover(false);
+                        }
+                      },
+                      {
+                        content: 'Orange',
+                        onAction: () => {
+                          editor.chain().focus().setColor('#f97316').run();
+                          setShowTextColorPopover(false);
+                        }
+                      },
+                      {
+                        content: 'Yellow',
+                        onAction: () => {
+                          editor.chain().focus().setColor('#eab308').run();
+                          setShowTextColorPopover(false);
+                        }
+                      },
+                      {
+                        content: 'Green',
+                        onAction: () => {
+                          editor.chain().focus().setColor('#22c55e').run();
+                          setShowTextColorPopover(false);
+                        }
+                      },
+                      {
+                        content: 'Blue',
+                        onAction: () => {
+                          editor.chain().focus().setColor('#3b82f6').run();
+                          setShowTextColorPopover(false);
+                        }
+                      },
+                      {
+                        content: 'Purple',
+                        onAction: () => {
+                          editor.chain().focus().setColor('#a855f7').run();
+                          setShowTextColorPopover(false);
+                        }
+                      },
+                      {
+                        content: 'Pink',
+                        onAction: () => {
+                          editor.chain().focus().setColor('#ec4899').run();
+                          setShowTextColorPopover(false);
+                        }
+                      },
+                    ]}
+                  />
+                </Popover>
+              </Tooltip>
+              <Tooltip content="Highlight">
+                <Button
+                  size="micro"
+                  pressed={editor.isActive('highlight')}
+                  onClick={() => editor.chain().focus().toggleHighlight({ color: '#fef3c7' }).run()}
+                >
+                  <Icon source={EditIcon} />
+                </Button>
+              </Tooltip>
+              <Tooltip content="Link">
+                <Button
+                  size="micro"
+                  pressed={editor.isActive('link')}
+                  onClick={() => setShowLinkModal(true)}
+                >
+                  <TextIcon icon="link" />
+                </Button>
+              </Tooltip>
+            </ButtonGroup>
+          </BubbleMenu>
+        )}
         
         {/* Character Count */}
         {editor && (

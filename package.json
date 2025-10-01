@@ -62,6 +62,7 @@
     "@tiptap/extension-image": "^3.4.1",
     "@tiptap/extension-link": "^3.4.1",
     "@tiptap/extension-list-item": "^3.4.1",
+    "@tiptap/extension-mention": "^3.6.2",
     "@tiptap/extension-ordered-list": "^3.6.2",
     "@tiptap/extension-placeholder": "^3.4.2",
     "@tiptap/extension-table": "^3.4.1",
