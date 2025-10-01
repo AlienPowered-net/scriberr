@@ -107,7 +107,7 @@ export default function HomePage() {
           <Card>
             <BlockStack gap="400">
               <Text variant="headingMd" as="h2">
-                Your Workspace Stats
+                Your Scriberr Workspace Insights
               </Text>
               <Grid>
                 <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
