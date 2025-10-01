@@ -325,7 +325,6 @@ export default function Settings() {
             </BlockStack>
           </Banner>
         )}
-      </BlockStack>
 
       {/* Delete All Notes Confirmation Modal */}
       <Modal
@@ -477,9 +476,9 @@ export default function Settings() {
       }}>
         <div>
           © 2025, Scriberr Powered by{" "}
-          <a 
-            href="https://www.alienpowered.net" 
-            target="_blank" 
+          <a
+            href="https://www.alienpowered.net"
+            target="_blank"
             rel="noopener noreferrer"
             style={{
               color: "#008060",
@@ -497,9 +496,9 @@ export default function Settings() {
             Aliens
           </a>
         </div>
-        <div style={{ 
-          fontStyle: "italic", 
-          fontSize: "12px", 
+        <div style={{
+          fontStyle: "italic",
+          fontSize: "12px",
           color: "#9ca3af",
           marginLeft: "24px"
         }}>
