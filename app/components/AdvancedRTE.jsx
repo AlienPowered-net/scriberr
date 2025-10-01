@@ -966,15 +966,15 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           .advanced-rte-content ul[data-type="taskList"] {
             list-style: none;
             padding: 0;
-            margin: 0.5rem 0;
+            margin: 0.25rem 0;
           }
 
           .advanced-rte-content ul[data-type="taskList"] li {
             display: flex;
             align-items: center;
-            margin: 0.25rem 0;
-            line-height: 1.5;
-            min-height: 1.5em;
+            margin: 0.1rem 0;
+            line-height: 1.4;
+            min-height: 1.4em;
           }
 
           .advanced-rte-content ul[data-type="taskList"] li > label {
@@ -989,7 +989,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             flex: 1 1 auto;
             display: flex;
             align-items: center;
-            min-height: 1.5em;
+            min-height: 1.4em;
           }
 
           .advanced-rte-content ul[data-type="taskList"] input[type="checkbox"] {
