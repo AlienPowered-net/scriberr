@@ -21,10 +21,18 @@ import {
   NoteIcon,
   StarIcon,
   SettingsIcon,
+  XIcon,
 } from '@shopify/polaris-icons';
 
 export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNotes = 0 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(() => {
+    // Check localStorage for dismissal state on component mount
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('scriberr-setup-guide-dismissed') === 'true';
+    }
+    return false;
+  });
   const [stepStates, setStepStates] = useState({
     step1: false,
     step2: false,
@@ -71,6 +79,19 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
       [stepId]: !prev[stepId]
     }));
   };
+
+  const handleDismiss = () => {
+    setIsDismissed(true);
+    // Store dismissal state in localStorage for persistence
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('scriberr-setup-guide-dismissed', 'true');
+    }
+  };
+
+  // Don't render the component if dismissed
+  if (isDismissed) {
+    return null;
+  }
 
   const steps = [
     {
@@ -119,13 +140,22 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
           <Text variant="headingMd" as="h2">
             Getting Started
           </Text>
-          <Button
-            variant="plain"
-            size="slim"
-            icon={ChevronUpIcon}
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            accessibilityLabel={isCollapsed ? "Expand setup guide" : "Collapse setup guide"}
-          />
+          <InlineStack gap="200">
+            <Button
+              variant="plain"
+              size="slim"
+              icon={ChevronUpIcon}
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              accessibilityLabel={isCollapsed ? "Expand setup guide" : "Collapse setup guide"}
+            />
+            <Button
+              variant="plain"
+              size="slim"
+              icon={XIcon}
+              onClick={handleDismiss}
+              accessibilityLabel="Dismiss setup guide"
+            />
+          </InlineStack>
         </InlineStack>
 
         <Collapsible
