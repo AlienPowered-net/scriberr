@@ -1,6 +1,6 @@
 // app/routes/app.home.jsx - Home Page
 import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useNavigate } from "@remix-run/react";
 import { useState } from "react";
 import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
@@ -82,6 +82,7 @@ export const loader = async ({ request }) => {
 
 export default function HomePage() {
   const { folders, notes, totalFolders, totalNotes, version } = useLoaderData();
+  const navigate = useNavigate();
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -111,10 +112,10 @@ export default function HomePage() {
       // On mobile, navigate to dashboard with note selected, then show mobile editor
       localStorage.setItem('selectedNoteId', note.id);
       localStorage.setItem('selectedFolderId', note.folderId);
-      window.location.href = '/app/dashboard';
+      navigate('/app/dashboard');
     } else {
       // On desktop, navigate to dashboard with folder and note context
-      window.location.href = `/app/dashboard?folderId=${note.folderId}`;
+      navigate(`/app/dashboard?folderId=${note.folderId}`);
     }
   };
 
