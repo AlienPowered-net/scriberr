@@ -551,20 +551,22 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 <TextIcon icon="numberedList" />
               </Button>
             </Tooltip>
-            <Tooltip content="Task List">
-              <Button
-                size="slim"
-                pressed={editor.isActive('taskList')}
-                onClick={() => {
-                  console.log('Task List clicked');
-                  console.log('Editor can toggle task list:', editor.can().toggleTaskList());
-                  editor.chain().focus().toggleTaskList().run();
-                }}
-              >
-                <TextIcon icon="checkbox" />
-              </Button>
-            </Tooltip>
           </ButtonGroup>
+
+          {/* Task List - Separate button for visibility */}
+          <Tooltip content="Task List">
+            <Button
+              size="slim"
+              pressed={editor.isActive('taskList')}
+              onClick={() => {
+                console.log('Task List clicked');
+                console.log('Editor can toggle task list:', editor.can().toggleTaskList());
+                editor.chain().focus().toggleTaskList().run();
+              }}
+            >
+              <TextIcon icon="checkbox" />
+            </Button>
+          </Tooltip>
 
           {/* Text alignment */}
           <Popover

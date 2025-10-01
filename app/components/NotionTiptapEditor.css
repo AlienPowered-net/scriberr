@@ -549,15 +549,24 @@
     overflow-x: auto !important;
     white-space: nowrap !important;
     flex-shrink: 0 !important; /* Prevent toolbar from shrinking */
+    -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on iOS */
   }
   
   .notion-toolbar .Polaris-ButtonGroup {
     margin-right: 4px !important;
+    flex-shrink: 0 !important; /* Prevent button groups from shrinking */
   }
   
   .notion-toolbar .Polaris-Button {
     min-height: 28px !important;
     padding: 4px 6px !important;
+    flex-shrink: 0 !important; /* Prevent buttons from shrinking */
+  }
+  
+  /* Ensure all toolbar elements are visible */
+  .notion-toolbar .Polaris-InlineStack {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
   }
 }
 
