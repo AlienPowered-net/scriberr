@@ -504,7 +504,7 @@ export default function HomePage() {
               
               <BlockStack gap="300">
                 <Box padding="400" background="bg-surface-secondary" borderRadius="200">
-                  <BlockStack gap="200">
+                  <BlockStack gap="200" align="start">
                     <InlineStack gap="200" align="start">
                       <Badge tone="success" size="small">
                         New
@@ -520,7 +520,7 @@ export default function HomePage() {
                       <Text variant="bodySm" tone="subdued">
                         <strong>What's New:</strong>
                       </Text>
-                    <BlockStack gap="100">
+                    <BlockStack gap="100" align="start">
                       <InlineStack gap="200" align="start">
                         <Icon source={CheckIcon} tone="success" />
                         <Text variant="bodySm">Enhanced folder organization</Text>
@@ -542,7 +542,7 @@ export default function HomePage() {
                 </Box>
 
                 <Box padding="400" background="bg-surface-secondary" borderRadius="200">
-                  <BlockStack gap="200">
+                  <BlockStack gap="200" align="start">
                     <InlineStack gap="200" align="start">
                       <Badge tone="info" size="small">
                         Coming Soon
@@ -554,7 +554,7 @@ export default function HomePage() {
                     <Text variant="bodySm" tone="subdued">
                       We're working on exciting new features and integrations to make Scriberr even more powerful:
                     </Text>
-                    <BlockStack gap="100">
+                    <BlockStack gap="100" align="start">
                       <InlineStack gap="200" align="start">
                         <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">AI-powered note suggestions and summaries</Text>
@@ -580,7 +580,7 @@ export default function HomePage() {
                 </Box>
 
                 <Box padding="400" background="bg-surface-secondary" borderRadius="200">
-                  <BlockStack gap="200">
+                  <BlockStack gap="200" align="start">
                     <InlineStack gap="200" align="start">
                       <Badge tone="warning" size="small">
                         Tip
@@ -592,7 +592,7 @@ export default function HomePage() {
                     <Text variant="bodySm" tone="subdued">
                       Make the most of Scriberr with these organization tips:
                     </Text>
-                    <BlockStack gap="100">
+                    <BlockStack gap="100" align="start">
                       <InlineStack gap="200" align="start">
                         <Icon source={InfoIcon} tone="info" />
                         <Text variant="bodySm">Use descriptive folder names to categorize your notes</Text>
