@@ -45,6 +45,25 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
   const hasNotes = totalNotes > 0;
   const hasMultipleFolders = totalFolders > 1;
   const hasPinnedNotes = pinnedNotes > 0;
+
+  // Listen for localStorage changes from settings page
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const dismissed = localStorage.getItem('scriberr-setup-guide-dismissed') === 'true';
+      setIsDismissed(dismissed);
+    };
+
+    // Listen for storage events (when changed from another tab)
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for custom events (when changed from same tab)
+    window.addEventListener('scriberr-onboarding-toggle', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('scriberr-onboarding-toggle', handleStorageChange);
+    };
+  }, []);
   
   const completedSteps = [hasFolders, hasNotes, hasMultipleFolders, hasPinnedNotes].filter(Boolean).length;
   const totalSteps = 4;

@@ -12,11 +12,20 @@ import {
   Badge,
   Modal,
   TextField,
+  Checkbox,
 } from "@shopify/polaris";
 import { useState } from "react";
 
 export default function Settings() {
   const [selectedSubscription, setSelectedSubscription] = useState("basic");
+  
+  // Onboarding guide preference
+  const [showOnboardingGuide, setShowOnboardingGuide] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('scriberr-setup-guide-dismissed') !== 'true';
+    }
+    return true;
+  });
   
   // Modal states for delete confirmations
   const [showDeleteNotesModal, setShowDeleteNotesModal] = useState(false);
@@ -25,6 +34,22 @@ export default function Settings() {
   const [confirmationText, setConfirmationText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+
+  const handleOnboardingGuideToggle = (checked) => {
+    setShowOnboardingGuide(checked);
+    if (typeof window !== 'undefined') {
+      if (checked) {
+        // Re-enable: remove the dismissal flag
+        localStorage.removeItem('scriberr-setup-guide-dismissed');
+      } else {
+        // Disable: set the dismissal flag
+        localStorage.setItem('scriberr-setup-guide-dismissed', 'true');
+      }
+      
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new CustomEvent('scriberr-onboarding-toggle'));
+    }
+  };
 
   const handleDeleteAllNotes = () => {
     setShowDeleteNotesModal(true);
@@ -183,6 +208,31 @@ export default function Settings() {
                   Delete All Content
                 </Button>
               </ButtonGroup>
+            </BlockStack>
+          </div>
+        </Card>
+
+        <Divider />
+
+        {/* App Preferences Section */}
+        <Card>
+          <div style={{ padding: "16px" }}>
+            <BlockStack gap="400">
+              <Text as="h2" variant="headingMd">
+                App Preferences
+              </Text>
+              <Text as="p" variant="bodyMd" tone="subdued">
+                Customize your Scriberr experience with these preference settings.
+              </Text>
+              
+              <BlockStack gap="300">
+                <Checkbox
+                  label="Show Getting Started Guide"
+                  helpText="Display the onboarding guide on the homepage to help you get started with Scriberr"
+                  checked={showOnboardingGuide}
+                  onChange={handleOnboardingGuideToggle}
+                />
+              </BlockStack>
             </BlockStack>
           </div>
         </Card>
