@@ -37,6 +37,7 @@ import {
   ArrowRightIcon,
   InfoIcon,
   StarFilledIcon,
+  PinFilledIcon,
 } from "@shopify/polaris-icons";
 
 export const loader = async ({ request }) => {
@@ -95,6 +96,26 @@ export default function HomePage() {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  // Strip HTML tags from text content
+  const stripHtmlTags = (html) => {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, '');
+  };
+
+  // Handle note click navigation
+  const handleNoteClick = (note) => {
+    const isMobile = window.innerWidth <= 1024;
+    if (isMobile) {
+      // On mobile, navigate to dashboard with note selected, then show mobile editor
+      localStorage.setItem('selectedNoteId', note.id);
+      localStorage.setItem('selectedFolderId', note.folderId);
+      window.location.href = '/app/dashboard';
+    } else {
+      // On desktop, navigate to dashboard with folder and note context
+      window.location.href = `/app/dashboard?folderId=${note.folderId}`;
+    }
   };
 
   return (
@@ -291,40 +312,49 @@ export default function HomePage() {
                       items={notes}
                       renderItem={(note) => {
                         const { id, title, content, folder, updatedAt, pinnedAt } = note;
-                        const truncatedContent = content ? content.substring(0, 100) + (content.length > 100 ? '...' : '') : '';
+                        const strippedContent = stripHtmlTags(content);
+                        const truncatedContent = strippedContent ? strippedContent.substring(0, 100) + (strippedContent.length > 100 ? '...' : '') : '';
                         return (
                           <ResourceItem
                             id={id}
-                            url="/app"
+                            onClick={() => handleNoteClick(note)}
                             accessibilityLabel={`View note ${title}`}
                           >
-                            <InlineStack gap="300" align="space-between">
-                              <BlockStack gap="100">
-                                <InlineStack gap="200" align="start">
-                                  {pinnedAt && (
-                                    <Icon source={StarIcon} tone="warning" />
+                            <div style={{ position: 'relative' }}>
+                              <InlineStack gap="300" align="space-between">
+                                <BlockStack gap="100">
+                                  <InlineStack gap="200" align="start">
+                                    <Text variant="bodyMd" fontWeight="medium" as="h3">
+                                      {title || 'Untitled Note'}
+                                    </Text>
+                                  </InlineStack>
+                                  {truncatedContent && (
+                                    <Text variant="bodySm" tone="subdued">
+                                      {truncatedContent}
+                                    </Text>
                                   )}
-                                  <Text variant="bodyMd" fontWeight="medium" as="h3">
-                                    {title || 'Untitled Note'}
-                                  </Text>
-                                </InlineStack>
-                                {truncatedContent && (
-                                  <Text variant="bodySm" tone="subdued">
-                                    {truncatedContent}
-                                  </Text>
+                                  <InlineStack gap="200">
+                                    {folder && (
+                                      <Badge tone="info" size="small">
+                                        {folder.name}
+                                      </Badge>
+                                    )}
+                                    <Text variant="bodySm" tone="subdued">
+                                      {formatDate(updatedAt)}
+                                    </Text>
+                                  </InlineStack>
+                                </BlockStack>
+                                {pinnedAt && (
+                                  <div style={{ 
+                                    position: 'absolute', 
+                                    top: '8px', 
+                                    right: '8px' 
+                                  }}>
+                                    <Icon source={PinFilledIcon} tone="warning" />
+                                  </div>
                                 )}
-                                <InlineStack gap="200">
-                                  {folder && (
-                                    <Badge tone="info" size="small">
-                                      {folder.name}
-                                    </Badge>
-                                  )}
-                                  <Text variant="bodySm" tone="subdued">
-                                    {formatDate(updatedAt)}
-                                  </Text>
-                                </InlineStack>
-                              </BlockStack>
-                            </InlineStack>
+                              </InlineStack>
+                            </div>
                           </ResourceItem>
                         );
                       }}
