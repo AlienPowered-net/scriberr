@@ -172,7 +172,8 @@ export default function Settings() {
 
   return (
     <Page title="Settings">
-      <BlockStack gap="500">
+      <div style={{ paddingBottom: "80px" }}>
+        <BlockStack gap="500">
         {/* Content Management Section */}
         <Card>
           <div style={{ padding: "16px" }}>
@@ -454,6 +455,8 @@ export default function Settings() {
           </BlockStack>
         </Modal.Section>
       </Modal>
+      </BlockStack>
+      </div>
 
       {/* Copyright Footer */}
       <div style={{

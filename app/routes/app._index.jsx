@@ -131,7 +131,8 @@ export default function HomePage() {
 
   return (
     <Page title="Welcome to Scriberr" subtitle={`Version ${version}`}>
-      <Layout>
+      <div style={{ paddingBottom: "80px" }}>
+        <Layout>
         {/* Setup Guide */}
         <Layout.Section>
           <SetupGuide 
@@ -654,8 +655,10 @@ export default function HomePage() {
             </BlockStack>
           </Card>
         </Layout.Section>
+        </Layout>
+      </div>
 
-        {/* Copyright Footer */}
+      {/* Copyright Footer */}
         <div style={{
           position: "fixed",
           bottom: "0",
@@ -703,7 +706,6 @@ export default function HomePage() {
             {version}
           </div>
         </div>
-      </Layout>
     </Page>
   );
 }
