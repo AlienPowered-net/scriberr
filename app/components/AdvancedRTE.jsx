@@ -972,7 +972,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           .advanced-rte-content ul[data-type="taskList"] li {
             display: flex;
             align-items: center;
-            margin: 0.1rem 0;
+            margin: -1.5rem 0;
             line-height: 1.4;
             min-height: 1.4em;
           }
