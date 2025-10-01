@@ -112,7 +112,7 @@ export default function HomePage() {
               <Grid>
                 <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
                   <Box padding="300" background="bg-surface-secondary" borderRadius="200">
-                    <InlineStack gap="400" align="start">
+                    <InlineStack gap="200" align="start">
                       <Box padding="200">
                         <Icon source={FolderIcon} tone="base" />
                       </Box>
@@ -129,7 +129,7 @@ export default function HomePage() {
                 </Grid.Cell>
                 <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
                   <Box padding="300" background="bg-surface-secondary" borderRadius="200">
-                    <InlineStack gap="400" align="start">
+                    <InlineStack gap="200" align="start">
                       <Box padding="200">
                         <Icon source={NoteIcon} tone="base" />
                       </Box>
@@ -146,7 +146,7 @@ export default function HomePage() {
                 </Grid.Cell>
                 <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
                   <Box padding="300" background="bg-surface-secondary" borderRadius="200">
-                    <InlineStack gap="400" align="start">
+                    <InlineStack gap="200" align="start">
                       <Box padding="200">
                         <Icon source={CalendarIcon} tone="base" />
                       </Box>
@@ -163,7 +163,7 @@ export default function HomePage() {
                 </Grid.Cell>
                 <Grid.Cell columnSpan={{ xs: 6, sm: 3, md: 3, lg: 3, xl: 3 }}>
                   <Box padding="300" background="bg-surface-secondary" borderRadius="200">
-                    <InlineStack gap="400" align="start">
+                    <InlineStack gap="200" align="start">
                       <Box padding="200">
                         <Icon source={StarIcon} tone="base" />
                       </Box>
