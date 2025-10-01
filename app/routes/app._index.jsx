@@ -110,6 +110,8 @@ export default function HomePage() {
     const isMobile = window.innerWidth <= 1024;
     // Always pass both folderId and noteId in URL for reliable selection
     const url = `/app/dashboard?folderId=${note.folderId}&noteId=${note.id}${isMobile ? '&mobile=true' : ''}`;
+    console.log('Navigating to:', url);
+    console.log('Note data:', note);
     navigate(url);
   };
 

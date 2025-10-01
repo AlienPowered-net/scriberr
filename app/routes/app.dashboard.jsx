@@ -186,6 +186,8 @@ export async function loader({ request }) {
   const folderId = url.searchParams.get('folderId');
   const noteId = url.searchParams.get('noteId');
   const isMobile = url.searchParams.get('mobile') === 'true';
+  
+  console.log('Dashboard loader - URL params:', { folderId, noteId, isMobile });
 
   // Try to load folders with all fields, fallback if migration not applied
   let folders;
@@ -428,24 +430,38 @@ export default function Index() {
     }
   }, [initialFolderId]);
 
-  // Handle note selection from URL parameters
+  // Handle note selection from URL parameters - runs immediately on mount
   useEffect(() => {
-    if (initialNoteId && initialFolderId && localNotes.length > 0) {
+    if (initialNoteId && localNotes.length > 0) {
+      console.log('Attempting to select note from URL:', initialNoteId);
       const noteToSelect = localNotes.find(note => note.id === initialNoteId);
+      console.log('Found note:', noteToSelect);
       if (noteToSelect) {
+        // Set all the note-related states
         setEditingNoteId(initialNoteId);
         setSelectedNoteId(initialNoteId);
         setSelectedNote(noteToSelect);
         setTitle(noteToSelect.title || "");
         setBody(noteToSelect.content || "");
-        setFolderId(initialFolderId);
-        setSelectedFolder(initialFolderId);
         setNoteTags(noteToSelect.tags || []);
+        
+        // Set folder if provided
+        if (initialFolderId) {
+          setFolderId(initialFolderId);
+          setSelectedFolder(initialFolderId);
+        } else if (noteToSelect.folderId) {
+          setFolderId(noteToSelect.folderId);
+          setSelectedFolder(noteToSelect.folderId);
+        }
         
         // If mobile parameter is set, switch to editor view
         if (isMobileParam) {
           setMobileActiveSection('editor');
         }
+        
+        console.log('Note selected successfully');
+      } else {
+        console.log('Note not found in localNotes');
       }
     }
   }, [initialNoteId, initialFolderId, localNotes, isMobileParam]);
@@ -1627,11 +1643,25 @@ export default function Index() {
   }, [hasUnsavedChanges, editingNoteId]);
 
   // Restore selected note and folder from localStorage on page load
+  // Only runs if URL parameters are NOT present (URL params take precedence)
   useEffect(() => {
+    // Skip if URL parameters are present - those take precedence
+    if (initialNoteId || initialFolderId) {
+      console.log('Skipping localStorage restoration - URL params present');
+      // Clean up any leftover localStorage items
+      localStorage.removeItem('selectedNoteId');
+      localStorage.removeItem('selectedFolderId');
+      localStorage.removeItem('mobileActiveSection');
+      localStorage.removeItem('selectedFolder');
+      return;
+    }
+    
     const savedNoteId = localStorage.getItem('selectedNoteId');
     const savedFolderId = localStorage.getItem('selectedFolderId');
     const savedMobileSection = localStorage.getItem('mobileActiveSection');
     const savedSelectedFolder = localStorage.getItem('selectedFolder');
+    
+    console.log('Checking localStorage restoration:', { savedNoteId, savedFolderId, savedMobileSection, savedSelectedFolder });
     
     // Handle mobile section restoration
     if (savedMobileSection) {
@@ -1662,7 +1692,7 @@ export default function Index() {
       localStorage.removeItem('selectedNoteId');
       localStorage.removeItem('selectedFolderId');
     }
-  }, [notes]);
+  }, [notes, initialNoteId, initialFolderId]);
 
   const folderOptions = [
     { label: "No folder", value: "" },
