@@ -108,15 +108,9 @@ export default function HomePage() {
   // Handle note click navigation
   const handleNoteClick = (note) => {
     const isMobile = window.innerWidth <= 1024;
-    if (isMobile) {
-      // On mobile, navigate to dashboard with note selected, then show mobile editor
-      localStorage.setItem('selectedNoteId', note.id);
-      localStorage.setItem('selectedFolderId', note.folderId);
-      navigate('/app/dashboard');
-    } else {
-      // On desktop, navigate to dashboard with folder and note context
-      navigate(`/app/dashboard?folderId=${note.folderId}`);
-    }
+    // Always pass both folderId and noteId in URL for reliable selection
+    const url = `/app/dashboard?folderId=${note.folderId}&noteId=${note.id}${isMobile ? '&mobile=true' : ''}`;
+    navigate(url);
   };
 
   // Handle "View All" click for Recent Notes

@@ -181,9 +181,11 @@ export async function loader({ request }) {
   const { session } = await shopify.authenticate.admin(request);
   const shopId = await getOrCreateShopId(session.shop);
   
-  // Extract folderId from URL parameters
+  // Extract parameters from URL
   const url = new URL(request.url);
   const folderId = url.searchParams.get('folderId');
+  const noteId = url.searchParams.get('noteId');
+  const isMobile = url.searchParams.get('mobile') === 'true';
 
   // Try to load folders with all fields, fallback if migration not applied
   let folders;
@@ -310,7 +312,7 @@ export async function loader({ request }) {
 
 
 
-  return json({ folders, notes, version: packageJson.version, folderId }, {
+  return json({ folders, notes, version: packageJson.version, folderId, noteId, isMobileParam: isMobile }, {
     headers: {
       "Content-Type": "application/json; charset=utf-8"
     }
@@ -408,7 +410,7 @@ export async function action({ request }) {
 
 /* ------------------ UI ------------------ */
 export default function Index() {
-  const { folders, notes, version, folderId: initialFolderId } = useLoaderData();
+  const { folders, notes, version, folderId: initialFolderId, noteId: initialNoteId, isMobileParam } = useLoaderData();
   const [localNotes, setLocalNotes] = useState(notes);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -425,6 +427,28 @@ export default function Index() {
       setSelectedFolder(initialFolderId);
     }
   }, [initialFolderId]);
+
+  // Handle note selection from URL parameters
+  useEffect(() => {
+    if (initialNoteId && initialFolderId && localNotes.length > 0) {
+      const noteToSelect = localNotes.find(note => note.id === initialNoteId);
+      if (noteToSelect) {
+        setEditingNoteId(initialNoteId);
+        setSelectedNoteId(initialNoteId);
+        setSelectedNote(noteToSelect);
+        setTitle(noteToSelect.title || "");
+        setBody(noteToSelect.content || "");
+        setFolderId(initialFolderId);
+        setSelectedFolder(initialFolderId);
+        setNoteTags(noteToSelect.tags || []);
+        
+        // If mobile parameter is set, switch to editor view
+        if (isMobileParam) {
+          setMobileActiveSection('editor');
+        }
+      }
+    }
+  }, [initialNoteId, initialFolderId, localNotes, isMobileParam]);
   const [folderName, setFolderName] = useState("");
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
