@@ -321,10 +321,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       title: 'Task List',
       iconType: 'checkbox',
       description: 'Track tasks with checkboxes',
-      action: () => {
-        console.log('Task List slash command clicked');
-        editor.chain().focus().toggleTaskList().run();
-      }
+      action: () => editor.chain().focus().toggleTaskList().run()
     },
     { 
       id: 'quote',
@@ -547,11 +544,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               <Button
                 size="slim"
                 pressed={editor.isActive('taskList')}
-                onClick={() => {
-                  console.log('Task List button clicked');
-                  console.log('Editor is active taskList:', editor.isActive('taskList'));
-                  editor.chain().focus().toggleTaskList().run();
-                }}
+                onClick={() => editor.chain().focus().toggleTaskList().run()}
               >
                 <TextIcon icon="checkbox" />
               </Button>
