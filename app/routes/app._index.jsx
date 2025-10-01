@@ -49,6 +49,13 @@ export const loader = async ({ request }) => {
       where: { shopId },
       orderBy: { updatedAt: 'desc' },
       take: 5,
+      select: {
+        id: true,
+        name: true,
+        icon: true,
+        iconColor: true,
+        updatedAt: true,
+      },
     }),
     prisma.note.findMany({
       where: { shopId },
@@ -207,7 +214,7 @@ export default function HomePage() {
                       resourceName={{ singular: 'folder', plural: 'folders' }}
                       items={folders}
                       renderItem={(folder) => {
-                        const { id, name, icon, updatedAt } = folder;
+                        const { id, name, icon, iconColor, updatedAt } = folder;
                         return (
                           <ResourceItem
                             id={id}
@@ -216,11 +223,21 @@ export default function HomePage() {
                           >
                             <InlineStack gap="300" align="space-between">
                               <InlineStack gap="300">
-                                <Avatar
-                                  size="small"
-                                  name={name}
-                                  source={icon ? `data:image/svg+xml;base64,${icon}` : undefined}
-                                />
+                                <div style={{
+                                  width: '32px',
+                                  height: '32px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  borderRadius: '6px',
+                                  backgroundColor: '#f8f9fa',
+                                  border: '1px solid #e1e3e5'
+                                }}>
+                                  <i className={`far fa-${icon || 'folder'}`} style={{ 
+                                    fontSize: '16px', 
+                                    color: iconColor || '#f57c00' 
+                                  }}></i>
+                                </div>
                                 <BlockStack gap="100">
                                   <Text variant="bodyMd" fontWeight="medium" as="h3">
                                     {name}
