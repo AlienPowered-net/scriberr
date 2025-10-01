@@ -962,6 +962,47 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             }
           }
           
+          /* Task list styles for proper alignment */
+          .advanced-rte-content ul[data-type="taskList"] {
+            list-style: none;
+            padding: 0;
+            margin: 0.5rem 0;
+          }
+
+          .advanced-rte-content ul[data-type="taskList"] li {
+            display: flex;
+            align-items: flex-start;
+            margin: 0.25rem 0;
+            line-height: 1.5;
+          }
+
+          .advanced-rte-content ul[data-type="taskList"] li > label {
+            flex: 0 0 auto;
+            margin-right: 0.5rem;
+            margin-top: 0.125rem;
+            user-select: none;
+            display: flex;
+            align-items: center;
+          }
+
+          .advanced-rte-content ul[data-type="taskList"] li > div {
+            flex: 1 1 auto;
+            min-height: 1.5em;
+          }
+
+          .advanced-rte-content ul[data-type="taskList"] input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            margin: 0;
+            accent-color: #007bff;
+          }
+
+          .advanced-rte-content ul[data-type="taskList"] li[data-checked="true"] > div {
+            text-decoration: line-through;
+            color: #6c757d;
+          }
+
           /* iOS Safari specific fixes */
           @supports (-webkit-touch-callout: none) {
             .advanced-rte-content {
