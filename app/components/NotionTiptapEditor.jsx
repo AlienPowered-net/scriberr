@@ -14,6 +14,9 @@ import { Emoji } from '@tiptap/extension-emoji';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
+import BulletList from '@tiptap/extension-bullet-list';
+import OrderedList from '@tiptap/extension-ordered-list';
+import ListItem from '@tiptap/extension-list-item';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
@@ -132,6 +135,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   }, []);
 
   const editor = useEditor({
+    editable: true,
     extensions: [
       StarterKit.configure({
         heading: {
@@ -140,6 +144,10 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         blockquote: false,
         codeBlock: false,
         horizontalRule: false,
+        // Disable default list extensions to avoid conflicts with TaskList
+        bulletList: false,
+        orderedList: false,
+        listItem: false,
       }),
       Blockquote,
       CodeBlockLowlight.configure({
@@ -154,6 +162,10 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         resizable: true,
         allowTableNodeSelection: true,
       }),
+      // List extensions
+      BulletList,
+      OrderedList,
+      ListItem,
       TaskList,
       TaskItem.configure({
         nested: true,
@@ -309,7 +321,10 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       title: 'Task List',
       iconType: 'checkbox',
       description: 'Track tasks with checkboxes',
-      action: () => editor.chain().focus().toggleTaskList().run()
+      action: () => {
+        console.log('Task List slash command clicked');
+        editor.chain().focus().toggleTaskList().run();
+      }
     },
     { 
       id: 'quote',
@@ -532,7 +547,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               <Button
                 size="slim"
                 pressed={editor.isActive('taskList')}
-                onClick={() => editor.chain().focus().toggleTaskList().run()}
+                onClick={() => {
+                  console.log('Task List button clicked');
+                  console.log('Editor is active taskList:', editor.isActive('taskList'));
+                  editor.chain().focus().toggleTaskList().run();
+                }}
               >
                 <TextIcon icon="checkbox" />
               </Button>
