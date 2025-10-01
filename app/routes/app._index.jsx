@@ -503,8 +503,8 @@ export default function HomePage() {
                   News & Updates
                 </Text>
                 
-                <BlockStack gap="300">
-                <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                <BlockStack gap="300" style={{ width: '100%' }}>
+                <Box padding="400" background="bg-surface-secondary" borderRadius="200" style={{ width: '100%', maxWidth: 'none', margin: '0' }}>
                   <div style={{ textAlign: 'left', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                     <BlockStack gap="200" align="start">
                       <InlineStack gap="200" align="start">
@@ -554,7 +554,7 @@ export default function HomePage() {
                   </div>
                 </Box>
 
-                <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                <Box padding="400" background="bg-surface-secondary" borderRadius="200" style={{ width: '100%', maxWidth: 'none', margin: '0' }}>
                   <div style={{ textAlign: 'left', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                     <BlockStack gap="200" align="start">
                     <InlineStack gap="200" align="start">
@@ -606,7 +606,7 @@ export default function HomePage() {
                   </div>
                 </Box>
 
-                <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                <Box padding="400" background="bg-surface-secondary" borderRadius="200" style={{ width: '100%', maxWidth: 'none', margin: '0' }}>
                   <div style={{ textAlign: 'left', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                     <BlockStack gap="200" align="start">
                       <InlineStack gap="200" align="start">
