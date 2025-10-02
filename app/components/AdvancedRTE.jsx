@@ -154,50 +154,29 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         suggestion: {
           items: async ({ query }) => {
             try {
-              // Fetch both Shopify staff and custom mentions in parallel
-              const [staffResponse, customResponse] = await Promise.all([
-                fetch('/api/get-staff'),
-                fetch('/api/custom-mentions')
-              ]);
+              // Fetch custom mentions
+              const response = await fetch('/api/custom-mentions');
+              const data = await response.json();
               
-              const staffData = await staffResponse.json();
-              const customData = await customResponse.json();
-              
-              let allMentions = [];
-              
-              // Add Shopify staff members
-              if (staffData.success && staffData.staffMembers) {
-                allMentions = allMentions.concat(
-                  staffData.staffMembers.map(member => ({
-                    id: member.id,
-                    label: member.label,
-                    email: member.email,
-                    source: 'shopify'
-                  }))
-                );
-              }
-              
-              // Add custom mentions
-              if (customData.success && customData.mentions) {
-                allMentions = allMentions.concat(
-                  customData.mentions.map(mention => ({
+              if (data.success && data.mentions && data.mentions.length > 0) {
+                // Filter based on query
+                const filtered = data.mentions
+                  .map(mention => ({
                     id: mention.id,
                     label: mention.name,
-                    email: mention.email,
-                    source: 'custom'
+                    email: mention.email
                   }))
-                );
+                  .filter(item => {
+                    const searchText = `${item.label} ${item.email}`.toLowerCase();
+                    return searchText.includes(query.toLowerCase());
+                  })
+                  .slice(0, 10);
+                
+                return filtered.length > 0 ? filtered : [{ id: 'no-results', label: 'No matches. Try different search.', disabled: true }];
               }
               
-              // Filter based on query
-              const filtered = allMentions
-                .filter(item => {
-                  const searchText = `${item.label} ${item.email}`.toLowerCase();
-                  return searchText.includes(query.toLowerCase());
-                })
-                .slice(0, 10);
-              
-              return filtered.length > 0 ? filtered : [{ id: 'no-results', label: 'No mentions found. Add people in Settings.', disabled: true }];
+              // No custom mentions added yet
+              return [{ id: 'no-mentions', label: 'No mentions added. Go to Settings to add people.', disabled: true }];
             } catch (error) {
               console.error('Error fetching mentions:', error);
               return [{ id: 'error', label: 'Error loading mentions', disabled: true }];

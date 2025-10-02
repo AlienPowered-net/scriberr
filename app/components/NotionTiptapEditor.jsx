@@ -174,17 +174,169 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         HTMLAttributes: {
           class: 'mention',
         },
+        renderHTML({ options, node }) {
+          return ['span', { class: 'mention', 'data-id': node.attrs.id }, `@${node.attrs.label ?? node.attrs.id}`];
+        },
         suggestion: {
-          items: ({ query }) => {
-            return [
-              'Lea Thompson', 'Cyndi Lauper', 'Tom Cruise', 'Madonna', 'Jerry Hall',
-              'Joan Collins', 'Winona Ryder', 'Christina Applegate', 'Alyssa Milano',
-              'Molly Ringwald', 'Ally Sheedy', 'Debbie Harry', 'Olivia Newton-John',
-              'Elton John', 'Michael J. Fox', 'Axl Rose', 'Emilio Estevez', 'Ralph Macchio',
-              'Rob Lowe', 'Jennifer Grey', 'Mickey Rourke', 'John Cusack', 'Matthew Broderick',
-              'Justine Bateman', 'Lisa Bonet',
-            ].filter(item => item.toLowerCase().startsWith(query.toLowerCase())).slice(0, 5);
+          items: async ({ query }) => {
+            try {
+              // Fetch custom mentions
+              const response = await fetch('/api/custom-mentions');
+              const data = await response.json();
+              
+              if (data.success && data.mentions && data.mentions.length > 0) {
+                // Filter based on query
+                const filtered = data.mentions
+                  .map(mention => ({
+                    id: mention.id,
+                    label: mention.name,
+                    email: mention.email
+                  }))
+                  .filter(item => {
+                    const searchText = `${item.label} ${item.email}`.toLowerCase();
+                    return searchText.includes(query.toLowerCase());
+                  })
+                  .slice(0, 10);
+                
+                return filtered.length > 0 ? filtered : [{ id: 'no-results', label: 'No matches. Try different search.', disabled: true }];
+              }
+              
+              // No custom mentions added yet
+              return [{ id: 'no-mentions', label: 'No mentions added. Go to Settings to add people.', disabled: true }];
+            } catch (error) {
+              console.error('Error fetching mentions:', error);
+              return [{ id: 'error', label: 'Error loading mentions', disabled: true }];
+            }
           },
+          render: () => {
+            let component;
+
+            return {
+              onStart: props => {
+                component = document.createElement('div');
+                component.className = 'mention-suggestions';
+                component.style.cssText = `
+                  position: fixed;
+                  background: white;
+                  border: 1px solid #dee2e6;
+                  border-radius: 6px;
+                  padding: 6px;
+                  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                  z-index: 10000;
+                  max-height: 200px;
+                  overflow-y: auto;
+                  min-width: 200px;
+                `;
+
+                props.items.forEach((item, index) => {
+                  const button = document.createElement('button');
+                  button.className = 'mention-item';
+                  button.textContent = item.label;
+                  button.disabled = item.disabled || false;
+                  button.style.cssText = `
+                    display: block;
+                    width: 100%;
+                    text-align: left;
+                    padding: 8px 12px;
+                    border: none;
+                    background: ${index === props.selectedIndex && !item.disabled ? '#f0f0f0' : 'transparent'};
+                    cursor: ${item.disabled ? 'not-allowed' : 'pointer'};
+                    opacity: ${item.disabled ? '0.6' : '1'};
+                    border-radius: 4px;
+                    transition: background 0.2s;
+                  `;
+                  if (!item.disabled) {
+                    button.addEventListener('click', () => props.command({ id: item.id, label: item.label }));
+                    button.addEventListener('mouseenter', () => {
+                      button.style.background = '#f0f0f0';
+                    });
+                    button.addEventListener('mouseleave', () => {
+                      button.style.background = index === props.selectedIndex ? '#f0f0f0' : 'transparent';
+                    });
+                  }
+                  component.appendChild(button);
+                });
+
+                document.body.appendChild(component);
+
+                if (props.clientRect) {
+                  const rect = props.clientRect();
+                  component.style.left = `${rect.left}px`;
+                  component.style.top = `${rect.bottom + 8}px`;
+                }
+              },
+              onUpdate(props) {
+                if (!component) return;
+
+                component.innerHTML = '';
+                props.items.forEach((item, index) => {
+                  const button = document.createElement('button');
+                  button.className = 'mention-item';
+                  button.textContent = item.label;
+                  button.disabled = item.disabled || false;
+                  button.style.cssText = `
+                    display: block;
+                    width: 100%;
+                    text-align: left;
+                    padding: 8px 12px;
+                    border: none;
+                    background: ${index === props.selectedIndex && !item.disabled ? '#f0f0f0' : 'transparent'};
+                    cursor: ${item.disabled ? 'not-allowed' : 'pointer'};
+                    opacity: ${item.disabled ? '0.6' : '1'};
+                    border-radius: 4px;
+                    transition: background 0.2s;
+                  `;
+                  if (!item.disabled) {
+                    button.addEventListener('click', () => props.command({ id: item.id, label: item.label }));
+                    button.addEventListener('mouseenter', () => {
+                      button.style.background = '#f0f0f0';
+                    });
+                    button.addEventListener('mouseleave', () => {
+                      button.style.background = index === props.selectedIndex ? '#f0f0f0' : 'transparent';
+                    });
+                  }
+                  component.appendChild(button);
+                });
+
+                if (props.clientRect) {
+                  const rect = props.clientRect();
+                  component.style.left = `${rect.left}px`;
+                  component.style.top = `${rect.bottom + 8}px`;
+                }
+              },
+              onKeyDown(props) {
+                if (props.event.key === 'Escape') {
+                  if (component) {
+                    component.remove();
+                    component = null;
+                  }
+                  return true;
+                }
+
+                if (props.event.key === 'ArrowUp' || props.event.key === 'ArrowDown') {
+                  return false;
+                }
+
+                if (props.event.key === 'Enter') {
+                  if (props.items[props.selectedIndex] && !props.items[props.selectedIndex].disabled) {
+                    props.command({ 
+                      id: props.items[props.selectedIndex].id, 
+                      label: props.items[props.selectedIndex].label 
+                    });
+                  }
+                  return true;
+                }
+
+                return false;
+              },
+              onExit() {
+                if (component) {
+                  component.remove();
+                  component = null;
+                }
+              }
+            };
+          }
         },
       }),
       FontFamily.configure({
