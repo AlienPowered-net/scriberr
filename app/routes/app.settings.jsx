@@ -306,7 +306,7 @@ export default function Settings() {
                 Custom Mentions
               </Text>
               <Text as="p" variant="bodyMd" tone="subdued">
-                Add people you want to mention in your notes. Type @ in the editor to see and select them.
+                Add people you want to mention in your notes. Type @ in the editor to see and select them. Perfect for mentioning team members, clients, suppliers, or anyone else!
               </Text>
               
               {mentionAlertMessage && (
