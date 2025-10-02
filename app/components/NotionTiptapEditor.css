@@ -350,7 +350,8 @@
   transition: all 0.2s ease;
 }
 
-.notion-bubble-menu .Polaris-Button:hover {
+/* Only apply hover effect to buttons that are NOT pressed/selected */
+.notion-bubble-menu .Polaris-Button:hover:not(.Polaris-Button--pressed) {
   background-color: #F8F9FA !important;
   transform: scale(1.05);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -365,8 +366,11 @@
   background-color: #e1e3e5 !important;
 }
 
+/* Pressed buttons should not have hover effect */
 .notion-bubble-menu .Polaris-Button--pressed:hover {
-  background-color: #F8F9FA !important;
+  background-color: #e1e3e5 !important;
+  transform: none;
+  box-shadow: none;
 }
 
 /* Floating Menu */
