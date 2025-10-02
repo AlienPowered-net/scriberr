@@ -64,6 +64,22 @@ BEGIN
         END IF;
     END IF;
     
+    -- Ensure CustomMention table exists
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'CustomMention' AND table_schema = 'public') THEN
+        CREATE TABLE "CustomMention" (
+            "id" TEXT NOT NULL,
+            "shopId" TEXT NOT NULL,
+            "name" TEXT NOT NULL,
+            "email" TEXT NOT NULL,
+            "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            "updatedAt" TIMESTAMP(3) NOT NULL,
+            CONSTRAINT "CustomMention_pkey" PRIMARY KEY ("id")
+        );
+        CREATE INDEX "CustomMention_shopId_idx" ON "CustomMention"("shopId");
+        ALTER TABLE "CustomMention" ADD CONSTRAINT "CustomMention_shopId_fkey" FOREIGN KEY ("shopId") REFERENCES "Shop"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        RAISE NOTICE 'Created CustomMention table';
+    END IF;
+
     -- Ensure session table has all required columns
     IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'session' AND table_schema = 'public') THEN
         -- Add any missing columns that might be needed

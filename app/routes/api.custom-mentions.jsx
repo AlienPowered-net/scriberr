@@ -17,6 +17,10 @@ export async function loader({ request }) {
     return json({ success: true, mentions });
   } catch (error) {
     console.error('Error fetching custom mentions:', error);
+    // If table doesn't exist yet (P2021), return empty array gracefully
+    if (error.code === 'P2021') {
+      return json({ success: true, mentions: [] });
+    }
     return json({ success: false, mentions: [], error: error.message }, { status: 500 });
   }
 }
@@ -66,6 +70,13 @@ export async function action({ request }) {
     return json({ success: false, error: "Invalid action" }, { status: 400 });
   } catch (error) {
     console.error('Error in custom mentions action:', error);
+    // If table doesn't exist yet (P2021), return helpful message
+    if (error.code === 'P2021') {
+      return json({ 
+        success: false, 
+        error: "Database migration pending. Please wait a moment and try again after the deployment completes." 
+      }, { status: 503 });
+    }
     return json({ success: false, error: error.message }, { status: 500 });
   }
 }
