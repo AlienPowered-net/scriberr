@@ -60,6 +60,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [showBorderColorPicker, setShowBorderColorPicker] = useState(false);
   const [borderColor, setBorderColor] = useState('#d1d5db');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [emojiPage, setEmojiPage] = useState(0);
   const [showHighlightPicker, setShowHighlightPicker] = useState(false);
   const [showFontFamilyPicker, setShowFontFamilyPicker] = useState(false);
   const [showToolbarTextColorPicker, setShowToolbarTextColorPicker] = useState(false);
@@ -150,22 +151,31 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           return ['span', { class: 'mention', 'data-id': node.attrs.id }, `@${node.attrs.label ?? node.attrs.id}`];
         },
         suggestion: {
-          items: ({ query }) => {
-            const suggestions = [
-              { id: 'lea-thompson', label: 'Lea Thompson' },
-              { id: 'cyndi-lauper', label: 'Cyndi Lauper' },
-              { id: 'tom-cruise', label: 'Tom Cruise' },
-              { id: 'madonna', label: 'Madonna' },
-              { id: 'jerry-hall', label: 'Jerry Hall' },
-              { id: 'joan-collins', label: 'Joan Collins' },
-              { id: 'winona-ryder', label: 'Winona Ryder' },
-              { id: 'christina-applegate', label: 'Christina Applegate' },
-              { id: 'alyssa-milano', label: 'Alyssa Milano' },
-              { id: 'molly-ringwald', label: 'Molly Ringwald' }
-            ];
-            return suggestions
-              .filter(item => item.label.toLowerCase().startsWith(query.toLowerCase()))
-              .slice(0, 5);
+          items: async ({ query }) => {
+            try {
+              const response = await fetch('/api/get-staff');
+              const data = await response.json();
+              
+              if (data.success && data.staffMembers) {
+                const filtered = data.staffMembers
+                  .filter(member => {
+                    const searchText = `${member.label} ${member.email}`.toLowerCase();
+                    return searchText.includes(query.toLowerCase());
+                  })
+                  .slice(0, 10);
+                
+                return filtered.length > 0 ? filtered : [{ id: 'no-results', label: 'No staff members found', disabled: true }];
+              }
+              
+              // Fallback to sample data if API fails
+              return [
+                { id: 'sample-1', label: 'Sample User 1' },
+                { id: 'sample-2', label: 'Sample User 2' }
+              ].filter(item => item.label.toLowerCase().includes(query.toLowerCase()));
+            } catch (error) {
+              console.error('Error fetching staff:', error);
+              return [{ id: 'error', label: 'Error loading staff members', disabled: true }];
+            }
           },
           render: () => {
             let component;
@@ -3290,69 +3300,124 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         </Modal.Section>
       </Modal>
 
-      {/* Emoji Picker Popup */}
-      {showEmojiPicker && (
-        <div style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          backgroundColor: 'white',
-          border: '1px solid #dee2e6',
-          borderRadius: '8px',
-          padding: '16px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          zIndex: 10000,
-          maxWidth: '400px',
-          maxHeight: '400px',
-          overflowY: 'auto'
-        }}>
-          <div style={{ marginBottom: '12px', fontWeight: 'bold', fontSize: '16px' }}>Select an Emoji</div>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(8, 1fr)', 
-            gap: '8px'
+      {/* Emoji Picker Popup with Pagination */}
+      {showEmojiPicker && (() => {
+        const allEmojis = ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '🥲', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '🥸', '😎', '🤓', '🧐', '😕', '😟', '🙁', '☹️', '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠', '🤬', '👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '👇', '☝️', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🫀', '🫁', '🦷', '🦴', '👀', '👁️', '👅', '👄', '💋', '🩸', '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '⭐', '🌟', '✨', '⚡', '🔥', '💥', '💯', '✅', '❌', '⚠️', '🎉', '🎊', '🎈', '🎁', '🏆', '🥇', '🥈', '🥉', '🎯', '🎮', '🎲', '🎭', '🎨', '🎪', '🎬', '🎤', '🎧', '🎼', '🎹', '🎺', '🎸', '🪕', '🎻', '🥁', '🪘', '📱', '💻', '⌨️', '🖥️', '🖨️', '🖱️', '🖲️', '💾', '💿', '📀', '📹', '📷', '📸', '📞', '☎️', '📠', '📺', '📻', '⏰', '⏱️', '⏲️', '🕰️', '⌚', '📡', '🔋', '🔌', '💡', '🔦', '🕯️', '🧯', '🛢️', '💸', '💵', '💴', '💶', '💷', '🪙', '💰', '💳', '🧾', '📧', '📨', '📩', '📤', '📥', '📦', '📫', '📪', '📬', '📭', '📮', '🗳️', '✏️', '✒️', '🖋️', '🖊️', '🖌️', '🖍️', '📝', '💼', '📁', '📂', '🗂️', '📅', '📆', '🗒️', '🗓️', '📇', '📈', '📉', '📊', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️', '🗃️', '🗄️', '🗑️'];
+        const emojisPerPage = 25;
+        const totalPages = Math.ceil(allEmojis.length / emojisPerPage);
+        const startIndex = emojiPage * emojisPerPage;
+        const endIndex = startIndex + emojisPerPage;
+        const currentEmojis = allEmojis.slice(startIndex, endIndex);
+
+        return (
+          <div style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: 'white',
+            border: '1px solid #dee2e6',
+            borderRadius: '8px',
+            padding: '16px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            zIndex: 10000,
+            minWidth: '350px',
+            maxHeight: '500px'
           }}>
-            {['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '🥲', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '🥸', '😎', '🤓', '🧐', '😕', '😟', '🙁', '☹️', '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠', '🤬', '👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '👇', '☝️', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🫀', '🫁', '🦷', '🦴', '👀', '👁️', '👅', '👄', '💋', '🩸', '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '⭐', '🌟', '✨', '⚡', '🔥', '💥', '💯', '✅', '❌', '⚠️', '🎉', '🎊', '🎈', '🎁', '🏆', '🥇', '🥈', '🥉', '🎯', '🎮', '🎲', '🎭', '🎨', '🎪', '🎬', '🎤', '🎧', '🎼', '🎹', '🎺', '🎸', '🪕', '🎻', '🥁', '🪘', '📱', '💻', '⌨️', '🖥️', '🖨️', '🖱️', '🖲️', '💾', '💿', '📀', '📹', '📷', '📸', '📞', '☎️', '📠', '📺', '📻', '⏰', '⏱️', '⏲️', '🕰️', '⌚', '📡', '🔋', '🔌', '💡', '🔦', '🕯️', '🧯', '🛢️', '💸', '💵', '💴', '💶', '💷', '🪙', '💰', '💳', '🧾', '📧', '📨', '📩', '📤', '📥', '📦', '📫', '📪', '📬', '📭', '📮', '🗳️', '✏️', '✒️', '🖋️', '🖊️', '🖌️', '🖍️', '📝', '💼', '📁', '📂', '🗂️', '📅', '📆', '🗒️', '🗓️', '📇', '📈', '📉', '📊', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️', '🗃️', '🗄️', '🗑️'].map((emoji) => (
-              <button
-                key={emoji}
+            <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: 'bold', fontSize: '16px' }}>Select an Emoji</span>
+              <span style={{ fontSize: '12px', color: '#6c757d' }}>Page {emojiPage + 1} of {totalPages}</span>
+            </div>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(5, 1fr)', 
+              gap: '8px',
+              marginBottom: '16px'
+            }}>
+              {currentEmojis.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => {
+                    editor.chain().focus().insertContent(emoji).run();
+                    setShowEmojiPicker(false);
+                    setEmojiPage(0);
+                  }}
+                  style={{
+                    fontSize: '28px',
+                    padding: '12px',
+                    border: '1px solid #e0e0e0',
+                    background: 'white',
+                    cursor: 'pointer',
+                    borderRadius: '6px',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = '#f0f0f0';
+                    e.target.style.transform = 'scale(1.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'white';
+                    e.target.style.transform = 'scale(1)';
+                  }}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #dee2e6', paddingTop: '12px' }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  onClick={() => setEmojiPage(Math.max(0, emojiPage - 1))}
+                  disabled={emojiPage === 0}
+                  style={{
+                    padding: '6px 12px',
+                    backgroundColor: emojiPage === 0 ? '#e0e0e0' : '#007bff',
+                    color: emojiPage === 0 ? '#999' : 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: emojiPage === 0 ? 'not-allowed' : 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  ← Previous
+                </button>
+                <button 
+                  onClick={() => setEmojiPage(Math.min(totalPages - 1, emojiPage + 1))}
+                  disabled={emojiPage === totalPages - 1}
+                  style={{
+                    padding: '6px 12px',
+                    backgroundColor: emojiPage === totalPages - 1 ? '#e0e0e0' : '#007bff',
+                    color: emojiPage === totalPages - 1 ? '#999' : 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: emojiPage === totalPages - 1 ? 'not-allowed' : 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  Next →
+                </button>
+              </div>
+              <button 
                 onClick={() => {
-                  editor.chain().focus().insertContent(emoji).run();
                   setShowEmojiPicker(false);
+                  setEmojiPage(0);
                 }}
                 style={{
-                  fontSize: '24px',
-                  padding: '8px',
+                  padding: '6px 16px',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
                   border: 'none',
-                  background: 'transparent',
-                  cursor: 'pointer',
                   borderRadius: '4px',
-                  transition: 'background 0.2s'
+                  cursor: 'pointer',
+                  fontSize: '14px'
                 }}
-                onMouseEnter={(e) => e.target.style.background = '#f0f0f0'}
-                onMouseLeave={(e) => e.target.style.background = 'transparent'}
               >
-                {emoji}
+                Close
               </button>
-            ))}
+            </div>
           </div>
-          <div style={{ marginTop: '12px', textAlign: 'right' }}>
-            <button 
-              onClick={() => setShowEmojiPicker(false)}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Highlight Color Picker */}
       {showHighlightPicker && (
