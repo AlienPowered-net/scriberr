@@ -351,12 +351,13 @@
 }
 
 .notion-bubble-menu .Polaris-Button:hover {
-  background-color: #f7f6f3 !important;
+  background-color: #F8F9FA !important;
   transform: scale(1.05);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .notion-bubble-menu .Polaris-Button:active {
+  background-color: #E9ECEF !important;
   transform: scale(0.98);
 }
 
@@ -365,7 +366,7 @@
 }
 
 .notion-bubble-menu .Polaris-Button--pressed:hover {
-  background-color: #d4d6d9 !important;
+  background-color: #F8F9FA !important;
 }
 
 /* Floating Menu */

@@ -154,28 +154,53 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         suggestion: {
           items: async ({ query }) => {
             try {
-              const response = await fetch('/api/get-staff');
-              const data = await response.json();
+              // Fetch both Shopify staff and custom mentions in parallel
+              const [staffResponse, customResponse] = await Promise.all([
+                fetch('/api/get-staff'),
+                fetch('/api/custom-mentions')
+              ]);
               
-              if (data.success && data.staffMembers) {
-                const filtered = data.staffMembers
-                  .filter(member => {
-                    const searchText = `${member.label} ${member.email}`.toLowerCase();
-                    return searchText.includes(query.toLowerCase());
-                  })
-                  .slice(0, 10);
-                
-                return filtered.length > 0 ? filtered : [{ id: 'no-results', label: 'No staff members found', disabled: true }];
+              const staffData = await staffResponse.json();
+              const customData = await customResponse.json();
+              
+              let allMentions = [];
+              
+              // Add Shopify staff members
+              if (staffData.success && staffData.staffMembers) {
+                allMentions = allMentions.concat(
+                  staffData.staffMembers.map(member => ({
+                    id: member.id,
+                    label: member.label,
+                    email: member.email,
+                    source: 'shopify'
+                  }))
+                );
               }
               
-              // Fallback to sample data if API fails
-              return [
-                { id: 'sample-1', label: 'Sample User 1' },
-                { id: 'sample-2', label: 'Sample User 2' }
-              ].filter(item => item.label.toLowerCase().includes(query.toLowerCase()));
+              // Add custom mentions
+              if (customData.success && customData.mentions) {
+                allMentions = allMentions.concat(
+                  customData.mentions.map(mention => ({
+                    id: mention.id,
+                    label: mention.name,
+                    email: mention.email,
+                    source: 'custom'
+                  }))
+                );
+              }
+              
+              // Filter based on query
+              const filtered = allMentions
+                .filter(item => {
+                  const searchText = `${item.label} ${item.email}`.toLowerCase();
+                  return searchText.includes(query.toLowerCase());
+                })
+                .slice(0, 10);
+              
+              return filtered.length > 0 ? filtered : [{ id: 'no-results', label: 'No mentions found. Add people in Settings.', disabled: true }];
             } catch (error) {
-              console.error('Error fetching staff:', error);
-              return [{ id: 'error', label: 'Error loading staff members', disabled: true }];
+              console.error('Error fetching mentions:', error);
+              return [{ id: 'error', label: 'Error loading mentions', disabled: true }];
             }
           },
           render: () => {
@@ -202,24 +227,28 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   const button = document.createElement('button');
                   button.className = 'mention-item';
                   button.textContent = item.label;
+                  button.disabled = item.disabled || false;
                   button.style.cssText = `
                     display: block;
                     width: 100%;
                     text-align: left;
                     padding: 8px 12px;
                     border: none;
-                    background: ${index === props.selectedIndex ? '#f0f0f0' : 'transparent'};
-                    cursor: pointer;
+                    background: ${index === props.selectedIndex && !item.disabled ? '#f0f0f0' : 'transparent'};
+                    cursor: ${item.disabled ? 'not-allowed' : 'pointer'};
+                    opacity: ${item.disabled ? '0.6' : '1'};
                     border-radius: 4px;
                     transition: background 0.2s;
                   `;
-                  button.addEventListener('click', () => props.command({ id: item.id, label: item.label }));
-                  button.addEventListener('mouseenter', () => {
-                    button.style.background = '#f0f0f0';
-                  });
-                  button.addEventListener('mouseleave', () => {
-                    button.style.background = index === props.selectedIndex ? '#f0f0f0' : 'transparent';
-                  });
+                  if (!item.disabled) {
+                    button.addEventListener('click', () => props.command({ id: item.id, label: item.label }));
+                    button.addEventListener('mouseenter', () => {
+                      button.style.background = '#f0f0f0';
+                    });
+                    button.addEventListener('mouseleave', () => {
+                      button.style.background = index === props.selectedIndex ? '#f0f0f0' : 'transparent';
+                    });
+                  }
                   component.appendChild(button);
                 });
 
@@ -239,24 +268,28 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   const button = document.createElement('button');
                   button.className = 'mention-item';
                   button.textContent = item.label;
+                  button.disabled = item.disabled || false;
                   button.style.cssText = `
                     display: block;
                     width: 100%;
                     text-align: left;
                     padding: 8px 12px;
                     border: none;
-                    background: ${index === props.selectedIndex ? '#f0f0f0' : 'transparent'};
-                    cursor: pointer;
+                    background: ${index === props.selectedIndex && !item.disabled ? '#f0f0f0' : 'transparent'};
+                    cursor: ${item.disabled ? 'not-allowed' : 'pointer'};
+                    opacity: ${item.disabled ? '0.6' : '1'};
                     border-radius: 4px;
                     transition: background 0.2s;
                   `;
-                  button.addEventListener('click', () => props.command({ id: item.id, label: item.label }));
-                  button.addEventListener('mouseenter', () => {
-                    button.style.background = '#f0f0f0';
-                  });
-                  button.addEventListener('mouseleave', () => {
-                    button.style.background = index === props.selectedIndex ? '#f0f0f0' : 'transparent';
-                  });
+                  if (!item.disabled) {
+                    button.addEventListener('click', () => props.command({ id: item.id, label: item.label }));
+                    button.addEventListener('mouseenter', () => {
+                      button.style.background = '#f0f0f0';
+                    });
+                    button.addEventListener('mouseleave', () => {
+                      button.style.background = index === props.selectedIndex ? '#f0f0f0' : 'transparent';
+                    });
+                  }
                   component.appendChild(button);
                 });
 

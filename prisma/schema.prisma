@@ -17,6 +17,7 @@ model Shop {
 
   folders   Folder[]
   notes     Note[]
+  customMentions CustomMention[]
   createdAt DateTime @default(now())
 }
 
@@ -78,4 +79,16 @@ model Session {
 
   @@index([shop])
   @@map("session")
+}
+
+model CustomMention {
+  id        String   @id @default(cuid())
+  shopId    String
+  name      String
+  email     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId])
 }
