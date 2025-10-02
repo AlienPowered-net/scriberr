@@ -5,45 +5,60 @@ export async function loader({ request }) {
   try {
     const { admin, session } = await shopify.authenticate.admin(request);
     
-    // Query to get staff members
+    console.log('Fetching staff members for shop:', session.shop);
+    
+    // Query to get shop owner and current user info as a fallback
+    // Note: Full staff list requires collaborator account access
     const response = await admin.graphql(
       `#graphql
       query {
         shop {
-          staffMembers(first: 50) {
-            edges {
-              node {
-                id
-                name
-                email
-                isShopOwner
-                active
-              }
-            }
-          }
+          name
+          email
+          contactEmail
         }
       }`
     );
 
     const responseJson = await response.json();
+    console.log('GraphQL Response:', JSON.stringify(responseJson, null, 2));
     
-    if (responseJson.data?.shop?.staffMembers) {
-      const staffMembers = responseJson.data.shop.staffMembers.edges
-        .map(edge => edge.node)
-        .filter(member => member.active)
-        .map(member => ({
-          id: member.id.split('/').pop(), // Extract numeric ID
-          label: member.name || member.email,
-          email: member.email,
-          isOwner: member.isShopOwner
-        }));
+    if (responseJson.data?.shop) {
+      const shop = responseJson.data.shop;
+      
+      // Create staff members array with available info
+      const staffMembers = [];
+      
+      // Add shop owner/primary contact
+      if (shop.email || shop.contactEmail) {
+        staffMembers.push({
+          id: 'shop-owner',
+          label: `Shop Owner (${shop.name})`,
+          email: shop.email || shop.contactEmail,
+          isOwner: true
+        });
+      }
+      
+      // Add current user
+      if (session.onlineAccessInfo?.associated_user) {
+        const user = session.onlineAccessInfo.associated_user;
+        staffMembers.push({
+          id: user.id.toString(),
+          label: `${user.first_name} ${user.last_name}`.trim() || user.email,
+          email: user.email,
+          isOwner: false
+        });
+      }
 
+      console.log('Returning staff members:', staffMembers);
       return json({ success: true, staffMembers });
     }
 
+    console.log('No shop data found in response');
     return json({ success: false, staffMembers: [] });
   } catch (error) {
     console.error('Error fetching staff members:', error);
+    console.error('Error stack:', error.stack);
     return json({ success: false, staffMembers: [], error: error.message });
   }
 }

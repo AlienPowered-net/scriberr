@@ -61,6 +61,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [borderColor, setBorderColor] = useState('#d1d5db');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [emojiPage, setEmojiPage] = useState(0);
+  const [emojiSearchQuery, setEmojiSearchQuery] = useState('');
   const [showHighlightPicker, setShowHighlightPicker] = useState(false);
   const [showFontFamilyPicker, setShowFontFamilyPicker] = useState(false);
   const [showToolbarTextColorPicker, setShowToolbarTextColorPicker] = useState(false);
@@ -3300,14 +3301,187 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         </Modal.Section>
       </Modal>
 
-      {/* Emoji Picker Popup with Pagination */}
+      {/* Emoji Picker Popup with Pagination and Search */}
       {showEmojiPicker && (() => {
-        const allEmojis = ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '🥲', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '🥸', '😎', '🤓', '🧐', '😕', '😟', '🙁', '☹️', '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠', '🤬', '👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '👇', '☝️', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🫀', '🫁', '🦷', '🦴', '👀', '👁️', '👅', '👄', '💋', '🩸', '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '⭐', '🌟', '✨', '⚡', '🔥', '💥', '💯', '✅', '❌', '⚠️', '🎉', '🎊', '🎈', '🎁', '🏆', '🥇', '🥈', '🥉', '🎯', '🎮', '🎲', '🎭', '🎨', '🎪', '🎬', '🎤', '🎧', '🎼', '🎹', '🎺', '🎸', '🪕', '🎻', '🥁', '🪘', '📱', '💻', '⌨️', '🖥️', '🖨️', '🖱️', '🖲️', '💾', '💿', '📀', '📹', '📷', '📸', '📞', '☎️', '📠', '📺', '📻', '⏰', '⏱️', '⏲️', '🕰️', '⌚', '📡', '🔋', '🔌', '💡', '🔦', '🕯️', '🧯', '🛢️', '💸', '💵', '💴', '💶', '💷', '🪙', '💰', '💳', '🧾', '📧', '📨', '📩', '📤', '📥', '📦', '📫', '📪', '📬', '📭', '📮', '🗳️', '✏️', '✒️', '🖋️', '🖊️', '🖌️', '🖍️', '📝', '💼', '📁', '📂', '🗂️', '📅', '📆', '🗒️', '🗓️', '📇', '📈', '📉', '📊', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️', '🗃️', '🗄️', '🗑️'];
+        const emojiData = [
+          { emoji: '😀', tags: 'happy smile grin' },
+          { emoji: '😃', tags: 'happy smile joy' },
+          { emoji: '😄', tags: 'happy smile laugh' },
+          { emoji: '😁', tags: 'happy smile grin' },
+          { emoji: '😆', tags: 'happy laugh lol' },
+          { emoji: '😅', tags: 'happy sweat laugh' },
+          { emoji: '🤣', tags: 'laugh lol rofl' },
+          { emoji: '😂', tags: 'laugh cry joy' },
+          { emoji: '🙂', tags: 'smile happy' },
+          { emoji: '🙃', tags: 'smile upside' },
+          { emoji: '😉', tags: 'wink flirt' },
+          { emoji: '😊', tags: 'happy smile blush' },
+          { emoji: '😇', tags: 'angel halo innocent' },
+          { emoji: '🥰', tags: 'love hearts smile' },
+          { emoji: '😍', tags: 'love heart eyes' },
+          { emoji: '🤩', tags: 'star eyes wow' },
+          { emoji: '😘', tags: 'kiss love' },
+          { emoji: '😗', tags: 'kiss' },
+          { emoji: '😚', tags: 'kiss closed eyes' },
+          { emoji: '😙', tags: 'kiss smile' },
+          { emoji: '🥲', tags: 'smile tear happy cry' },
+          { emoji: '😋', tags: 'yummy tasty delicious' },
+          { emoji: '😛', tags: 'tongue' },
+          { emoji: '😜', tags: 'wink tongue' },
+          { emoji: '🤪', tags: 'crazy wild' },
+          { emoji: '😝', tags: 'tongue eyes' },
+          { emoji: '🤑', tags: 'money rich dollar' },
+          { emoji: '🤗', tags: 'hug' },
+          { emoji: '🤭', tags: 'giggle blush' },
+          { emoji: '🤫', tags: 'shush quiet silence' },
+          { emoji: '🤔', tags: 'think hmm' },
+          { emoji: '🤐', tags: 'zipper quiet' },
+          { emoji: '🤨', tags: 'eyebrow suspicious' },
+          { emoji: '😐', tags: 'neutral meh' },
+          { emoji: '😑', tags: 'expressionless' },
+          { emoji: '😶', tags: 'no mouth' },
+          { emoji: '😏', tags: 'smirk' },
+          { emoji: '😒', tags: 'unamused annoyed' },
+          { emoji: '🙄', tags: 'eye roll annoyed' },
+          { emoji: '😬', tags: 'grimace awkward' },
+          { emoji: '🤥', tags: 'lie pinocchio' },
+          { emoji: '😌', tags: 'relieved' },
+          { emoji: '😔', tags: 'sad pensive' },
+          { emoji: '😪', tags: 'sleepy tired' },
+          { emoji: '🤤', tags: 'drool' },
+          { emoji: '😴', tags: 'sleep zzz' },
+          { emoji: '😷', tags: 'sick mask' },
+          { emoji: '🤒', tags: 'sick fever' },
+          { emoji: '🤕', tags: 'hurt bandage' },
+          { emoji: '🤢', tags: 'sick nausea' },
+          { emoji: '🤮', tags: 'vomit sick' },
+          { emoji: '🤧', tags: 'sneeze sick' },
+          { emoji: '🥵', tags: 'hot sweat' },
+          { emoji: '🥶', tags: 'cold freeze' },
+          { emoji: '🥴', tags: 'dizzy drunk' },
+          { emoji: '😵', tags: 'dizzy confused' },
+          { emoji: '🤯', tags: 'mind blown shocked' },
+          { emoji: '🤠', tags: 'cowboy hat' },
+          { emoji: '🥳', tags: 'party celebrate' },
+          { emoji: '🥸', tags: 'disguise' },
+          { emoji: '😎', tags: 'cool sunglasses' },
+          { emoji: '🤓', tags: 'nerd glasses' },
+          { emoji: '🧐', tags: 'monocle' },
+          { emoji: '😕', tags: 'confused' },
+          { emoji: '😟', tags: 'worried' },
+          { emoji: '🙁', tags: 'sad frown' },
+          { emoji: '☹️', tags: 'sad frown' },
+          { emoji: '😮', tags: 'wow surprised' },
+          { emoji: '😯', tags: 'surprised' },
+          { emoji: '😲', tags: 'shocked' },
+          { emoji: '😳', tags: 'flushed embarrassed' },
+          { emoji: '🥺', tags: 'pleading puppy eyes' },
+          { emoji: '😦', tags: 'frown worried' },
+          { emoji: '😧', tags: 'anguish worried' },
+          { emoji: '😨', tags: 'fear scared' },
+          { emoji: '😰', tags: 'anxious nervous sweat' },
+          { emoji: '😥', tags: 'sad sweat' },
+          { emoji: '😢', tags: 'cry sad tear' },
+          { emoji: '😭', tags: 'cry sobbing' },
+          { emoji: '😱', tags: 'scream fear' },
+          { emoji: '😖', tags: 'confounded upset' },
+          { emoji: '😣', tags: 'persevere struggle' },
+          { emoji: '😞', tags: 'disappointed sad' },
+          { emoji: '😓', tags: 'sweat tired' },
+          { emoji: '😩', tags: 'weary tired' },
+          { emoji: '😫', tags: 'tired exhausted' },
+          { emoji: '🥱', tags: 'yawn tired bored' },
+          { emoji: '😤', tags: 'triumph proud' },
+          { emoji: '😡', tags: 'angry mad' },
+          { emoji: '😠', tags: 'angry upset' },
+          { emoji: '🤬', tags: 'cursing angry' },
+          { emoji: '👍', tags: 'thumbs up good yes' },
+          { emoji: '👎', tags: 'thumbs down bad no' },
+          { emoji: '👌', tags: 'ok okay good' },
+          { emoji: '✌️', tags: 'peace victory' },
+          { emoji: '🤞', tags: 'fingers crossed luck' },
+          { emoji: '🤟', tags: 'love you sign' },
+          { emoji: '🤘', tags: 'rock on' },
+          { emoji: '🤙', tags: 'call me shaka' },
+          { emoji: '👈', tags: 'point left' },
+          { emoji: '👉', tags: 'point right' },
+          { emoji: '👆', tags: 'point up' },
+          { emoji: '👇', tags: 'point down' },
+          { emoji: '☝️', tags: 'point up' },
+          { emoji: '👏', tags: 'clap applause' },
+          { emoji: '🙌', tags: 'hands raised celebrate' },
+          { emoji: '👐', tags: 'hands open' },
+          { emoji: '🤲', tags: 'palms together prayer' },
+          { emoji: '🤝', tags: 'handshake deal' },
+          { emoji: '🙏', tags: 'pray thanks please' },
+          { emoji: '💪', tags: 'muscle strong flex' },
+          { emoji: '❤️', tags: 'love heart red' },
+          { emoji: '🧡', tags: 'love heart orange' },
+          { emoji: '💛', tags: 'love heart yellow' },
+          { emoji: '💚', tags: 'love heart green' },
+          { emoji: '💙', tags: 'love heart blue' },
+          { emoji: '💜', tags: 'love heart purple' },
+          { emoji: '🖤', tags: 'love heart black' },
+          { emoji: '🤍', tags: 'love heart white' },
+          { emoji: '🤎', tags: 'love heart brown' },
+          { emoji: '💔', tags: 'broken heart sad' },
+          { emoji: '⭐', tags: 'star' },
+          { emoji: '🌟', tags: 'star sparkle' },
+          { emoji: '✨', tags: 'sparkles stars' },
+          { emoji: '⚡', tags: 'lightning bolt' },
+          { emoji: '🔥', tags: 'fire hot flame' },
+          { emoji: '💥', tags: 'boom explosion' },
+          { emoji: '💯', tags: 'hundred perfect' },
+          { emoji: '✅', tags: 'check mark done yes' },
+          { emoji: '❌', tags: 'x cross no' },
+          { emoji: '⚠️', tags: 'warning caution' },
+          { emoji: '🎉', tags: 'party celebrate' },
+          { emoji: '🎊', tags: 'party confetti' },
+          { emoji: '🎈', tags: 'balloon party' },
+          { emoji: '🎁', tags: 'gift present' },
+          { emoji: '🏆', tags: 'trophy win champion' },
+          { emoji: '🥇', tags: 'gold medal first' },
+          { emoji: '🥈', tags: 'silver medal second' },
+          { emoji: '🥉', tags: 'bronze medal third' },
+          { emoji: '🎯', tags: 'target bullseye' },
+          { emoji: '🎮', tags: 'game controller' },
+          { emoji: '📱', tags: 'phone mobile' },
+          { emoji: '💻', tags: 'laptop computer' },
+          { emoji: '⌨️', tags: 'keyboard' },
+          { emoji: '🖥️', tags: 'computer desktop' },
+          { emoji: '💡', tags: 'light bulb idea' },
+          { emoji: '🔥', tags: 'fire hot' },
+          { emoji: '💰', tags: 'money bag cash' },
+          { emoji: '💳', tags: 'credit card' },
+          { emoji: '📧', tags: 'email mail' },
+          { emoji: '📨', tags: 'incoming mail' },
+          { emoji: '📩', tags: 'envelope arrow' },
+          { emoji: '📝', tags: 'memo note write' },
+          { emoji: '💼', tags: 'briefcase work' },
+          { emoji: '📁', tags: 'folder file' },
+          { emoji: '📂', tags: 'folder open' },
+          { emoji: '📅', tags: 'calendar date' },
+          { emoji: '📆', tags: 'calendar' },
+          { emoji: '📈', tags: 'chart up growth' },
+          { emoji: '📉', tags: 'chart down' },
+          { emoji: '📊', tags: 'bar chart data' },
+          { emoji: '✏️', tags: 'pencil write' },
+          { emoji: '✂️', tags: 'scissors cut' },
+        ];
+
+        // Filter emojis based on search query
+        const filteredEmojis = emojiSearchQuery.trim()
+          ? emojiData.filter(item => 
+              item.tags.toLowerCase().includes(emojiSearchQuery.toLowerCase()) ||
+              item.emoji.includes(emojiSearchQuery)
+            )
+          : emojiData;
+
         const emojisPerPage = 25;
-        const totalPages = Math.ceil(allEmojis.length / emojisPerPage);
+        const totalPages = Math.ceil(filteredEmojis.length / emojisPerPage);
         const startIndex = emojiPage * emojisPerPage;
         const endIndex = startIndex + emojisPerPage;
-        const currentEmojis = allEmojis.slice(startIndex, endIndex);
+        const currentEmojis = filteredEmojis.slice(startIndex, endIndex);
 
         return (
           <div style={{
@@ -3322,25 +3496,54 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
             zIndex: 10000,
             minWidth: '350px',
-            maxHeight: '500px'
+            maxHeight: '550px'
           }}>
             <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontWeight: 'bold', fontSize: '16px' }}>Select an Emoji</span>
-              <span style={{ fontSize: '12px', color: '#6c757d' }}>Page {emojiPage + 1} of {totalPages}</span>
+              <span style={{ fontSize: '12px', color: '#6c757d' }}>
+                {filteredEmojis.length > 0 ? `Page ${emojiPage + 1} of ${totalPages}` : 'No results'}
+              </span>
             </div>
+            
+            {/* Search Input */}
+            <div style={{ marginBottom: '16px' }}>
+              <input
+                type="text"
+                placeholder="Search emojis (e.g., happy, heart, fire)..."
+                value={emojiSearchQuery}
+                onChange={(e) => {
+                  setEmojiSearchQuery(e.target.value);
+                  setEmojiPage(0); // Reset to first page on search
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid #dee2e6',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  boxSizing: 'border-box',
+                  outline: 'none'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#007bff'}
+                onBlur={(e) => e.target.style.borderColor = '#dee2e6'}
+              />
+            </div>
+
             <div style={{ 
               display: 'grid', 
               gridTemplateColumns: 'repeat(5, 1fr)', 
               gap: '8px',
-              marginBottom: '16px'
+              marginBottom: '16px',
+              minHeight: '280px'
             }}>
-              {currentEmojis.map((emoji) => (
+              {currentEmojis.length > 0 ? currentEmojis.map((item) => (
                 <button
-                  key={emoji}
+                  key={item.emoji}
                   onClick={() => {
-                    editor.chain().focus().insertContent(emoji).run();
+                    editor.chain().focus().insertContent(item.emoji).run();
                     setShowEmojiPicker(false);
                     setEmojiPage(0);
+                    setEmojiSearchQuery('');
                   }}
                   style={{
                     fontSize: '28px',
@@ -3351,6 +3554,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     borderRadius: '6px',
                     transition: 'all 0.2s'
                   }}
+                  title={item.tags}
                   onMouseEnter={(e) => {
                     e.target.style.background = '#f0f0f0';
                     e.target.style.transform = 'scale(1.1)';
@@ -3360,9 +3564,18 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     e.target.style.transform = 'scale(1)';
                   }}
                 >
-                  {emoji}
+                  {item.emoji}
                 </button>
-              ))}
+              )) : (
+                <div style={{ 
+                  gridColumn: '1 / -1', 
+                  textAlign: 'center', 
+                  padding: '40px 20px',
+                  color: '#6c757d'
+                }}>
+                  No emojis found for "{emojiSearchQuery}"
+                </div>
+              )}
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #dee2e6', paddingTop: '12px' }}>
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -3401,6 +3614,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 onClick={() => {
                   setShowEmojiPicker(false);
                   setEmojiPage(0);
+                  setEmojiSearchQuery('');
                 }}
                 style={{
                   padding: '6px 16px',
