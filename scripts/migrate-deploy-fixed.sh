@@ -12,6 +12,37 @@ fi
 # Try to deploy migrations
 if npx prisma migrate deploy; then
     echo "Migrations deployed successfully"
+    
+    # Ensure CustomMention table exists even after successful migration
+    echo "Ensuring CustomMention table exists..."
+    if npx prisma db execute --stdin << 'CUSTOMEOF'
+DO $$
+BEGIN
+    -- Ensure CustomMention table exists
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'CustomMention' AND table_schema = 'public') THEN
+        CREATE TABLE "CustomMention" (
+            "id" TEXT NOT NULL,
+            "shopId" TEXT NOT NULL,
+            "name" TEXT NOT NULL,
+            "email" TEXT NOT NULL,
+            "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            "updatedAt" TIMESTAMP(3) NOT NULL,
+            CONSTRAINT "CustomMention_pkey" PRIMARY KEY ("id")
+        );
+        CREATE INDEX "CustomMention_shopId_idx" ON "CustomMention"("shopId");
+        ALTER TABLE "CustomMention" ADD CONSTRAINT "CustomMention_shopId_fkey" FOREIGN KEY ("shopId") REFERENCES "Shop"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        RAISE NOTICE 'Created CustomMention table';
+    ELSE
+        RAISE NOTICE 'CustomMention table already exists';
+    END IF;
+END $$;
+CUSTOMEOF
+    then
+        echo "CustomMention table check completed successfully"
+    else
+        echo "CustomMention table check failed, but continuing..."
+    fi
+    
     exit 0
 fi
 
