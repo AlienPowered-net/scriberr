@@ -82,6 +82,53 @@ async function initializeDatabase() {
     const sessionCount = await prisma.$queryRaw`SELECT COUNT(*) as count FROM "session"`;
     console.log('✅ Session table is accessible, count:', sessionCount[0].count);
     
+    // Ensure CustomMention table exists
+    console.log('Checking CustomMention table...');
+    let customMentionExists = false;
+    try {
+      await prisma.$queryRaw`SELECT 1 FROM "CustomMention" LIMIT 1`;
+      customMentionExists = true;
+      console.log('✅ CustomMention table exists');
+    } catch (error) {
+      console.log('CustomMention table does not exist, creating...');
+    }
+    
+    if (!customMentionExists) {
+      try {
+        await prisma.$executeRaw`
+          CREATE TABLE IF NOT EXISTS "public"."CustomMention" (
+            "id" TEXT NOT NULL,
+            "shopId" TEXT NOT NULL,
+            "name" TEXT NOT NULL,
+            "email" TEXT NOT NULL,
+            "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT "CustomMention_pkey" PRIMARY KEY ("id")
+          )
+        `;
+        
+        await prisma.$executeRaw`CREATE INDEX IF NOT EXISTS "CustomMention_shopId_idx" ON "public"."CustomMention"("shopId")`;
+        
+        // Add foreign key constraint
+        await prisma.$executeRaw`
+          ALTER TABLE "public"."CustomMention" 
+          DROP CONSTRAINT IF EXISTS "CustomMention_shopId_fkey"
+        `;
+        await prisma.$executeRaw`
+          ALTER TABLE "public"."CustomMention" 
+          ADD CONSTRAINT "CustomMention_shopId_fkey" 
+          FOREIGN KEY ("shopId") REFERENCES "Shop"("id") 
+          ON DELETE CASCADE ON UPDATE CASCADE
+        `;
+        
+        console.log('✅ Successfully created CustomMention table');
+      } catch (createError) {
+        console.error('Error creating CustomMention table:', createError.message);
+        // Don't fail the build if table creation fails
+        console.log('Continuing despite CustomMention table creation error...');
+      }
+    }
+    
     console.log('✅ Database initialization completed successfully');
     
   } catch (error) {
