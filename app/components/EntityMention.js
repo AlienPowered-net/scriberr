@@ -57,7 +57,7 @@ export const EntityMention = Node.create({
 
   inline: true,
 
-  selectable: false,
+  selectable: true,
 
   atom: true,
 
@@ -160,13 +160,8 @@ export const EntityMention = Node.create({
 
     // Add entity type class for styling
     attrs.class = `entity-mention entity-mention-${entityType}`;
-
-    // If there's a URL, make it clickable
-    if (url) {
-      attrs.onclick = `window.open('${url}', '_blank')`;
-      attrs.style = 'cursor: pointer;';
-      attrs.title = `Open ${label} in Shopify Admin`;
-    }
+    attrs.style = 'cursor: pointer;';
+    attrs.title = url ? `Click to view ${label} in Shopify Admin` : label;
 
     return [
       'span',

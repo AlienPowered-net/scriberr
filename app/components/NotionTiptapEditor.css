@@ -518,6 +518,30 @@
   padding: 4px;
 }
 
+/* Entity Mention Bubble Menu */
+.entity-mention-bubble-menu {
+  background: white;
+  border: 1px solid #e1e3e5;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 10001;
+  max-width: 400px;
+}
+
+.entity-mention-bubble-menu .Polaris-Card {
+  box-shadow: none;
+  border: none;
+}
+
+.entity-mention-bubble-menu .Polaris-Button {
+  transition: all 0.2s ease;
+}
+
+.entity-mention-bubble-menu .Polaris-Button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 /* Bubble Menu Button Hover Effects */
 .notion-bubble-menu .Polaris-Button {
   transition: all 0.2s ease;
