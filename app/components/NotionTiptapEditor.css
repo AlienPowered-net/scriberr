@@ -267,12 +267,11 @@
   background-color: #d4d6d9;
 }
 
-/* Entity Mentions */
+/* Entity Mentions - Default fallback style */
 .notion-editor .entity-mention {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background-color: #fff3cd;
   border-radius: 6px;
   padding: 3px 8px;
   color: #37352f;
@@ -280,15 +279,12 @@
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
-  border: 1px solid #ffc107;
   font-size: 0.95em;
   white-space: nowrap;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .notion-editor .entity-mention:hover {
-  background-color: #ffe69c;
-  border-color: #ffb700;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }

@@ -40,7 +40,9 @@ import {
   Tooltip,
   ButtonGroup,
   Box,
-  Badge
+  Badge,
+  Spinner,
+  SkeletonBodyText
 } from '@shopify/polaris';
 import { 
   SmileyHappyIcon,
@@ -122,7 +124,20 @@ const getEntityIcon = (type) => {
 
 const getEntityIconSvg = (type) => {
   const IconComponent = getEntityIcon(type);
-  return `<svg viewBox="0 0 20 20" style="width: 20px; height: 20px; flex-shrink: 0;" fill="currentColor"><path d="${IconComponent.body}"/></svg>`;
+  // Create a proper SVG element with Polaris icon paths
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 20 20');
+  svg.setAttribute('width', '20');
+  svg.setAttribute('height', '20');
+  svg.style.flexShrink = '0';
+  svg.style.fill = 'currentColor';
+  
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', IconComponent.body);
+  path.setAttribute('fill', 'currentColor');
+  
+  svg.appendChild(path);
+  return svg;
 };
 
 const getEntityColor = (type) => {
@@ -421,19 +436,39 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   button.className = 'entity-mention-item';
                   button.disabled = item.disabled || false;
                   
-                  const iconSvg = getEntityIconSvg(item.type);
-                  const metadata = getMetadataPreview(item.type, item.metadata);
                   const bgColor = getEntityColor(item.type);
                   
-                  button.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                      ${iconSvg}
-                      <div style="flex: 1; min-width: 0;">
-                        <div style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.label}</div>
-                        ${metadata ? `<div style="font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${metadata}</div>` : ''}
-                      </div>
-                    </div>
-                  `;
+                  // Create container div
+                  const container = document.createElement('div');
+                  container.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+                  
+                  // Add icon
+                  if (item.type) {
+                    const iconSvg = getEntityIconSvg(item.type);
+                    container.appendChild(iconSvg);
+                  }
+                  
+                  // Create content wrapper
+                  const contentDiv = document.createElement('div');
+                  contentDiv.style.cssText = 'flex: 1; min-width: 0;';
+                  
+                  // Add label
+                  const labelDiv = document.createElement('div');
+                  labelDiv.style.cssText = 'font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
+                  labelDiv.textContent = item.label;
+                  contentDiv.appendChild(labelDiv);
+                  
+                  // Add metadata if exists
+                  const metadata = getMetadataPreview(item.type, item.metadata);
+                  if (metadata) {
+                    const metadataDiv = document.createElement('div');
+                    metadataDiv.style.cssText = 'font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
+                    metadataDiv.textContent = metadata;
+                    contentDiv.appendChild(metadataDiv);
+                  }
+                  
+                  container.appendChild(contentDiv);
+                  button.appendChild(container);
                   
                   button.style.cssText = `
                     display: block;
@@ -484,19 +519,39 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   button.className = 'entity-mention-item';
                   button.disabled = item.disabled || false;
                   
-                  const iconSvg = getEntityIconSvg(item.type);
-                  const metadata = getMetadataPreview(item.type, item.metadata);
                   const bgColor = getEntityColor(item.type);
                   
-                  button.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                      ${iconSvg}
-                      <div style="flex: 1; min-width: 0;">
-                        <div style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.label}</div>
-                        ${metadata ? `<div style="font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${metadata}</div>` : ''}
-                      </div>
-                    </div>
-                  `;
+                  // Create container div
+                  const container = document.createElement('div');
+                  container.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+                  
+                  // Add icon
+                  if (item.type) {
+                    const iconSvg = getEntityIconSvg(item.type);
+                    container.appendChild(iconSvg);
+                  }
+                  
+                  // Create content wrapper
+                  const contentDiv = document.createElement('div');
+                  contentDiv.style.cssText = 'flex: 1; min-width: 0;';
+                  
+                  // Add label
+                  const labelDiv = document.createElement('div');
+                  labelDiv.style.cssText = 'font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
+                  labelDiv.textContent = item.label;
+                  contentDiv.appendChild(labelDiv);
+                  
+                  // Add metadata if exists
+                  const metadata = getMetadataPreview(item.type, item.metadata);
+                  if (metadata) {
+                    const metadataDiv = document.createElement('div');
+                    metadataDiv.style.cssText = 'font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
+                    metadataDiv.textContent = metadata;
+                    contentDiv.appendChild(metadataDiv);
+                  }
+                  
+                  container.appendChild(contentDiv);
+                  button.appendChild(container);
                   
                   button.style.cssText = `
                     display: block;
