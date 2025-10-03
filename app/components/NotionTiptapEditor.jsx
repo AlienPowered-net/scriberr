@@ -238,47 +238,32 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         suggestion: {
           items: async ({ query }) => {
             try {
-              const results = [];
-              console.log('Fetching entities for query:', query);
-
-              // Add test data
-              if (query) {
-                results.push({
-                  id: 'test-product-1',
-                  label: `Test Product: ${query}`,
-                  type: 'product'
-                });
-                
-                results.push({
-                  id: 'test-order-1',
-                  label: `Test Order: ${query}`,
-                  type: 'order'
-                });
-              }
-
-              // Fetch custom mentions (people)
-              const mentionsResponse = await fetch('/api/custom-mentions');
-              const mentionsData = await mentionsResponse.json();
+              // Fetch custom mentions
+              const response = await fetch('/api/custom-mentions');
+              const data = await response.json();
               
-              if (mentionsData.success && mentionsData.mentions && mentionsData.mentions.length > 0) {
-                mentionsData.mentions.forEach(mention => {
-                  const searchText = `${mention.name} ${mention.email}`.toLowerCase();
-                  if (!query || searchText.includes(query.toLowerCase())) {
-                    results.push({
-                      id: mention.id,
-                      label: mention.name,
-                      type: 'person'
-                    });
-                  }
-                });
+              if (data.success && data.mentions && data.mentions.length > 0) {
+                // Filter based on query
+                const filtered = data.mentions
+                  .map(mention => ({
+                    id: mention.id,
+                    label: mention.name,
+                    email: mention.email
+                  }))
+                  .filter(item => {
+                    const searchText = `${item.label} ${item.email}`.toLowerCase();
+                    return searchText.includes(query.toLowerCase());
+                  })
+                  .slice(0, 10);
+                
+                return filtered.length > 0 ? filtered : [{ id: 'no-results', label: 'No matches. Try different search.', disabled: true }];
               }
-
-              return results.length > 0
-                ? results
-                : [{ id: 'no-results', label: 'No matches found. Try a different search.', disabled: true }];
+              
+              // No custom mentions added yet
+              return [{ id: 'no-mentions', label: 'No mentions added. Go to Settings to add people.', disabled: true }];
             } catch (error) {
-              console.error('Error fetching entities:', error);
-              return [{ id: 'error', label: 'Error loading entities', disabled: true }];
+              console.error('Error fetching mentions:', error);
+              return [{ id: 'error', label: 'Error loading mentions', disabled: true }];
             }
           },
           render: () => {
