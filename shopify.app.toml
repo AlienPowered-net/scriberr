@@ -1,9 +1,9 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "6bce6b128d5d19d33686b60d41c92824"
-name = "scriberr"
+name = "Scriberr"
 handle = "scriberr"
-application_url = "https://convention-fit-surprise-mechanical.trycloudflare.com"
+application_url = "https://getscriberr.app"
 embedded = true
 
 [build]
@@ -27,7 +27,11 @@ api_version = "2025-07"
 scopes = "read_products,read_orders,read_customers,read_discounts,read_draft_orders"
 
 [auth]
-redirect_urls = ["https://convention-fit-surprise-mechanical.trycloudflare.com/auth/callback", "https://convention-fit-surprise-mechanical.trycloudflare.com/auth/shopify/callback", "https://convention-fit-surprise-mechanical.trycloudflare.com/api/auth/callback"]
+redirect_urls = [
+  "https://getscriberr.app/auth/callback",
+  "https://getscriberr.app/auth/shopify/callback",
+  "https://getscriberr.app/api/auth/callback"
+]
 
 [pos]
 embedded = false
