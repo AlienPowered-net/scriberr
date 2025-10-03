@@ -235,8 +235,15 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               const results = [];
 
               // Fetch Shopify entities
-              const shopifyResponse = await fetch(`/api/shopify-entities?query=${encodeURIComponent(query)}`);
+              const shopifyResponse = await fetch(`/api/shopify-entities?query=${encodeURIComponent(query)}`, {
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                }
+              });
               const shopifyData = await shopifyResponse.json();
+              
+              console.log('Shopify entities response:', shopifyData);
 
               if (shopifyData.success) {
                 const { products, orders, customers, collections, discounts, draftOrders } = shopifyData.results;
@@ -403,7 +410,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 : [{ id: 'no-results', label: 'No matches found. Try a different search.', disabled: true }];
             } catch (error) {
               console.error('Error fetching entities:', error);
-              return [{ id: 'error', label: 'Error loading entities', disabled: true }];
+              console.error('Error details:', error.message, error.stack);
+              return [{ id: 'error', label: `Error loading entities: ${error.message}`, disabled: true }];
             }
           },
           render: () => {

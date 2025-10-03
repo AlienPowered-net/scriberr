@@ -347,9 +347,11 @@ export async function loader({ request }) {
     return json({ success: true, results });
   } catch (error) {
     console.error("Error fetching Shopify entities:", error);
+    console.error("Error details:", error.message, error.stack);
     return json({ 
       success: false, 
       error: error.message,
+      errorDetails: error.stack,
       results: {
         products: [],
         orders: [],
