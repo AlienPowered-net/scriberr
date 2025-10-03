@@ -13,6 +13,7 @@ import Blockquote from '@tiptap/extension-blockquote';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { Emoji } from '@tiptap/extension-emoji';
 import Mention from '@tiptap/extension-mention';
+import { EntityMention } from './EntityMention';
 import { FontFamily } from '@tiptap/extension-font-family';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import TaskList from '@tiptap/extension-task-list';
@@ -97,6 +98,60 @@ const TextIcon = ({ icon }) => {
   );
 };
 
+// Helper functions for entity mentions
+const getEntityIcon = (type) => {
+  const icons = {
+    product: '📦',
+    variant: '🔹',
+    order: '🛒',
+    customer: '👤',
+    collection: '📚',
+    discount: '🏷️',
+    draftOrder: '📝',
+    person: '👨‍💼'
+  };
+  return icons[type] || '@';
+};
+
+const getEntityColor = (type) => {
+  const colors = {
+    product: '#e3f2fd',
+    variant: '#f3e5f5',
+    order: '#fff3e0',
+    customer: '#e8f5e9',
+    collection: '#fce4ec',
+    discount: '#fff9c4',
+    draftOrder: '#f1f8e9',
+    person: '#e0f2f1'
+  };
+  return colors[type] || '#f5f5f5';
+};
+
+const getMetadataPreview = (type, metadata) => {
+  if (!metadata) return '';
+  
+  switch (type) {
+    case 'product':
+      return `${metadata.handle || ''} • ${metadata.status || ''}`;
+    case 'variant':
+      return metadata.sku ? `SKU: ${metadata.sku}` : '';
+    case 'order':
+      return `${metadata.customer || ''} • ${metadata.financialStatus || ''}`;
+    case 'customer':
+      return `${metadata.email || ''} • ${metadata.numberOfOrders || 0} orders`;
+    case 'collection':
+      return `${metadata.productsCount || 0} products`;
+    case 'discount':
+      return metadata.code ? `Code: ${metadata.code}` : '';
+    case 'draftOrder':
+      return `${metadata.customer || ''} • ${metadata.status || ''}`;
+    case 'person':
+      return metadata.email || '';
+    default:
+      return '';
+  }
+};
+
 const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for commands..." }) => {
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -170,91 +225,335 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       Emoji.configure({
         enableEmoticons: true,
       }),
-      Mention.configure({
+      EntityMention.configure({
         HTMLAttributes: {
-          class: 'mention',
-        },
-        renderHTML({ options, node }) {
-          return ['span', { class: 'mention', 'data-id': node.attrs.id }, `@${node.attrs.label ?? node.attrs.id}`];
+          class: 'entity-mention',
         },
         suggestion: {
           items: async ({ query }) => {
             try {
-              // Fetch custom mentions
-              const response = await fetch('/api/custom-mentions');
-              const data = await response.json();
-              
-              if (data.success && data.mentions && data.mentions.length > 0) {
-                // Filter based on query
-                const filtered = data.mentions
-                  .map(mention => ({
-                    id: mention.id,
-                    label: mention.name,
-                    email: mention.email
-                  }))
-                  .filter(item => {
-                    const searchText = `${item.label} ${item.email}`.toLowerCase();
-                    return searchText.includes(query.toLowerCase());
-                  })
-                  .slice(0, 10);
-                
-                return filtered.length > 0 ? filtered : [{ id: 'no-results', label: 'No matches. Try different search.', disabled: true }];
+              const results = [];
+
+              // Fetch Shopify entities
+              const shopifyResponse = await fetch(`/api/shopify-entities?query=${encodeURIComponent(query)}`);
+              const shopifyData = await shopifyResponse.json();
+
+              if (shopifyData.success) {
+                const { products, orders, customers, collections, discounts, draftOrders } = shopifyData.results;
+
+                // Add products
+                products.forEach(product => {
+                  results.push({
+                    id: product.id,
+                    label: product.title,
+                    type: 'product',
+                    url: product.adminUrl,
+                    metadata: {
+                      handle: product.handle,
+                      status: product.status,
+                      image: product.image
+                    },
+                    category: 'Products'
+                  });
+
+                  // Add variants if they match the query
+                  if (product.variants) {
+                    product.variants.forEach(variant => {
+                      const variantMatch = query && (
+                        variant.sku?.toLowerCase().includes(query.toLowerCase()) ||
+                        variant.title?.toLowerCase().includes(query.toLowerCase())
+                      );
+                      
+                      if (variantMatch || !query) {
+                        results.push({
+                          id: variant.id,
+                          label: `${product.title} - ${variant.title}`,
+                          type: 'variant',
+                          url: variant.adminUrl,
+                          metadata: {
+                            sku: variant.sku,
+                            productTitle: product.title
+                          },
+                          category: 'Product Variants'
+                        });
+                      }
+                    });
+                  }
+                });
+
+                // Add orders
+                orders.forEach(order => {
+                  results.push({
+                    id: order.id,
+                    label: order.name,
+                    type: 'order',
+                    url: order.adminUrl,
+                    metadata: {
+                      customer: order.customerName,
+                      financialStatus: order.financialStatus,
+                      fulfillmentStatus: order.fulfillmentStatus,
+                      totalPrice: order.totalPrice,
+                      currency: order.currency
+                    },
+                    category: 'Orders'
+                  });
+                });
+
+                // Add customers
+                customers.forEach(customer => {
+                  results.push({
+                    id: customer.id,
+                    label: customer.displayName,
+                    type: 'customer',
+                    url: customer.adminUrl,
+                    metadata: {
+                      email: customer.email,
+                      phone: customer.phone,
+                      numberOfOrders: customer.numberOfOrders
+                    },
+                    category: 'Customers'
+                  });
+                });
+
+                // Add collections
+                collections.forEach(collection => {
+                  results.push({
+                    id: collection.id,
+                    label: collection.title,
+                    type: 'collection',
+                    url: collection.adminUrl,
+                    metadata: {
+                      handle: collection.handle,
+                      productsCount: collection.productsCount
+                    },
+                    category: 'Collections'
+                  });
+                });
+
+                // Add discounts
+                discounts.forEach(discount => {
+                  results.push({
+                    id: discount.id,
+                    label: discount.title || discount.code,
+                    type: 'discount',
+                    url: discount.adminUrl,
+                    metadata: {
+                      code: discount.code,
+                      status: discount.status
+                    },
+                    category: 'Discounts'
+                  });
+                });
+
+                // Add draft orders
+                draftOrders.forEach(draftOrder => {
+                  results.push({
+                    id: draftOrder.id,
+                    label: draftOrder.name,
+                    type: 'draftOrder',
+                    url: draftOrder.adminUrl,
+                    metadata: {
+                      customer: draftOrder.customerName,
+                      status: draftOrder.status,
+                      totalPrice: draftOrder.totalPrice,
+                      currency: draftOrder.currency
+                    },
+                    category: 'Draft Orders'
+                  });
+                });
               }
+
+              // Fetch custom mentions (people)
+              const mentionsResponse = await fetch('/api/custom-mentions');
+              const mentionsData = await mentionsResponse.json();
               
-              // No custom mentions added yet
-              return [{ id: 'no-mentions', label: 'No mentions added. Go to Settings to add people.', disabled: true }];
+              if (mentionsData.success && mentionsData.mentions && mentionsData.mentions.length > 0) {
+                mentionsData.mentions.forEach(mention => {
+                  const searchText = `${mention.name} ${mention.email}`.toLowerCase();
+                  if (!query || searchText.includes(query.toLowerCase())) {
+                    results.push({
+                      id: mention.id,
+                      label: mention.name,
+                      type: 'person',
+                      metadata: {
+                        email: mention.email
+                      },
+                      category: 'People'
+                    });
+                  }
+                });
+              }
+
+              // Filter results based on query
+              const filtered = query
+                ? results.filter(item => {
+                    const labelMatch = item.label?.toLowerCase().includes(query.toLowerCase());
+                    const metadataMatch = item.metadata && Object.values(item.metadata).some(val => 
+                      val && val.toString().toLowerCase().includes(query.toLowerCase())
+                    );
+                    return labelMatch || metadataMatch;
+                  })
+                : results;
+
+              // Limit to 20 results
+              const limited = filtered.slice(0, 20);
+
+              return limited.length > 0
+                ? limited
+                : [{ id: 'no-results', label: 'No matches found. Try a different search.', disabled: true }];
             } catch (error) {
-              console.error('Error fetching mentions:', error);
-              return [{ id: 'error', label: 'Error loading mentions', disabled: true }];
+              console.error('Error fetching entities:', error);
+              return [{ id: 'error', label: 'Error loading entities', disabled: true }];
             }
           },
           render: () => {
             let component;
+            let selectedIndex = 0;
 
             return {
               onStart: props => {
+                selectedIndex = 0;
                 component = document.createElement('div');
-                component.className = 'mention-suggestions';
+                component.className = 'entity-mention-suggestions';
                 component.style.cssText = `
                   position: fixed;
                   background: white;
-                  border: 1px solid #dee2e6;
-                  border-radius: 6px;
-                  padding: 6px;
-                  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                  border: 1px solid #e1e3e5;
+                  border-radius: 8px;
+                  padding: 8px;
+                  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
                   z-index: 10000;
-                  max-height: 200px;
+                  max-height: 350px;
                   overflow-y: auto;
-                  min-width: 200px;
+                  min-width: 300px;
+                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                 `;
 
-                props.items.forEach((item, index) => {
-                  const button = document.createElement('button');
-                  button.className = 'mention-item';
-                  button.textContent = item.label;
-                  button.disabled = item.disabled || false;
-                  button.style.cssText = `
-                    display: block;
-                    width: 100%;
-                    text-align: left;
-                    padding: 8px 12px;
-                    border: none;
-                    background: ${index === props.selectedIndex && !item.disabled ? '#f0f0f0' : 'transparent'};
-                    cursor: ${item.disabled ? 'not-allowed' : 'pointer'};
-                    opacity: ${item.disabled ? '0.6' : '1'};
-                    border-radius: 4px;
-                    transition: background 0.2s;
-                  `;
-                  if (!item.disabled) {
-                    button.addEventListener('click', () => props.command({ id: item.id, label: item.label }));
-                    button.addEventListener('mouseenter', () => {
-                      button.style.background = '#f0f0f0';
-                    });
-                    button.addEventListener('mouseleave', () => {
-                      button.style.background = index === props.selectedIndex ? '#f0f0f0' : 'transparent';
-                    });
+                // Group items by category
+                const groupedItems = {};
+                props.items.forEach(item => {
+                  const category = item.category || 'Other';
+                  if (!groupedItems[category]) {
+                    groupedItems[category] = [];
                   }
-                  component.appendChild(button);
+                  groupedItems[category].push(item);
+                });
+
+                let itemIndex = 0;
+                Object.entries(groupedItems).forEach(([category, items]) => {
+                  if (!items[0]?.disabled) {
+                    const categoryLabel = document.createElement('div');
+                    categoryLabel.textContent = category;
+                    categoryLabel.style.cssText = `
+                      font-size: 11px;
+                      font-weight: 600;
+                      color: #8c9196;
+                      text-transform: uppercase;
+                      padding: 8px 12px 4px;
+                      letter-spacing: 0.5px;
+                    `;
+                    component.appendChild(categoryLabel);
+                  }
+
+                  items.forEach(item => {
+                    const button = document.createElement('button');
+                    button.className = 'entity-mention-item';
+                    button.disabled = item.disabled || false;
+                    
+                    const isSelected = itemIndex === selectedIndex && !item.disabled;
+                    
+                    button.style.cssText = `
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      width: 100%;
+                      text-align: left;
+                      padding: 10px 12px;
+                      border: none;
+                      background: ${isSelected ? '#f6f6f7' : 'transparent'};
+                      cursor: ${item.disabled ? 'not-allowed' : 'pointer'};
+                      opacity: ${item.disabled ? '0.6' : '1'};
+                      border-radius: 6px;
+                      transition: background 0.15s;
+                      margin: 2px 0;
+                    `;
+
+                    if (!item.disabled) {
+                      // Entity type badge
+                      const badge = document.createElement('span');
+                      badge.className = `entity-badge entity-badge-${item.type}`;
+                      badge.textContent = getEntityIcon(item.type);
+                      badge.style.cssText = `
+                        flex-shrink: 0;
+                        width: 24px;
+                        height: 24px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: 4px;
+                        background: ${getEntityColor(item.type)};
+                        font-size: 14px;
+                      `;
+                      button.appendChild(badge);
+
+                      // Label and metadata
+                      const content = document.createElement('div');
+                      content.style.cssText = 'flex: 1; min-width: 0;';
+                      
+                      const label = document.createElement('div');
+                      label.textContent = item.label;
+                      label.style.cssText = `
+                        font-size: 14px;
+                        font-weight: 500;
+                        color: #202223;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                      `;
+                      content.appendChild(label);
+
+                      if (item.metadata) {
+                        const meta = document.createElement('div');
+                        meta.textContent = getMetadataPreview(item.type, item.metadata);
+                        meta.style.cssText = `
+                          font-size: 12px;
+                          color: #6d7175;
+                          margin-top: 2px;
+                          white-space: nowrap;
+                          overflow: hidden;
+                          text-overflow: ellipsis;
+                        `;
+                        content.appendChild(meta);
+                      }
+
+                      button.appendChild(content);
+
+                      button.addEventListener('click', () => props.command({
+                        id: item.id,
+                        label: item.label,
+                        type: item.type,
+                        url: item.url,
+                        metadata: item.metadata
+                      }));
+
+                      button.addEventListener('mouseenter', () => {
+                        button.style.background = '#f6f6f7';
+                      });
+
+                      button.addEventListener('mouseleave', () => {
+                        button.style.background = isSelected ? '#f6f6f7' : 'transparent';
+                      });
+                    } else {
+                      button.textContent = item.label;
+                      button.style.padding = '12px';
+                      button.style.fontSize = '13px';
+                      button.style.color = '#8c9196';
+                      button.style.textAlign = 'center';
+                    }
+
+                    component.appendChild(button);
+                    itemIndex++;
+                  });
                 });
 
                 document.body.appendChild(component);
@@ -265,37 +564,135 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   component.style.top = `${rect.bottom + 8}px`;
                 }
               },
+
               onUpdate(props) {
                 if (!component) return;
 
+                selectedIndex = props.selectedIndex || 0;
                 component.innerHTML = '';
-                props.items.forEach((item, index) => {
-                  const button = document.createElement('button');
-                  button.className = 'mention-item';
-                  button.textContent = item.label;
-                  button.disabled = item.disabled || false;
-                  button.style.cssText = `
-                    display: block;
-                    width: 100%;
-                    text-align: left;
-                    padding: 8px 12px;
-                    border: none;
-                    background: ${index === props.selectedIndex && !item.disabled ? '#f0f0f0' : 'transparent'};
-                    cursor: ${item.disabled ? 'not-allowed' : 'pointer'};
-                    opacity: ${item.disabled ? '0.6' : '1'};
-                    border-radius: 4px;
-                    transition: background 0.2s;
-                  `;
-                  if (!item.disabled) {
-                    button.addEventListener('click', () => props.command({ id: item.id, label: item.label }));
-                    button.addEventListener('mouseenter', () => {
-                      button.style.background = '#f0f0f0';
-                    });
-                    button.addEventListener('mouseleave', () => {
-                      button.style.background = index === props.selectedIndex ? '#f0f0f0' : 'transparent';
-                    });
+
+                const groupedItems = {};
+                props.items.forEach(item => {
+                  const category = item.category || 'Other';
+                  if (!groupedItems[category]) {
+                    groupedItems[category] = [];
                   }
-                  component.appendChild(button);
+                  groupedItems[category].push(item);
+                });
+
+                let itemIndex = 0;
+                Object.entries(groupedItems).forEach(([category, items]) => {
+                  if (!items[0]?.disabled) {
+                    const categoryLabel = document.createElement('div');
+                    categoryLabel.textContent = category;
+                    categoryLabel.style.cssText = `
+                      font-size: 11px;
+                      font-weight: 600;
+                      color: #8c9196;
+                      text-transform: uppercase;
+                      padding: 8px 12px 4px;
+                      letter-spacing: 0.5px;
+                    `;
+                    component.appendChild(categoryLabel);
+                  }
+
+                  items.forEach(item => {
+                    const button = document.createElement('button');
+                    button.className = 'entity-mention-item';
+                    button.disabled = item.disabled || false;
+                    
+                    const isSelected = itemIndex === selectedIndex && !item.disabled;
+                    
+                    button.style.cssText = `
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      width: 100%;
+                      text-align: left;
+                      padding: 10px 12px;
+                      border: none;
+                      background: ${isSelected ? '#f6f6f7' : 'transparent'};
+                      cursor: ${item.disabled ? 'not-allowed' : 'pointer'};
+                      opacity: ${item.disabled ? '0.6' : '1'};
+                      border-radius: 6px;
+                      transition: background 0.15s;
+                      margin: 2px 0;
+                    `;
+
+                    if (!item.disabled) {
+                      const badge = document.createElement('span');
+                      badge.className = `entity-badge entity-badge-${item.type}`;
+                      badge.textContent = getEntityIcon(item.type);
+                      badge.style.cssText = `
+                        flex-shrink: 0;
+                        width: 24px;
+                        height: 24px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: 4px;
+                        background: ${getEntityColor(item.type)};
+                        font-size: 14px;
+                      `;
+                      button.appendChild(badge);
+
+                      const content = document.createElement('div');
+                      content.style.cssText = 'flex: 1; min-width: 0;';
+                      
+                      const label = document.createElement('div');
+                      label.textContent = item.label;
+                      label.style.cssText = `
+                        font-size: 14px;
+                        font-weight: 500;
+                        color: #202223;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                      `;
+                      content.appendChild(label);
+
+                      if (item.metadata) {
+                        const meta = document.createElement('div');
+                        meta.textContent = getMetadataPreview(item.type, item.metadata);
+                        meta.style.cssText = `
+                          font-size: 12px;
+                          color: #6d7175;
+                          margin-top: 2px;
+                          white-space: nowrap;
+                          overflow: hidden;
+                          text-overflow: ellipsis;
+                        `;
+                        content.appendChild(meta);
+                      }
+
+                      button.appendChild(content);
+
+                      button.addEventListener('click', () => props.command({
+                        id: item.id,
+                        label: item.label,
+                        type: item.type,
+                        url: item.url,
+                        metadata: item.metadata
+                      }));
+
+                      button.addEventListener('mouseenter', () => {
+                        button.style.background = '#f6f6f7';
+                      });
+
+                      button.addEventListener('mouseleave', () => {
+                        button.style.background = isSelected ? '#f6f6f7' : 'transparent';
+                      });
+                    } else {
+                      button.textContent = item.label;
+                      button.style.padding = '12px';
+                      button.style.fontSize = '13px';
+                      button.style.color = '#8c9196';
+                      button.style.textAlign = 'center';
+                    }
+
+                    component.appendChild(button);
+                    itemIndex++;
+                  });
                 });
 
                 if (props.clientRect) {
@@ -304,6 +701,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   component.style.top = `${rect.bottom + 8}px`;
                 }
               },
+
               onKeyDown(props) {
                 if (props.event.key === 'Escape') {
                   if (component) {
@@ -318,10 +716,15 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 }
 
                 if (props.event.key === 'Enter') {
-                  if (props.items[props.selectedIndex] && !props.items[props.selectedIndex].disabled) {
-                    props.command({ 
-                      id: props.items[props.selectedIndex].id, 
-                      label: props.items[props.selectedIndex].label 
+                  const validItems = props.items.filter(item => !item.disabled);
+                  if (validItems[props.selectedIndex]) {
+                    const item = validItems[props.selectedIndex];
+                    props.command({
+                      id: item.id,
+                      label: item.label,
+                      type: item.type,
+                      url: item.url,
+                      metadata: item.metadata
                     });
                   }
                   return true;
@@ -329,6 +732,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
 
                 return false;
               },
+
               onExit() {
                 if (component) {
                   component.remove();
