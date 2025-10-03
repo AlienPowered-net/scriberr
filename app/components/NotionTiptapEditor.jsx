@@ -238,20 +238,42 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               const results = [];
               console.log('Fetching Shopify entities for query:', query);
 
-              // Fetch Shopify entities
-              const shopifyResponse = await fetch(`/api/shopify-entities?query=${encodeURIComponent(query)}`, {
-                credentials: 'include',
-                headers: {
-                  'Content-Type': 'application/json',
-                }
-              });
-              
-              console.log('Shopify API response status:', shopifyResponse.status);
-              const shopifyData = await shopifyResponse.json();
-              console.log('Shopify entities response:', shopifyData);
+              // For now, let's just return some test data to see if the system works
+              if (query) {
+                results.push({
+                  id: 'test-product-1',
+                  label: `Test Product: ${query}`,
+                  type: 'product',
+                  url: 'https://example.com',
+                  metadata: { handle: 'test-product' },
+                  category: 'Products'
+                });
+                
+                results.push({
+                  id: 'test-order-1',
+                  label: `Test Order: ${query}`,
+                  type: 'order',
+                  url: 'https://example.com',
+                  metadata: { customer: 'Test Customer' },
+                  category: 'Orders'
+                });
+              }
 
-              if (shopifyData.success) {
-                const { products, orders, customers, collections, discounts, draftOrders } = shopifyData.results;
+              // Fetch Shopify entities
+              try {
+                const shopifyResponse = await fetch(`/api/shopify-entities?query=${encodeURIComponent(query)}`, {
+                  credentials: 'include',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  }
+                });
+                
+                console.log('Shopify API response status:', shopifyResponse.status);
+                const shopifyData = await shopifyResponse.json();
+                console.log('Shopify entities response:', shopifyData);
+
+                if (shopifyData.success) {
+                  const { products, orders, customers, collections, discounts, draftOrders } = shopifyData.results;
 
                 // Add products
                 products.forEach(product => {
@@ -373,6 +395,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     category: 'Draft Orders'
                   });
                 });
+              } catch (shopifyError) {
+                console.error('Shopify API error:', shopifyError);
+                // Continue with test data if Shopify API fails
               }
 
               // Fetch custom mentions (people)
