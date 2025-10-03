@@ -275,126 +275,127 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 if (shopifyData.success) {
                   const { products, orders, customers, collections, discounts, draftOrders } = shopifyData.results;
 
-                // Add products
-                products.forEach(product => {
-                  results.push({
-                    id: product.id,
-                    label: product.title,
-                    type: 'product',
-                    url: product.adminUrl,
-                    metadata: {
-                      handle: product.handle,
-                      status: product.status,
-                      image: product.image
-                    },
-                    category: 'Products'
-                  });
-
-                  // Add variants if they match the query
-                  if (product.variants) {
-                    product.variants.forEach(variant => {
-                      const variantMatch = query && (
-                        variant.sku?.toLowerCase().includes(query.toLowerCase()) ||
-                        variant.title?.toLowerCase().includes(query.toLowerCase())
-                      );
-                      
-                      if (variantMatch || !query) {
-                        results.push({
-                          id: variant.id,
-                          label: `${product.title} - ${variant.title}`,
-                          type: 'variant',
-                          url: variant.adminUrl,
-                          metadata: {
-                            sku: variant.sku,
-                            productTitle: product.title
-                          },
-                          category: 'Product Variants'
-                        });
-                      }
+                  // Add products
+                  products.forEach(product => {
+                    results.push({
+                      id: product.id,
+                      label: product.title,
+                      type: 'product',
+                      url: product.adminUrl,
+                      metadata: {
+                        handle: product.handle,
+                        status: product.status,
+                        image: product.image
+                      },
+                      category: 'Products'
                     });
-                  }
-                });
 
-                // Add orders
-                orders.forEach(order => {
-                  results.push({
-                    id: order.id,
-                    label: order.name,
-                    type: 'order',
-                    url: order.adminUrl,
-                    metadata: {
-                      customer: order.customerName,
-                      financialStatus: order.financialStatus,
-                      fulfillmentStatus: order.fulfillmentStatus,
-                      totalPrice: order.totalPrice,
-                      currency: order.currency
-                    },
-                    category: 'Orders'
+                    // Add variants if they match the query
+                    if (product.variants) {
+                      product.variants.forEach(variant => {
+                        const variantMatch = query && (
+                          variant.sku?.toLowerCase().includes(query.toLowerCase()) ||
+                          variant.title?.toLowerCase().includes(query.toLowerCase())
+                        );
+                        
+                        if (variantMatch || !query) {
+                          results.push({
+                            id: variant.id,
+                            label: `${product.title} - ${variant.title}`,
+                            type: 'variant',
+                            url: variant.adminUrl,
+                            metadata: {
+                              sku: variant.sku,
+                              productTitle: product.title
+                            },
+                            category: 'Product Variants'
+                          });
+                        }
+                      });
+                    }
                   });
-                });
 
-                // Add customers
-                customers.forEach(customer => {
-                  results.push({
-                    id: customer.id,
-                    label: customer.displayName,
-                    type: 'customer',
-                    url: customer.adminUrl,
-                    metadata: {
-                      email: customer.email,
-                      phone: customer.phone,
-                      numberOfOrders: customer.numberOfOrders
-                    },
-                    category: 'Customers'
+                  // Add orders
+                  orders.forEach(order => {
+                    results.push({
+                      id: order.id,
+                      label: order.name,
+                      type: 'order',
+                      url: order.adminUrl,
+                      metadata: {
+                        customer: order.customerName,
+                        financialStatus: order.financialStatus,
+                        fulfillmentStatus: order.fulfillmentStatus,
+                        totalPrice: order.totalPrice,
+                        currency: order.currency
+                      },
+                      category: 'Orders'
+                    });
                   });
-                });
 
-                // Add collections
-                collections.forEach(collection => {
-                  results.push({
-                    id: collection.id,
-                    label: collection.title,
-                    type: 'collection',
-                    url: collection.adminUrl,
-                    metadata: {
-                      handle: collection.handle,
-                      productsCount: collection.productsCount
-                    },
-                    category: 'Collections'
+                  // Add customers
+                  customers.forEach(customer => {
+                    results.push({
+                      id: customer.id,
+                      label: customer.displayName,
+                      type: 'customer',
+                      url: customer.adminUrl,
+                      metadata: {
+                        email: customer.email,
+                        phone: customer.phone,
+                        numberOfOrders: customer.numberOfOrders
+                      },
+                      category: 'Customers'
+                    });
                   });
-                });
 
-                // Add discounts
-                discounts.forEach(discount => {
-                  results.push({
-                    id: discount.id,
-                    label: discount.title || discount.code,
-                    type: 'discount',
-                    url: discount.adminUrl,
-                    metadata: {
-                      code: discount.code,
-                      status: discount.status
-                    },
-                    category: 'Discounts'
+                  // Add collections
+                  collections.forEach(collection => {
+                    results.push({
+                      id: collection.id,
+                      label: collection.title,
+                      type: 'collection',
+                      url: collection.adminUrl,
+                      metadata: {
+                        handle: collection.handle,
+                        productsCount: collection.productsCount
+                      },
+                      category: 'Collections'
+                    });
                   });
-                });
 
-                // Add draft orders
-                draftOrders.forEach(draftOrder => {
-                  results.push({
-                    id: draftOrder.id,
-                    label: draftOrder.name,
-                    type: 'draftOrder',
-                    url: draftOrder.adminUrl,
-                    metadata: {
-                      customer: draftOrder.customerName,
-                      status: draftOrder.status,
-                      totalPrice: draftOrder.totalPrice,
-                      currency: draftOrder.currency
-                    },
-                    category: 'Draft Orders'
+                  // Add discounts
+                  discounts.forEach(discount => {
+                    results.push({
+                      id: discount.id,
+                      label: discount.title || discount.code,
+                      type: 'discount',
+                      url: discount.adminUrl,
+                      metadata: {
+                        code: discount.code,
+                        status: discount.status
+                      },
+                      category: 'Discounts'
+                    });
                   });
-                });
+
+                  // Add draft orders
+                  draftOrders.forEach(draftOrder => {
+                    results.push({
+                      id: draftOrder.id,
+                      label: draftOrder.name,
+                      type: 'draftOrder',
+                      url: draftOrder.adminUrl,
+                      metadata: {
+                        customer: draftOrder.customerName,
+                        status: draftOrder.status,
+                        totalPrice: draftOrder.totalPrice,
+                        currency: draftOrder.currency
+                      },
+                      category: 'Draft Orders'
+                    });
+                  });
+                }
               } catch (shopifyError) {
                 console.error('Shopify API error:', shopifyError);
                 // Continue with test data if Shopify API fails
