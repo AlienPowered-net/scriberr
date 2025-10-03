@@ -40,7 +40,10 @@ export const EntityMention = Node.create({
             ])
             .run();
 
-          window.getSelection()?.collapseToEnd();
+          // Ensure cursor moves to after the inserted space
+          setTimeout(() => {
+            editor.commands.focus('end');
+          }, 10);
         },
         allow: ({ state, range }) => {
           const $from = state.doc.resolve(range.from);

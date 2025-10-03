@@ -60,23 +60,48 @@ const getEntityIcon = (type) => {
 
 const getEntityIconSvg = (type) => {
   const IconComponent = getEntityIcon(type);
+  
+  console.log('IconComponent:', IconComponent);
+  console.log('IconComponent.body:', IconComponent?.body);
+  
+  // Polaris icons might have different structure
+  if (!IconComponent || !IconComponent.body) {
+    // Fallback to text if icon doesn't work
+    const span = document.createElement('span');
+    span.textContent = getEntityIconFallback(type);
+    span.style.fontSize = '16px';
+    return span;
+  }
+  
   // Create a proper SVG element with Polaris icon paths
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', '0 0 20 20');
   svg.setAttribute('width', '20');
   svg.setAttribute('height', '20');
-  svg.setAttribute('fill', '#000000');
+  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   svg.style.flexShrink = '0';
-  svg.style.fill = '#000000';
-  svg.style.color = '#000000';
+  svg.style.display = 'block';
   
   const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   path.setAttribute('d', IconComponent.body);
   path.setAttribute('fill', '#000000');
-  path.setAttribute('fill-rule', 'evenodd');
   
   svg.appendChild(path);
   return svg;
+};
+
+const getEntityIconFallback = (type) => {
+  const icons = {
+    product: '📦',
+    variant: '🔹',
+    order: '🛒',
+    customer: '👤',
+    collection: '📚',
+    discount: '🏷️',
+    draftOrder: '📝',
+    person: '👨‍💼'
+  };
+  return icons[type] || '@';
 };
 
 const getEntityColor = (type) => {
