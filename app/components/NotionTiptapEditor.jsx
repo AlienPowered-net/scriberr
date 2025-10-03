@@ -444,7 +444,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
 
                 // Group items by category
                 const groupedItems = {};
-                props.items.forEach(item => {
+                (props.items || []).forEach(item => {
                   const category = item.category || 'Other';
                   if (!groupedItems[category]) {
                     groupedItems[category] = [];
@@ -579,13 +579,13 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               },
 
               onUpdate(props) {
-                if (!component) return;
+                if (!component || !props) return;
 
                 selectedIndex = props.selectedIndex || 0;
                 component.innerHTML = '';
 
                 const groupedItems = {};
-                props.items.forEach(item => {
+                (props.items || []).forEach(item => {
                   const category = item.category || 'Other';
                   if (!groupedItems[category]) {
                     groupedItems[category] = [];
@@ -716,6 +716,10 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               },
 
               onKeyDown(props) {
+                if (!props || !props.event) {
+                  return false;
+                }
+
                 if (props.event.key === 'Escape') {
                   if (component) {
                     component.remove();
@@ -729,9 +733,10 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 }
 
                 if (props.event.key === 'Enter') {
-                  const validItems = props.items.filter(item => !item.disabled);
-                  if (validItems[props.selectedIndex]) {
-                    const item = validItems[props.selectedIndex];
+                  const validItems = (props.items || []).filter(item => !item.disabled);
+                  const selectedIndex = props.selectedIndex || 0;
+                  if (validItems[selectedIndex]) {
+                    const item = validItems[selectedIndex];
                     props.command({
                       id: item.id,
                       label: item.label,
