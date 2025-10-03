@@ -238,29 +238,51 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         suggestion: {
           items: async ({ query }) => {
             try {
+              const results = [];
+              
+              // Add test entity data
+              if (query) {
+                results.push({
+                  id: 'test-product-1',
+                  label: `📦 Product: ${query}`,
+                  email: 'product@test.com'
+                });
+                
+                results.push({
+                  id: 'test-order-1',
+                  label: `🛒 Order: ${query}`,
+                  email: 'order@test.com'
+                });
+              }
+
               // Fetch custom mentions
               const response = await fetch('/api/custom-mentions');
               const data = await response.json();
               
               if (data.success && data.mentions && data.mentions.length > 0) {
-                // Filter based on query
-                const filtered = data.mentions
-                  .map(mention => ({
-                    id: mention.id,
-                    label: mention.name,
-                    email: mention.email
-                  }))
-                  .filter(item => {
-                    const searchText = `${item.label} ${item.email}`.toLowerCase();
-                    return searchText.includes(query.toLowerCase());
-                  })
-                  .slice(0, 10);
-                
-                return filtered.length > 0 ? filtered : [{ id: 'no-results', label: 'No matches. Try different search.', disabled: true }];
+                // Add custom mentions to results
+                data.mentions.forEach(mention => {
+                  const searchText = `${mention.name} ${mention.email}`.toLowerCase();
+                  if (!query || searchText.includes(query.toLowerCase())) {
+                    results.push({
+                      id: mention.id,
+                      label: mention.name,
+                      email: mention.email
+                    });
+                  }
+                });
               }
               
-              // No custom mentions added yet
-              return [{ id: 'no-mentions', label: 'No mentions added. Go to Settings to add people.', disabled: true }];
+              // Filter and limit results
+              const filtered = results
+                .filter(item => {
+                  if (!query) return true;
+                  const searchText = `${item.label} ${item.email}`.toLowerCase();
+                  return searchText.includes(query.toLowerCase());
+                })
+                .slice(0, 10);
+              
+              return filtered.length > 0 ? filtered : [{ id: 'no-results', label: 'No matches. Try different search.', disabled: true }];
             } catch (error) {
               console.error('Error fetching mentions:', error);
               return [{ id: 'error', label: 'Error loading mentions', disabled: true }];
