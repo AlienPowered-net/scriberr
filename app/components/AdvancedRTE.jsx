@@ -13,7 +13,7 @@ import Highlight from '@tiptap/extension-highlight';
 import Blockquote from '@tiptap/extension-blockquote';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { Emoji } from '@tiptap/extension-emoji';
-import Mention from '@tiptap/extension-mention';
+import { EntityMention } from './EntityMention';
 import { FontFamily } from '@tiptap/extension-font-family';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import TaskList from '@tiptap/extension-task-list';
@@ -34,6 +34,60 @@ import {
   TextFontIcon,
   MegaphoneIcon
 } from '@shopify/polaris-icons';
+
+// Helper functions for entity mentions
+const getEntityIcon = (type) => {
+  const icons = {
+    product: '📦',
+    variant: '🔹',
+    order: '🛒',
+    customer: '👤',
+    collection: '📚',
+    discount: '🏷️',
+    draftOrder: '📝',
+    person: '👨‍💼'
+  };
+  return icons[type] || '@';
+};
+
+const getEntityColor = (type) => {
+  const colors = {
+    product: '#e3f2fd',
+    variant: '#f3e5f5',
+    order: '#fff3e0',
+    customer: '#e8f5e9',
+    collection: '#fce4ec',
+    discount: '#fff9c4',
+    draftOrder: '#f1f8e9',
+    person: '#e0f2f1'
+  };
+  return colors[type] || '#f5f5f5';
+};
+
+const getMetadataPreview = (type, metadata) => {
+  if (!metadata) return '';
+  
+  switch (type) {
+    case 'product':
+      return `${metadata.handle || ''} • ${metadata.status || ''}`;
+    case 'variant':
+      return metadata.sku ? `SKU: ${metadata.sku}` : '';
+    case 'order':
+      return `${metadata.customer || ''} • ${metadata.financialStatus || ''}`;
+    case 'customer':
+      return `${metadata.email || ''} • ${metadata.numberOfOrders || 0} orders`;
+    case 'collection':
+      return `${metadata.productsCount || 0} products`;
+    case 'discount':
+      return metadata.code ? `Code: ${metadata.code}` : '';
+    case 'draftOrder':
+      return `${metadata.customer || ''} • ${metadata.status || ''}`;
+    case 'person':
+      return metadata.email || '';
+    default:
+      return '';
+  }
+};
 
 const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobileProp = false, onFullscreenChange }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -144,88 +198,227 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       Emoji.configure({
         enableEmoticons: true,
       }),
-      Mention.configure({
+      EntityMention.configure({
         HTMLAttributes: {
-          class: 'mention',
-        },
-        renderHTML({ options, node }) {
-          return ['span', { class: 'mention', 'data-id': node.attrs.id }, `@${node.attrs.label ?? node.attrs.id}`];
+          class: 'entity-mention',
         },
         suggestion: {
           items: async ({ query }) => {
             try {
-              // Fetch custom mentions
-              const response = await fetch('/api/custom-mentions');
-              const data = await response.json();
+              const results = [];
               
-              if (data.success && data.mentions && data.mentions.length > 0) {
-                // Filter based on query
-                const filtered = data.mentions
-                  .map(mention => ({
-                    id: mention.id,
-                    label: mention.name,
-                    email: mention.email
-                  }))
-                  .filter(item => {
-                    const searchText = `${item.label} ${item.email}`.toLowerCase();
-                    return searchText.includes(query.toLowerCase());
-                  })
-                  .slice(0, 10);
+              // Fetch Shopify entities
+              const entitiesResponse = await fetch(`/api/shopify-entities?query=${encodeURIComponent(query || '')}&type=all`);
+              const entitiesData = await entitiesResponse.json();
+              
+              if (entitiesData.success && entitiesData.results) {
+                const { products, orders, customers, collections, discounts, draftOrders } = entitiesData.results;
                 
-                return filtered.length > 0 ? filtered : [{ id: 'no-results', label: 'No matches. Try different search.', disabled: true }];
+                // Add products
+                products.forEach(product => {
+                  results.push({
+                    id: product.id,
+                    label: product.title,
+                    type: 'product',
+                    url: product.adminUrl,
+                    metadata: {
+                      handle: product.handle,
+                      status: product.status,
+                      image: product.image
+                    }
+                  });
+                  
+                  // Add product variants
+                  if (product.variants && product.variants.length > 0) {
+                    product.variants.forEach(variant => {
+                      if (variant.sku || variant.title !== 'Default Title') {
+                        results.push({
+                          id: variant.id,
+                          label: `${product.title} - ${variant.title}`,
+                          type: 'variant',
+                          url: variant.adminUrl,
+                          metadata: {
+                            sku: variant.sku,
+                            displayName: variant.displayName
+                          }
+                        });
+                      }
+                    });
+                  }
+                });
+                
+                // Add orders
+                orders.forEach(order => {
+                  results.push({
+                    id: order.id,
+                    label: order.name,
+                    type: 'order',
+                    url: order.adminUrl,
+                    metadata: {
+                      customer: order.customerName,
+                      financialStatus: order.financialStatus,
+                      fulfillmentStatus: order.fulfillmentStatus,
+                      totalPrice: order.totalPrice,
+                      currency: order.currency
+                    }
+                  });
+                });
+                
+                // Add customers
+                customers.forEach(customer => {
+                  results.push({
+                    id: customer.id,
+                    label: customer.displayName || customer.email,
+                    type: 'customer',
+                    url: customer.adminUrl,
+                    metadata: {
+                      email: customer.email,
+                      phone: customer.phone,
+                      numberOfOrders: customer.numberOfOrders
+                    }
+                  });
+                });
+                
+                // Add collections
+                collections.forEach(collection => {
+                  results.push({
+                    id: collection.id,
+                    label: collection.title,
+                    type: 'collection',
+                    url: collection.adminUrl,
+                    metadata: {
+                      handle: collection.handle,
+                      productsCount: collection.productsCount
+                    }
+                  });
+                });
+                
+                // Add discounts
+                discounts.forEach(discount => {
+                  results.push({
+                    id: discount.id,
+                    label: discount.title || discount.code,
+                    type: 'discount',
+                    url: discount.adminUrl,
+                    metadata: {
+                      code: discount.code,
+                      status: discount.status
+                    }
+                  });
+                });
+                
+                // Add draft orders
+                draftOrders.forEach(draftOrder => {
+                  results.push({
+                    id: draftOrder.id,
+                    label: draftOrder.name,
+                    type: 'draftOrder',
+                    url: draftOrder.adminUrl,
+                    metadata: {
+                      customer: draftOrder.customerName,
+                      status: draftOrder.status,
+                      totalPrice: draftOrder.totalPrice,
+                      currency: draftOrder.currency
+                    }
+                  });
+                });
+              }
+
+              // Fetch custom mentions (people)
+              const mentionsResponse = await fetch('/api/custom-mentions');
+              const mentionsData = await mentionsResponse.json();
+              
+              if (mentionsData.success && mentionsData.mentions && mentionsData.mentions.length > 0) {
+                mentionsData.mentions.forEach(mention => {
+                  const searchText = `${mention.name} ${mention.email}`.toLowerCase();
+                  if (!query || searchText.includes(query.toLowerCase())) {
+                    results.push({
+                      id: mention.id,
+                      label: mention.name,
+                      type: 'person',
+                      metadata: {
+                        email: mention.email
+                      }
+                    });
+                  }
+                });
               }
               
-              // No custom mentions added yet
-              return [{ id: 'no-mentions', label: 'No mentions added. Go to Settings to add people.', disabled: true }];
+              // Limit results
+              const filtered = results.slice(0, 15);
+              
+              return filtered.length > 0 ? filtered : [{ id: 'no-results', label: 'No matches found. Try a different search.', disabled: true }];
             } catch (error) {
-              console.error('Error fetching mentions:', error);
+              console.error('Error fetching entity mentions:', error);
               return [{ id: 'error', label: 'Error loading mentions', disabled: true }];
             }
           },
           render: () => {
             let component;
-            let popup;
 
             return {
               onStart: props => {
                 component = document.createElement('div');
-                component.className = 'mention-suggestions';
+                component.className = 'entity-mention-suggestions';
                 component.style.cssText = `
                   position: fixed;
                   background: white;
                   border: 1px solid #dee2e6;
-                  border-radius: 6px;
-                  padding: 6px;
-                  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                  border-radius: 8px;
+                  padding: 8px;
+                  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
                   z-index: 10000;
-                  max-height: 200px;
+                  max-height: 300px;
                   overflow-y: auto;
+                  min-width: 280px;
+                  max-width: 400px;
                 `;
 
                 props.items.forEach((item, index) => {
                   const button = document.createElement('button');
-                  button.className = 'mention-item';
-                  button.textContent = item.label;
+                  button.className = 'entity-mention-item';
                   button.disabled = item.disabled || false;
+                  
+                  const icon = getEntityIcon(item.type);
+                  const metadata = getMetadataPreview(item.type, item.metadata);
+                  
+                  button.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span style="font-size: 18px;">${icon}</span>
+                      <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.label}</div>
+                        ${metadata ? `<div style="font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${metadata}</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
                   button.style.cssText = `
                     display: block;
                     width: 100%;
                     text-align: left;
-                    padding: 8px 12px;
+                    padding: 10px;
                     border: none;
-                    background: ${index === props.selectedIndex && !item.disabled ? '#f0f0f0' : 'transparent'};
+                    background: ${index === props.selectedIndex && !item.disabled ? getEntityColor(item.type) : 'transparent'};
                     cursor: ${item.disabled ? 'not-allowed' : 'pointer'};
                     opacity: ${item.disabled ? '0.6' : '1'};
-                    border-radius: 4px;
-                    transition: background 0.2s;
+                    border-radius: 6px;
+                    transition: background 0.15s;
+                    font-size: 13px;
                   `;
+                  
                   if (!item.disabled) {
-                    button.addEventListener('click', () => props.command({ id: item.id, label: item.label }));
+                    button.addEventListener('click', () => props.command({ 
+                      id: item.id, 
+                      label: item.label,
+                      type: item.type,
+                      url: item.url,
+                      metadata: item.metadata
+                    }));
                     button.addEventListener('mouseenter', () => {
-                      button.style.background = '#f0f0f0';
+                      button.style.background = getEntityColor(item.type);
                     });
                     button.addEventListener('mouseleave', () => {
-                      button.style.background = index === props.selectedIndex ? '#f0f0f0' : 'transparent';
+                      button.style.background = index === props.selectedIndex ? getEntityColor(item.type) : 'transparent';
                     });
                   }
                   component.appendChild(button);
@@ -245,28 +438,49 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 component.innerHTML = '';
                 props.items.forEach((item, index) => {
                   const button = document.createElement('button');
-                  button.className = 'mention-item';
-                  button.textContent = item.label;
+                  button.className = 'entity-mention-item';
                   button.disabled = item.disabled || false;
+                  
+                  const icon = getEntityIcon(item.type);
+                  const metadata = getMetadataPreview(item.type, item.metadata);
+                  
+                  button.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span style="font-size: 18px;">${icon}</span>
+                      <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.label}</div>
+                        ${metadata ? `<div style="font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${metadata}</div>` : ''}
+                      </div>
+                    </div>
+                  `;
+                  
                   button.style.cssText = `
                     display: block;
                     width: 100%;
                     text-align: left;
-                    padding: 8px 12px;
+                    padding: 10px;
                     border: none;
-                    background: ${index === props.selectedIndex && !item.disabled ? '#f0f0f0' : 'transparent'};
+                    background: ${index === props.selectedIndex && !item.disabled ? getEntityColor(item.type) : 'transparent'};
                     cursor: ${item.disabled ? 'not-allowed' : 'pointer'};
                     opacity: ${item.disabled ? '0.6' : '1'};
-                    border-radius: 4px;
-                    transition: background 0.2s;
+                    border-radius: 6px;
+                    transition: background 0.15s;
+                    font-size: 13px;
                   `;
+                  
                   if (!item.disabled) {
-                    button.addEventListener('click', () => props.command({ id: item.id, label: item.label }));
+                    button.addEventListener('click', () => props.command({ 
+                      id: item.id, 
+                      label: item.label,
+                      type: item.type,
+                      url: item.url,
+                      metadata: item.metadata
+                    }));
                     button.addEventListener('mouseenter', () => {
-                      button.style.background = '#f0f0f0';
+                      button.style.background = getEntityColor(item.type);
                     });
                     button.addEventListener('mouseleave', () => {
-                      button.style.background = index === props.selectedIndex ? '#f0f0f0' : 'transparent';
+                      button.style.background = index === props.selectedIndex ? getEntityColor(item.type) : 'transparent';
                     });
                   }
                   component.appendChild(button);
@@ -292,10 +506,14 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 }
 
                 if (props.event.key === 'Enter') {
-                  if (props.items[props.selectedIndex]) {
+                  if (props.items[props.selectedIndex] && !props.items[props.selectedIndex].disabled) {
+                    const item = props.items[props.selectedIndex];
                     props.command({ 
-                      id: props.items[props.selectedIndex].id, 
-                      label: props.items[props.selectedIndex].label 
+                      id: item.id, 
+                      label: item.label,
+                      type: item.type,
+                      url: item.url,
+                      metadata: item.metadata
                     });
                   }
                   return true;
