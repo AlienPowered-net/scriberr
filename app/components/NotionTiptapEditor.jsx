@@ -48,7 +48,15 @@ import {
   EditIcon,
   TextColorIcon,
   TextFontIcon,
-  MegaphoneIcon
+  MegaphoneIcon,
+  ProductIcon,
+  VariantIcon,
+  OrderIcon,
+  PersonIcon,
+  CollectionIcon,
+  DiscountIcon,
+  OrderDraftIcon,
+  ProfileIcon
 } from '@shopify/polaris-icons';
 import './NotionTiptapEditor.css';
 
@@ -100,16 +108,21 @@ const TextIcon = ({ icon }) => {
 // Helper functions for entity mentions
 const getEntityIcon = (type) => {
   const icons = {
-    product: '📦',
-    variant: '🔹',
-    order: '🛒',
-    customer: '👤',
-    collection: '📚',
-    discount: '🏷️',
-    draftOrder: '📝',
-    person: '👨‍💼'
+    product: ProductIcon,
+    variant: VariantIcon,
+    order: OrderIcon,
+    customer: PersonIcon,
+    collection: CollectionIcon,
+    discount: DiscountIcon,
+    draftOrder: OrderDraftIcon,
+    person: ProfileIcon
   };
-  return icons[type] || '@';
+  return icons[type] || ProfileIcon;
+};
+
+const getEntityIconSvg = (type) => {
+  const IconComponent = getEntityIcon(type);
+  return `<svg viewBox="0 0 20 20" style="width: 20px; height: 20px; flex-shrink: 0;" fill="currentColor"><path d="${IconComponent.body}"/></svg>`;
 };
 
 const getEntityColor = (type) => {
@@ -408,12 +421,13 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   button.className = 'entity-mention-item';
                   button.disabled = item.disabled || false;
                   
-                  const icon = getEntityIcon(item.type);
+                  const iconSvg = getEntityIconSvg(item.type);
                   const metadata = getMetadataPreview(item.type, item.metadata);
+                  const bgColor = getEntityColor(item.type);
                   
                   button.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                      <span style="font-size: 18px;">${icon}</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      ${iconSvg}
                       <div style="flex: 1; min-width: 0;">
                         <div style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.label}</div>
                         ${metadata ? `<div style="font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${metadata}</div>` : ''}
@@ -427,7 +441,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     text-align: left;
                     padding: 10px;
                     border: none;
-                    background: ${index === props.selectedIndex && !item.disabled ? getEntityColor(item.type) : 'transparent'};
+                    background: ${index === props.selectedIndex && !item.disabled ? bgColor : 'transparent'};
                     cursor: ${item.disabled ? 'not-allowed' : 'pointer'};
                     opacity: ${item.disabled ? '0.6' : '1'};
                     border-radius: 6px;
@@ -470,12 +484,13 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   button.className = 'entity-mention-item';
                   button.disabled = item.disabled || false;
                   
-                  const icon = getEntityIcon(item.type);
+                  const iconSvg = getEntityIconSvg(item.type);
                   const metadata = getMetadataPreview(item.type, item.metadata);
+                  const bgColor = getEntityColor(item.type);
                   
                   button.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                      <span style="font-size: 18px;">${icon}</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      ${iconSvg}
                       <div style="flex: 1; min-width: 0;">
                         <div style="font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.label}</div>
                         ${metadata ? `<div style="font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${metadata}</div>` : ''}
@@ -489,7 +504,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     text-align: left;
                     padding: 10px;
                     border: none;
-                    background: ${index === props.selectedIndex && !item.disabled ? getEntityColor(item.type) : 'transparent'};
+                    background: ${index === props.selectedIndex && !item.disabled ? bgColor : 'transparent'};
                     cursor: ${item.disabled ? 'not-allowed' : 'pointer'};
                     opacity: ${item.disabled ? '0.6' : '1'};
                     border-radius: 6px;
