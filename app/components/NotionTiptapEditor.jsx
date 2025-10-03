@@ -169,7 +169,6 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   const [showHighlightColorPopover, setShowHighlightColorPopover] = useState(false);
   const [showFontFamilyPopover, setShowFontFamilyPopover] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [selectedEntityMention, setSelectedEntityMention] = useState(null);
   const editorRef = useRef(null);
   const slashMenuRef = useRef(null);
 
@@ -617,21 +616,6 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     editorProps: {
       attributes: {
         class: 'notion-editor',
-      },
-      handleClick: (view, pos, event) => {
-        // Check if clicked on entity mention
-        const target = event.target;
-        if (target && target.classList && target.classList.contains('entity-mention')) {
-          // Get the node at this position
-          const resolvedPos = view.state.doc.resolve(pos);
-          const node = resolvedPos.parent.childAfter(resolvedPos.parentOffset);
-          
-          if (node.node && node.node.type.name === 'entityMention') {
-            setSelectedEntityMention(node.node.attrs);
-            return true;
-          }
-        }
-        return false;
       },
       handleKeyDown: (view, event) => {
         // Handle slash commands
@@ -1490,65 +1474,6 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 </Button>
               </Tooltip>
             </ButtonGroup>
-          </BubbleMenu>
-        )}
-
-        {/* Entity Mention Preview Bubble Menu */}
-        {editor && selectedEntityMention && (
-          <BubbleMenu
-            editor={editor}
-            tippyOptions={{ 
-              duration: 100,
-              placement: 'top',
-              onHide: () => setSelectedEntityMention(null)
-            }}
-            shouldShow={({ editor, state }) => {
-              return selectedEntityMention !== null;
-            }}
-            className="entity-mention-bubble-menu"
-          >
-            <Card>
-              <Box padding="4">
-                <BlockStack gap="3">
-                  <InlineStack gap="3" align="start" blockAlign="center">
-                    <Text variant="headingMd" as="h3">
-                      <span style={{ fontSize: '20px', marginRight: '8px' }}>
-                        {getEntityIcon(selectedEntityMention.type)}
-                      </span>
-                      {selectedEntityMention.label}
-                    </Text>
-                  </InlineStack>
-                  
-                  {selectedEntityMention.metadata && (
-                    <Box>
-                      <Text variant="bodySm" color="subdued">
-                        {getMetadataPreview(selectedEntityMention.type, selectedEntityMention.metadata)}
-                      </Text>
-                    </Box>
-                  )}
-
-                  <InlineStack gap="2">
-                    {selectedEntityMention.url && (
-                      <Button
-                        size="slim"
-                        onClick={() => {
-                          window.open(selectedEntityMention.url, '_blank');
-                          setSelectedEntityMention(null);
-                        }}
-                      >
-                        Open in Shopify Admin
-                      </Button>
-                    )}
-                    <Button
-                      size="slim"
-                      onClick={() => setSelectedEntityMention(null)}
-                    >
-                      Close
-                    </Button>
-                  </InlineStack>
-                </BlockStack>
-              </Box>
-            </Card>
           </BubbleMenu>
         )}
         

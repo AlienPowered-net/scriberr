@@ -160,8 +160,13 @@ export const EntityMention = Node.create({
 
     // Add entity type class for styling
     attrs.class = `entity-mention entity-mention-${entityType}`;
-    attrs.style = 'cursor: pointer;';
-    attrs.title = url ? `Click to view ${label} in Shopify Admin` : label;
+    attrs.style = 'cursor: pointer; font-weight: 600;';
+    attrs.title = url ? `Click to open ${label} in Shopify Admin` : label;
+    
+    // Add click handler to open URL in new tab
+    if (url) {
+      attrs.onclick = `window.open('${url}', '_blank', 'noopener,noreferrer'); event.stopPropagation(); return false;`;
+    }
 
     return [
       'span',

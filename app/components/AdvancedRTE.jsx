@@ -121,7 +121,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [showToolbarTextColorPicker, setShowToolbarTextColorPicker] = useState(false);
   const [tempBorderColor, setTempBorderColor] = useState('#d1d5db');
   const [isMobile, setIsMobile] = useState(false);
-  const [selectedEntityMention, setSelectedEntityMention] = useState(null);
   const editorRef = useRef(null);
 
 
@@ -587,18 +586,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         style: 'min-height: 8rem; max-height: 25rem; overflow: visible; width: 100%; outline: none; cursor: text; line-height: 1.6; padding-left: 1rem; font-size: 16px;',
       },
       handleClick: (view, pos, event) => {
-        // Check if clicked on entity mention
-        const target = event.target;
-        if (target && target.classList && target.classList.contains('entity-mention')) {
-          // Get the node at this position
-          const resolvedPos = view.state.doc.resolve(pos);
-          const node = resolvedPos.parent.childAfter(resolvedPos.parentOffset);
-          
-          if (node.node && node.node.type.name === 'entityMention') {
-            setSelectedEntityMention(node.node.attrs);
-            return true;
-          }
-        }
         // Ensure the entire editor area is clickable and focuses properly
         return false;
       },
@@ -1405,65 +1392,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             }}
           />
           {editor && <TiptapDragHandle editor={editor} />}
-
-          {/* Entity Mention Preview Bubble Menu */}
-          {editor && selectedEntityMention && (
-            <BubbleMenu
-              editor={editor}
-              tippyOptions={{ 
-                duration: 100,
-                placement: 'top',
-                onHide: () => setSelectedEntityMention(null)
-              }}
-              shouldShow={({ editor, state }) => {
-                return selectedEntityMention !== null;
-              }}
-              className="entity-mention-bubble-menu"
-            >
-              <Card>
-                <Box padding="4">
-                  <BlockStack gap="3">
-                    <InlineStack gap="3" align="start" blockAlign="center">
-                      <Text variant="headingMd" as="h3">
-                        <span style={{ fontSize: '20px', marginRight: '8px' }}>
-                          {getEntityIcon(selectedEntityMention.type)}
-                        </span>
-                        {selectedEntityMention.label}
-                      </Text>
-                    </InlineStack>
-                    
-                    {selectedEntityMention.metadata && (
-                      <Box>
-                        <Text variant="bodySm" color="subdued">
-                          {getMetadataPreview(selectedEntityMention.type, selectedEntityMention.metadata)}
-                        </Text>
-                      </Box>
-                    )}
-
-                    <InlineStack gap="2">
-                      {selectedEntityMention.url && (
-                        <Button
-                          size="slim"
-                          onClick={() => {
-                            window.open(selectedEntityMention.url, '_blank');
-                            setSelectedEntityMention(null);
-                          }}
-                        >
-                          Open in Shopify Admin
-                        </Button>
-                      )}
-                      <Button
-                        size="slim"
-                        onClick={() => setSelectedEntityMention(null)}
-                      >
-                        Close
-                      </Button>
-                    </InlineStack>
-                  </BlockStack>
-                </Box>
-              </Card>
-            </BubbleMenu>
-          )}
         </div>
         
         {/* Character Count */}
