@@ -158,9 +158,23 @@ export const EntityMention = Node.create({
     const label = node.attrs.label || node.attrs.id;
     const url = node.attrs.url;
 
+    // Entity-specific colors
+    const entityColors = {
+      product: { bg: '#e3f2fd', border: '#90caf9', text: '#1565c0' },
+      variant: { bg: '#f3e5f5', border: '#ce93d8', text: '#6a1b9a' },
+      order: { bg: '#fff3e0', border: '#ffcc80', text: '#e65100' },
+      customer: { bg: '#e8f5e9', border: '#a5d6a7', text: '#2e7d32' },
+      collection: { bg: '#fce4ec', border: '#f48fb1', text: '#c2185b' },
+      discount: { bg: '#fff9c4', border: '#fff176', text: '#f57f17' },
+      draftOrder: { bg: '#f1f8e9', border: '#c5e1a5', text: '#558b2f' },
+      person: { bg: '#e0f2f1', border: '#80cbc4', text: '#00695c' },
+    };
+
+    const colors = entityColors[entityType] || { bg: '#f0f0f0', border: '#ddd', text: '#333' };
+
     // Add entity type class for styling
     attrs.class = `entity-mention entity-mention-${entityType}`;
-    attrs.style = 'cursor: pointer; font-weight: 600;';
+    attrs.style = `cursor: pointer; font-weight: 700; background-color: ${colors.bg}; border: 1px solid ${colors.border}; color: ${colors.text}; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; font-size: 0.95em; white-space: nowrap; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);`;
     attrs.title = url ? `Click to open ${label} in Shopify Admin` : label;
     
     // Add click handler to open URL in new tab

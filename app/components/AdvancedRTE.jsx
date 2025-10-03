@@ -65,12 +65,15 @@ const getEntityIconSvg = (type) => {
   svg.setAttribute('viewBox', '0 0 20 20');
   svg.setAttribute('width', '20');
   svg.setAttribute('height', '20');
+  svg.setAttribute('fill', '#000000');
   svg.style.flexShrink = '0';
-  svg.style.fill = 'currentColor';
+  svg.style.fill = '#000000';
+  svg.style.color = '#000000';
   
   const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   path.setAttribute('d', IconComponent.body);
-  path.setAttribute('fill', 'currentColor');
+  path.setAttribute('fill', '#000000');
+  path.setAttribute('fill-rule', 'evenodd');
   
   svg.appendChild(path);
   return svg;
