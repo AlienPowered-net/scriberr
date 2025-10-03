@@ -216,6 +216,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         bulletList: false,
         orderedList: false,
         listItem: false,
+        // Disable extensions that we're adding separately to avoid duplicates
+        link: false,
+        underline: false,
       }),
       Blockquote,
       CodeBlockLowlight.configure({
@@ -233,6 +236,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           items: async ({ query }) => {
             try {
               const results = [];
+              console.log('Fetching Shopify entities for query:', query);
 
               // Fetch Shopify entities
               const shopifyResponse = await fetch(`/api/shopify-entities?query=${encodeURIComponent(query)}`, {
@@ -241,8 +245,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   'Content-Type': 'application/json',
                 }
               });
-              const shopifyData = await shopifyResponse.json();
               
+              console.log('Shopify API response status:', shopifyResponse.status);
+              const shopifyData = await shopifyResponse.json();
               console.log('Shopify entities response:', shopifyData);
 
               if (shopifyData.success) {
