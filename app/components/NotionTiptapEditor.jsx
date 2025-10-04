@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
+import { createPortal } from 'react-dom';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/extension-bubble-menu';
 import StarterKit from '@tiptap/starter-kit';
@@ -26,6 +27,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import CharacterCount from '@tiptap/extension-character-count';
 import TiptapDragHandle from './TiptapDragHandle';
+import { LineHeightExtension } from './LineHeightExtension';
 import { createLowlight } from 'lowlight';
 import { 
   Button, 
@@ -186,7 +188,7 @@ const getMetadataPreview = (type, metadata) => {
   }
 };
 
-const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for commands..." }) => {
+const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for commands...", onFullscreenChange }) => {
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -204,6 +206,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   const [showHighlightColorPopover, setShowHighlightColorPopover] = useState(false);
   const [showFontFamilyPopover, setShowFontFamilyPopover] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showLineHeightPopover, setShowLineHeightPopover] = useState(false);
+  const [showClearMarksPopover, setShowClearMarksPopover] = useState(false);
+  const [showSnapshotPopover, setShowSnapshotPopover] = useState(false);
+  const [snapshots, setSnapshots] = useState([]);
+  const [isExpanded, setIsExpanded] = useState(false);
   const editorRef = useRef(null);
   const slashMenuRef = useRef(null);
 
@@ -735,6 +742,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       CharacterCount.configure({
         limit: null, // No character limit
       }),
+      LineHeightExtension,
     ],
     content: value || '',
     onUpdate: ({ editor }) => {
@@ -1046,6 +1054,62 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     }
   };
 
+  // Snapshot functionality
+  const saveSnapshot = () => {
+    if (editor) {
+      const content = editor.getHTML();
+      const timestamp = new Date().toLocaleString();
+      const newSnapshot = { content, timestamp, id: Date.now() };
+      setSnapshots(prev => [newSnapshot, ...prev.slice(0, 9)]); // Keep last 10 snapshots
+      setShowSnapshotPopover(false);
+    }
+  };
+
+  const restoreSnapshot = (snapshot) => {
+    if (editor && snapshot) {
+      editor.commands.setContent(snapshot.content);
+      setShowSnapshotPopover(false);
+    }
+  };
+
+  const clearAllMarks = () => {
+    if (editor) {
+      editor.chain().focus().unsetAllMarks().run();
+      setShowClearMarksPopover(false);
+    }
+  };
+
+  // Fullscreen functionality
+  const toggleExpanded = () => {
+    const newExpandedState = !isExpanded;
+    setIsExpanded(newExpandedState);
+    
+    // Prevent body and html scrolling when in fullscreen mode
+    if (newExpandedState) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+      document.body.classList.add('editor-fullscreen-active');
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.body.classList.remove('editor-fullscreen-active');
+    }
+    
+    // Notify parent component about fullscreen state change
+    if (onFullscreenChange) {
+      onFullscreenChange(newExpandedState);
+    }
+  };
+
+  // Cleanup effect for fullscreen
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      document.body.classList.remove('editor-fullscreen-active');
+    };
+  }, []);
+
   if (!editor) {
     return (
       <Card>
@@ -1061,248 +1125,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
 
   return (
     <div className="notion-tiptap-container">
-      {/* Toolbar - Notion-like minimal toolbar */}
+      {/* Toolbar - Reorganized according to specifications */}
       <div className="notion-toolbar">
         <InlineStack gap="2" align="start">
-          {/* Basic formatting */}
-          <ButtonGroup variant="segmented">
-            <Tooltip content="Bold (⌘B)">
-              <Button
-                size="slim"
-                pressed={editor.isActive('bold')}
-                onClick={() => editor.chain().focus().toggleBold().run()}
-              >
-                <TextIcon icon="bold" />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Italic (⌘I)">
-              <Button
-                size="slim"
-                pressed={editor.isActive('italic')}
-                onClick={() => editor.chain().focus().toggleItalic().run()}
-              >
-                <TextIcon icon="italic" />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Underline (⌘U)">
-              <Button
-                size="slim"
-                pressed={editor.isActive('underline')}
-                onClick={() => editor.chain().focus().toggleUnderline().run()}
-              >
-                <TextIcon icon="underline" />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Strikethrough">
-              <Button
-                size="slim"
-                pressed={editor.isActive('strike')}
-                onClick={() => editor.chain().focus().toggleStrike().run()}
-              >
-                <TextIcon icon="strikethrough" />
-              </Button>
-            </Tooltip>
-          </ButtonGroup>
-
-          {/* Heading dropdown */}
-          <Popover
-            active={showHeadingPopover}
-            activator={
-              <Button
-                size="slim"
-                disclosure
-                onClick={() => setShowHeadingPopover(!showHeadingPopover)}
-              >
-                <TextIcon icon="type" />
-                {editor.isActive('heading', { level: 1 }) ? 'H1' :
-                 editor.isActive('heading', { level: 2 }) ? 'H2' :
-                 editor.isActive('heading', { level: 3 }) ? 'H3' : 'Text'}
-              </Button>
-            }
-            onClose={() => setShowHeadingPopover(false)}
-          >
-            <ActionList
-              items={[
-                {
-                  content: 'Text',
-                  active: editor.isActive('paragraph'),
-                  onAction: () => {
-                    editor.chain().focus().setParagraph().run();
-                    setShowHeadingPopover(false);
-                  }
-                },
-                {
-                  content: 'Heading 1',
-                  active: editor.isActive('heading', { level: 1 }),
-                  onAction: () => {
-                    editor.chain().focus().toggleHeading({ level: 1 }).run();
-                    setShowHeadingPopover(false);
-                  }
-                },
-                {
-                  content: 'Heading 2',
-                  active: editor.isActive('heading', { level: 2 }),
-                  onAction: () => {
-                    editor.chain().focus().toggleHeading({ level: 2 }).run();
-                    setShowHeadingPopover(false);
-                  }
-                },
-                {
-                  content: 'Heading 3',
-                  active: editor.isActive('heading', { level: 3 }),
-                  onAction: () => {
-                    editor.chain().focus().toggleHeading({ level: 3 }).run();
-                    setShowHeadingPopover(false);
-                  }
-                },
-              ]}
-            />
-          </Popover>
-
-          {/* Lists */}
-          <ButtonGroup variant="segmented">
-            <Tooltip content="Bullet List">
-              <Button
-                size="slim"
-                pressed={editor.isActive('bulletList')}
-                onClick={() => editor.chain().focus().toggleBulletList().run()}
-              >
-                <TextIcon icon="bulletList" />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Numbered List">
-              <Button
-                size="slim"
-                pressed={editor.isActive('orderedList')}
-                onClick={() => editor.chain().focus().toggleOrderedList().run()}
-              >
-                <TextIcon icon="numberedList" />
-              </Button>
-            </Tooltip>
-          </ButtonGroup>
-
-          {/* Task List - Separate button for visibility */}
-          <Tooltip content="Task List">
-            <Button
-              size="slim"
-              pressed={editor.isActive('taskList')}
-              onClick={() => editor.chain().focus().toggleTaskList().run()}
-            >
-              <TextIcon icon="checkbox" />
-            </Button>
-          </Tooltip>
-
-          {/* Text alignment */}
-          <Popover
-            active={showAlignPopover}
-            activator={
-              <Button
-                size="slim"
-                disclosure
-                onClick={() => setShowAlignPopover(!showAlignPopover)}
-              >
-                <TextIcon icon="alignLeft" />
-              </Button>
-            }
-            onClose={() => setShowAlignPopover(false)}
-          >
-            <ActionList
-              items={[
-                {
-                  content: 'Align Left',
-                  prefix: <TextIcon icon="alignLeft" />,
-                  active: editor.isActive({ textAlign: 'left' }),
-                  onAction: () => {
-                    editor.chain().focus().setTextAlign('left').run();
-                    setShowAlignPopover(false);
-                  }
-                },
-                {
-                  content: 'Align Center',
-                  prefix: <TextIcon icon="alignCenter" />,
-                  active: editor.isActive({ textAlign: 'center' }),
-                  onAction: () => {
-                    editor.chain().focus().setTextAlign('center').run();
-                    setShowAlignPopover(false);
-                  }
-                },
-                {
-                  content: 'Align Right',
-                  prefix: <TextIcon icon="alignRight" />,
-                  active: editor.isActive({ textAlign: 'right' }),
-                  onAction: () => {
-                    editor.chain().focus().setTextAlign('right').run();
-                    setShowAlignPopover(false);
-                  }
-                },
-              ]}
-            />
-          </Popover>
-
-          {/* Font Family Dropdown */}
-          <Popover
-            active={showFontFamilyPopover}
-            activator={
-              <Tooltip content="Font Family">
-                <Button
-                  size="slim"
-                  disclosure
-                  onClick={() => setShowFontFamilyPopover(!showFontFamilyPopover)}
-                >
-                  <Icon source={TextFontIcon} />
-                </Button>
-              </Tooltip>
-            }
-            onClose={() => setShowFontFamilyPopover(false)}
-          >
-            <ActionList
-              items={[
-                {
-                  content: 'Default',
-                  onAction: () => {
-                    editor.chain().focus().unsetFontFamily().run();
-                    setShowFontFamilyPopover(false);
-                  }
-                },
-                {
-                  content: 'Arial',
-                  onAction: () => {
-                    editor.chain().focus().setFontFamily('Arial, sans-serif').run();
-                    setShowFontFamilyPopover(false);
-                  }
-                },
-                {
-                  content: 'Courier New',
-                  onAction: () => {
-                    editor.chain().focus().setFontFamily('Courier New, monospace').run();
-                    setShowFontFamilyPopover(false);
-                  }
-                },
-                {
-                  content: 'Georgia',
-                  onAction: () => {
-                    editor.chain().focus().setFontFamily('Georgia, serif').run();
-                    setShowFontFamilyPopover(false);
-                  }
-                },
-                {
-                  content: 'Times New Roman',
-                  onAction: () => {
-                    editor.chain().focus().setFontFamily('Times New Roman, serif').run();
-                    setShowFontFamilyPopover(false);
-                  }
-                },
-                {
-                  content: 'Verdana',
-                  onAction: () => {
-                    editor.chain().focus().setFontFamily('Verdana, sans-serif').run();
-                    setShowFontFamilyPopover(false);
-                  }
-                },
-              ]}
-            />
-          </Popover>
-
           {/* Text Color */}
           <Popover
             active={showTextColorPopover}
@@ -1381,11 +1206,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             />
           </Popover>
 
-          {/* Highlight Color */}
+          {/* Highlight Text */}
           <Popover
             active={showHighlightColorPopover}
             activator={
-              <Tooltip content="Highlight">
+              <Tooltip content="Highlight Text">
                 <Button
                   size="slim"
                   disclosure
@@ -1446,7 +1271,38 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             />
           </Popover>
 
-          {/* Emoji Button */}
+          {/* Bold, Italic, Underline */}
+          <ButtonGroup variant="segmented">
+            <Tooltip content="Bold (⌘B)">
+              <Button
+                size="slim"
+                pressed={editor.isActive('bold')}
+                onClick={() => editor.chain().focus().toggleBold().run()}
+              >
+                <TextIcon icon="bold" />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Italic (⌘I)">
+              <Button
+                size="slim"
+                pressed={editor.isActive('italic')}
+                onClick={() => editor.chain().focus().toggleItalic().run()}
+              >
+                <TextIcon icon="italic" />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Underline (⌘U)">
+              <Button
+                size="slim"
+                pressed={editor.isActive('underline')}
+                onClick={() => editor.chain().focus().toggleUnderline().run()}
+              >
+                <TextIcon icon="underline" />
+              </Button>
+            </Tooltip>
+          </ButtonGroup>
+
+          {/* Insert Emoji */}
           <Tooltip content="Insert Emoji">
             <Button
               size="slim"
@@ -1461,7 +1317,297 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             </Button>
           </Tooltip>
 
-          {/* YouTube Button */}
+          {/* Font Family */}
+          <Popover
+            active={showFontFamilyPopover}
+            activator={
+              <Tooltip content="Font Family">
+                <Button
+                  size="slim"
+                  disclosure
+                  onClick={() => setShowFontFamilyPopover(!showFontFamilyPopover)}
+                >
+                  <Icon source={TextFontIcon} />
+                </Button>
+              </Tooltip>
+            }
+            onClose={() => setShowFontFamilyPopover(false)}
+          >
+            <ActionList
+              items={[
+                {
+                  content: 'Default',
+                  onAction: () => {
+                    editor.chain().focus().unsetFontFamily().run();
+                    setShowFontFamilyPopover(false);
+                  }
+                },
+                {
+                  content: 'Arial',
+                  onAction: () => {
+                    editor.chain().focus().setFontFamily('Arial, sans-serif').run();
+                    setShowFontFamilyPopover(false);
+                  }
+                },
+                {
+                  content: 'Courier New',
+                  onAction: () => {
+                    editor.chain().focus().setFontFamily('Courier New, monospace').run();
+                    setShowFontFamilyPopover(false);
+                  }
+                },
+                {
+                  content: 'Georgia',
+                  onAction: () => {
+                    editor.chain().focus().setFontFamily('Georgia, serif').run();
+                    setShowFontFamilyPopover(false);
+                  }
+                },
+                {
+                  content: 'Times New Roman',
+                  onAction: () => {
+                    editor.chain().focus().setFontFamily('Times New Roman, serif').run();
+                    setShowFontFamilyPopover(false);
+                  }
+                },
+                {
+                  content: 'Verdana',
+                  onAction: () => {
+                    editor.chain().focus().setFontFamily('Verdana, sans-serif').run();
+                    setShowFontFamilyPopover(false);
+                  }
+                },
+              ]}
+            />
+          </Popover>
+
+          {/* Divider */}
+          <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+          {/* H1, H2, H3 */}
+          <ButtonGroup variant="segmented">
+            <Tooltip content="Heading 1">
+              <Button
+                size="slim"
+                pressed={editor.isActive('heading', { level: 1 })}
+                onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+              >
+                H1
+              </Button>
+            </Tooltip>
+            <Tooltip content="Heading 2">
+              <Button
+                size="slim"
+                pressed={editor.isActive('heading', { level: 2 })}
+                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+              >
+                H2
+              </Button>
+            </Tooltip>
+            <Tooltip content="Heading 3">
+              <Button
+                size="slim"
+                pressed={editor.isActive('heading', { level: 3 })}
+                onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+              >
+                H3
+              </Button>
+            </Tooltip>
+          </ButtonGroup>
+
+          {/* Divider */}
+          <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+          {/* Hard Break */}
+          <Tooltip content="Hard Break">
+            <Button
+              size="slim"
+              onClick={() => editor.chain().focus().setHardBreak().run()}
+            >
+              <TextIcon icon="plus" />
+            </Button>
+          </Tooltip>
+
+          {/* Line Height */}
+          <Popover
+            active={showLineHeightPopover}
+            activator={
+              <Tooltip content="Line Height">
+                <Button
+                  size="slim"
+                  disclosure
+                  onClick={() => setShowLineHeightPopover(!showLineHeightPopover)}
+                >
+                  <TextIcon icon="sort" />
+                </Button>
+              </Tooltip>
+            }
+            onClose={() => setShowLineHeightPopover(false)}
+          >
+            <ActionList
+              items={[
+                {
+                  content: 'Default',
+                  onAction: () => {
+                    editor.chain().focus().unsetLineHeight().run();
+                    setShowLineHeightPopover(false);
+                  }
+                },
+                {
+                  content: '1.0',
+                  onAction: () => {
+                    editor.chain().focus().setLineHeight(1.0).run();
+                    setShowLineHeightPopover(false);
+                  }
+                },
+                {
+                  content: '1.2',
+                  onAction: () => {
+                    editor.chain().focus().setLineHeight(1.2).run();
+                    setShowLineHeightPopover(false);
+                  }
+                },
+                {
+                  content: '1.5',
+                  onAction: () => {
+                    editor.chain().focus().setLineHeight(1.5).run();
+                    setShowLineHeightPopover(false);
+                  }
+                },
+                {
+                  content: '2.0',
+                  onAction: () => {
+                    editor.chain().focus().setLineHeight(2.0).run();
+                    setShowLineHeightPopover(false);
+                  }
+                },
+              ]}
+            />
+          </Popover>
+
+          {/* Paragraph */}
+          <Tooltip content="Paragraph">
+            <Button
+              size="slim"
+              pressed={editor.isActive('paragraph')}
+              onClick={() => editor.chain().focus().setParagraph().run()}
+            >
+              <TextIcon icon="text" />
+            </Button>
+          </Tooltip>
+
+          {/* Text alignment */}
+          <ButtonGroup variant="segmented">
+            <Tooltip content="Align Left">
+              <Button
+                size="slim"
+                pressed={editor.isActive({ textAlign: 'left' })}
+                onClick={() => editor.chain().focus().setTextAlign('left').run()}
+              >
+                <TextIcon icon="alignLeft" />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Align Center">
+              <Button
+                size="slim"
+                pressed={editor.isActive({ textAlign: 'center' })}
+                onClick={() => editor.chain().focus().setTextAlign('center').run()}
+              >
+                <TextIcon icon="alignCenter" />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Align Right">
+              <Button
+                size="slim"
+                pressed={editor.isActive({ textAlign: 'right' })}
+                onClick={() => editor.chain().focus().setTextAlign('right').run()}
+              >
+                <TextIcon icon="alignRight" />
+              </Button>
+            </Tooltip>
+          </ButtonGroup>
+
+          {/* Divider */}
+          <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+          {/* Lists */}
+          <ButtonGroup variant="segmented">
+            <Tooltip content="Bullet List">
+              <Button
+                size="slim"
+                pressed={editor.isActive('bulletList')}
+                onClick={() => editor.chain().focus().toggleBulletList().run()}
+              >
+                <TextIcon icon="bulletList" />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Numbered List">
+              <Button
+                size="slim"
+                pressed={editor.isActive('orderedList')}
+                onClick={() => editor.chain().focus().toggleOrderedList().run()}
+              >
+                <TextIcon icon="numberedList" />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Task List">
+              <Button
+                size="slim"
+                pressed={editor.isActive('taskList')}
+                onClick={() => editor.chain().focus().toggleTaskList().run()}
+              >
+                <TextIcon icon="checkbox" />
+              </Button>
+            </Tooltip>
+          </ButtonGroup>
+
+          {/* Divider */}
+          <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+          {/* Horizontal Rule */}
+          <Tooltip content="Horizontal Rule">
+            <Button
+              size="slim"
+              onClick={() => editor.chain().focus().setHorizontalRule().run()}
+            >
+              <TextIcon icon="horizontalDots" />
+            </Button>
+          </Tooltip>
+
+          {/* Insert Table */}
+          <Tooltip content="Insert Table">
+            <Button
+              size="slim"
+              onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+            >
+              <TextIcon icon="table" />
+            </Button>
+          </Tooltip>
+
+          {/* Divider */}
+          <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+          {/* Insert Link */}
+          <Tooltip content="Insert Link">
+            <Button
+              size="slim"
+              onClick={() => setShowLinkModal(true)}
+            >
+              <TextIcon icon="link" />
+            </Button>
+          </Tooltip>
+
+          {/* Insert Image */}
+          <Tooltip content="Insert Image">
+            <Button
+              size="slim"
+              onClick={() => setShowImageModal(true)}
+            >
+              <TextIcon icon="image" />
+            </Button>
+          </Tooltip>
+
+          {/* Insert YouTube Video */}
           <Tooltip content="Insert YouTube Video">
             <Button
               size="slim"
@@ -1471,93 +1617,165 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             </Button>
           </Tooltip>
 
-          {/* More formatting */}
+          {/* Divider */}
+          <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+          {/* Blockquote */}
+          <Tooltip content="Blockquote">
+            <Button
+              size="slim"
+              pressed={editor.isActive('blockquote')}
+              onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            >
+              <TextIcon icon="quote" />
+            </Button>
+          </Tooltip>
+
+          {/* Code Block */}
+          <Tooltip content="Code Block">
+            <Button
+              size="slim"
+              pressed={editor.isActive('codeBlock')}
+              onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+            >
+              <TextIcon icon="code" />
+            </Button>
+          </Tooltip>
+
+          {/* Divider */}
+          <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+          {/* Clear Marks */}
           <Popover
-            active={showFormatPopover}
+            active={showClearMarksPopover}
             activator={
-              <Button
-                size="slim"
-                disclosure
-                onClick={() => setShowFormatPopover(!showFormatPopover)}
-              >
-                <TextIcon icon="horizontalDots" />
-              </Button>
+              <Tooltip content="Clear Marks">
+                <Button
+                  size="slim"
+                  disclosure
+                  onClick={() => setShowClearMarksPopover(!showClearMarksPopover)}
+                >
+                  <TextIcon icon="question" />
+                </Button>
+              </Tooltip>
             }
-            onClose={() => setShowFormatPopover(false)}
+            onClose={() => setShowClearMarksPopover(false)}
           >
             <ActionList
-              sections={[
+              items={[
                 {
-                  title: 'Insert',
-                  items: [
-                    {
-                      content: 'Link',
-                      prefix: <TextIcon icon="link" />,
-                      onAction: () => {
-                        setShowLinkModal(true);
-                        setShowFormatPopover(false);
-                      }
-                    },
-                    {
-                      content: 'Image',
-                      prefix: <TextIcon icon="image" />,
-                      onAction: () => {
-                        setShowImageModal(true);
-                        setShowFormatPopover(false);
-                      }
-                    },
-                    {
-                      content: 'Video',
-                      prefix: <TextIcon icon="video" />,
-                      onAction: () => {
-                        setShowVideoModal(true);
-                        setShowFormatPopover(false);
-                      }
-                    },
-                    {
-                      content: 'Table',
-                      prefix: <TextIcon icon="table" />,
-                      onAction: () => {
-                        editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
-                        setShowFormatPopover(false);
-                      }
-                    },
-                  ]
+                  content: 'Clear All Formatting',
+                  onAction: clearAllMarks
                 },
                 {
-                  title: 'Blocks',
-                  items: [
-                    {
-                      content: 'Quote',
-                      prefix: <TextIcon icon="quote" />,
-                      active: editor.isActive('blockquote'),
-                      onAction: () => {
-                        editor.chain().focus().toggleBlockquote().run();
-                        setShowFormatPopover(false);
-                      }
-                    },
-                    {
-                      content: 'Code Block',
-                      prefix: <TextIcon icon="code" />,
-                      active: editor.isActive('codeBlock'),
-                      onAction: () => {
-                        editor.chain().focus().toggleCodeBlock().run();
-                        setShowFormatPopover(false);
-                      }
-                    },
-                    {
-                      content: 'Divider',
-                      prefix: <TextIcon icon="horizontalDots" />,
-                      onAction: () => {
-                        editor.chain().focus().setHorizontalRule().run();
-                        setShowFormatPopover(false);
-                      }
-                    },
-                  ]
-                }
+                  content: 'Clear Bold',
+                  onAction: () => {
+                    editor.chain().focus().unsetBold().run();
+                    setShowClearMarksPopover(false);
+                  }
+                },
+                {
+                  content: 'Clear Italic',
+                  onAction: () => {
+                    editor.chain().focus().unsetItalic().run();
+                    setShowClearMarksPopover(false);
+                  }
+                },
+                {
+                  content: 'Clear Underline',
+                  onAction: () => {
+                    editor.chain().focus().unsetUnderline().run();
+                    setShowClearMarksPopover(false);
+                  }
+                },
+                {
+                  content: 'Clear Highlight',
+                  onAction: () => {
+                    editor.chain().focus().unsetHighlight().run();
+                    setShowClearMarksPopover(false);
+                  }
+                },
               ]}
             />
           </Popover>
+
+          {/* Divider */}
+          <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+          {/* Save Snapshot */}
+          <Tooltip content="Save Snapshot">
+            <Button
+              size="slim"
+              onClick={saveSnapshot}
+            >
+              <TextIcon icon="plus" />
+            </Button>
+          </Tooltip>
+
+          {/* Restore Snapshot */}
+          <Popover
+            active={showSnapshotPopover}
+            activator={
+              <Tooltip content="Restore Snapshot">
+                <Button
+                  size="slim"
+                  disclosure
+                  onClick={() => setShowSnapshotPopover(!showSnapshotPopover)}
+                >
+                  <TextIcon icon="chevronDown" />
+                </Button>
+              </Tooltip>
+            }
+            onClose={() => setShowSnapshotPopover(false)}
+          >
+            <ActionList
+              items={snapshots.length > 0 ? snapshots.map(snapshot => ({
+                content: snapshot.timestamp,
+                onAction: () => restoreSnapshot(snapshot)
+              })) : [{
+                content: 'No snapshots available',
+                disabled: true
+              }]}
+            />
+          </Popover>
+
+          {/* Divider */}
+          <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+          {/* Undo, Redo */}
+          <ButtonGroup variant="segmented">
+            <Tooltip content="Undo">
+              <Button
+                size="slim"
+                disabled={!editor.can().undo()}
+                onClick={() => editor.chain().focus().undo().run()}
+              >
+                ↶
+              </Button>
+            </Tooltip>
+            <Tooltip content="Redo">
+              <Button
+                size="slim"
+                disabled={!editor.can().redo()}
+                onClick={() => editor.chain().focus().redo().run()}
+              >
+                ↷
+              </Button>
+            </Tooltip>
+          </ButtonGroup>
+
+          {/* Divider */}
+          <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+          {/* Fullscreen Button */}
+          <Tooltip content={isExpanded ? "Exit Fullscreen" : "Enter Fullscreen"}>
+            <Button
+              size="slim"
+              onClick={toggleExpanded}
+            >
+              {isExpanded ? '⤓' : '⤢'}
+            </Button>
+          </Tooltip>
 
         </InlineStack>
       </div>
@@ -1866,6 +2084,694 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           />
         </Modal.Section>
       </Modal>
+
+      {/* Fullscreen Editor */}
+      {isExpanded && typeof document !== 'undefined' && createPortal(
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: '#ffffff',
+            zIndex: 9999999,
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          {/* Fullscreen Toolbar */}
+          <div className="notion-toolbar" style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+            <InlineStack gap="2" align="start">
+              {/* Text Color */}
+              <Popover
+                active={showTextColorPopover}
+                activator={
+                  <Tooltip content="Text Color">
+                    <Button
+                      size="slim"
+                      disclosure
+                      onClick={() => setShowTextColorPopover(!showTextColorPopover)}
+                    >
+                      <Icon source={TextColorIcon} />
+                    </Button>
+                  </Tooltip>
+                }
+                onClose={() => setShowTextColorPopover(false)}
+              >
+                <ActionList
+                  items={[
+                    {
+                      content: 'Default',
+                      onAction: () => {
+                        editor.chain().focus().unsetColor().run();
+                        setShowTextColorPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Red',
+                      onAction: () => {
+                        editor.chain().focus().setColor('#ef4444').run();
+                        setShowTextColorPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Orange',
+                      onAction: () => {
+                        editor.chain().focus().setColor('#f97316').run();
+                        setShowTextColorPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Yellow',
+                      onAction: () => {
+                        editor.chain().focus().setColor('#eab308').run();
+                        setShowTextColorPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Green',
+                      onAction: () => {
+                        editor.chain().focus().setColor('#22c55e').run();
+                        setShowTextColorPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Blue',
+                      onAction: () => {
+                        editor.chain().focus().setColor('#3b82f6').run();
+                        setShowTextColorPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Purple',
+                      onAction: () => {
+                        editor.chain().focus().setColor('#a855f7').run();
+                        setShowTextColorPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Pink',
+                      onAction: () => {
+                        editor.chain().focus().setColor('#ec4899').run();
+                        setShowTextColorPopover(false);
+                      }
+                    },
+                  ]}
+                />
+              </Popover>
+
+              {/* Highlight Text */}
+              <Popover
+                active={showHighlightColorPopover}
+                activator={
+                  <Tooltip content="Highlight Text">
+                    <Button
+                      size="slim"
+                      disclosure
+                      pressed={editor.isActive('highlight')}
+                      onClick={() => setShowHighlightColorPopover(!showHighlightColorPopover)}
+                    >
+                      <Icon source={EditIcon} />
+                    </Button>
+                  </Tooltip>
+                }
+                onClose={() => setShowHighlightColorPopover(false)}
+              >
+                <ActionList
+                  items={[
+                    {
+                      content: 'Remove Highlight',
+                      onAction: () => {
+                        editor.chain().focus().unsetHighlight().run();
+                        setShowHighlightColorPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Yellow',
+                      onAction: () => {
+                        editor.chain().focus().setHighlight({ color: '#fef3c7' }).run();
+                        setShowHighlightColorPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Green',
+                      onAction: () => {
+                        editor.chain().focus().setHighlight({ color: '#d1fae5' }).run();
+                        setShowHighlightColorPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Blue',
+                      onAction: () => {
+                        editor.chain().focus().setHighlight({ color: '#dbeafe' }).run();
+                        setShowHighlightColorPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Pink',
+                      onAction: () => {
+                        editor.chain().focus().setHighlight({ color: '#fce7f3' }).run();
+                        setShowHighlightColorPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Purple',
+                      onAction: () => {
+                        editor.chain().focus().setHighlight({ color: '#f3e8ff' }).run();
+                        setShowHighlightColorPopover(false);
+                      }
+                    },
+                  ]}
+                />
+              </Popover>
+
+              {/* Bold, Italic, Underline */}
+              <ButtonGroup variant="segmented">
+                <Tooltip content="Bold (⌘B)">
+                  <Button
+                    size="slim"
+                    pressed={editor.isActive('bold')}
+                    onClick={() => editor.chain().focus().toggleBold().run()}
+                  >
+                    <TextIcon icon="bold" />
+                  </Button>
+                </Tooltip>
+                <Tooltip content="Italic (⌘I)">
+                  <Button
+                    size="slim"
+                    pressed={editor.isActive('italic')}
+                    onClick={() => editor.chain().focus().toggleItalic().run()}
+                  >
+                    <TextIcon icon="italic" />
+                  </Button>
+                </Tooltip>
+                <Tooltip content="Underline (⌘U)">
+                  <Button
+                    size="slim"
+                    pressed={editor.isActive('underline')}
+                    onClick={() => editor.chain().focus().toggleUnderline().run()}
+                  >
+                    <TextIcon icon="underline" />
+                  </Button>
+                </Tooltip>
+              </ButtonGroup>
+
+              {/* Insert Emoji */}
+              <Tooltip content="Insert Emoji">
+                <Button
+                  size="slim"
+                  onClick={() => {
+                    const emoji = prompt('Enter an emoji:');
+                    if (emoji) {
+                      editor.chain().focus().insertContent(emoji).run();
+                    }
+                  }}
+                >
+                  <Icon source={SmileyHappyIcon} />
+                </Button>
+              </Tooltip>
+
+              {/* Font Family */}
+              <Popover
+                active={showFontFamilyPopover}
+                activator={
+                  <Tooltip content="Font Family">
+                    <Button
+                      size="slim"
+                      disclosure
+                      onClick={() => setShowFontFamilyPopover(!showFontFamilyPopover)}
+                    >
+                      <Icon source={TextFontIcon} />
+                    </Button>
+                  </Tooltip>
+                }
+                onClose={() => setShowFontFamilyPopover(false)}
+              >
+                <ActionList
+                  items={[
+                    {
+                      content: 'Default',
+                      onAction: () => {
+                        editor.chain().focus().unsetFontFamily().run();
+                        setShowFontFamilyPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Arial',
+                      onAction: () => {
+                        editor.chain().focus().setFontFamily('Arial, sans-serif').run();
+                        setShowFontFamilyPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Courier New',
+                      onAction: () => {
+                        editor.chain().focus().setFontFamily('Courier New, monospace').run();
+                        setShowFontFamilyPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Georgia',
+                      onAction: () => {
+                        editor.chain().focus().setFontFamily('Georgia, serif').run();
+                        setShowFontFamilyPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Times New Roman',
+                      onAction: () => {
+                        editor.chain().focus().setFontFamily('Times New Roman, serif').run();
+                        setShowFontFamilyPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Verdana',
+                      onAction: () => {
+                        editor.chain().focus().setFontFamily('Verdana, sans-serif').run();
+                        setShowFontFamilyPopover(false);
+                      }
+                    },
+                  ]}
+                />
+              </Popover>
+
+              {/* Divider */}
+              <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+              {/* H1, H2, H3 */}
+              <ButtonGroup variant="segmented">
+                <Tooltip content="Heading 1">
+                  <Button
+                    size="slim"
+                    pressed={editor.isActive('heading', { level: 1 })}
+                    onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+                  >
+                    H1
+                  </Button>
+                </Tooltip>
+                <Tooltip content="Heading 2">
+                  <Button
+                    size="slim"
+                    pressed={editor.isActive('heading', { level: 2 })}
+                    onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                  >
+                    H2
+                  </Button>
+                </Tooltip>
+                <Tooltip content="Heading 3">
+                  <Button
+                    size="slim"
+                    pressed={editor.isActive('heading', { level: 3 })}
+                    onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+                  >
+                    H3
+                  </Button>
+                </Tooltip>
+              </ButtonGroup>
+
+              {/* Divider */}
+              <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+              {/* Hard Break */}
+              <Tooltip content="Hard Break">
+                <Button
+                  size="slim"
+                  onClick={() => editor.chain().focus().setHardBreak().run()}
+                >
+                  <TextIcon icon="plus" />
+                </Button>
+              </Tooltip>
+
+              {/* Line Height */}
+              <Popover
+                active={showLineHeightPopover}
+                activator={
+                  <Tooltip content="Line Height">
+                    <Button
+                      size="slim"
+                      disclosure
+                      onClick={() => setShowLineHeightPopover(!showLineHeightPopover)}
+                    >
+                      <TextIcon icon="sort" />
+                    </Button>
+                  </Tooltip>
+                }
+                onClose={() => setShowLineHeightPopover(false)}
+              >
+                <ActionList
+                  items={[
+                    {
+                      content: 'Default',
+                      onAction: () => {
+                        editor.chain().focus().unsetLineHeight().run();
+                        setShowLineHeightPopover(false);
+                      }
+                    },
+                    {
+                      content: '1.0',
+                      onAction: () => {
+                        editor.chain().focus().setLineHeight(1.0).run();
+                        setShowLineHeightPopover(false);
+                      }
+                    },
+                    {
+                      content: '1.2',
+                      onAction: () => {
+                        editor.chain().focus().setLineHeight(1.2).run();
+                        setShowLineHeightPopover(false);
+                      }
+                    },
+                    {
+                      content: '1.5',
+                      onAction: () => {
+                        editor.chain().focus().setLineHeight(1.5).run();
+                        setShowLineHeightPopover(false);
+                      }
+                    },
+                    {
+                      content: '2.0',
+                      onAction: () => {
+                        editor.chain().focus().setLineHeight(2.0).run();
+                        setShowLineHeightPopover(false);
+                      }
+                    },
+                  ]}
+                />
+              </Popover>
+
+              {/* Paragraph */}
+              <Tooltip content="Paragraph">
+                <Button
+                  size="slim"
+                  pressed={editor.isActive('paragraph')}
+                  onClick={() => editor.chain().focus().setParagraph().run()}
+                >
+                  <TextIcon icon="text" />
+                </Button>
+              </Tooltip>
+
+              {/* Text alignment */}
+              <ButtonGroup variant="segmented">
+                <Tooltip content="Align Left">
+                  <Button
+                    size="slim"
+                    pressed={editor.isActive({ textAlign: 'left' })}
+                    onClick={() => editor.chain().focus().setTextAlign('left').run()}
+                  >
+                    <TextIcon icon="alignLeft" />
+                  </Button>
+                </Tooltip>
+                <Tooltip content="Align Center">
+                  <Button
+                    size="slim"
+                    pressed={editor.isActive({ textAlign: 'center' })}
+                    onClick={() => editor.chain().focus().setTextAlign('center').run()}
+                  >
+                    <TextIcon icon="alignCenter" />
+                  </Button>
+                </Tooltip>
+                <Tooltip content="Align Right">
+                  <Button
+                    size="slim"
+                    pressed={editor.isActive({ textAlign: 'right' })}
+                    onClick={() => editor.chain().focus().setTextAlign('right').run()}
+                  >
+                    <TextIcon icon="alignRight" />
+                  </Button>
+                </Tooltip>
+              </ButtonGroup>
+
+              {/* Divider */}
+              <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+              {/* Lists */}
+              <ButtonGroup variant="segmented">
+                <Tooltip content="Bullet List">
+                  <Button
+                    size="slim"
+                    pressed={editor.isActive('bulletList')}
+                    onClick={() => editor.chain().focus().toggleBulletList().run()}
+                  >
+                    <TextIcon icon="bulletList" />
+                  </Button>
+                </Tooltip>
+                <Tooltip content="Numbered List">
+                  <Button
+                    size="slim"
+                    pressed={editor.isActive('orderedList')}
+                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                  >
+                    <TextIcon icon="numberedList" />
+                  </Button>
+                </Tooltip>
+                <Tooltip content="Task List">
+                  <Button
+                    size="slim"
+                    pressed={editor.isActive('taskList')}
+                    onClick={() => editor.chain().focus().toggleTaskList().run()}
+                  >
+                    <TextIcon icon="checkbox" />
+                  </Button>
+                </Tooltip>
+              </ButtonGroup>
+
+              {/* Divider */}
+              <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+              {/* Horizontal Rule */}
+              <Tooltip content="Horizontal Rule">
+                <Button
+                  size="slim"
+                  onClick={() => editor.chain().focus().setHorizontalRule().run()}
+                >
+                  <TextIcon icon="horizontalDots" />
+                </Button>
+              </Tooltip>
+
+              {/* Insert Table */}
+              <Tooltip content="Insert Table">
+                <Button
+                  size="slim"
+                  onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+                >
+                  <TextIcon icon="table" />
+                </Button>
+              </Tooltip>
+
+              {/* Divider */}
+              <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+              {/* Insert Link */}
+              <Tooltip content="Insert Link">
+                <Button
+                  size="slim"
+                  onClick={() => setShowLinkModal(true)}
+                >
+                  <TextIcon icon="link" />
+                </Button>
+              </Tooltip>
+
+              {/* Insert Image */}
+              <Tooltip content="Insert Image">
+                <Button
+                  size="slim"
+                  onClick={() => setShowImageModal(true)}
+                >
+                  <TextIcon icon="image" />
+                </Button>
+              </Tooltip>
+
+              {/* Insert YouTube Video */}
+              <Tooltip content="Insert YouTube Video">
+                <Button
+                  size="slim"
+                  onClick={() => setShowVideoModal(true)}
+                >
+                  <Icon source={LogoYoutubeIcon} />
+                </Button>
+              </Tooltip>
+
+              {/* Divider */}
+              <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+              {/* Blockquote */}
+              <Tooltip content="Blockquote">
+                <Button
+                  size="slim"
+                  pressed={editor.isActive('blockquote')}
+                  onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                >
+                  <TextIcon icon="quote" />
+                </Button>
+              </Tooltip>
+
+              {/* Code Block */}
+              <Tooltip content="Code Block">
+                <Button
+                  size="slim"
+                  pressed={editor.isActive('codeBlock')}
+                  onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+                >
+                  <TextIcon icon="code" />
+                </Button>
+              </Tooltip>
+
+              {/* Divider */}
+              <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+              {/* Clear Marks */}
+              <Popover
+                active={showClearMarksPopover}
+                activator={
+                  <Tooltip content="Clear Marks">
+                    <Button
+                      size="slim"
+                      disclosure
+                      onClick={() => setShowClearMarksPopover(!showClearMarksPopover)}
+                    >
+                      <TextIcon icon="question" />
+                    </Button>
+                  </Tooltip>
+                }
+                onClose={() => setShowClearMarksPopover(false)}
+              >
+                <ActionList
+                  items={[
+                    {
+                      content: 'Clear All Formatting',
+                      onAction: clearAllMarks
+                    },
+                    {
+                      content: 'Clear Bold',
+                      onAction: () => {
+                        editor.chain().focus().unsetBold().run();
+                        setShowClearMarksPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Clear Italic',
+                      onAction: () => {
+                        editor.chain().focus().unsetItalic().run();
+                        setShowClearMarksPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Clear Underline',
+                      onAction: () => {
+                        editor.chain().focus().unsetUnderline().run();
+                        setShowClearMarksPopover(false);
+                      }
+                    },
+                    {
+                      content: 'Clear Highlight',
+                      onAction: () => {
+                        editor.chain().focus().unsetHighlight().run();
+                        setShowClearMarksPopover(false);
+                      }
+                    },
+                  ]}
+                />
+              </Popover>
+
+              {/* Divider */}
+              <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+              {/* Save Snapshot */}
+              <Tooltip content="Save Snapshot">
+                <Button
+                  size="slim"
+                  onClick={saveSnapshot}
+                >
+                  <TextIcon icon="plus" />
+                </Button>
+              </Tooltip>
+
+              {/* Restore Snapshot */}
+              <Popover
+                active={showSnapshotPopover}
+                activator={
+                  <Tooltip content="Restore Snapshot">
+                    <Button
+                      size="slim"
+                      disclosure
+                      onClick={() => setShowSnapshotPopover(!showSnapshotPopover)}
+                    >
+                      <TextIcon icon="chevronDown" />
+                    </Button>
+                  </Tooltip>
+                }
+                onClose={() => setShowSnapshotPopover(false)}
+              >
+                <ActionList
+                  items={snapshots.length > 0 ? snapshots.map(snapshot => ({
+                    content: snapshot.timestamp,
+                    onAction: () => restoreSnapshot(snapshot)
+                  })) : [{
+                    content: 'No snapshots available',
+                    disabled: true
+                  }]}
+                />
+              </Popover>
+
+              {/* Divider */}
+              <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+              {/* Undo, Redo */}
+              <ButtonGroup variant="segmented">
+                <Tooltip content="Undo">
+                  <Button
+                    size="slim"
+                    disabled={!editor.can().undo()}
+                    onClick={() => editor.chain().focus().undo().run()}
+                  >
+                    ↶
+                  </Button>
+                </Tooltip>
+                <Tooltip content="Redo">
+                  <Button
+                    size="slim"
+                    disabled={!editor.can().redo()}
+                    onClick={() => editor.chain().focus().redo().run()}
+                  >
+                    ↷
+                  </Button>
+                </Tooltip>
+              </ButtonGroup>
+
+              {/* Divider */}
+              <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+              {/* Fullscreen Button */}
+              <Tooltip content={isExpanded ? "Exit Fullscreen" : "Enter Fullscreen"}>
+                <Button
+                  size="slim"
+                  onClick={toggleExpanded}
+                >
+                  {isExpanded ? '⤓' : '⤢'}
+                </Button>
+              </Tooltip>
+
+            </InlineStack>
+          </div>
+
+          {/* Fullscreen Editor Content */}
+          <div className="notion-editor-wrapper" style={{ flex: 1, overflow: 'auto' }}>
+            <EditorContent editor={editor} />
+            {editor && <TiptapDragHandle editor={editor} />}
+            
+            {/* Character Count */}
+            {editor && (
+              <div className="notion-character-count">
+                <Text variant="bodySm" color="subdued">
+                  {editor.storage.characterCount.characters()} characters • {editor.storage.characterCount.words()} words
+                </Text>
+              </div>
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };

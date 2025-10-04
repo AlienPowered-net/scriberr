@@ -1004,3 +1004,18 @@
     background: #2f2f2f;
   }
 }
+
+/* Fullscreen functionality */
+body.editor-fullscreen-active {
+  overflow: hidden !important;
+}
+
+body.editor-fullscreen-active * {
+  overflow: hidden !important;
+}
+
+/* Allow only the editor content to scroll in fullscreen */
+body.editor-fullscreen-active .notion-editor-wrapper {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
