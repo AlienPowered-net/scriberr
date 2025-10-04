@@ -26,7 +26,7 @@ export const EntityMention = Node.create({
             range.to += 1;
           }
 
-          // Insert the mention, space, and an invisible zero-width space to ensure there's a text node
+          // Insert the mention and a space after it
           editor
             .chain()
             .focus()
@@ -37,7 +37,7 @@ export const EntityMention = Node.create({
               },
               {
                 type: 'text',
-                text: ' \u200B', // Space + zero-width space to create a text node
+                text: ' ',
               },
             ])
             .run();
@@ -46,48 +46,27 @@ export const EntityMention = Node.create({
           console.log('[EntityMention] Inserted mention at range:', range);
           console.log('[EntityMention] Mention attrs:', props);
 
-          // Position cursor after the mention and space
+          // DON'T move the cursor - let Tiptap position it naturally after the insertion
+          // The cursor should automatically be positioned after the space we just inserted
           window.requestAnimationFrame(() => {
             const { state, view } = editor;
             
-            console.log('[EntityMention] Current state after insert:', {
+            console.log('[EntityMention] Natural cursor position after insert:', {
               selectionFrom: state.selection.from,
               selectionTo: state.selection.to,
               docSize: state.doc.content.size,
-              rangeFrom: range.from,
-              docJSON: state.doc.toJSON()
+              rangeFrom: range.from
             });
             
-            // Calculate position: range.from + mention node (1) + space+zwsp (1) = range.from + 2
-            const newPos = range.from + 2;
+            const nodeAt = state.doc.nodeAt(state.selection.from);
+            const nodeBefore = state.selection.from > 0 ? state.doc.nodeAt(state.selection.from - 1) : null;
             
-            console.log('[EntityMention] Attempting to set cursor to position:', newPos);
-            
-            try {
-              // Create a text selection at the new position
-              const tr = state.tr.setSelection(TextSelection.create(state.doc, newPos));
-              view.dispatch(tr);
-              
-              console.log('[EntityMention] Successfully set cursor position');
-              
-              // Verify the cursor position and editability
-              setTimeout(() => {
-                const finalState = editor.state;
-                const nodeAt = finalState.doc.nodeAt(finalState.selection.from);
-                const nodeBefore = finalState.doc.nodeAt(finalState.selection.from - 1);
-                
-                console.log('[EntityMention] Final cursor position:', {
-                  from: finalState.selection.from,
-                  to: finalState.selection.to,
-                  nodeAtCursor: nodeAt?.type.name,
-                  nodeBefore: nodeBefore?.type.name,
-                  editable: view.editable,
-                  canEdit: !finalState.selection.empty || finalState.selection.$cursor
-                });
-              }, 50);
-            } catch (error) {
-              console.error('[EntityMention] Error setting cursor position:', error);
-            }
+            console.log('[EntityMention] Node info at natural position:', {
+              nodeAtCursor: nodeAt?.type.name,
+              nodeBefore: nodeBefore?.type.name,
+              editable: view.editable,
+              parentNode: state.selection.$from.parent.type.name
+            });
           });
         },
         allow: ({ state, range }) => {
