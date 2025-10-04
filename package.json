@@ -89,7 +89,6 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-quill": "^2.0.0",
-    "tiptap-extension-line-height": "^1.0.0",
     "vite-tsconfig-paths": "^5.0.1"
   },
   "devDependencies": {

@@ -24,7 +24,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import CharacterCount from '@tiptap/extension-character-count';
 import History from '@tiptap/extension-history';
-import LineHeight from 'tiptap-extension-line-height';
+import { LineHeight } from './LineHeightExtension';
 import Collaboration from '@tiptap/extension-collaboration';
 import TiptapDragHandle from './TiptapDragHandle';
 import { createLowlight } from 'lowlight';
