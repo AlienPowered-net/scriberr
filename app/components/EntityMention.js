@@ -170,7 +170,41 @@ export const EntityMention = Node.create({
   parseHTML() {
     return [
       {
+        tag: 'span.entity-mention',
+        getAttrs: (element) => {
+          // Only parse if it has the proper attributes
+          const id = element.getAttribute('data-id');
+          const label = element.getAttribute('data-label');
+          
+          if (!id || !label) {
+            return false; // Don't parse this element
+          }
+          
+          // Parse all the data attributes
+          return {
+            id: id,
+            label: label,
+            type: element.getAttribute('data-type') || 'person',
+            url: element.getAttribute('data-url') || null,
+            metadata: element.getAttribute('data-metadata') 
+              ? JSON.parse(element.getAttribute('data-metadata'))
+              : null,
+          };
+        },
+      },
+      {
         tag: `span[data-type="${this.name}"]`,
+        getAttrs: (element) => {
+          return {
+            id: element.getAttribute('data-id'),
+            label: element.getAttribute('data-label'),
+            type: element.getAttribute('data-type') || 'person',
+            url: element.getAttribute('data-url') || null,
+            metadata: element.getAttribute('data-metadata') 
+              ? JSON.parse(element.getAttribute('data-metadata'))
+              : null,
+          };
+        },
       },
     ];
   },

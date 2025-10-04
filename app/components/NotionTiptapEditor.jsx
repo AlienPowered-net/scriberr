@@ -419,11 +419,17 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           },
           render: () => {
             let component;
+            let componentId = 'mention-suggestions-' + Date.now();
 
             return {
               onStart: props => {
+                // Remove any existing orphaned components first
+                const existingComponents = document.querySelectorAll('.entity-mention-suggestions');
+                existingComponents.forEach(el => el.remove());
+                
                 component = document.createElement('div');
                 component.className = 'entity-mention-suggestions';
+                component.id = componentId;
                 component.style.cssText = `
                   position: fixed;
                   background: white;
@@ -827,6 +833,14 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       };
     }
   }, [editor]);
+
+  // Cleanup orphaned suggestion components on unmount
+  useEffect(() => {
+    return () => {
+      const existingComponents = document.querySelectorAll('.entity-mention-suggestions');
+      existingComponents.forEach(el => el.remove());
+    };
+  }, []);
 
   // Handle slash menu filter
   useEffect(() => {
