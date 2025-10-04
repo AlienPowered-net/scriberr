@@ -40,10 +40,13 @@ export const EntityMention = Node.create({
             ])
             .run();
 
-          // Ensure cursor moves to after the inserted space
-          setTimeout(() => {
-            editor.commands.focus('end');
-          }, 10);
+          // Move cursor to the end of the inserted content
+          window.requestAnimationFrame(() => {
+            const { state } = editor;
+            const pos = range.from + 2; // Position after mention node + space
+            editor.commands.setTextSelection(pos);
+            editor.commands.focus();
+          });
         },
         allow: ({ state, range }) => {
           const $from = state.doc.resolve(range.from);

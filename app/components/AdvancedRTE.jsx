@@ -58,39 +58,9 @@ const getEntityIcon = (type) => {
   return icons[type] || ProfileIcon;
 };
 
-const getEntityIconSvg = (type) => {
-  const IconComponent = getEntityIcon(type);
-  
-  console.log('IconComponent:', IconComponent);
-  console.log('IconComponent.body:', IconComponent?.body);
-  
-  // Polaris icons might have different structure
-  if (!IconComponent || !IconComponent.body) {
-    // Fallback to text if icon doesn't work
-    const span = document.createElement('span');
-    span.textContent = getEntityIconFallback(type);
-    span.style.fontSize = '16px';
-    return span;
-  }
-  
-  // Create a proper SVG element with Polaris icon paths
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('viewBox', '0 0 20 20');
-  svg.setAttribute('width', '20');
-  svg.setAttribute('height', '20');
-  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  svg.style.flexShrink = '0';
-  svg.style.display = 'block';
-  
-  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path.setAttribute('d', IconComponent.body);
-  path.setAttribute('fill', '#000000');
-  
-  svg.appendChild(path);
-  return svg;
-};
-
-const getEntityIconFallback = (type) => {
+const getEntityIconElement = (type) => {
+  // Polaris icons are React components and can't be used in vanilla DOM
+  // Use emojis for now which work perfectly
   const icons = {
     product: '📦',
     variant: '🔹',
@@ -101,7 +71,14 @@ const getEntityIconFallback = (type) => {
     draftOrder: '📝',
     person: '👨‍💼'
   };
-  return icons[type] || '@';
+  
+  const container = document.createElement('span');
+  container.textContent = icons[type] || '@';
+  container.style.fontSize = '18px';
+  container.style.lineHeight = '1';
+  container.style.display = 'inline-block';
+  
+  return container;
 };
 
 const getEntityColor = (type) => {
@@ -441,8 +418,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   
                   // Add icon
                   if (item.type) {
-                    const iconSvg = getEntityIconSvg(item.type);
-                    container.appendChild(iconSvg);
+                    const iconElement = getEntityIconElement(item.type);
+                    container.appendChild(iconElement);
                   }
                   
                   // Create content wrapper
@@ -524,8 +501,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   
                   // Add icon
                   if (item.type) {
-                    const iconSvg = getEntityIconSvg(item.type);
-                    container.appendChild(iconSvg);
+                    const iconElement = getEntityIconElement(item.type);
+                    container.appendChild(iconElement);
                   }
                   
                   // Create content wrapper
