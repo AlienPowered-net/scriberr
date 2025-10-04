@@ -543,6 +543,7 @@ export default function Index() {
   const [noteTags, setNoteTags] = useState([]);
   const [newTagInput, setNewTagInput] = useState("");
   const [autoSaveNotification, setAutoSaveNotification] = useState("");
+  const [autoSaveNotificationTime, setAutoSaveNotificationTime] = useState(null);
   
   // Multi-select states
   const [selectedNotes, setSelectedNotes] = useState([]);
@@ -1598,6 +1599,7 @@ export default function Index() {
     setWasJustSaved(false);
     setIsNewlyCreated(false);
     setAutoSaveNotification('');
+    setAutoSaveNotificationTime(null);
   };
 
   // Make searchForTag available globally for tooltip clicks
@@ -1628,16 +1630,21 @@ export default function Index() {
 
     setHasUnsavedChanges(hasChanges);
     
-    // Clear auto-save notification when changes are detected
-    if (hasChanges && autoSaveNotification) {
-      setAutoSaveNotification('');
+    // Clear auto-save notification when changes are detected, but only if it's been shown for at least 4 seconds
+    if (hasChanges && autoSaveNotification && autoSaveNotificationTime) {
+      const timeSinceNotification = Date.now() - autoSaveNotificationTime;
+      if (timeSinceNotification >= 4000) { // 4 seconds
+        setAutoSaveNotification('');
+    setAutoSaveNotificationTime(null);
+        setAutoSaveNotificationTime(null);
+      }
     }
     
     // Reset isNewlyCreated when user starts editing
     if (hasChanges && isNewlyCreated) {
       setIsNewlyCreated(false);
     }
-  }, [title, body, noteTags, editingNoteId, localNotes, isNewlyCreated, autoSaveNotification]);
+  }, [title, body, noteTags, editingNoteId, localNotes, isNewlyCreated, autoSaveNotification, autoSaveNotificationTime]);
 
   // Track when a note was just saved
   useEffect(() => {
@@ -2133,6 +2140,7 @@ export default function Index() {
     setWasJustSaved(false);
     setIsNewlyCreated(false);
     setAutoSaveNotification('');
+    setAutoSaveNotificationTime(null);
   };
 
   // Handle deleting a note
@@ -2922,6 +2930,7 @@ export default function Index() {
         const now = new Date();
         const timestamp = now.toLocaleTimeString();
         setAutoSaveNotification(`Saved and Snapshotted at ${timestamp}`);
+        setAutoSaveNotificationTime(Date.now());
         setHasUnsavedChanges(false);
         setHasBeenSavedOnce(true);
       }
