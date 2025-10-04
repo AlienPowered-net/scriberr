@@ -268,12 +268,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         heading: {
           levels: [1, 2, 3, 4, 5, 6],
         },
-        // Disable default blockquote since we're using the dedicated extension
+        // Disable default extensions to avoid conflicts
         blockquote: false,
-        // Disable default codeBlock since we're using CodeBlockLowlight
         codeBlock: false,
-        // Disable default horizontalRule since we're using the dedicated extension
         horizontalRule: false,
+        history: false, // Disable built-in history to avoid plugin conflict
       }),
       Blockquote,
       CodeBlockLowlight.configure({
