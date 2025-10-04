@@ -2760,6 +2760,148 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             <EditorContent editor={editor} />
             {editor && <TiptapDragHandle editor={editor} />}
             
+            {/* Bubble Menu */}
+            {editor && (
+              <BubbleMenu 
+                editor={editor} 
+                tippyOptions={{ duration: 100 }}
+                className="notion-bubble-menu"
+              >
+                <ButtonGroup variant="segmented">
+                  <Tooltip content="Bold">
+                    <Button
+                      size="micro"
+                      pressed={editor.isActive('bold')}
+                      onClick={() => editor.chain().focus().toggleBold().run()}
+                    >
+                      <TextIcon icon="bold" />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip content="Italic">
+                    <Button
+                      size="micro"
+                      pressed={editor.isActive('italic')}
+                      onClick={() => editor.chain().focus().toggleItalic().run()}
+                    >
+                      <TextIcon icon="italic" />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip content="Underline">
+                    <Button
+                      size="micro"
+                      pressed={editor.isActive('underline')}
+                      onClick={() => editor.chain().focus().toggleUnderline().run()}
+                    >
+                      <TextIcon icon="underline" />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip content="Strikethrough">
+                    <Button
+                      size="micro"
+                      pressed={editor.isActive('strike')}
+                      onClick={() => editor.chain().focus().toggleStrike().run()}
+                    >
+                      <TextIcon icon="strikethrough" />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip content="Text Color">
+                    <Popover
+                      active={showTextColorPopover}
+                      activator={
+                        <Button
+                          size="micro"
+                          disclosure
+                          onClick={() => setShowTextColorPopover(!showTextColorPopover)}
+                        >
+                          <Icon source={TextColorIcon} />
+                        </Button>
+                      }
+                      onClose={() => setShowTextColorPopover(false)}
+                    >
+                      <ActionList
+                        items={[
+                          {
+                            content: 'Default',
+                            onAction: () => {
+                              editor.chain().focus().unsetColor().run();
+                              setShowTextColorPopover(false);
+                            }
+                          },
+                          {
+                            content: 'Red',
+                            onAction: () => {
+                              editor.chain().focus().setColor('#ef4444').run();
+                              setShowTextColorPopover(false);
+                            }
+                          },
+                          {
+                            content: 'Orange',
+                            onAction: () => {
+                              editor.chain().focus().setColor('#f97316').run();
+                              setShowTextColorPopover(false);
+                            }
+                          },
+                          {
+                            content: 'Yellow',
+                            onAction: () => {
+                              editor.chain().focus().setColor('#eab308').run();
+                              setShowTextColorPopover(false);
+                            }
+                          },
+                          {
+                            content: 'Green',
+                            onAction: () => {
+                              editor.chain().focus().setColor('#22c55e').run();
+                              setShowTextColorPopover(false);
+                            }
+                          },
+                          {
+                            content: 'Blue',
+                            onAction: () => {
+                              editor.chain().focus().setColor('#3b82f6').run();
+                              setShowTextColorPopover(false);
+                            }
+                          },
+                          {
+                            content: 'Purple',
+                            onAction: () => {
+                              editor.chain().focus().setColor('#a855f7').run();
+                              setShowTextColorPopover(false);
+                            }
+                          },
+                          {
+                            content: 'Pink',
+                            onAction: () => {
+                              editor.chain().focus().setColor('#ec4899').run();
+                              setShowTextColorPopover(false);
+                            }
+                          },
+                        ]}
+                      />
+                    </Popover>
+                  </Tooltip>
+                  <Tooltip content="Highlight">
+                    <Button
+                      size="micro"
+                      pressed={editor.isActive('highlight')}
+                      onClick={() => editor.chain().focus().toggleHighlight({ color: '#fef3c7' }).run()}
+                    >
+                      <Icon source={EditIcon} />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip content="Link">
+                    <Button
+                      size="micro"
+                      pressed={editor.isActive('link')}
+                      onClick={() => setShowLinkModal(true)}
+                    >
+                      <TextIcon icon="link" />
+                    </Button>
+                  </Tooltip>
+                </ButtonGroup>
+              </BubbleMenu>
+            )}
+            
             {/* Character Count */}
             {editor && (
               <div className="notion-character-count">
