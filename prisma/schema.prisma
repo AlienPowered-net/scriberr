@@ -48,8 +48,21 @@ model Note {
   createdAt DateTime  @default(now())
   shop      Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
   folder    Folder?   @relation(fields: [folderId], references: [id])
+  versions  NoteVersion[]
   updatedAt DateTime  @updatedAt
   @@index([shopId, folderId, updatedAt])
+}
+
+model NoteVersion {
+  id        String   @id @default(cuid())
+  noteId    String
+  title     String
+  content   String   @db.Text
+  versionTitle String? // User-defined title for the version
+  createdAt DateTime @default(now())
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  
+  @@index([noteId, createdAt])
 }
 
 model Session {

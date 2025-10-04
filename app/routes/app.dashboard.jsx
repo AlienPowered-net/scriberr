@@ -977,18 +977,21 @@ export default function Index() {
               {(autoSaveNotification || hasUnsavedChanges) && (
                 <div style={{ marginTop: "4px" }}>
                   {autoSaveNotification && (
-                    <Text as="p" style={{ 
-                      fontSize: "14px", 
-                      color: "#008060", 
-                      fontWeight: "500", 
-                      marginBottom: hasUnsavedChanges ? "4px" : "0",
-                      display: "flex",
+                    <div style={{ 
+                      display: "inline-flex",
                       alignItems: "center",
-                      gap: "6px"
+                      gap: "6px",
+                      backgroundColor: "#008060",
+                      color: "white",
+                      padding: "4px 12px",
+                      borderRadius: "16px",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      marginBottom: hasUnsavedChanges ? "4px" : "0"
                     }}>
-                      <i className="fas fa-check-circle" style={{ fontSize: "16px", color: "#008060" }}></i>
+                      <i className="fas fa-check-circle" style={{ fontSize: "16px" }}></i>
                       {autoSaveNotification}
-                    </Text>
+                    </div>
                   )}
                   {hasUnsavedChanges && (
                     <Text as="p" style={{ 
@@ -2887,9 +2890,27 @@ export default function Index() {
       });
 
       if (response.ok) {
+        // Create a version snapshot
+        try {
+          await fetch('/api/create-note-version', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              noteId: editingNoteId,
+              title: title,
+              content: body,
+              versionTitle: `Auto-save ${new Date().toLocaleTimeString()}`
+            }),
+          });
+        } catch (versionError) {
+          console.error('Failed to create version:', versionError);
+        }
+
         const now = new Date();
         const timestamp = now.toLocaleTimeString();
-        setAutoSaveNotification(`Your note was auto-saved at ${timestamp}`);
+        setAutoSaveNotification(`Your note was auto-saved and a snapshot was created at ${timestamp}`);
         setHasUnsavedChanges(false);
       }
     } catch (error) {
@@ -4355,18 +4376,21 @@ export default function Index() {
                 {(autoSaveNotification || hasUnsavedChanges) && (
                   <div style={{ marginTop: "4px" }}>
                     {autoSaveNotification && (
-                      <Text as="p" style={{ 
-                        fontSize: "14px", 
-                        color: "#008060", 
-                        fontWeight: "500", 
-                        marginBottom: hasUnsavedChanges ? "4px" : "0",
-                        display: "flex",
+                      <div style={{ 
+                        display: "inline-flex",
                         alignItems: "center",
-                        gap: "6px"
+                        gap: "6px",
+                        backgroundColor: "#008060",
+                        color: "white",
+                        padding: "4px 12px",
+                        borderRadius: "16px",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        marginBottom: hasUnsavedChanges ? "4px" : "0"
                       }}>
-                        <i className="fas fa-check-circle" style={{ fontSize: "16px", color: "#008060" }}></i>
+                        <i className="fas fa-check-circle" style={{ fontSize: "16px" }}></i>
                         {autoSaveNotification}
-                      </Text>
+                      </div>
                     )}
                     {hasUnsavedChanges && (
                       <Text as="p" style={{ 

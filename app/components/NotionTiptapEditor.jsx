@@ -188,7 +188,7 @@ const getMetadataPreview = (type, metadata) => {
   }
 };
 
-const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for commands...", onFullscreenChange }) => {
+const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for commands...", onFullscreenChange, noteId, onVersionCreated }) => {
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -208,12 +208,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showLineHeightPopover, setShowLineHeightPopover] = useState(false);
   const [showClearMarksPopover, setShowClearMarksPopover] = useState(false);
-  const [showSnapshotPopover, setShowSnapshotPopover] = useState(false);
-  const [snapshots, setSnapshots] = useState([]);
+  const [showVersionModal, setShowVersionModal] = useState(false);
+  const [versions, setVersions] = useState([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const editorRef = useRef(null);
   const slashMenuRef = useRef(null);
-  const autoSnapshotRef = useRef(null);
 
 
   // Create lowlight instance for syntax highlighting
@@ -1055,56 +1054,66 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     }
   };
 
-  // Automatic snapshot functionality
-  const saveSnapshot = () => {
-    if (editor) {
+  // Version management functionality
+  const createVersion = async (versionTitle = null) => {
+    if (!editor || !noteId) return;
+    
+    try {
       const content = editor.getHTML();
-      const timestamp = new Date().toLocaleString();
-      const newSnapshot = { content, timestamp, id: Date.now() };
-      setSnapshots(prev => [newSnapshot, ...prev.slice(0, 9)]); // Keep last 10 snapshots
-    }
-  };
-
-  const restoreSnapshot = (snapshot) => {
-    if (editor && snapshot) {
-      editor.commands.setContent(snapshot.content);
-      setShowSnapshotPopover(false);
-    }
-  };
-
-  // Auto-save snapshots every 30 seconds and on content changes
-  useEffect(() => {
-    if (!editor) return;
-
-    // Auto-save every 30 seconds
-    const interval = setInterval(() => {
-      saveSnapshot();
-    }, 30000);
-
-    // Auto-save on content changes (debounced)
-    const handleContentChange = () => {
-      // Clear existing timeout
-      if (autoSnapshotRef.current) {
-        clearTimeout(autoSnapshotRef.current);
-      }
+      const title = versionTitle || `Version ${new Date().toLocaleString()}`;
       
-      // Set new timeout for 5 seconds after last change
-      autoSnapshotRef.current = setTimeout(() => {
-        saveSnapshot();
-      }, 5000);
-    };
+      const response = await fetch('/api/create-note-version', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          noteId,
+          title,
+          content,
+          versionTitle: versionTitle || null
+        }),
+      });
 
-    // Listen for editor updates
-    editor.on('update', handleContentChange);
-
-    return () => {
-      clearInterval(interval);
-      if (autoSnapshotRef.current) {
-        clearTimeout(autoSnapshotRef.current);
+      if (response.ok) {
+        const newVersion = await response.json();
+        setVersions(prev => [newVersion, ...prev.slice(0, 9)]); // Keep last 10 versions
+        if (onVersionCreated) {
+          onVersionCreated(newVersion);
+        }
       }
-      editor.off('update', handleContentChange);
-    };
-  }, [editor]);
+    } catch (error) {
+      console.error('Failed to create version:', error);
+    }
+  };
+
+  const restoreVersion = (version) => {
+    if (editor && version) {
+      editor.commands.setContent(version.content);
+      setShowVersionModal(false);
+    }
+  };
+
+  const loadVersions = async () => {
+    if (!noteId) return;
+    
+    try {
+      const response = await fetch(`/api/get-note-versions?noteId=${noteId}`);
+      if (response.ok) {
+        const versionsData = await response.json();
+        setVersions(versionsData);
+      }
+    } catch (error) {
+      console.error('Failed to load versions:', error);
+    }
+  };
+
+  // Load versions when noteId changes
+  useEffect(() => {
+    if (noteId) {
+      loadVersions();
+    }
+  }, [noteId]);
 
   const clearAllMarks = () => {
     if (editor) {
@@ -1736,32 +1745,15 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           {/* Divider */}
           <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
 
-          {/* Auto Snapshots */}
-          <Popover
-            active={showSnapshotPopover}
-            activator={
-              <Tooltip content="Auto Snapshots">
-                <Button
-                  size="slim"
-                  disclosure
-                  onClick={() => setShowSnapshotPopover(!showSnapshotPopover)}
-                >
-                  <TextIcon icon="chevronDown" />
-                </Button>
-              </Tooltip>
-            }
-            onClose={() => setShowSnapshotPopover(false)}
-          >
-            <ActionList
-              items={snapshots.length > 0 ? snapshots.map(snapshot => ({
-                content: snapshot.timestamp,
-                onAction: () => restoreSnapshot(snapshot)
-              })) : [{
-                content: 'No auto snapshots available',
-                disabled: true
-              }]}
-            />
-          </Popover>
+          {/* Versions */}
+          <Tooltip content="Versions">
+            <Button
+              size="slim"
+              onClick={() => setShowVersionModal(true)}
+            >
+              <TextIcon icon="chevronDown" />
+            </Button>
+          </Tooltip>
 
           {/* Divider */}
           <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
@@ -2106,6 +2098,65 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             autoComplete="off"
             helpText="Paste a YouTube video URL"
           />
+        </Modal.Section>
+      </Modal>
+
+      {/* Version Modal */}
+      <Modal
+        open={showVersionModal}
+        onClose={() => setShowVersionModal(false)}
+        title="Note Versions"
+        primaryAction={{
+          content: 'Create New Version',
+          onAction: () => {
+            const versionTitle = prompt('Enter a title for this version (optional):');
+            createVersion(versionTitle);
+            setShowVersionModal(false);
+          },
+        }}
+        secondaryActions={[
+          {
+            content: 'Close',
+            onAction: () => setShowVersionModal(false),
+          },
+        ]}
+      >
+        <Modal.Section>
+          <BlockStack gap="4">
+            <Text variant="bodyMd" color="subdued">
+              Select a version to restore, or create a new version with a custom title.
+            </Text>
+            {versions.length > 0 ? (
+              <BlockStack gap="2">
+                {versions.map((version) => (
+                  <Card key={version.id}>
+                    <Card.Section>
+                      <InlineStack gap="3" align="space-between">
+                        <BlockStack gap="1">
+                          <Text variant="bodyMd" fontWeight="medium">
+                            {version.versionTitle || version.title}
+                          </Text>
+                          <Text variant="bodySm" color="subdued">
+                            {new Date(version.createdAt).toLocaleString()}
+                          </Text>
+                        </BlockStack>
+                        <Button
+                          size="slim"
+                          onClick={() => restoreVersion(version)}
+                        >
+                          Restore
+                        </Button>
+                      </InlineStack>
+                    </Card.Section>
+                  </Card>
+                ))}
+              </BlockStack>
+            ) : (
+              <Text variant="bodyMd" color="subdued">
+                No versions available yet. Create your first version!
+              </Text>
+            )}
+          </BlockStack>
         </Modal.Section>
       </Modal>
 
@@ -2701,32 +2752,15 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               {/* Divider */}
               <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
 
-              {/* Auto Snapshots */}
-              <Popover
-                active={showSnapshotPopover}
-                activator={
-                  <Tooltip content="Auto Snapshots">
-                    <Button
-                      size="slim"
-                      disclosure
-                      onClick={() => setShowSnapshotPopover(!showSnapshotPopover)}
-                    >
-                      <TextIcon icon="chevronDown" />
-                    </Button>
-                  </Tooltip>
-                }
-                onClose={() => setShowSnapshotPopover(false)}
-              >
-                <ActionList
-                  items={snapshots.length > 0 ? snapshots.map(snapshot => ({
-                    content: snapshot.timestamp,
-                    onAction: () => restoreSnapshot(snapshot)
-                  })) : [{
-                    content: 'No auto snapshots available',
-                    disabled: true
-                  }]}
-                />
-              </Popover>
+              {/* Versions */}
+              <Tooltip content="Versions">
+                <Button
+                  size="slim"
+                  onClick={() => setShowVersionModal(true)}
+                >
+                  <TextIcon icon="chevronDown" />
+                </Button>
+              </Tooltip>
 
               {/* Divider */}
               <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
