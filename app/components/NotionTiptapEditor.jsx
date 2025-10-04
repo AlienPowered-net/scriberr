@@ -764,11 +764,34 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       },
       handleDOMEvents: {
         beforeinput: (view, event) => {
-          console.log('[Editor beforeinput] Event:', event.inputType, {
+          const nodeAt = view.state.doc.nodeAt(view.state.selection.from);
+          const nodeBefore = view.state.doc.nodeAt(view.state.selection.from - 1);
+          
+          console.log('[NotionEditor beforeinput] Event:', event.inputType, {
             data: event.data,
             selectionFrom: view.state.selection.from,
-            selectionTo: view.state.selection.to
+            selectionTo: view.state.selection.to,
+            nodeAtCursor: nodeAt?.type.name,
+            nodeBefore: nodeBefore?.type.name,
+            parentNode: view.state.selection.$from.parent.type.name,
+            editable: view.editable
           });
+          
+          // If inserting text and cursor is at end boundary (nodeAtCursor is undefined)
+          // and there's a text node before (likely the space after mention)
+          if (event.inputType === 'insertText' && event.data && !nodeAt && nodeBefore?.type.name === 'text') {
+            console.log('[NotionEditor beforeinput] Cursor at boundary, manually inserting text');
+            
+            // Manually insert the text at the current position
+            const { state } = view;
+            const tr = state.tr.insertText(event.data, state.selection.from);
+            view.dispatch(tr);
+            
+            // Prevent default
+            event.preventDefault();
+            return true;
+          }
+          
           return false;
         },
       },

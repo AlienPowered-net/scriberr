@@ -724,6 +724,21 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             editable: view.editable
           });
           
+          // If inserting text and cursor is at end boundary (nodeAtCursor is undefined)
+          // and there's a text node before (likely the space after mention)
+          if (event.inputType === 'insertText' && event.data && !nodeAt && nodeBefore?.type.name === 'text') {
+            console.log('[AdvancedRTE beforeinput] Cursor at boundary, manually inserting text');
+            
+            // Manually insert the text at the current position
+            const { state } = view;
+            const tr = state.tr.insertText(event.data, state.selection.from);
+            view.dispatch(tr);
+            
+            // Prevent default
+            event.preventDefault();
+            return true;
+          }
+          
           // Don't block input
           return false;
         },
