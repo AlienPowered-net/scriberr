@@ -23,9 +23,12 @@ import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import CharacterCount from '@tiptap/extension-character-count';
+import History from '@tiptap/extension-history';
+import LineHeight from 'tiptap-extension-line-height';
+import Collaboration from '@tiptap/extension-collaboration';
 import TiptapDragHandle from './TiptapDragHandle';
 import { createLowlight } from 'lowlight';
-import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, SkeletonDisplayText, Icon } from '@shopify/polaris';
+import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, SkeletonDisplayText, Icon, Popover, ActionList, Tooltip, ButtonGroup } from '@shopify/polaris';
 import { 
   CheckboxIcon,
   SmileyHappyIcon,
@@ -33,6 +36,8 @@ import {
   EditIcon,
   TextColorIcon,
   TextFontIcon,
+  UndoIcon,
+  RedoIcon,
   MegaphoneIcon,
   ProductIcon,
   VariantIcon,
@@ -43,6 +48,52 @@ import {
   OrderDraftIcon,
   ProfileIcon
 } from '@shopify/polaris-icons';
+
+// Simple icon component using emoji/text since many Polaris icons don't exist
+const TextIcon = ({ icon }) => {
+  const iconMap = {
+    bold: '𝐁',
+    italic: '𝐼',
+    underline: 'U̲',
+    strikethrough: 'S̶',
+    code: '</>',
+    link: '🔗',
+    image: '🖼️',
+    video: '📹',
+    text: '¶',
+    lineHeight: '📏',
+    bulletList: '•',
+    numberedList: '1.',
+    checkbox: '☑',
+    question: '?',
+    alignLeft: '⬅',
+    alignCenter: '⬛',
+    alignRight: '➡',
+    table: '⊞',
+    horizontalDots: '•••',
+    plus: '+',
+    hashtag: '#',
+    chevronDown: '▼',
+    sort: '↕',
+    type: 'Aa',
+    quote: '❝'
+  };
+  
+  return (
+    <span style={{ 
+      fontWeight: 'bold', 
+      fontSize: '14px',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '20px',
+      height: '20px'
+    }}>
+      {iconMap[icon] || icon}
+    </span>
+  );
+};
 
 // Helper functions for entity mentions
 const getEntityIcon = (type) => {
@@ -126,6 +177,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [showImageModal, setShowImageModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
+  const [showLineHeightPopover, setShowLineHeightPopover] = useState(false);
+  const [showSnapshotModal, setShowSnapshotModal] = useState(false);
+  const [snapshots, setSnapshots] = useState([]);
   const [imageUrl, setImageUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
@@ -696,6 +750,18 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         showOnlyWhenEditable: true,
         showOnlyCurrent: false,
       }),
+      History.configure({
+        depth: 100,
+        newGroupDelay: 500,
+      }),
+      LineHeight.configure({
+        types: ['heading', 'paragraph'],
+        defaultLineHeight: 'normal',
+      }),
+      Collaboration.configure({
+        // Basic collaboration setup - snapshots will be handled manually
+        document: null, // Will be set later if needed
+      }),
       CharacterCount.configure({
         limit: null, // No character limit
       }),
@@ -943,6 +1009,34 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       setLinkText('');
       setShowLinkModal(false);
     }
+  };
+
+  // Snapshot functionality
+  const saveSnapshot = () => {
+    if (editor) {
+      const content = editor.getJSON();
+      const timestamp = new Date().toISOString();
+      const newSnapshot = {
+        id: `snapshot_${Date.now()}`,
+        content,
+        timestamp,
+        name: `Snapshot ${new Date().toLocaleString()}`
+      };
+      setSnapshots(prev => [newSnapshot, ...prev.slice(0, 9)]); // Keep last 10 snapshots
+      console.log('Snapshot saved:', newSnapshot.name);
+    }
+  };
+
+  const restoreSnapshot = (snapshot) => {
+    if (editor && snapshot) {
+      editor.commands.setContent(snapshot.content);
+      setShowSnapshotModal(false);
+      console.log('Snapshot restored:', snapshot.name);
+    }
+  };
+
+  const deleteSnapshot = (snapshotId) => {
+    setSnapshots(prev => prev.filter(s => s.id !== snapshotId));
   };
 
 
@@ -1891,6 +1985,171 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           paddingRight: "60px",
           flexWrap: "wrap"
         }}>
+          {/* Undo/Redo Buttons */}
+          <button
+            onClick={() => editor.chain().focus().undo().run()}
+            disabled={!editor?.can().undo()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: "white",
+              color: editor?.can().undo() ? "#495057" : "#adb5bd",
+              cursor: editor?.can().undo() ? "pointer" : "not-allowed",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Undo (Ctrl+Z)"
+          >
+            <Icon source={UndoIcon} />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().redo().run()}
+            disabled={!editor?.can().redo()}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: "white",
+              color: editor?.can().redo() ? "#495057" : "#adb5bd",
+              cursor: editor?.can().redo() ? "pointer" : "not-allowed",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Redo (Ctrl+Y)"
+          >
+            <Icon source={RedoIcon} />
+          </button>
+
+          {/* Line Height Button with Popover */}
+          <Popover
+            active={showLineHeightPopover}
+            activator={
+              <button
+                onClick={() => setShowLineHeightPopover(!showLineHeightPopover)}
+                style={{
+                  padding: "6px 8px",
+                  border: "1px solid #dee2e6",
+                  borderRadius: "4px",
+                  backgroundColor: "white",
+                  color: "#495057",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  fontSize: "13px",
+                  minWidth: "32px",
+                  height: "32px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+                title="Line Height"
+              >
+                <TextIcon icon="lineHeight" />
+              </button>
+            }
+            onClose={() => setShowLineHeightPopover(false)}
+            preferredPosition="below"
+          >
+            <ActionList
+              items={[
+                {
+                  content: 'Normal',
+                  onAction: () => {
+                    editor.chain().focus().setLineHeight('normal').run();
+                    setShowLineHeightPopover(false);
+                  }
+                },
+                {
+                  content: '1.0',
+                  onAction: () => {
+                    editor.chain().focus().setLineHeight('1.0').run();
+                    setShowLineHeightPopover(false);
+                  }
+                },
+                {
+                  content: '1.15',
+                  onAction: () => {
+                    editor.chain().focus().setLineHeight('1.15').run();
+                    setShowLineHeightPopover(false);
+                  }
+                },
+                {
+                  content: '1.5',
+                  onAction: () => {
+                    editor.chain().focus().setLineHeight('1.5').run();
+                    setShowLineHeightPopover(false);
+                  }
+                },
+                {
+                  content: '2.0',
+                  onAction: () => {
+                    editor.chain().focus().setLineHeight('2.0').run();
+                    setShowLineHeightPopover(false);
+                  }
+                },
+              ]}
+            />
+          </Popover>
+
+          {/* Snapshot Button */}
+          <button
+            onClick={saveSnapshot}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: "white",
+              color: "#495057",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Save Snapshot"
+          >
+            <i className="fas fa-camera"></i>
+          </button>
+
+          {/* Restore Snapshots Button */}
+          <button
+            onClick={() => setShowSnapshotModal(true)}
+            disabled={snapshots.length === 0}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: "white",
+              color: snapshots.length > 0 ? "#495057" : "#adb5bd",
+              cursor: snapshots.length > 0 ? "pointer" : "not-allowed",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Restore Snapshot"
+          >
+            <i className="fas fa-history"></i>
+          </button>
+          
+          <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
+          
           {/* Text Formatting */}
           <button
             onClick={() => editor.chain().focus().toggleBold().run()}
@@ -4309,6 +4568,63 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       )}
 
     </div>
+      )}
+
+      {/* Snapshot Modal */}
+      {showSnapshotModal && (
+        <Modal
+          open={showSnapshotModal}
+          onClose={() => setShowSnapshotModal(false)}
+          title="Document Snapshots"
+          primaryAction={{
+            content: 'Close',
+            onAction: () => setShowSnapshotModal(false),
+          }}
+        >
+          <Modal.Section>
+            {snapshots.length > 0 ? (
+              <BlockStack gap="3">
+                <Text variant="bodyMd" color="subdued">
+                  Restore your document to a previous state:
+                </Text>
+                {snapshots.map((snapshot) => (
+                  <Card key={snapshot.id} padding="3">
+                    <InlineStack align="space-between" blockAlign="center">
+                      <BlockStack gap="1">
+                        <Text variant="headingMd">{snapshot.name}</Text>
+                        <Text variant="bodySm" color="subdued">
+                          Saved {new Date(snapshot.timestamp).toLocaleString()}
+                        </Text>
+                      </BlockStack>
+                      <InlineStack gap="2">
+                        <Button
+                          size="slim"
+                          onClick={() => restoreSnapshot(snapshot)}
+                        >
+                          Restore
+                        </Button>
+                        <Button
+                          size="slim"
+                          variant="plain"
+                          tone="critical"
+                          onClick={() => deleteSnapshot(snapshot.id)}
+                        >
+                          Delete
+                        </Button>
+                      </InlineStack>
+                    </InlineStack>
+                  </Card>
+                ))}
+              </BlockStack>
+            ) : (
+              <Card padding="6">
+                <Text variant="bodyMd" alignment="center" color="subdued">
+                  No snapshots available. Use the camera button in the toolbar to save snapshots of your document.
+                </Text>
+              </Card>
+            )}
+          </Modal.Section>
+        </Modal>
       )}
     </>
   );
