@@ -409,14 +409,16 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 // Show loading skeletons if no items yet
                 if (!props.items || props.items.length === 0) {
                   const loadingDiv = document.createElement('div');
-                  loadingDiv.style.cssText = 'padding: 10px;';
+                  loadingDiv.style.cssText = 'padding: 12px; width: 100%;';
                   
                   const skeletonRoot = createRoot(loadingDiv);
                   skeletonRoot.render(
-                    React.createElement(BlockStack, { gap: '2' }, [
+                    React.createElement(BlockStack, { gap: '3' }, [
                       React.createElement(SkeletonDisplayText, { key: '1', size: 'small' }),
                       React.createElement(SkeletonDisplayText, { key: '2', size: 'small' }),
-                      React.createElement(SkeletonDisplayText, { key: '3', size: 'small' })
+                      React.createElement(SkeletonDisplayText, { key: '3', size: 'small' }),
+                      React.createElement(SkeletonDisplayText, { key: '4', size: 'small' }),
+                      React.createElement(SkeletonDisplayText, { key: '5', size: 'small' })
                     ])
                   );
                   
@@ -689,6 +691,14 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         return false;
       },
       handleKeyDown: (view, event) => {
+        // Debug keyboard events
+        console.log('[AdvancedRTE handleKeyDown] Key pressed:', event.key, {
+          selectionFrom: view.state.selection.from,
+          selectionTo: view.state.selection.to,
+          isEmpty: view.state.selection.empty,
+          nodeAtCursor: view.state.selection.$from.parent.type.name
+        });
+        
         // Allow normal keyboard navigation and editing
         return false;
       },

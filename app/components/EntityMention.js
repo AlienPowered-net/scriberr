@@ -26,6 +26,7 @@ export const EntityMention = Node.create({
             range.to += 1;
           }
 
+          // Insert the mention and a space after it
           editor
             .chain()
             .focus()
@@ -41,16 +42,46 @@ export const EntityMention = Node.create({
             ])
             .run();
 
+          // Debug: Log the insertion
+          console.log('[EntityMention] Inserted mention at range:', range);
+          console.log('[EntityMention] Mention attrs:', props);
+
           // Position cursor after the mention and space
           window.requestAnimationFrame(() => {
             const { state, view } = editor;
+            
+            console.log('[EntityMention] Current state after insert:', {
+              selectionFrom: state.selection.from,
+              selectionTo: state.selection.to,
+              docSize: state.doc.content.size,
+              rangeFrom: range.from
+            });
+            
             // Calculate position: range.from + mention node (1) + space (1) = range.from + 2
             const newPos = range.from + 2;
             
-            // Create a text selection at the new position
-            const tr = state.tr.setSelection(TextSelection.create(state.doc, newPos));
-            view.dispatch(tr);
-            view.focus();
+            console.log('[EntityMention] Attempting to set cursor to position:', newPos);
+            
+            try {
+              // Create a text selection at the new position
+              const tr = state.tr.setSelection(TextSelection.create(state.doc, newPos));
+              view.dispatch(tr);
+              view.focus();
+              
+              console.log('[EntityMention] Successfully set cursor position');
+              
+              // Verify the cursor position after setting
+              setTimeout(() => {
+                const finalState = editor.state;
+                console.log('[EntityMention] Final cursor position:', {
+                  from: finalState.selection.from,
+                  to: finalState.selection.to,
+                  canEdit: !finalState.selection.empty || finalState.selection.$cursor
+                });
+              }, 50);
+            } catch (error) {
+              console.error('[EntityMention] Error setting cursor position:', error);
+            }
           });
         },
         allow: ({ state, range }) => {
@@ -214,15 +245,18 @@ export const EntityMention = Node.create({
     return {
       Backspace: () =>
         this.editor.commands.command(({ tr, state }) => {
+          console.log('[EntityMention Backspace] Triggered');
           let isMention = false;
           const { selection } = state;
           const { empty, anchor } = selection;
 
           if (!empty) {
+            console.log('[EntityMention Backspace] Selection not empty, allowing default');
             return false;
           }
 
           state.doc.nodesBetween(anchor - 1, anchor, (node, pos) => {
+            console.log('[EntityMention Backspace] Checking node:', node.type.name, 'at pos:', pos);
             if (node.type.name === this.name) {
               isMention = true;
               tr.insertText(
@@ -230,7 +264,7 @@ export const EntityMention = Node.create({
                 pos,
                 pos + node.nodeSize
               );
-
+              console.log('[EntityMention Backspace] Deleted mention, replacing with @');
               return false;
             }
           });

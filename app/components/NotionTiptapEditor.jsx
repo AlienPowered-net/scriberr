@@ -441,14 +441,16 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 // Show loading skeletons if no items yet
                 if (!props.items || props.items.length === 0) {
                   const loadingDiv = document.createElement('div');
-                  loadingDiv.style.cssText = 'padding: 10px;';
+                  loadingDiv.style.cssText = 'padding: 12px; width: 100%;';
                   
                   const skeletonRoot = createRoot(loadingDiv);
                   skeletonRoot.render(
-                    React.createElement(BlockStack, { gap: '2' }, [
+                    React.createElement(BlockStack, { gap: '3' }, [
                       React.createElement(SkeletonDisplayText, { key: '1', size: 'small' }),
                       React.createElement(SkeletonDisplayText, { key: '2', size: 'small' }),
-                      React.createElement(SkeletonDisplayText, { key: '3', size: 'small' })
+                      React.createElement(SkeletonDisplayText, { key: '3', size: 'small' }),
+                      React.createElement(SkeletonDisplayText, { key: '4', size: 'small' }),
+                      React.createElement(SkeletonDisplayText, { key: '5', size: 'small' })
                     ])
                   );
                   
@@ -713,6 +715,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     content: value || '',
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
+      console.log('[Editor onUpdate] Content updated:', {
+        contentLength: html.length,
+        selectionFrom: editor.state.selection.from,
+        selectionTo: editor.state.selection.to
+      });
       onChange(html);
     },
     editorProps: {
@@ -720,6 +727,20 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         class: 'notion-editor',
       },
       handleKeyDown: (view, event) => {
+        // Debug keyboard events
+        const nodeAtPos = view.state.doc.nodeAt(view.state.selection.from);
+        const nodeBefore = view.state.doc.nodeAt(view.state.selection.from - 1);
+        
+        console.log('[Editor handleKeyDown] Key pressed:', event.key, {
+          selectionFrom: view.state.selection.from,
+          selectionTo: view.state.selection.to,
+          isEmpty: view.state.selection.empty,
+          nodeAtCursor: view.state.selection.$from.parent.type.name,
+          nodeAtPos: nodeAtPos?.type.name,
+          nodeBefore: nodeBefore?.type.name,
+          editable: view.editable
+        });
+        
         // Handle slash commands
         if (event.key === '/' && !showSlashMenu) {
           const coords = view.coordsAtPos(view.state.selection.from);
@@ -738,7 +759,18 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           return true;
         }
         
+        // Don't block any other keys - let them through
         return false;
+      },
+      handleDOMEvents: {
+        beforeinput: (view, event) => {
+          console.log('[Editor beforeinput] Event:', event.inputType, {
+            data: event.data,
+            selectionFrom: view.state.selection.from,
+            selectionTo: view.state.selection.to
+          });
+          return false;
+        },
       },
     },
   });
