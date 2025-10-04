@@ -1,5 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core';
 import { PluginKey } from '@tiptap/pm/state';
+import { TextSelection } from '@tiptap/pm/state';
 import Suggestion from '@tiptap/suggestion';
 
 export const EntityMentionPluginKey = new PluginKey('entityMention');
@@ -17,7 +18,7 @@ export const EntityMention = Node.create({
         char: '@',
         pluginKey: EntityMentionPluginKey,
         command: ({ editor, range, props }) => {
-          // Remove the @ character and any text typed after it
+          // nodeAfter is the next node in document after current position
           const nodeAfter = editor.view.state.selection.$to.nodeAfter;
           const overrideSpace = nodeAfter?.text?.startsWith(' ');
 
@@ -40,12 +41,16 @@ export const EntityMention = Node.create({
             ])
             .run();
 
-          // Move cursor to the end of the inserted content
+          // Position cursor after the mention and space
           window.requestAnimationFrame(() => {
-            const { state } = editor;
-            const pos = range.from + 2; // Position after mention node + space
-            editor.commands.setTextSelection(pos);
-            editor.commands.focus();
+            const { state, view } = editor;
+            // Calculate position: range.from + mention node (1) + space (1) = range.from + 2
+            const newPos = range.from + 2;
+            
+            // Create a text selection at the new position
+            const tr = state.tr.setSelection(TextSelection.create(state.doc, newPos));
+            view.dispatch(tr);
+            view.focus();
           });
         },
         allow: ({ state, range }) => {
@@ -63,7 +68,7 @@ export const EntityMention = Node.create({
 
   inline: true,
 
-  selectable: true,
+  selectable: false,
 
   atom: true,
 

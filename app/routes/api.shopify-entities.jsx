@@ -189,7 +189,9 @@ export async function loader({ request }) {
                   id
                   title
                   handle
-                  productsCount
+                  productsCount {
+                    count
+                  }
                 }
               }
             }
@@ -207,7 +209,7 @@ export async function loader({ request }) {
               numericId: collectionId,
               title: node.title,
               handle: node.handle,
-              productsCount: node.productsCount,
+              productsCount: node.productsCount?.count || 0,
               type: "collection",
               adminUrl: `https://${session.shop}/admin/collections/${collectionId}`
             };

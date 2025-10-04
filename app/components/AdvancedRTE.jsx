@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/extension-bubble-menu';
 import StarterKit from '@tiptap/starter-kit';
@@ -24,7 +25,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import CharacterCount from '@tiptap/extension-character-count';
 import TiptapDragHandle from './TiptapDragHandle';
 import { createLowlight } from 'lowlight';
-import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText } from '@shopify/polaris';
+import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, Icon } from '@shopify/polaris';
 import { 
   CheckboxIcon,
   SmileyHappyIcon,
@@ -59,24 +60,24 @@ const getEntityIcon = (type) => {
 };
 
 const getEntityIconElement = (type) => {
-  // Polaris icons are React components and can't be used in vanilla DOM
-  // Use emojis for now which work perfectly
-  const icons = {
-    product: '📦',
-    variant: '🔹',
-    order: '🛒',
-    customer: '👤',
-    collection: '📚',
-    discount: '🏷️',
-    draftOrder: '📝',
-    person: '👨‍💼'
-  };
+  const IconComponent = getEntityIcon(type);
   
+  // Create a container for the React-rendered Polaris icon
   const container = document.createElement('span');
-  container.textContent = icons[type] || '@';
-  container.style.fontSize = '18px';
-  container.style.lineHeight = '1';
-  container.style.display = 'inline-block';
+  container.style.display = 'inline-flex';
+  container.style.alignItems = 'center';
+  container.style.width = '20px';
+  container.style.height = '20px';
+  container.style.flexShrink = '0';
+  
+  // Render the Polaris Icon component using createRoot
+  const iconElement = React.createElement(Icon, { 
+    source: IconComponent, 
+    tone: 'base'
+  });
+  
+  const root = createRoot(container);
+  root.render(iconElement);
   
   return container;
 };
