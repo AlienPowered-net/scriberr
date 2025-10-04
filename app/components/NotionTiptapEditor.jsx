@@ -213,6 +213,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   const [isExpanded, setIsExpanded] = useState(false);
   const editorRef = useRef(null);
   const slashMenuRef = useRef(null);
+  const autoSnapshotRef = useRef(null);
 
 
   // Create lowlight instance for syntax highlighting
@@ -1054,14 +1055,13 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     }
   };
 
-  // Snapshot functionality
+  // Automatic snapshot functionality
   const saveSnapshot = () => {
     if (editor) {
       const content = editor.getHTML();
       const timestamp = new Date().toLocaleString();
       const newSnapshot = { content, timestamp, id: Date.now() };
       setSnapshots(prev => [newSnapshot, ...prev.slice(0, 9)]); // Keep last 10 snapshots
-      setShowSnapshotPopover(false);
     }
   };
 
@@ -1071,6 +1071,40 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       setShowSnapshotPopover(false);
     }
   };
+
+  // Auto-save snapshots every 30 seconds and on content changes
+  useEffect(() => {
+    if (!editor) return;
+
+    // Auto-save every 30 seconds
+    const interval = setInterval(() => {
+      saveSnapshot();
+    }, 30000);
+
+    // Auto-save on content changes (debounced)
+    const handleContentChange = () => {
+      // Clear existing timeout
+      if (autoSnapshotRef.current) {
+        clearTimeout(autoSnapshotRef.current);
+      }
+      
+      // Set new timeout for 5 seconds after last change
+      autoSnapshotRef.current = setTimeout(() => {
+        saveSnapshot();
+      }, 5000);
+    };
+
+    // Listen for editor updates
+    editor.on('update', handleContentChange);
+
+    return () => {
+      clearInterval(interval);
+      if (autoSnapshotRef.current) {
+        clearTimeout(autoSnapshotRef.current);
+      }
+      editor.off('update', handleContentChange);
+    };
+  }, [editor]);
 
   const clearAllMarks = () => {
     if (editor) {
@@ -1702,21 +1736,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           {/* Divider */}
           <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
 
-          {/* Save Snapshot */}
-          <Tooltip content="Save Snapshot">
-            <Button
-              size="slim"
-              onClick={saveSnapshot}
-            >
-              <TextIcon icon="plus" />
-            </Button>
-          </Tooltip>
-
-          {/* Restore Snapshot */}
+          {/* Auto Snapshots */}
           <Popover
             active={showSnapshotPopover}
             activator={
-              <Tooltip content="Restore Snapshot">
+              <Tooltip content="Auto Snapshots">
                 <Button
                   size="slim"
                   disclosure
@@ -1733,7 +1757,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 content: snapshot.timestamp,
                 onAction: () => restoreSnapshot(snapshot)
               })) : [{
-                content: 'No snapshots available',
+                content: 'No auto snapshots available',
                 disabled: true
               }]}
             />
@@ -2677,21 +2701,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               {/* Divider */}
               <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
 
-              {/* Save Snapshot */}
-              <Tooltip content="Save Snapshot">
-                <Button
-                  size="slim"
-                  onClick={saveSnapshot}
-                >
-                  <TextIcon icon="plus" />
-                </Button>
-              </Tooltip>
-
-              {/* Restore Snapshot */}
+              {/* Auto Snapshots */}
               <Popover
                 active={showSnapshotPopover}
                 activator={
-                  <Tooltip content="Restore Snapshot">
+                  <Tooltip content="Auto Snapshots">
                     <Button
                       size="slim"
                       disclosure
@@ -2708,7 +2722,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     content: snapshot.timestamp,
                     onAction: () => restoreSnapshot(snapshot)
                   })) : [{
-                    content: 'No snapshots available',
+                    content: 'No auto snapshots available',
                     disabled: true
                   }]}
                 />
