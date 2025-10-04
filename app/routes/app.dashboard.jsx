@@ -2927,6 +2927,22 @@ export default function Index() {
           console.error('Failed to create version:', versionError);
         }
 
+        // Update local notes to reflect the saved changes
+        setLocalNotes(prevNotes =>
+          prevNotes.map(note =>
+            note.id === editingNoteId
+              ? {
+                  ...note,
+                  title: trimmedTitle,
+                  content: trimmedBody,
+                  folderId: trimmedFolderId,
+                  tags: noteTags.map(tag => removeEmojis(tag)),
+                  updatedAt: new Date().toISOString()
+                }
+              : note
+          )
+        );
+
         const now = new Date();
         const timestamp = now.toLocaleTimeString();
         setAutoSaveNotification(`Saved and Snapshotted at ${timestamp}`);
@@ -2937,7 +2953,7 @@ export default function Index() {
     } catch (error) {
       console.error('Auto-save failed:', error);
     }
-  }, [editingNoteId, title, body, folderId, noteTags]);
+  }, [editingNoteId, title, body, folderId, noteTags, setLocalNotes]);
 
   // Function to create auto-snapshots (separate from auto-save)
   const handleAutoSnapshot = useCallback(async () => {
