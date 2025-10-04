@@ -26,7 +26,7 @@ export const EntityMention = Node.create({
             range.to += 1;
           }
 
-          // Insert the mention and a space after it
+          // Insert the mention, space, and an invisible zero-width space to ensure there's a text node
           editor
             .chain()
             .focus()
@@ -37,7 +37,7 @@ export const EntityMention = Node.create({
               },
               {
                 type: 'text',
-                text: ' ',
+                text: ' \u200B', // Space + zero-width space to create a text node
               },
             ])
             .run();
@@ -54,10 +54,11 @@ export const EntityMention = Node.create({
               selectionFrom: state.selection.from,
               selectionTo: state.selection.to,
               docSize: state.doc.content.size,
-              rangeFrom: range.from
+              rangeFrom: range.from,
+              docJSON: state.doc.toJSON()
             });
             
-            // Calculate position: range.from + mention node (1) + space (1) = range.from + 2
+            // Calculate position: range.from + mention node (1) + space+zwsp (1) = range.from + 2
             const newPos = range.from + 2;
             
             console.log('[EntityMention] Attempting to set cursor to position:', newPos);
@@ -66,16 +67,21 @@ export const EntityMention = Node.create({
               // Create a text selection at the new position
               const tr = state.tr.setSelection(TextSelection.create(state.doc, newPos));
               view.dispatch(tr);
-              view.focus();
               
               console.log('[EntityMention] Successfully set cursor position');
               
-              // Verify the cursor position after setting
+              // Verify the cursor position and editability
               setTimeout(() => {
                 const finalState = editor.state;
+                const nodeAt = finalState.doc.nodeAt(finalState.selection.from);
+                const nodeBefore = finalState.doc.nodeAt(finalState.selection.from - 1);
+                
                 console.log('[EntityMention] Final cursor position:', {
                   from: finalState.selection.from,
                   to: finalState.selection.to,
+                  nodeAtCursor: nodeAt?.type.name,
+                  nodeBefore: nodeBefore?.type.name,
+                  editable: view.editable,
                   canEdit: !finalState.selection.empty || finalState.selection.$cursor
                 });
               }, 50);

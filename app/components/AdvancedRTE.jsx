@@ -710,6 +710,23 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           }
           return false;
         },
+        beforeinput: (view, event) => {
+          const nodeAt = view.state.doc.nodeAt(view.state.selection.from);
+          const nodeBefore = view.state.doc.nodeAt(view.state.selection.from - 1);
+          
+          console.log('[AdvancedRTE beforeinput] Event:', event.inputType, {
+            data: event.data,
+            selectionFrom: view.state.selection.from,
+            selectionTo: view.state.selection.to,
+            nodeAtCursor: nodeAt?.type.name,
+            nodeBefore: nodeBefore?.type.name,
+            parentNode: view.state.selection.$from.parent.type.name,
+            editable: view.editable
+          });
+          
+          // Don't block input
+          return false;
+        },
       },
     },
   });
