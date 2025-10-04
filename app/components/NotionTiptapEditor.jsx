@@ -43,7 +43,8 @@ import {
   Box,
   Badge,
   Spinner,
-  SkeletonBodyText
+  SkeletonBodyText,
+  SkeletonDisplayText
 } from '@shopify/polaris';
 import { 
   SmileyHappyIcon,
@@ -436,6 +437,31 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   min-width: 280px;
                   max-width: 400px;
                 `;
+
+                // Show loading skeletons if no items yet
+                if (!props.items || props.items.length === 0) {
+                  const loadingDiv = document.createElement('div');
+                  loadingDiv.style.cssText = 'padding: 10px;';
+                  
+                  const skeletonRoot = createRoot(loadingDiv);
+                  skeletonRoot.render(
+                    React.createElement(BlockStack, { gap: '2' }, [
+                      React.createElement(SkeletonDisplayText, { key: '1', size: 'small' }),
+                      React.createElement(SkeletonDisplayText, { key: '2', size: 'small' }),
+                      React.createElement(SkeletonDisplayText, { key: '3', size: 'small' })
+                    ])
+                  );
+                  
+                  component.appendChild(loadingDiv);
+                  document.body.appendChild(component);
+                  
+                  if (props.clientRect) {
+                    const rect = props.clientRect();
+                    component.style.left = `${rect.left}px`;
+                    component.style.top = `${rect.bottom + 8}px`;
+                  }
+                  return;
+                }
 
                 props.items.forEach((item, index) => {
                   const button = document.createElement('button');

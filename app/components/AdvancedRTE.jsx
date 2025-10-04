@@ -25,7 +25,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import CharacterCount from '@tiptap/extension-character-count';
 import TiptapDragHandle from './TiptapDragHandle';
 import { createLowlight } from 'lowlight';
-import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, Icon } from '@shopify/polaris';
+import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, SkeletonDisplayText, Icon } from '@shopify/polaris';
 import { 
   CheckboxIcon,
   SmileyHappyIcon,
@@ -405,6 +405,31 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   min-width: 280px;
                   max-width: 400px;
                 `;
+
+                // Show loading skeletons if no items yet
+                if (!props.items || props.items.length === 0) {
+                  const loadingDiv = document.createElement('div');
+                  loadingDiv.style.cssText = 'padding: 10px;';
+                  
+                  const skeletonRoot = createRoot(loadingDiv);
+                  skeletonRoot.render(
+                    React.createElement(BlockStack, { gap: '2' }, [
+                      React.createElement(SkeletonDisplayText, { key: '1', size: 'small' }),
+                      React.createElement(SkeletonDisplayText, { key: '2', size: 'small' }),
+                      React.createElement(SkeletonDisplayText, { key: '3', size: 'small' })
+                    ])
+                  );
+                  
+                  component.appendChild(loadingDiv);
+                  document.body.appendChild(component);
+                  
+                  if (props.clientRect) {
+                    const rect = props.clientRect();
+                    component.style.left = `${rect.left}px`;
+                    component.style.top = `${rect.bottom + 8}px`;
+                  }
+                  return;
+                }
 
                 props.items.forEach((item, index) => {
                   const button = document.createElement('button');
