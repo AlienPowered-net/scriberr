@@ -435,6 +435,16 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     component.style.left = `${rect.left}px`;
                     component.style.top = `${rect.bottom + 8}px`;
                   }
+                  
+                  // Auto-remove after 10 seconds if still showing (prevents stuck loading)
+                  setTimeout(() => {
+                    if (component && component.parentElement) {
+                      console.log('[Mention Suggestion] Timeout reached - removing stuck loading component');
+                      component.remove();
+                      component = null;
+                    }
+                  }, 10000);
+                  
                   return;
                 }
 
@@ -628,10 +638,19 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 return false;
               },
               onExit() {
+                console.log('[Mention Suggestion] onExit called - cleaning up component');
                 if (component) {
                   component.remove();
                   component = null;
                 }
+                // Also remove any orphaned components
+                const orphaned = document.querySelectorAll('.entity-mention-suggestions');
+                orphaned.forEach(el => {
+                  if (el !== component) {
+                    console.log('[Mention Suggestion] Removing orphaned component');
+                    el.remove();
+                  }
+                });
               }
             };
           }
@@ -786,6 +805,25 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     return () => {
       const existingComponents = document.querySelectorAll('.entity-mention-suggestions');
       existingComponents.forEach(el => el.remove());
+    };
+  }, []);
+
+  // Add click-away listener to remove orphaned suggestions
+  useEffect(() => {
+    const handleDocumentClick = (event) => {
+      // Check if click is outside any suggestion component
+      const suggestions = document.querySelectorAll('.entity-mention-suggestions');
+      suggestions.forEach(suggestion => {
+        if (!suggestion.contains(event.target)) {
+          console.log('[Mention Suggestion] Click outside detected - removing suggestion');
+          suggestion.remove();
+        }
+      });
+    };
+
+    document.addEventListener('click', handleDocumentClick);
+    return () => {
+      document.removeEventListener('click', handleDocumentClick);
     };
   }, []);
 
