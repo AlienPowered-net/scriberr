@@ -44,7 +44,8 @@ import {
   CollectionIcon,
   DiscountIcon,
   OrderDraftIcon,
-  ProfileIcon
+  ProfileIcon,
+  MeasurementSizeIcon
 } from '@shopify/polaris-icons';
 
 // Simple icon component using emoji/text since many Polaris icons don't exist
@@ -59,7 +60,7 @@ const TextIcon = ({ icon }) => {
     image: '🖼️',
     video: '📹',
     text: '¶',
-    lineHeight: '📏',
+    lineHeight: <MeasurementSizeIcon />,
     bulletList: '•',
     numberedList: '1.',
     checkbox: '☑',
@@ -2087,6 +2088,20 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   content: '2.0',
                   onAction: () => {
                     editor.chain().focus().setLineHeight('2.0').run();
+                    setShowLineHeightPopover(false);
+                  }
+                },
+                {
+                  content: '4.0',
+                  onAction: () => {
+                    editor.chain().focus().setLineHeight('4.0').run();
+                    setShowLineHeightPopover(false);
+                  }
+                },
+                {
+                  content: '4.5',
+                  onAction: () => {
+                    editor.chain().focus().setLineHeight('4.5').run();
                     setShowLineHeightPopover(false);
                   }
                 },
