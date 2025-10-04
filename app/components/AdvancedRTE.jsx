@@ -23,7 +23,6 @@ import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import CharacterCount from '@tiptap/extension-character-count';
-import History from '@tiptap/extension-history';
 import { LineHeight } from './LineHeightExtension';
 import TiptapDragHandle from './TiptapDragHandle';
 import { createLowlight } from 'lowlight';
@@ -272,7 +271,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         blockquote: false,
         codeBlock: false,
         horizontalRule: false,
-        history: false, // Disable built-in history to avoid plugin conflict
+        // Use StarterKit's built-in history instead of custom extension
+        history: {
+          depth: 100,
+          newGroupDelay: 500,
+        },
       }),
       Blockquote,
       CodeBlockLowlight.configure({
@@ -747,10 +750,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         placeholder: placeholder,
         showOnlyWhenEditable: true,
         showOnlyCurrent: false,
-      }),
-      History.configure({
-        depth: 100,
-        newGroupDelay: 500,
       }),
       LineHeight.configure({
         types: ['heading', 'paragraph'],
