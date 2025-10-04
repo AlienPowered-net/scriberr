@@ -978,21 +978,10 @@ export default function Index() {
               {(autoSaveNotification || hasUnsavedChanges) && (
                 <div style={{ marginTop: "4px" }}>
                   {autoSaveNotification && (
-                    <div style={{ 
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      backgroundColor: "#008060",
-                      color: "white",
-                      padding: "4px 12px",
-                      borderRadius: "16px",
-                      fontSize: "14px",
-                      fontWeight: "500",
-                      marginBottom: hasUnsavedChanges ? "4px" : "0"
-                    }}>
-                      <i className="fas fa-check-circle" style={{ fontSize: "16px" }}></i>
+                    <Badge tone="success" size="large" style={{ marginBottom: hasUnsavedChanges ? "4px" : "0" }}>
+                      <i className="fas fa-check-circle" style={{ fontSize: "12px", marginRight: "4px" }}></i>
                       {autoSaveNotification}
-                    </div>
+                    </Badge>
                   )}
                   {hasUnsavedChanges && (
                     <Badge tone="critical" size="large">
@@ -1590,6 +1579,27 @@ export default function Index() {
     setHasBeenSavedOnce(false);
   };
 
+  // Handle folder selection - clear note editor when switching folders
+  const handleFolderClick = (folderId) => {
+    // If clicking on "All Notes" (null), or clicking the same folder to deselect
+    const newSelectedFolder = folderId === null ? null : (selectedFolder === folderId ? null : folderId);
+    setSelectedFolder(newSelectedFolder);
+    
+    // Clear note editor when switching folders to prevent cross-folder saves
+    setSelectedNoteId(null);
+    setSelectedNote(null);
+    setEditingNoteId(null);
+    setTitle('');
+    setBody('');
+    setFolderId('');
+    setNoteTags([]);
+    setHasBeenSavedOnce(false);
+    setHasUnsavedChanges(false);
+    setWasJustSaved(false);
+    setIsNewlyCreated(false);
+    setAutoSaveNotification('');
+  };
+
   // Make searchForTag available globally for tooltip clicks
   useEffect(() => {
     window.searchForTag = handleTagSearch;
@@ -1618,11 +1628,16 @@ export default function Index() {
 
     setHasUnsavedChanges(hasChanges);
     
+    // Clear auto-save notification when changes are detected
+    if (hasChanges && autoSaveNotification) {
+      setAutoSaveNotification('');
+    }
+    
     // Reset isNewlyCreated when user starts editing
     if (hasChanges && isNewlyCreated) {
       setIsNewlyCreated(false);
     }
-  }, [title, body, noteTags, editingNoteId, localNotes, isNewlyCreated]);
+  }, [title, body, noteTags, editingNoteId, localNotes, isNewlyCreated, autoSaveNotification]);
 
   // Track when a note was just saved
   useEffect(() => {
@@ -3818,7 +3833,7 @@ export default function Index() {
                       transition: "all 0.2s ease",
                       boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
                     }}
-                    onClick={() => setSelectedFolder(null)}
+                    onClick={() => handleFolderClick(null)}
                     onMouseEnter={(e) => {
                       if (selectedFolder !== null) {
                         e.currentTarget.style.backgroundColor = "#f6fff8";
@@ -4088,7 +4103,7 @@ export default function Index() {
                         selectedFolder={selectedFolder}
                         openFolderMenu={openFolderMenu}
                         setOpenFolderMenu={setOpenFolderMenu}
-                        onFolderClick={(folderId) => setSelectedFolder(selectedFolder === folderId ? null : folderId)}
+                        onFolderClick={handleFolderClick}
                       >
                         {openFolderMenu === folder.id && (
                           <div style={{ display: 'none' }}>
@@ -4406,21 +4421,10 @@ export default function Index() {
                 {(autoSaveNotification || hasUnsavedChanges) && (
                   <div style={{ marginTop: "4px" }}>
                     {autoSaveNotification && (
-                      <div style={{ 
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        backgroundColor: "#008060",
-                        color: "white",
-                        padding: "4px 12px",
-                        borderRadius: "16px",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        marginBottom: hasUnsavedChanges ? "4px" : "0"
-                      }}>
-                        <i className="fas fa-check-circle" style={{ fontSize: "16px" }}></i>
+                      <Badge tone="success" size="large" style={{ marginBottom: hasUnsavedChanges ? "4px" : "0" }}>
+                        <i className="fas fa-check-circle" style={{ fontSize: "12px", marginRight: "4px" }}></i>
                         {autoSaveNotification}
-                      </div>
+                      </Badge>
                     )}
                     {hasUnsavedChanges && (
                       <Badge tone="critical" size="large">
@@ -5684,7 +5688,7 @@ export default function Index() {
                       transition: "all 0.2s ease",
                       boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
                     }}
-                    onClick={() => setSelectedFolder(null)}
+                    onClick={() => handleFolderClick(null)}
                   >
                     <span style={{ 
                       fontWeight: "600", 
@@ -5977,7 +5981,7 @@ export default function Index() {
                               selectedFolder={selectedFolder}
                               openFolderMenu={mobileOpenFolderMenu}
                               setOpenFolderMenu={setMobileOpenFolderMenu}
-                              onFolderClick={(folderId) => setSelectedFolder(selectedFolder === folderId ? null : folderId)}
+                              onFolderClick={handleFolderClick}
                             >
                               {mobileOpenFolderMenu === folder.id && (
                                 <div className="mobile-folder-menu" style={{
@@ -6217,7 +6221,7 @@ export default function Index() {
                           borderRadius: '50%',
                           transition: 'background-color 0.2s ease'
                         }}
-                        onClick={() => setSelectedFolder(null)}
+                        onClick={() => handleFolderClick(null)}
                         onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(255,255,255,0.2)'}
                         onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                       >
