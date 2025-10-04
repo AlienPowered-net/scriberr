@@ -25,7 +25,6 @@ import TextAlign from '@tiptap/extension-text-align';
 import CharacterCount from '@tiptap/extension-character-count';
 import History from '@tiptap/extension-history';
 import { LineHeight } from './LineHeightExtension';
-import Collaboration from '@tiptap/extension-collaboration';
 import TiptapDragHandle from './TiptapDragHandle';
 import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, SkeletonDisplayText, Icon, Popover, ActionList, Tooltip, ButtonGroup } from '@shopify/polaris';
@@ -757,10 +756,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       LineHeight.configure({
         types: ['heading', 'paragraph'],
         defaultLineHeight: 'normal',
-      }),
-      Collaboration.configure({
-        // Basic collaboration setup - snapshots will be handled manually
-        document: null, // Will be set later if needed
       }),
       CharacterCount.configure({
         limit: null, // No character limit
