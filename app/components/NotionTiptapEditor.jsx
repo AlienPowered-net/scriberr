@@ -441,16 +441,15 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 // Show loading skeletons if no items yet
                 if (!props.items || props.items.length === 0) {
                   const loadingDiv = document.createElement('div');
-                  loadingDiv.style.cssText = 'padding: 12px; width: 100%;';
+                  loadingDiv.style.cssText = 'padding: 16px; width: 100%; display: flex; align-items: center; gap: 12px;';
                   
                   const skeletonRoot = createRoot(loadingDiv);
                   skeletonRoot.render(
-                    React.createElement(BlockStack, { gap: '3' }, [
-                      React.createElement(SkeletonDisplayText, { key: '1', size: 'small' }),
-                      React.createElement(SkeletonDisplayText, { key: '2', size: 'small' }),
-                      React.createElement(SkeletonDisplayText, { key: '3', size: 'small' }),
-                      React.createElement(SkeletonDisplayText, { key: '4', size: 'small' }),
-                      React.createElement(SkeletonDisplayText, { key: '5', size: 'small' })
+                    React.createElement(InlineStack, { gap: '3', align: 'start', blockAlign: 'center' }, [
+                      React.createElement(Spinner, { key: 'spinner', size: 'small' }),
+                      React.createElement('div', { key: 'skeleton', style: { flex: 1 } },
+                        React.createElement(SkeletonDisplayText, { size: 'small' })
+                      )
                     ])
                   );
                   
@@ -804,6 +803,30 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       editor.commands.setContent(value || '');
     }
   }, [value, editor]);
+
+  // Add global click handler for entity mentions (to handle saved mentions)
+  useEffect(() => {
+    const handleMentionClick = (event) => {
+      const target = event.target;
+      if (target && target.classList && target.classList.contains('entity-mention')) {
+        const url = target.getAttribute('data-url');
+        if (url) {
+          event.preventDefault();
+          event.stopPropagation();
+          window.open(url, '_blank', 'noopener,noreferrer');
+        }
+      }
+    };
+
+    // Add click listener to editor
+    const editorElement = editorRef.current;
+    if (editorElement) {
+      editorElement.addEventListener('click', handleMentionClick);
+      return () => {
+        editorElement.removeEventListener('click', handleMentionClick);
+      };
+    }
+  }, [editor]);
 
   // Handle slash menu filter
   useEffect(() => {

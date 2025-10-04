@@ -12,11 +12,13 @@ export const EntityMention = Node.create({
     return {
       HTMLAttributes: {},
       renderLabel({ options, node }) {
-        return `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}`;
+        return `${node.attrs.label ?? node.attrs.id}`;
       },
       suggestion: {
         char: '@',
         pluginKey: EntityMentionPluginKey,
+        allowSpaces: false,
+        startOfLine: false,
         command: ({ editor, range, props }) => {
           // nodeAfter is the next node in document after current position
           const nodeAfter = editor.view.state.selection.$to.nodeAfter;
@@ -204,10 +206,8 @@ export const EntityMention = Node.create({
     attrs.style = `cursor: pointer; font-weight: 700; background-color: ${colors.bg}; border: 1px solid ${colors.border}; color: ${colors.text}; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; font-size: 0.95em; white-space: nowrap; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);`;
     attrs.title = url ? `Click to open ${label} in Shopify Admin` : label;
     
-    // Add click handler to open URL in new tab
-    if (url) {
-      attrs.onclick = `window.open('${url}', '_blank', 'noopener,noreferrer'); event.stopPropagation(); return false;`;
-    }
+    // Note: Click handler is now added via React useEffect in the editor components
+    // This ensures it works for both new and saved mentions
 
     return [
       'span',
