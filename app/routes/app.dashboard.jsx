@@ -510,6 +510,7 @@ export default function Index() {
   const [showTagPopup, setShowTagPopup] = useState(null);
   const [tagPopupPosition, setTagPopupPosition] = useState({ x: 0, y: 0 });
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [hasBeenSavedOnce, setHasBeenSavedOnce] = useState(false);
   const [wasJustSaved, setWasJustSaved] = useState(false);
   const [isNewlyCreated, setIsNewlyCreated] = useState(false);
   const [highlightFolders, setHighlightFolders] = useState(false);
@@ -994,17 +995,10 @@ export default function Index() {
                     </div>
                   )}
                   {hasUnsavedChanges && (
-                    <Text as="p" style={{ 
-                      fontSize: "14px", 
-                      color: "rgba(199, 10, 36, 1)", 
-                      fontWeight: "600", 
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px"
-                    }}>
-                      <i className="fas fa-exclamation-triangle" style={{ fontSize: "16px", color: "rgba(199, 10, 36, 1)" }}></i>
+                    <Badge tone="critical" size="large">
+                      <i className="fas fa-exclamation-triangle" style={{ fontSize: "12px", marginRight: "4px" }}></i>
                       You have unsaved changes
-                    </Text>
+                    </Badge>
                   )}
                 </div>
               )}
@@ -1593,6 +1587,7 @@ export default function Index() {
     setBody('');
     setFolderId('');
     setNoteTags([]);
+    setHasBeenSavedOnce(false);
   };
 
   // Make searchForTag available globally for tooltip clicks
@@ -2118,6 +2113,7 @@ export default function Index() {
     setBody('');
     setFolderId('');
     setNoteTags([]);
+    setHasBeenSavedOnce(false);
     setHasUnsavedChanges(false);
     setWasJustSaved(false);
     setIsNewlyCreated(false);
@@ -2912,22 +2908,56 @@ export default function Index() {
         const timestamp = now.toLocaleTimeString();
         setAutoSaveNotification(`Saved and Snapshotted at ${timestamp}`);
         setHasUnsavedChanges(false);
+        setHasBeenSavedOnce(true);
       }
     } catch (error) {
       console.error('Auto-save failed:', error);
     }
   }, [editingNoteId, title, body, folderId, noteTags]);
 
-  // Auto-save note every 30 seconds
+  // Function to create auto-snapshots (separate from auto-save)
+  const handleAutoSnapshot = useCallback(async () => {
+    if (!editingNoteId || !hasBeenSavedOnce) return;
+
+    try {
+      await fetch('/api/create-note-version', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          noteId: editingNoteId,
+          title: title,
+          content: body,
+          versionTitle: `Auto-snapshot ${new Date().toLocaleTimeString()}`
+        }),
+      });
+    } catch (error) {
+      console.error('Auto-snapshot failed:', error);
+    }
+  }, [editingNoteId, title, body, hasBeenSavedOnce]);
+
+  // Auto-save note every 10 seconds
   useEffect(() => {
     if (!editingNoteId || !hasUnsavedChanges) return;
 
     const autoSaveInterval = setInterval(async () => {
       await handleAutoSaveNote();
-    }, 30000); // 30 seconds
+    }, 10000); // 10 seconds
 
     return () => clearInterval(autoSaveInterval);
   }, [editingNoteId, hasUnsavedChanges, handleAutoSaveNote]);
+
+  // Auto-snapshot every 10 seconds after first save
+  useEffect(() => {
+    if (!editingNoteId || !hasBeenSavedOnce) return;
+
+    const autoSnapshotInterval = setInterval(async () => {
+      await handleAutoSnapshot();
+    }, 10000); // 10 seconds
+
+    return () => clearInterval(autoSnapshotInterval);
+  }, [editingNoteId, hasBeenSavedOnce, handleAutoSnapshot]);
 
   // dnd-kit drag and drop is now handled by the DndContext wrapper
 
@@ -4393,17 +4423,10 @@ export default function Index() {
                       </div>
                     )}
                     {hasUnsavedChanges && (
-                      <Text as="p" style={{ 
-                        fontSize: "14px", 
-                        color: "rgba(199, 10, 36, 1)", 
-                        fontWeight: "600", 
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px"
-                      }}>
-                        <i className="fas fa-exclamation-triangle" style={{ fontSize: "16px", color: "rgba(199, 10, 36, 1)" }}></i>
+                      <Badge tone="critical" size="large">
+                        <i className="fas fa-exclamation-triangle" style={{ fontSize: "12px", marginRight: "4px" }}></i>
                         You have unsaved changes
-                      </Text>
+                      </Badge>
                     )}
                   </div>
                 )}
