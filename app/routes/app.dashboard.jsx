@@ -2910,7 +2910,7 @@ export default function Index() {
 
         const now = new Date();
         const timestamp = now.toLocaleTimeString();
-        setAutoSaveNotification(`Your note was auto-saved and a snapshot was created at ${timestamp}`);
+        setAutoSaveNotification(`Saved and Snapshotted at ${timestamp}`);
         setHasUnsavedChanges(false);
       }
     } catch (error) {
