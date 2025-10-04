@@ -27,7 +27,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import CharacterCount from '@tiptap/extension-character-count';
 import TiptapDragHandle from './TiptapDragHandle';
-import { LineHeightExtension } from './LineHeightExtension';
+import { LineHeight } from './LineHeightExtension';
 import { createLowlight } from 'lowlight';
 import { 
   Button, 
@@ -742,7 +742,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       CharacterCount.configure({
         limit: null, // No character limit
       }),
-      LineHeightExtension,
+      LineHeight,
     ],
     content: value || '',
     onUpdate: ({ editor }) => {
