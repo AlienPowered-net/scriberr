@@ -1067,7 +1067,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     
     try {
       const content = editor.getHTML();
-      const title = versionTitle || (isAuto ? `Auto-save ${new Date().toLocaleTimeString()}` : `Version ${new Date().toLocaleString()}`);
+      const title = versionTitle || (isAuto ? `Auto-Saved ${new Date().toLocaleTimeString()}` : `Version ${new Date().toLocaleString()}`);
       
       // Create a snapshot of the current editor state
       const snapshot = editor.getJSON();

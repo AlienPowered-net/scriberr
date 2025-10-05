@@ -2920,7 +2920,7 @@ export default function Index() {
               noteId: editingNoteId,
               title: title,
               content: body,
-              versionTitle: `Auto-save ${new Date().toLocaleTimeString()}`
+              versionTitle: `Auto-Saved ${new Date().toLocaleTimeString()}`
             }),
           });
         } catch (versionError) {
@@ -2945,7 +2945,7 @@ export default function Index() {
 
         const now = new Date();
         const timestamp = now.toLocaleTimeString();
-        setAutoSaveNotification(`Saved and Snapshotted at ${timestamp}`);
+        setAutoSaveNotification(`Auto-Saved at ${timestamp}`);
         setAutoSaveNotificationTime(Date.now());
         setHasUnsavedChanges(false);
         setHasBeenSavedOnce(true);
