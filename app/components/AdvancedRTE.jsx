@@ -45,7 +45,8 @@ import {
   DiscountIcon,
   OrderDraftIcon,
   ProfileIcon,
-  MeasurementSizeIcon
+  MeasurementSizeIcon,
+  ClockIcon
 } from '@shopify/polaris-icons';
 
 // Simple icon component using emoji/text since many Polaris icons don't exist
@@ -179,6 +180,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [showLineHeightPopover, setShowLineHeightPopover] = useState(false);
   const [showSnapshotModal, setShowSnapshotModal] = useState(false);
   const [snapshots, setSnapshots] = useState([]);
+  const [showVersionPopover, setShowVersionPopover] = useState(false);
+  const [versions, setVersions] = useState([]);
+  const [debugInfo, setDebugInfo] = useState({ lastChange: null, lastVersion: null });
   const [imageUrl, setImageUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
@@ -2023,6 +2027,34 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             title="Redo (Ctrl+Y)"
           >
             <Icon source={RedoIcon} />
+          </button>
+
+          {/* Version Management Button */}
+          <button
+            data-testid="version-toolbar-button"
+            onClick={() => {
+              console.debug('Version button clicked');
+              setShowVersionPopover(!showVersionPopover);
+            }}
+            style={{
+              padding: "6px 8px",
+              border: "2px solid #007ace",
+              borderRadius: "4px",
+              backgroundColor: "#f0f0f0",
+              color: "#007ace",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            title="Version History"
+          >
+            <Icon source={ClockIcon} />
+            🕐
           </button>
 
           {/* Line Height Button with Popover */}
@@ -4634,6 +4666,69 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           </Modal.Section>
         </Modal>
       )}
+
+      {/* Version History Popover */}
+      <Popover
+        active={showVersionPopover}
+        activator={<div />} // Hidden activator since we're using a button
+        onClose={() => setShowVersionPopover(false)}
+        preferredAlignment="left"
+        preferredPosition="below"
+      >
+        <div style={{ padding: '16px', minWidth: '300px', maxWidth: '400px' }}>
+          <BlockStack gap="4">
+            <InlineStack gap="2" align="space-between">
+              <Text variant="headingMd">Version History</Text>
+              <Button
+                size="slim"
+                onClick={() => {
+                  const versionTitle = prompt('Enter a title for this version (optional):');
+                  console.log('Create version:', versionTitle);
+                  setShowVersionPopover(false);
+                }}
+              >
+                Create New
+              </Button>
+            </InlineStack>
+            
+            {versions.length > 0 ? (
+              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <BlockStack gap="2">
+                  {versions.map((version, index) => (
+                    <Card key={version.id} padding="3">
+                      <Card.Section>
+                        <InlineStack gap="3" align="space-between">
+                          <BlockStack gap="1">
+                            <Text variant="bodyMd" fontWeight="medium">
+                              {version.versionTitle || version.title}
+                            </Text>
+                            <Text variant="bodySm" color="subdued">
+                              {new Date(version.createdAt).toLocaleString()}
+                            </Text>
+                          </BlockStack>
+                          <Button
+                            size="slim"
+                            onClick={() => {
+                              console.log('Restore version:', version.id);
+                              setShowVersionPopover(false);
+                            }}
+                          >
+                            Restore
+                          </Button>
+                        </InlineStack>
+                      </Card.Section>
+                    </Card>
+                  ))}
+                </BlockStack>
+              </div>
+            ) : (
+              <Text variant="bodyMd" color="subdued">
+                No versions available yet. Create your first version!
+              </Text>
+            )}
+          </BlockStack>
+        </div>
+      </Popover>
     </>
   );
 };
