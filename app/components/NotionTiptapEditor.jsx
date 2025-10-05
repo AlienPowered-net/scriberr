@@ -217,6 +217,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   const [isExpanded, setIsExpanded] = useState(false);
   const [lastAutoVersion, setLastAutoVersion] = useState(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [debugInfo, setDebugInfo] = useState({ lastChange: null, lastVersion: null });
   const editorRef = useRef(null);
   const slashMenuRef = useRef(null);
   const autoVersionIntervalRef = useRef(null);
@@ -1151,31 +1152,10 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     setShowVersionPopover(false);
   };
 
-  // Auto-versioning functionality
-  const startAutoVersioning = useCallback(() => {
-    if (autoVersionIntervalRef.current) {
-      clearInterval(autoVersionIntervalRef.current);
-    }
-    
-    autoVersionIntervalRef.current = setInterval(async () => {
-      if (editor && noteId && hasUnsavedChanges) {
-        // Only create auto-version if content has changed
-        const currentContent = editor.getHTML();
-        const lastVersion = versions[0];
-        
-        if (!lastVersion || lastVersion.content !== currentContent) {
-          await createVersion(null, true);
-        }
-      }
-    }, 30000); // 30 seconds
-  }, [editor, noteId, hasUnsavedChanges, versions]);
-
-  const stopAutoVersioning = useCallback(() => {
-    if (autoVersionIntervalRef.current) {
-      clearInterval(autoVersionIntervalRef.current);
-      autoVersionIntervalRef.current = null;
-    }
-  }, []);
+  // Auto-versioning functionality with robust change detection
+  const lastChangeAt = useRef(0);
+  const hasPendingChange = useRef(false);
+  const lastContentRef = useRef('');
 
   // Track content changes for auto-versioning
   useEffect(() => {
@@ -1183,6 +1163,10 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
 
     const handleUpdate = () => {
       setHasUnsavedChanges(true);
+      hasPendingChange.current = true;
+      lastChangeAt.current = Date.now();
+      setDebugInfo(prev => ({ ...prev, lastChange: new Date().toLocaleTimeString() }));
+      console.debug('Editor update detected at:', new Date().toLocaleTimeString());
     };
 
     editor.on('update', handleUpdate);
@@ -1192,16 +1176,53 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     };
   }, [editor]);
 
-  // Start auto-versioning when editor is ready and noteId is available
+  // Auto-versioning interval
   useEffect(() => {
-    if (editor && noteId) {
-      startAutoVersioning();
-    }
-    
-    return () => {
-      stopAutoVersioning();
-    };
-  }, [editor, noteId, startAutoVersioning, stopAutoVersioning]);
+    if (!editor || !noteId) return;
+
+    const INTERVAL_MS = 30000; // 30 seconds
+    const timer = setInterval(async () => {
+      if (!hasPendingChange.current) return;
+      
+      // Reset flag immediately to avoid duplicate calls
+      hasPendingChange.current = false;
+      
+      try {
+        const currentContent = editor.getHTML();
+        
+        // Only create version if content actually changed
+        if (currentContent !== lastContentRef.current) {
+          lastContentRef.current = currentContent;
+          
+          const snapshot = editor.getJSON();
+          const res = await fetch('/api/create-note-version', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              noteId: noteId,
+              title: `Auto-Saved ${new Date().toLocaleTimeString()}`,
+              content: currentContent,
+              snapshot: JSON.stringify(snapshot),
+              isAuto: true
+            })
+          });
+          
+          if (!res.ok) {
+            console.error('Auto-version failed:', await res.text());
+          } else {
+            const newVersion = await res.json();
+            setVersions(prev => [newVersion, ...prev.slice(0, 19)]);
+            setDebugInfo(prev => ({ ...prev, lastVersion: new Date().toLocaleTimeString() }));
+            console.debug('Auto-version created:', newVersion.id);
+          }
+        }
+      } catch (err) {
+        console.error('Auto-version error:', err);
+      }
+    }, INTERVAL_MS);
+
+    return () => clearInterval(timer);
+  }, [editor, noteId]);
 
   // Load versions when noteId changes
   useEffect(() => {
@@ -1884,8 +1905,12 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             activator={
               <Tooltip content="Version History">
                 <Button
+                  data-testid="version-toolbar-button"
                   size="slim"
-                  onClick={() => setShowVersionPopover(!showVersionPopover)}
+                  onClick={() => {
+                    console.debug('Version button clicked');
+                    setShowVersionPopover(!showVersionPopover);
+                  }}
                   icon={ClockIcon}
                 />
               </Tooltip>
@@ -1984,6 +2009,24 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       <div className="notion-editor-wrapper" ref={editorRef}>
         <EditorContent editor={editor} />
         {editor && <TiptapDragHandle editor={editor} />}
+        
+        {/* Debug indicator for development */}
+        {process.env.NODE_ENV === 'development' && (
+          <div style={{
+            position: 'absolute',
+            top: '10px',
+            right: '10px',
+            background: 'rgba(0,0,0,0.8)',
+            color: 'white',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            zIndex: 1000
+          }}>
+            Last change: {debugInfo.lastChange || 'None'}<br/>
+            Last version: {debugInfo.lastVersion || 'None'}
+          </div>
+        )}
         
         {/* Bubble Menu */}
         {editor && (
@@ -3074,8 +3117,12 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 activator={
                   <Tooltip content="Version History">
                     <Button
+                      data-testid="version-toolbar-button-fullscreen"
                       size="slim"
-                      onClick={() => setShowVersionPopover(!showVersionPopover)}
+                      onClick={() => {
+                        console.debug('Version button clicked (fullscreen)');
+                        setShowVersionPopover(!showVersionPopover);
+                      }}
                       icon={ClockIcon}
                     />
                   </Tooltip>
