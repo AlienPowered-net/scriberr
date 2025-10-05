@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export const action = async ({ request }) => {
   try {
     const { admin } = await authenticate.admin(request);
-    const { noteId, title, content, versionTitle } = await request.json();
+    const { noteId, title, content, versionTitle, snapshot, isAuto = false } = await request.json();
 
     // Verify the note belongs to the shop
     const note = await prisma.note.findFirst({
@@ -21,13 +21,15 @@ export const action = async ({ request }) => {
       return json({ error: "Note not found" }, { status: 404 });
     }
 
-    // Create the version
+    // Create the version with enhanced data
     const version = await prisma.noteVersion.create({
       data: {
         noteId,
         title,
         content,
         versionTitle,
+        snapshot: snapshot ? JSON.parse(snapshot) : null,
+        isAuto,
       },
     });
 

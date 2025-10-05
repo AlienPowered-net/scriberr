@@ -62,7 +62,8 @@ import {
   CollectionIcon,
   DiscountIcon,
   OrderDraftIcon,
-  ProfileIcon
+  ProfileIcon,
+  ClockIcon
 } from '@shopify/polaris-icons';
 import './NotionTiptapEditor.css';
 
@@ -209,10 +210,16 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   const [showLineHeightPopover, setShowLineHeightPopover] = useState(false);
   const [showClearMarksPopover, setShowClearMarksPopover] = useState(false);
   const [showVersionModal, setShowVersionModal] = useState(false);
+  const [showVersionPopover, setShowVersionPopover] = useState(false);
+  const [showComparisonModal, setShowComparisonModal] = useState(false);
+  const [comparisonVersions, setComparisonVersions] = useState({ version1: null, version2: null });
   const [versions, setVersions] = useState([]);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [lastAutoVersion, setLastAutoVersion] = useState(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const editorRef = useRef(null);
   const slashMenuRef = useRef(null);
+  const autoVersionIntervalRef = useRef(null);
 
 
   // Create lowlight instance for syntax highlighting
@@ -1054,13 +1061,16 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     }
   };
 
-  // Version management functionality
-  const createVersion = async (versionTitle = null) => {
+  // Enhanced version management functionality
+  const createVersion = async (versionTitle = null, isAuto = false) => {
     if (!editor || !noteId) return;
     
     try {
       const content = editor.getHTML();
-      const title = versionTitle || `Version ${new Date().toLocaleString()}`;
+      const title = versionTitle || (isAuto ? `Auto-save ${new Date().toLocaleTimeString()}` : `Version ${new Date().toLocaleString()}`);
+      
+      // Create a snapshot of the current editor state
+      const snapshot = editor.getJSON();
       
       const response = await fetch('/api/create-note-version', {
         method: 'POST',
@@ -1071,26 +1081,53 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           noteId,
           title,
           content,
-          versionTitle: versionTitle || null
+          versionTitle: versionTitle || null,
+          snapshot: JSON.stringify(snapshot),
+          isAuto
         }),
       });
 
       if (response.ok) {
         const newVersion = await response.json();
-        setVersions(prev => [newVersion, ...prev.slice(0, 9)]); // Keep last 10 versions
+        setVersions(prev => [newVersion, ...prev.slice(0, 19)]); // Keep last 20 versions
+        setLastAutoVersion(new Date());
+        setHasUnsavedChanges(false);
+        
         if (onVersionCreated) {
           onVersionCreated(newVersion);
         }
+        
+        return newVersion;
       }
     } catch (error) {
       console.error('Failed to create version:', error);
     }
   };
 
-  const restoreVersion = (version) => {
-    if (editor && version) {
-      editor.commands.setContent(version.content);
+  const restoreVersion = async (version) => {
+    if (!editor || !version || !noteId) return;
+    
+    try {
+      // If there are unsaved changes, create a new version to preserve them
+      if (hasUnsavedChanges) {
+        await createVersion(`Auto-saved before revert - ${new Date().toLocaleString()}`, true);
+      }
+      
+      // Restore the selected version
+      if (version.snapshot) {
+        editor.commands.setContent(version.snapshot);
+      } else {
+        editor.commands.setContent(version.content);
+      }
+      
       setShowVersionModal(false);
+      setShowVersionPopover(false);
+      setHasUnsavedChanges(false);
+      
+      // Reload versions to get the updated list
+      await loadVersions();
+    } catch (error) {
+      console.error('Failed to restore version:', error);
     }
   };
 
@@ -1107,6 +1144,64 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       console.error('Failed to load versions:', error);
     }
   };
+
+  const compareVersions = (version1, version2) => {
+    setComparisonVersions({ version1, version2 });
+    setShowComparisonModal(true);
+    setShowVersionPopover(false);
+  };
+
+  // Auto-versioning functionality
+  const startAutoVersioning = useCallback(() => {
+    if (autoVersionIntervalRef.current) {
+      clearInterval(autoVersionIntervalRef.current);
+    }
+    
+    autoVersionIntervalRef.current = setInterval(async () => {
+      if (editor && noteId && hasUnsavedChanges) {
+        // Only create auto-version if content has changed
+        const currentContent = editor.getHTML();
+        const lastVersion = versions[0];
+        
+        if (!lastVersion || lastVersion.content !== currentContent) {
+          await createVersion(null, true);
+        }
+      }
+    }, 30000); // 30 seconds
+  }, [editor, noteId, hasUnsavedChanges, versions]);
+
+  const stopAutoVersioning = useCallback(() => {
+    if (autoVersionIntervalRef.current) {
+      clearInterval(autoVersionIntervalRef.current);
+      autoVersionIntervalRef.current = null;
+    }
+  }, []);
+
+  // Track content changes for auto-versioning
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleUpdate = () => {
+      setHasUnsavedChanges(true);
+    };
+
+    editor.on('update', handleUpdate);
+    
+    return () => {
+      editor.off('update', handleUpdate);
+    };
+  }, [editor]);
+
+  // Start auto-versioning when editor is ready and noteId is available
+  useEffect(() => {
+    if (editor && noteId) {
+      startAutoVersioning();
+    }
+    
+    return () => {
+      stopAutoVersioning();
+    };
+  }, [editor, noteId, startAutoVersioning, stopAutoVersioning]);
 
   // Load versions when noteId changes
   useEffect(() => {
@@ -1783,6 +1878,95 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           {/* Divider */}
           <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
 
+          {/* Version Management */}
+          <Popover
+            active={showVersionPopover}
+            activator={
+              <Tooltip content="Version History">
+                <Button
+                  size="slim"
+                  onClick={() => setShowVersionPopover(!showVersionPopover)}
+                  icon={ClockIcon}
+                />
+              </Tooltip>
+            }
+            onClose={() => setShowVersionPopover(false)}
+            preferredAlignment="left"
+            preferredPosition="below"
+          >
+            <div style={{ padding: '16px', minWidth: '300px', maxWidth: '400px' }}>
+              <BlockStack gap="4">
+                <InlineStack gap="2" align="space-between">
+                  <Text variant="headingMd">Version History</Text>
+                  <Button
+                    size="slim"
+                    onClick={() => {
+                      const versionTitle = prompt('Enter a title for this version (optional):');
+                      createVersion(versionTitle);
+                      setShowVersionPopover(false);
+                    }}
+                  >
+                    Create New
+                  </Button>
+                </InlineStack>
+                
+                {versions.length > 0 ? (
+                  <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                    <BlockStack gap="2">
+                      {versions.map((version, index) => (
+                        <Card key={version.id} padding="3">
+                          <Card.Section>
+                            <InlineStack gap="3" align="space-between">
+                              <BlockStack gap="1">
+                                <InlineStack gap="2" align="start">
+                                  <Text variant="bodyMd" fontWeight="medium">
+                                    {version.versionTitle || version.title}
+                                  </Text>
+                                  {version.isAuto && (
+                                    <Badge size="small" tone="info">Auto</Badge>
+                                  )}
+                                </InlineStack>
+                                <Text variant="bodySm" color="subdued">
+                                  {new Date(version.createdAt).toLocaleString()}
+                                </Text>
+                                {index > 0 && (
+                                  <Button
+                                    size="micro"
+                                    variant="plain"
+                                    onClick={() => {
+                                      // Compare with previous version
+                                      const prevVersion = versions[index - 1];
+                                      compareVersions(prevVersion, version);
+                                    }}
+                                  >
+                                    Compare with previous
+                                  </Button>
+                                )}
+                              </BlockStack>
+                              <Button
+                                size="slim"
+                                onClick={() => restoreVersion(version)}
+                              >
+                                Restore
+                              </Button>
+                            </InlineStack>
+                          </Card.Section>
+                        </Card>
+                      ))}
+                    </BlockStack>
+                  </div>
+                ) : (
+                  <Text variant="bodyMd" color="subdued">
+                    No versions available yet. Create your first version!
+                  </Text>
+                )}
+              </BlockStack>
+            </div>
+          </Popover>
+
+          {/* Divider */}
+          <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
           {/* Fullscreen Button */}
           <Tooltip content={isExpanded ? "Exit Fullscreen" : "Enter Fullscreen"}>
             <Button
@@ -2154,6 +2338,100 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             ) : (
               <Text variant="bodyMd" color="subdued">
                 No versions available yet. Create your first version!
+              </Text>
+            )}
+          </BlockStack>
+        </Modal.Section>
+      </Modal>
+
+      {/* Version Comparison Modal */}
+      <Modal
+        open={showComparisonModal}
+        onClose={() => setShowComparisonModal(false)}
+        title="Compare Versions"
+        large
+        primaryAction={{
+          content: 'Close',
+          onAction: () => setShowComparisonModal(false),
+        }}
+      >
+        <Modal.Section>
+          <BlockStack gap="4">
+            {comparisonVersions.version1 && comparisonVersions.version2 ? (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                {/* Version 1 */}
+                <div>
+                  <Card>
+                    <Card.Section>
+                      <BlockStack gap="2">
+                        <Text variant="headingMd">
+                          {comparisonVersions.version1.versionTitle || comparisonVersions.version1.title}
+                        </Text>
+                        <Text variant="bodySm" color="subdued">
+                          {new Date(comparisonVersions.version1.createdAt).toLocaleString()}
+                        </Text>
+                        <div 
+                          style={{ 
+                            border: '1px solid #e1e3e5', 
+                            borderRadius: '4px', 
+                            padding: '12px',
+                            backgroundColor: '#f6f6f7',
+                            maxHeight: '400px',
+                            overflowY: 'auto'
+                          }}
+                          dangerouslySetInnerHTML={{ 
+                            __html: comparisonVersions.version1.content 
+                          }}
+                        />
+                        <Button
+                          size="slim"
+                          onClick={() => restoreVersion(comparisonVersions.version1)}
+                        >
+                          Restore This Version
+                        </Button>
+                      </BlockStack>
+                    </Card.Section>
+                  </Card>
+                </div>
+
+                {/* Version 2 */}
+                <div>
+                  <Card>
+                    <Card.Section>
+                      <BlockStack gap="2">
+                        <Text variant="headingMd">
+                          {comparisonVersions.version2.versionTitle || comparisonVersions.version2.title}
+                        </Text>
+                        <Text variant="bodySm" color="subdued">
+                          {new Date(comparisonVersions.version2.createdAt).toLocaleString()}
+                        </Text>
+                        <div 
+                          style={{ 
+                            border: '1px solid #e1e3e5', 
+                            borderRadius: '4px', 
+                            padding: '12px',
+                            backgroundColor: '#f6f6f7',
+                            maxHeight: '400px',
+                            overflowY: 'auto'
+                          }}
+                          dangerouslySetInnerHTML={{ 
+                            __html: comparisonVersions.version2.content 
+                          }}
+                        />
+                        <Button
+                          size="slim"
+                          onClick={() => restoreVersion(comparisonVersions.version2)}
+                        >
+                          Restore This Version
+                        </Button>
+                      </BlockStack>
+                    </Card.Section>
+                  </Card>
+                </div>
+              </div>
+            ) : (
+              <Text variant="bodyMd" color="subdued">
+                No versions selected for comparison.
               </Text>
             )}
           </BlockStack>
@@ -2786,6 +3064,95 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   </Button>
                 </Tooltip>
               </ButtonGroup>
+
+              {/* Divider */}
+              <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
+
+              {/* Version Management */}
+              <Popover
+                active={showVersionPopover}
+                activator={
+                  <Tooltip content="Version History">
+                    <Button
+                      size="slim"
+                      onClick={() => setShowVersionPopover(!showVersionPopover)}
+                      icon={ClockIcon}
+                    />
+                  </Tooltip>
+                }
+                onClose={() => setShowVersionPopover(false)}
+                preferredAlignment="left"
+                preferredPosition="below"
+              >
+                <div style={{ padding: '16px', minWidth: '300px', maxWidth: '400px' }}>
+                  <BlockStack gap="4">
+                    <InlineStack gap="2" align="space-between">
+                      <Text variant="headingMd">Version History</Text>
+                      <Button
+                        size="slim"
+                        onClick={() => {
+                          const versionTitle = prompt('Enter a title for this version (optional):');
+                          createVersion(versionTitle);
+                          setShowVersionPopover(false);
+                        }}
+                      >
+                        Create New
+                      </Button>
+                    </InlineStack>
+                    
+                    {versions.length > 0 ? (
+                      <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                        <BlockStack gap="2">
+                          {versions.map((version, index) => (
+                            <Card key={version.id} padding="3">
+                              <Card.Section>
+                                <InlineStack gap="3" align="space-between">
+                                  <BlockStack gap="1">
+                                    <InlineStack gap="2" align="start">
+                                      <Text variant="bodyMd" fontWeight="medium">
+                                        {version.versionTitle || version.title}
+                                      </Text>
+                                      {version.isAuto && (
+                                        <Badge size="small" tone="info">Auto</Badge>
+                                      )}
+                                    </InlineStack>
+                                    <Text variant="bodySm" color="subdued">
+                                      {new Date(version.createdAt).toLocaleString()}
+                                    </Text>
+                                    {index > 0 && (
+                                      <Button
+                                        size="micro"
+                                        variant="plain"
+                                        onClick={() => {
+                                          // Compare with previous version
+                                          const prevVersion = versions[index - 1];
+                                          compareVersions(prevVersion, version);
+                                        }}
+                                      >
+                                        Compare with previous
+                                      </Button>
+                                    )}
+                                  </BlockStack>
+                                  <Button
+                                    size="slim"
+                                    onClick={() => restoreVersion(version)}
+                                  >
+                                    Restore
+                                  </Button>
+                                </InlineStack>
+                              </Card.Section>
+                            </Card>
+                          ))}
+                        </BlockStack>
+                      </div>
+                    ) : (
+                      <Text variant="bodyMd" color="subdued">
+                        No versions available yet. Create your first version!
+                      </Text>
+                    )}
+                  </BlockStack>
+                </div>
+              </Popover>
 
               {/* Divider */}
               <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />

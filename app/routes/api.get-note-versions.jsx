@@ -34,7 +34,16 @@ export const loader = async ({ request }) => {
       orderBy: {
         createdAt: 'desc',
       },
-      take: 10, // Limit to last 10 versions
+      take: 20, // Increased limit for better version history
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        versionTitle: true,
+        snapshot: true,
+        isAuto: true,
+        createdAt: true,
+      },
     });
 
     return json(versions);

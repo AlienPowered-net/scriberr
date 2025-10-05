@@ -54,13 +54,15 @@ model Note {
 }
 
 model NoteVersion {
-  id        String   @id @default(cuid())
-  noteId    String
-  title     String
-  content   String   @db.Text
+  id          String   @id @default(cuid())
+  noteId      String
+  title       String
+  content     String   @db.Text
   versionTitle String? // User-defined title for the version
-  createdAt DateTime @default(now())
-  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  snapshot    Json?    // Tiptap editor state snapshot for comparison
+  isAuto      Boolean  @default(false) // Whether this is an auto-generated version
+  createdAt   DateTime @default(now())
+  note        Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
   
   @@index([noteId, createdAt])
 }
