@@ -1111,7 +1111,6 @@ export default function Index() {
                   value={title}
                   readOnly
                   placeholder="Add a title to your note here..."
-                  maxLength={35}
                   style={{
                     border: "none",
                     outline: "none",
@@ -4626,7 +4625,6 @@ export default function Index() {
                     value={title}
                     onChange={(e) => setTitle(removeEmojis(e.target.value))}
                     placeholder="Add a title to your note here..."
-                    maxLength={35}
                     style={{
                       border: "none",
                       outline: "none",
