@@ -1208,7 +1208,10 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           });
           
           if (!res.ok) {
-            console.error('Auto-version failed:', await res.text());
+            const errorText = await res.text();
+            console.error('Auto-version failed:', res.status, errorText);
+            // Don't throw error, just log it and continue
+            setDebugInfo(prev => ({ ...prev, lastVersion: `Error: ${res.status}` }));
           } else {
             const newVersion = await res.json();
             setVersions(prev => [newVersion, ...prev.slice(0, 19)]);
@@ -1912,7 +1915,15 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     setShowVersionPopover(!showVersionPopover);
                   }}
                   icon={ClockIcon}
-                />
+                  style={{ 
+                    backgroundColor: '#f0f0f0', 
+                    border: '2px solid #007ace',
+                    minWidth: '32px',
+                    minHeight: '32px'
+                  }}
+                >
+                  🕐
+                </Button>
               </Tooltip>
             }
             onClose={() => setShowVersionPopover(false)}
@@ -3124,7 +3135,15 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                         setShowVersionPopover(!showVersionPopover);
                       }}
                       icon={ClockIcon}
-                    />
+                      style={{ 
+                        backgroundColor: '#f0f0f0', 
+                        border: '2px solid #007ace',
+                        minWidth: '32px',
+                        minHeight: '32px'
+                      }}
+                    >
+                      🕐
+                    </Button>
                   </Tooltip>
                 }
                 onClose={() => setShowVersionPopover(false)}

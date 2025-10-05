@@ -7,7 +7,19 @@ const prisma = new PrismaClient();
 export const action = async ({ request }) => {
   try {
     const { admin } = await authenticate.admin(request);
+    
+    // Debug logging
+    console.log("Admin object:", admin);
+    console.log("Admin session:", admin?.session);
+    
+    if (!admin || !admin.session || !admin.session.shop) {
+      console.error("Authentication failed - missing admin or session data");
+      return json({ error: "Authentication failed" }, { status: 401 });
+    }
+    
     const { noteId, title, content, versionTitle, snapshot, isAuto = false } = await request.json();
+    
+    console.log("Creating version for noteId:", noteId, "shop:", admin.session.shop);
 
     // Verify the note belongs to the shop
     const note = await prisma.note.findFirst({
@@ -18,6 +30,7 @@ export const action = async ({ request }) => {
     });
 
     if (!note) {
+      console.error("Note not found for noteId:", noteId, "shop:", admin.session.shop);
       return json({ error: "Note not found" }, { status: 404 });
     }
 
@@ -33,9 +46,10 @@ export const action = async ({ request }) => {
       },
     });
 
+    console.log("Version created successfully:", version.id);
     return json(version);
   } catch (error) {
     console.error("Error creating note version:", error);
-    return json({ error: "Failed to create version" }, { status: 500 });
+    return json({ error: "Failed to create version", details: error.message }, { status: 500 });
   }
 };
