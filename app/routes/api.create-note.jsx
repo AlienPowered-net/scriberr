@@ -25,12 +25,6 @@ export async function action({ request }) {
   const trimmedFolderId = folderId ? folderId.toString().trim() : "";
   
 
-
-  // Check if title is within character limit
-  if (trimmedTitle.length > 35) {
-    return json({ error: "Note title cannot exceed 35 characters" });
-  }
-
   // Allow creating notes with empty content (for new note creation)
   // Content validation will be handled when saving existing notes
 
