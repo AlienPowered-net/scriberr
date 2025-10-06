@@ -2228,36 +2228,36 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     minWidth: '32px',
                     minHeight: '32px'
                   }}
-                >
-                  🕐
-                </Button>
+                />
               </Tooltip>
             }
             onClose={() => setShowVersionPopover(false)}
             preferredAlignment="left"
             preferredPosition="below"
           >
-            <div style={{ padding: '16px', minWidth: '300px', maxWidth: '400px' }}>
+            <div style={{ padding: '16px', minWidth: '450px', maxWidth: '550px' }}>
               <BlockStack gap="4">
                 <InlineStack gap="2" align="space-between">
                   <Text variant="headingMd">Version History</Text>
                   <Button
                     size="slim"
                     onClick={() => {
-                      setShowVersionNameModal(true);
+                      setShowVersionPopover(false);
+                      setTimeout(() => {
+                        const versionTitle = prompt('Enter a title for this version (optional):');
+                        if (versionTitle !== null) {
+                          createVersion(versionTitle);
+                        }
+                      }, 100);
                     }}
                   >
                     Create New
                   </Button>
                 </InlineStack>
                 
-                {versions.length > 0 && (
-                  <div style={{ height: '16px' }} /> 
-                )}
-                
                 {versions.length > 0 ? (
                   <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                    <BlockStack gap="3">
+                    <BlockStack gap="2">
                       {versions.map((version) => (
                         <div 
                           key={version.id}
@@ -4807,84 +4807,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     </div>
       )}
 
-      {/* Version Name Modal */}
-      {showVersionNameModal && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 10000,
-          }}
-          onClick={() => {
-            setShowVersionNameModal(false);
-            setVersionNameInput('');
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              padding: '24px',
-              minWidth: '400px',
-              maxWidth: '500px',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <BlockStack gap="4">
-              <Text variant="headingMd" as="h2">
-                Create Version
-              </Text>
-              
-              <TextField
-                label="Version name (optional)"
-                value={versionNameInput}
-                onChange={setVersionNameInput}
-                placeholder="e.g., Before major changes"
-                autoComplete="off"
-                autoFocus
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    createVersion(versionNameInput || null);
-                    setShowVersionNameModal(false);
-                    setShowVersionPopover(false);
-                    setVersionNameInput('');
-                  }
-                }}
-              />
-              
-              <InlineStack gap="2" align="end">
-                <Button
-                  onClick={() => {
-                    setShowVersionNameModal(false);
-                    setVersionNameInput('');
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => {
-                    createVersion(versionNameInput || null);
-                    setShowVersionNameModal(false);
-                    setShowVersionPopover(false);
-                    setVersionNameInput('');
-                  }}
-                >
-                  Create Version
-                </Button>
-              </InlineStack>
-            </BlockStack>
-          </div>
-        </div>
-      )}
 
     </>
   );
