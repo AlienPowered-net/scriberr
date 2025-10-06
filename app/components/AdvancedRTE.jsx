@@ -2255,31 +2255,37 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                     <BlockStack gap="2">
                       {versions.map((version) => (
-                        <Card key={version.id} padding="3">
-                          <Card.Section>
-                            <InlineStack gap="3" align="space-between">
-                              <BlockStack gap="1">
-                                <InlineStack gap="2" align="start">
-                                  <Text variant="bodyMd" fontWeight="medium">
-                                    {version.versionTitle || version.title}
-                                  </Text>
-                                  {version.isAuto && (
-                                    <Badge size="small" tone="info">Auto</Badge>
-                                  )}
-                                </InlineStack>
-                                <Text variant="bodySm" color="subdued">
-                                  {new Date(version.createdAt).toLocaleString()}
+                        <div 
+                          key={version.id}
+                          style={{
+                            padding: '12px',
+                            border: '1px solid #e1e3e5',
+                            borderRadius: '8px',
+                            backgroundColor: '#ffffff'
+                          }}
+                        >
+                          <InlineStack gap="3" align="space-between">
+                            <BlockStack gap="1">
+                              <InlineStack gap="2" align="start">
+                                <Text variant="bodyMd" fontWeight="medium">
+                                  {version.versionTitle || version.title}
                                 </Text>
-                              </BlockStack>
-                              <Button
-                                size="slim"
-                                onClick={() => restoreVersion(version)}
-                              >
-                                Restore
-                              </Button>
-                            </InlineStack>
-                          </Card.Section>
-                        </Card>
+                                {version.isAuto && (
+                                  <Badge size="small" tone="info">Auto</Badge>
+                                )}
+                              </InlineStack>
+                              <Text variant="bodySm" color="subdued">
+                                {new Date(version.createdAt).toLocaleString()}
+                              </Text>
+                            </BlockStack>
+                            <Button
+                              size="slim"
+                              onClick={() => restoreVersion(version)}
+                            >
+                              Restore
+                            </Button>
+                          </InlineStack>
+                        </div>
                       ))}
                     </BlockStack>
                   </div>
