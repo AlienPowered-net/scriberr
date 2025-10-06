@@ -2267,7 +2267,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                             alignItems: 'flex-start',
                             gap: '12px',
                             minWidth: 0,
-                            width: '100%',
+                            width: '65%',
                             boxSizing: 'border-box'
                           }}
                         >
