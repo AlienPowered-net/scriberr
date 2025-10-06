@@ -2235,14 +2235,17 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             preferredAlignment="left"
             preferredPosition="below"
           >
-            <div style={{ padding: '16px', width: '600px' }}>
+            <div style={{ padding: '16px', width: '600px', maxWidth: '90vw', boxSizing: 'border-box' }}>
               <BlockStack gap="4">
                 <InlineStack gap="2" align="space-between">
                   <Text variant="headingMd">Version History</Text>
                   <Button
                     size="slim"
                     onClick={() => {
-                      setShowVersionNameModal(true);
+                      setShowVersionPopover(false);
+                      setTimeout(() => {
+                        setShowVersionNameModal(true);
+                      }, 50);
                     }}
                   >
                     Create New
@@ -2250,8 +2253,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 </InlineStack>
                 
                 {versions.length > 0 ? (
-                  <div style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'hidden' }}>
-                    <BlockStack gap="3">
+                  <div style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'hidden', width: '100%' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       {versions.map((version) => (
                         <div 
                           key={version.id}
@@ -2260,37 +2263,43 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                             border: '1px solid #e1e3e5',
                             borderRadius: '8px',
                             backgroundColor: '#ffffff',
-                            minWidth: 0
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '12px',
+                            minWidth: 0,
+                            width: '100%',
+                            boxSizing: 'border-box'
                           }}
                         >
-                          <InlineStack gap="3" align="space-between" blockAlign="start">
-                            <BlockStack gap="1" style={{ minWidth: 0, flex: 1 }}>
-                              <InlineStack gap="2" align="start" wrap={false}>
-                                <div style={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
-                                  <Text variant="bodyMd" fontWeight="medium" truncate>
-                                    {version.versionTitle || version.title}
-                                  </Text>
-                                </div>
-                                {version.isAuto && (
-                                  <Badge size="small" tone="info">Auto</Badge>
-                                )}
-                              </InlineStack>
-                              <Text variant="bodySm" color="subdued">
-                                {new Date(version.createdAt).toLocaleString()}
-                              </Text>
-                            </BlockStack>
-                            <div style={{ flexShrink: 0 }}>
-                              <Button
-                                size="slim"
-                                onClick={() => restoreVersion(version)}
-                              >
-                                Restore
-                              </Button>
+                          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                              <div style={{ 
+                                flex: 1, 
+                                minWidth: 0, 
+                                overflow: 'hidden', 
+                                textOverflow: 'ellipsis', 
+                                whiteSpace: 'nowrap',
+                                fontWeight: 500
+                              }}>
+                                {version.versionTitle || version.title}
+                              </div>
+                              {version.isAuto && (
+                                <Badge size="small" tone="info">Auto</Badge>
+                              )}
                             </div>
-                          </InlineStack>
+                            <div style={{ fontSize: '13px', color: '#6d7175' }}>
+                              {new Date(version.createdAt).toLocaleString()}
+                            </div>
+                          </div>
+                          <Button
+                            size="slim"
+                            onClick={() => restoreVersion(version)}
+                          >
+                            Restore
+                          </Button>
                         </div>
                       ))}
-                    </BlockStack>
+                    </div>
                   </div>
                 ) : (
                   <Text variant="bodyMd" color="subdued">
@@ -4815,11 +4824,12 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 10001,
+            zIndex: 20000,
+            backdropFilter: 'blur(2px)'
           }}
           onClick={() => {
             setShowVersionNameModal(false);
@@ -4830,16 +4840,16 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             style={{
               backgroundColor: 'white',
               borderRadius: '12px',
-              padding: '24px',
-              minWidth: '400px',
-              maxWidth: '500px',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+              padding: '28px',
+              width: '90%',
+              maxWidth: '480px',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <BlockStack gap="4">
-              <Text variant="headingMd" as="h2">
-                Create Version
+            <BlockStack gap="5">
+              <Text variant="headingLg" as="h2">
+                Create New Version
               </Text>
               
               <TextField
@@ -4849,17 +4859,17 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 placeholder="e.g., Before major changes"
                 autoComplete="off"
                 autoFocus
+                helpText="Give this version a meaningful name to easily identify it later"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     createVersion(versionNameInput || null);
                     setShowVersionNameModal(false);
-                    setShowVersionPopover(false);
                     setVersionNameInput('');
                   }
                 }}
               />
               
-              <InlineStack gap="2" align="end">
+              <InlineStack gap="3" align="end">
                 <Button
                   onClick={() => {
                     setShowVersionNameModal(false);
@@ -4873,7 +4883,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   onClick={() => {
                     createVersion(versionNameInput || null);
                     setShowVersionNameModal(false);
-                    setShowVersionPopover(false);
                     setVersionNameInput('');
                   }}
                 >
