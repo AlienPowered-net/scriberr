@@ -1,14 +1,16 @@
 import { json } from "@remix-run/node";
-import { authenticate } from "../shopify.server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { shopify } from "../shopify.server";
+import { prisma } from "../utils/db.server";
+import { getOrCreateShopId } from "../utils/tenant.server";
 
 export const loader = async ({ request }) => {
   try {
-    const { admin } = await authenticate.admin(request);
+    const { session } = await shopify.authenticate.admin(request);
+    const shopId = await getOrCreateShopId(session.shop);
     const url = new URL(request.url);
     const noteId = url.searchParams.get("noteId");
+
+    console.log("Getting versions for noteId:", noteId, "shopId:", shopId);
 
     if (!noteId) {
       return json({ error: "Note ID is required" }, { status: 400 });
@@ -18,11 +20,12 @@ export const loader = async ({ request }) => {
     const note = await prisma.note.findFirst({
       where: {
         id: noteId,
-        shopId: admin.session.shop,
+        shopId: shopId,
       },
     });
 
     if (!note) {
+      console.error("Note not found for noteId:", noteId, "shopId:", shopId);
       return json({ error: "Note not found" }, { status: 404 });
     }
 
@@ -46,9 +49,10 @@ export const loader = async ({ request }) => {
       },
     });
 
+    console.log("Found", versions.length, "versions for noteId:", noteId);
     return json(versions);
   } catch (error) {
     console.error("Error fetching note versions:", error);
-    return json({ error: "Failed to fetch versions" }, { status: 500 });
+    return json({ error: "Failed to fetch versions", details: error.message }, { status: 500 });
   }
 };

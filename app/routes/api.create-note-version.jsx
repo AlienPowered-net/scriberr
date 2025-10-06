@@ -1,36 +1,29 @@
 import { json } from "@remix-run/node";
-import { authenticate } from "../shopify.server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { shopify } from "../shopify.server";
+import { prisma } from "../utils/db.server";
+import { getOrCreateShopId } from "../utils/tenant.server";
 
 export const action = async ({ request }) => {
   try {
-    const { admin } = await authenticate.admin(request);
+    const { session } = await shopify.authenticate.admin(request);
+    const shopId = await getOrCreateShopId(session.shop);
     
-    // Debug logging
-    console.log("Admin object:", admin);
-    console.log("Admin session:", admin?.session);
-    
-    if (!admin || !admin.session || !admin.session.shop) {
-      console.error("Authentication failed - missing admin or session data");
-      return json({ error: "Authentication failed" }, { status: 401 });
-    }
+    console.log("Creating version for shop:", session.shop, "shopId:", shopId);
     
     const { noteId, title, content, versionTitle, snapshot, isAuto = false } = await request.json();
     
-    console.log("Creating version for noteId:", noteId, "shop:", admin.session.shop);
+    console.log("Version request data:", { noteId, title, isAuto });
 
     // Verify the note belongs to the shop
     const note = await prisma.note.findFirst({
       where: {
         id: noteId,
-        shopId: admin.session.shop,
+        shopId: shopId,
       },
     });
 
     if (!note) {
-      console.error("Note not found for noteId:", noteId, "shop:", admin.session.shop);
+      console.error("Note not found for noteId:", noteId, "shopId:", shopId);
       return json({ error: "Note not found" }, { status: 404 });
     }
 
