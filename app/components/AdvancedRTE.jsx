@@ -1012,30 +1012,54 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
   // Version history functionality
   const createVersion = async (versionTitle = null, isAuto = false) => {
-    if (!editor || !noteId) return;
+    console.log('[AdvancedRTE] createVersion called', { 
+      noteId, 
+      hasEditor: !!editor, 
+      versionTitle, 
+      isAuto 
+    });
+    
+    if (!editor) {
+      console.error('[AdvancedRTE] Cannot create version: editor not initialized');
+      return;
+    }
+    
+    if (!noteId) {
+      console.error('[AdvancedRTE] Cannot create version: noteId is missing', { noteId });
+      return;
+    }
     
     try {
       const content = editor.getHTML();
       const title = versionTitle || (isAuto ? `Auto-Saved ${new Date().toLocaleTimeString()}` : `Version ${new Date().toLocaleString()}`);
       
+      console.log('[AdvancedRTE] Creating version with content length:', content.length);
+      
       // Create a snapshot of the current editor state
       const snapshot = editor.getJSON();
+      
+      const payload = {
+        noteId: noteId,
+        title,
+        content,
+        versionTitle: versionTitle || null,
+        snapshot: JSON.stringify(snapshot),
+        isAuto
+      };
+      
+      console.log('[AdvancedRTE] Sending version creation request:', payload);
       
       const response = await fetch('/api/create-note-version', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          noteId: noteId,
-          title,
-          content,
-          versionTitle: versionTitle || null,
-          snapshot: JSON.stringify(snapshot),
-          isAuto
-        }),
+        body: JSON.stringify(payload),
       });
+
+      console.log('[AdvancedRTE] Response status:', response.status);
 
       if (response.ok) {
         const newVersion = await response.json();
+        console.log('[AdvancedRTE] Version created successfully:', newVersion);
         setVersions(prev => [newVersion, ...prev.slice(0, 19)]); // Keep last 20 versions
         setLastAutoVersion(new Date());
         setHasUnsavedChanges(false);
@@ -1045,9 +1069,12 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         }
         
         return newVersion;
+      } else {
+        const errorData = await response.json();
+        console.error('[AdvancedRTE] Failed to create version:', errorData);
       }
     } catch (error) {
-      console.error('Failed to create version:', error);
+      console.error('[AdvancedRTE] Failed to create version:', error);
     }
   };
 
@@ -1078,40 +1105,73 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   };
 
   const loadVersions = async () => {
-    if (!noteId) return;
+    console.log('[AdvancedRTE] loadVersions called with noteId:', noteId);
+    if (!noteId) {
+      console.log('[AdvancedRTE] loadVersions: noteId is missing, skipping');
+      return;
+    }
     
     try {
       const response = await fetch(`/api/get-note-versions?noteId=${noteId}`);
+      console.log('[AdvancedRTE] loadVersions response status:', response.status);
       if (response.ok) {
         const versionsData = await response.json();
+        console.log('[AdvancedRTE] Loaded versions:', versionsData.length, 'versions');
         setVersions(versionsData);
+      } else {
+        const errorData = await response.json();
+        console.error('[AdvancedRTE] Failed to load versions:', errorData);
       }
     } catch (error) {
-      console.error('Failed to load versions:', error);
+      console.error('[AdvancedRTE] Failed to load versions:', error);
     }
   };
 
   // Load versions when noteId changes
   useEffect(() => {
+    console.log('[AdvancedRTE] noteId changed:', noteId);
     if (noteId) {
+      console.log('[AdvancedRTE] Loading versions for noteId:', noteId);
       loadVersions();
+    } else {
+      console.log('[AdvancedRTE] noteId is null/undefined, clearing versions');
+      setVersions([]);
     }
   }, [noteId]);
 
   // Auto-versioning functionality - creates a version every 30 seconds if content has changed
   useEffect(() => {
-    if (!editor || !noteId) return;
+    console.log('[AdvancedRTE] Auto-versioning effect triggered', { 
+      hasEditor: !!editor, 
+      noteId 
+    });
+    
+    if (!editor) {
+      console.log('[AdvancedRTE] Auto-versioning: editor not ready');
+      return;
+    }
+    
+    if (!noteId) {
+      console.log('[AdvancedRTE] Auto-versioning: noteId not set');
+      return;
+    }
+
+    console.log('[AdvancedRTE] Starting auto-versioning timer for noteId:', noteId);
 
     const INTERVAL_MS = 30000; // 30 seconds
     const lastContentRef = { current: '' };
 
     const timer = setInterval(async () => {
+      console.log('[AdvancedRTE] Auto-version timer fired');
       try {
         if (editor && noteId) {
           const currentContent = editor.getHTML();
+          console.log('[AdvancedRTE] Current content length:', currentContent.length);
+          console.log('[AdvancedRTE] Last content length:', lastContentRef.current.length);
           
           // Only create version if content has actually changed
           if (currentContent !== lastContentRef.current) {
+            console.log('[AdvancedRTE] Content changed, creating auto-version');
             lastContentRef.current = currentContent;
             
             const snapshot = editor.getJSON();
@@ -1127,24 +1187,34 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               })
             });
 
+            console.log('[AdvancedRTE] Auto-version response status:', res.status);
+
             if (res.ok) {
               const newVersion = await res.json();
+              console.log('[AdvancedRTE] Auto-version created successfully:', newVersion);
               setVersions(prev => [newVersion, ...prev.slice(0, 19)]);
               setLastAutoVersion(new Date());
               setDebugInfo(prev => ({
                 ...prev,
                 lastVersion: new Date().toLocaleTimeString()
               }));
-              console.log('Auto-version created at:', new Date().toLocaleTimeString());
+            } else {
+              const errorData = await res.json();
+              console.error('[AdvancedRTE] Auto-version failed:', errorData);
             }
+          } else {
+            console.log('[AdvancedRTE] Content unchanged, skipping auto-version');
           }
         }
       } catch (err) {
-        console.error('Auto-version error:', err);
+        console.error('[AdvancedRTE] Auto-version error:', err);
       }
     }, INTERVAL_MS);
 
-    return () => clearInterval(timer);
+    return () => {
+      console.log('[AdvancedRTE] Clearing auto-versioning timer');
+      clearInterval(timer);
+    };
   }, [editor, noteId]);
 
   const toggleExpanded = () => {
