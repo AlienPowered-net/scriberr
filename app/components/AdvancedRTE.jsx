@@ -2235,9 +2235,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             preferredAlignment="left"
             preferredPosition="below"
           >
-            <div style={{ padding: '16px', width: '600px', maxWidth: '90vw', boxSizing: 'border-box' }}>
+            <div style={{ padding: '16px', width: '600px', maxWidth: '90vw', boxSizing: 'border-box', overflowX: 'hidden' }}>
               <BlockStack gap="4">
-                <InlineStack gap="2" align="space-between">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', width: '100%' }}>
                   <Text variant="headingMd">Version History</Text>
                   <Button
                     size="slim"
@@ -2250,7 +2250,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   >
                     Create New
                   </Button>
-                </InlineStack>
+                </div>
                 
                 {versions.length > 0 ? (
                   <div style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'hidden', width: '100%' }}>
