@@ -4671,6 +4671,7 @@ export default function Index() {
                       onChange={setBody}
                       placeholder="Type your note here..."
                       onFullscreenChange={setIsEditorFullscreen}
+                      noteId={editingNoteId}
                     />
                   )}
                 </div>
@@ -6819,6 +6820,7 @@ export default function Index() {
                       onChange={setBody}
                       placeholder="Type your note here..."
                       onFullscreenChange={setIsEditorFullscreen}
+                      noteId={editingNoteId}
                     />
                   )}
                 </div>

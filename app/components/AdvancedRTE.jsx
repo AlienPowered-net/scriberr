@@ -26,7 +26,7 @@ import CharacterCount from '@tiptap/extension-character-count';
 import { LineHeight } from './LineHeightExtension';
 import TiptapDragHandle from './TiptapDragHandle';
 import { createLowlight } from 'lowlight';
-import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, SkeletonDisplayText, Icon, Popover, ActionList, Tooltip, ButtonGroup } from '@shopify/polaris';
+import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, SkeletonDisplayText, Icon, Popover, ActionList, Tooltip, ButtonGroup, Badge } from '@shopify/polaris';
 import { 
   CheckboxIcon,
   SmileyHappyIcon,
@@ -172,17 +172,18 @@ const getMetadataPreview = (type, metadata) => {
   }
 };
 
-const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobileProp = false, onFullscreenChange }) => {
+const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobileProp = false, onFullscreenChange, noteId, onVersionCreated }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showLineHeightPopover, setShowLineHeightPopover] = useState(false);
-  const [showSnapshotModal, setShowSnapshotModal] = useState(false);
-  const [snapshots, setSnapshots] = useState([]);
   const [showVersionPopover, setShowVersionPopover] = useState(false);
   const [versions, setVersions] = useState([]);
+  const [lastAutoVersion, setLastAutoVersion] = useState(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [debugInfo, setDebugInfo] = useState({ lastChange: null, lastVersion: null });
+  const autoVersionIntervalRef = useRef(null);
   const [imageUrl, setImageUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
@@ -1009,35 +1010,142 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     }
   };
 
-  // Snapshot functionality
-  const saveSnapshot = () => {
-    if (editor) {
-      const content = editor.getJSON();
-      const timestamp = new Date().toISOString();
-      const newSnapshot = {
-        id: `snapshot_${Date.now()}`,
-        content,
-        timestamp,
-        name: `Snapshot ${new Date().toLocaleString()}`
-      };
-      setSnapshots(prev => [newSnapshot, ...prev.slice(0, 9)]); // Keep last 10 snapshots
-      console.log('Snapshot saved:', newSnapshot.name);
+  // Version history functionality
+  const createVersion = async (versionTitle = null, isAuto = false) => {
+    if (!editor || !noteId) return;
+    
+    try {
+      const content = editor.getHTML();
+      const title = versionTitle || (isAuto ? `Auto-Saved ${new Date().toLocaleTimeString()}` : `Version ${new Date().toLocaleString()}`);
+      
+      // Create a snapshot of the current editor state
+      const snapshot = editor.getJSON();
+      
+      const response = await fetch('/api/create-note-version', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          noteId: noteId,
+          title,
+          content,
+          versionTitle: versionTitle || null,
+          snapshot: JSON.stringify(snapshot),
+          isAuto
+        }),
+      });
+
+      if (response.ok) {
+        const newVersion = await response.json();
+        setVersions(prev => [newVersion, ...prev.slice(0, 19)]); // Keep last 20 versions
+        setLastAutoVersion(new Date());
+        setHasUnsavedChanges(false);
+        
+        if (onVersionCreated) {
+          onVersionCreated(newVersion);
+        }
+        
+        return newVersion;
+      }
+    } catch (error) {
+      console.error('Failed to create version:', error);
     }
   };
 
-  const restoreSnapshot = (snapshot) => {
-    if (editor && snapshot) {
-      editor.commands.setContent(snapshot.content);
-      setShowSnapshotModal(false);
-      console.log('Snapshot restored:', snapshot.name);
+  const restoreVersion = async (version) => {
+    if (!editor || !version || !noteId) return;
+    
+    try {
+      // If there are unsaved changes, create a new version to preserve them
+      if (hasUnsavedChanges) {
+        await createVersion(`Auto-saved before revert - ${new Date().toLocaleString()}`, true);
+      }
+      
+      // Restore the selected version
+      if (version.snapshot) {
+        editor.commands.setContent(version.snapshot);
+      } else {
+        editor.commands.setContent(version.content);
+      }
+      
+      setShowVersionPopover(false);
+      setHasUnsavedChanges(false);
+      
+      // Reload versions to get the updated list
+      await loadVersions();
+    } catch (error) {
+      console.error('Failed to restore version:', error);
     }
   };
 
-  const deleteSnapshot = (snapshotId) => {
-    setSnapshots(prev => prev.filter(s => s.id !== snapshotId));
+  const loadVersions = async () => {
+    if (!noteId) return;
+    
+    try {
+      const response = await fetch(`/api/get-note-versions?noteId=${noteId}`);
+      if (response.ok) {
+        const versionsData = await response.json();
+        setVersions(versionsData);
+      }
+    } catch (error) {
+      console.error('Failed to load versions:', error);
+    }
   };
 
+  // Load versions when noteId changes
+  useEffect(() => {
+    if (noteId) {
+      loadVersions();
+    }
+  }, [noteId]);
 
+  // Auto-versioning functionality - creates a version every 30 seconds if content has changed
+  useEffect(() => {
+    if (!editor || !noteId) return;
+
+    const INTERVAL_MS = 30000; // 30 seconds
+    const lastContentRef = { current: '' };
+
+    const timer = setInterval(async () => {
+      try {
+        if (editor && noteId) {
+          const currentContent = editor.getHTML();
+          
+          // Only create version if content has actually changed
+          if (currentContent !== lastContentRef.current) {
+            lastContentRef.current = currentContent;
+            
+            const snapshot = editor.getJSON();
+            const res = await fetch('/api/create-note-version', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                noteId: noteId,
+                title: `Auto-Saved ${new Date().toLocaleTimeString()}`,
+                content: currentContent,
+                snapshot: JSON.stringify(snapshot),
+                isAuto: true
+              })
+            });
+
+            if (res.ok) {
+              const newVersion = await res.json();
+              setVersions(prev => [newVersion, ...prev.slice(0, 19)]);
+              setLastAutoVersion(new Date());
+              setDebugInfo(prev => ({
+                ...prev,
+                lastVersion: new Date().toLocaleTimeString()
+              }));
+              console.log('Auto-version created at:', new Date().toLocaleTimeString());
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Auto-version error:', err);
+      }
+    }, INTERVAL_MS);
+
+    return () => clearInterval(timer);
+  }, [editor, noteId]);
 
   const toggleExpanded = () => {
     const newExpandedState = !isExpanded;
@@ -2029,33 +2137,90 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <Icon source={RedoIcon} />
           </button>
 
-          {/* Version Management Button */}
-          <button
-            data-testid="version-toolbar-button"
-            onClick={() => {
-              console.debug('Version button clicked');
-              setShowVersionPopover(!showVersionPopover);
-            }}
-            style={{
-              padding: "6px 8px",
-              border: "2px solid #007ace",
-              borderRadius: "4px",
-              backgroundColor: "#f0f0f0",
-              color: "#007ace",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              fontSize: "13px",
-              minWidth: "32px",
-              height: "32px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-            title="Version History"
+          {/* Version Management */}
+          <Popover
+            active={showVersionPopover}
+            activator={
+              <Tooltip content="Version History">
+                <Button
+                  data-testid="version-toolbar-button"
+                  size="slim"
+                  onClick={() => {
+                    console.debug('Version button clicked');
+                    setShowVersionPopover(!showVersionPopover);
+                  }}
+                  icon={ClockIcon}
+                  style={{ 
+                    backgroundColor: '#f0f0f0', 
+                    border: '2px solid #007ace',
+                    minWidth: '32px',
+                    minHeight: '32px'
+                  }}
+                >
+                  🕐
+                </Button>
+              </Tooltip>
+            }
+            onClose={() => setShowVersionPopover(false)}
+            preferredAlignment="left"
+            preferredPosition="below"
           >
-            <Icon source={ClockIcon} />
-            🕐
-          </button>
+            <div style={{ padding: '16px', minWidth: '300px', maxWidth: '400px' }}>
+              <BlockStack gap="4">
+                <InlineStack gap="2" align="space-between">
+                  <Text variant="headingMd">Version History</Text>
+                  <Button
+                    size="slim"
+                    onClick={() => {
+                      const versionTitle = prompt('Enter a title for this version (optional):');
+                      createVersion(versionTitle);
+                      setShowVersionPopover(false);
+                    }}
+                  >
+                    Create New
+                  </Button>
+                </InlineStack>
+                
+                {versions.length > 0 ? (
+                  <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                    <BlockStack gap="2">
+                      {versions.map((version) => (
+                        <Card key={version.id} padding="3">
+                          <Card.Section>
+                            <InlineStack gap="3" align="space-between">
+                              <BlockStack gap="1">
+                                <InlineStack gap="2" align="start">
+                                  <Text variant="bodyMd" fontWeight="medium">
+                                    {version.versionTitle || version.title}
+                                  </Text>
+                                  {version.isAuto && (
+                                    <Badge size="small" tone="info">Auto</Badge>
+                                  )}
+                                </InlineStack>
+                                <Text variant="bodySm" color="subdued">
+                                  {new Date(version.createdAt).toLocaleString()}
+                                </Text>
+                              </BlockStack>
+                              <Button
+                                size="slim"
+                                onClick={() => restoreVersion(version)}
+                              >
+                                Restore
+                              </Button>
+                            </InlineStack>
+                          </Card.Section>
+                        </Card>
+                      ))}
+                    </BlockStack>
+                  </div>
+                ) : (
+                  <Text variant="bodyMd" color="subdued">
+                    No versions available yet. Create your first version!
+                  </Text>
+                )}
+              </BlockStack>
+            </div>
+          </Popover>
 
           {/* Line Height Button with Popover */}
           <Popover
@@ -2141,54 +2306,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             />
           </Popover>
 
-          {/* Snapshot Button */}
-          <button
-            onClick={saveSnapshot}
-            style={{
-              padding: "6px 8px",
-              border: "1px solid #dee2e6",
-              borderRadius: "4px",
-              backgroundColor: "white",
-              color: "#495057",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              fontSize: "13px",
-              minWidth: "32px",
-              height: "32px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-            title="Save Snapshot"
-          >
-            <i className="fas fa-camera"></i>
-          </button>
-
-          {/* Restore Snapshots Button */}
-          <button
-            onClick={() => setShowSnapshotModal(true)}
-            disabled={snapshots.length === 0}
-            style={{
-              padding: "6px 8px",
-              border: "1px solid #dee2e6",
-              borderRadius: "4px",
-              backgroundColor: "white",
-              color: snapshots.length > 0 ? "#495057" : "#adb5bd",
-              cursor: snapshots.length > 0 ? "pointer" : "not-allowed",
-              transition: "all 0.2s ease",
-              fontSize: "13px",
-              minWidth: "32px",
-              height: "32px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-            title="Restore Snapshot"
-          >
-            <i className="fas fa-history"></i>
-          </button>
-          
-          <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
           
           {/* Text Formatting */}
           <button
@@ -4610,125 +4727,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     </div>
       )}
 
-      {/* Snapshot Modal */}
-      {showSnapshotModal && (
-        <Modal
-          open={showSnapshotModal}
-          onClose={() => setShowSnapshotModal(false)}
-          title="Document Snapshots"
-          primaryAction={{
-            content: 'Close',
-            onAction: () => setShowSnapshotModal(false),
-          }}
-        >
-          <Modal.Section>
-            {snapshots.length > 0 ? (
-              <BlockStack gap="3">
-                <Text variant="bodyMd" color="subdued">
-                  Restore your document to a previous state:
-                </Text>
-                {snapshots.map((snapshot) => (
-                  <Card key={snapshot.id} padding="3">
-                    <InlineStack align="space-between" blockAlign="center">
-                      <BlockStack gap="1">
-                        <Text variant="headingMd">{snapshot.name}</Text>
-                        <Text variant="bodySm" color="subdued">
-                          Saved {new Date(snapshot.timestamp).toLocaleString()}
-                        </Text>
-                      </BlockStack>
-                      <InlineStack gap="2">
-                        <Button
-                          size="slim"
-                          onClick={() => restoreSnapshot(snapshot)}
-                        >
-                          Restore
-                        </Button>
-                        <Button
-                          size="slim"
-                          variant="plain"
-                          tone="critical"
-                          onClick={() => deleteSnapshot(snapshot.id)}
-                        >
-                          Delete
-                        </Button>
-                      </InlineStack>
-                    </InlineStack>
-                  </Card>
-                ))}
-              </BlockStack>
-            ) : (
-              <Card padding="6">
-                <Text variant="bodyMd" alignment="center" color="subdued">
-                  No snapshots available. Use the camera button in the toolbar to save snapshots of your document.
-                </Text>
-              </Card>
-            )}
-          </Modal.Section>
-        </Modal>
-      )}
 
-      {/* Version History Popover */}
-      <Popover
-        active={showVersionPopover}
-        activator={<div />} // Hidden activator since we're using a button
-        onClose={() => setShowVersionPopover(false)}
-        preferredAlignment="left"
-        preferredPosition="below"
-      >
-        <div style={{ padding: '16px', minWidth: '300px', maxWidth: '400px' }}>
-          <BlockStack gap="4">
-            <InlineStack gap="2" align="space-between">
-              <Text variant="headingMd">Version History</Text>
-              <Button
-                size="slim"
-                onClick={() => {
-                  const versionTitle = prompt('Enter a title for this version (optional):');
-                  console.log('Create version:', versionTitle);
-                  setShowVersionPopover(false);
-                }}
-              >
-                Create New
-              </Button>
-            </InlineStack>
-            
-            {versions.length > 0 ? (
-              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                <BlockStack gap="2">
-                  {versions.map((version, index) => (
-                    <Card key={version.id} padding="3">
-                      <Card.Section>
-                        <InlineStack gap="3" align="space-between">
-                          <BlockStack gap="1">
-                            <Text variant="bodyMd" fontWeight="medium">
-                              {version.versionTitle || version.title}
-                            </Text>
-                            <Text variant="bodySm" color="subdued">
-                              {new Date(version.createdAt).toLocaleString()}
-                            </Text>
-                          </BlockStack>
-                          <Button
-                            size="slim"
-                            onClick={() => {
-                              console.log('Restore version:', version.id);
-                              setShowVersionPopover(false);
-                            }}
-                          >
-                            Restore
-                          </Button>
-                        </InlineStack>
-                      </Card.Section>
-                    </Card>
-                  ))}
-                </BlockStack>
-              </div>
-            ) : (
-              <Text variant="bodyMd" color="subdued">
-                No versions available yet. Create your first version!
-              </Text>
-            )}
-          </BlockStack>
-        </div>
-      </Popover>
     </>
   );
 };
