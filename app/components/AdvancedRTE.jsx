@@ -2506,6 +2506,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             }
             onClose={() => setShowLineHeightPopover(false)}
             preferredPosition="below"
+            preferredAlignment="left"
+            fullWidth={false}
           >
             <ActionList
               items={[
