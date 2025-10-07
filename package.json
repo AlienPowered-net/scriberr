@@ -78,6 +78,7 @@
     "@tiptap/extension-youtube": "^3.4.1",
     "@tiptap/react": "^3.4.1",
     "@tiptap/starter-kit": "^3.4.1",
+    "diff": "^8.0.2",
     "emoji-picker-react": "^4.13.2",
     "highlight.js": "^11.11.1",
     "isbot": "^5.1.0",
