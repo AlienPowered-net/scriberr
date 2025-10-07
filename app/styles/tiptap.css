@@ -661,13 +661,82 @@
 /* Global styles for modals and popovers (outside media query to apply everywhere) */
 .Polaris-Portal {
   z-index: 99999990 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  pointer-events: none !important;
 }
 
 /* Ensure Polaris modals always render above custom mobile modal */
 body > .Polaris-Portal .Polaris-Modal-Dialog {
   z-index: 99999991 !important;
+  pointer-events: auto !important;
 }
 
 body > .Polaris-Portal .Polaris-Popover__Pane {
   z-index: 99999992 !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure Polaris backdrop is above everything */
+body > .Polaris-Portal .Polaris-Backdrop {
+  z-index: 99999989 !important;
+  pointer-events: auto !important;
+}
+
+/* Force Polaris components to render at body level, not inside the mobile modal */
+body > .Polaris-Portal {
+  position: fixed !important;
+  z-index: 99999990 !important;
+}
+
+/* Ensure mobile modal doesn't create a stacking context that traps Polaris components */
+.mobile-fullscreen-modal {
+  isolation: isolate !important;
+  contain: layout style !important;
+}
+
+/* Override any overflow hidden that might clip Polaris components */
+.mobile-fullscreen-modal * {
+  overflow: visible !important;
+}
+
+/* Specific fix for the modal content area */
+.mobile-fullscreen-modal > div:last-child {
+  overflow: visible !important;
+  contain: none !important;
+}
+
+/* Ensure Polaris components can escape the mobile modal */
+.mobile-fullscreen-modal .Polaris-Portal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 99999995 !important;
+  pointer-events: none !important;
+}
+
+.mobile-fullscreen-modal .Polaris-Portal > * {
+  pointer-events: auto !important;
+}
+
+/* Debug styles - make Polaris components highly visible for testing */
+.Polaris-Modal-Dialog {
+  border: 3px solid red !important;
+  background: yellow !important;
+}
+
+.Polaris-Popover__Pane {
+  border: 3px solid blue !important;
+  background: lightblue !important;
+}
+
+.Polaris-Backdrop {
+  background: rgba(255, 0, 0, 0.3) !important;
 }

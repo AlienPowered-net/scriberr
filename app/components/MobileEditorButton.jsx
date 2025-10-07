@@ -239,7 +239,8 @@ const MobileEditorButton = ({
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
             zIndex: 9999999,
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            isolation: 'isolate'
           }}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
@@ -278,9 +279,10 @@ const MobileEditorButton = ({
           <div style={{
             flex: 1,
             backgroundColor: '#ffffff',
-            overflow: 'hidden',
+            overflow: 'visible',
             position: 'relative',
-            zIndex: 1
+            zIndex: 1,
+            isolation: 'isolate'
           }}>
             <AdvancedRTE
               value={value}
