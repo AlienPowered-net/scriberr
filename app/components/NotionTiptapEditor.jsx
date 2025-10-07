@@ -67,6 +67,17 @@ import {
 } from '@shopify/polaris-icons';
 import './NotionTiptapEditor.css';
 
+// Helper function to handle mobile touch events
+const createMobileFriendlyHandler = (handler) => {
+  return (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    handler();
+  };
+};
+
 // Simple icon component using emoji/text since many Polaris icons don't exist
 const TextIcon = ({ icon }) => {
   const iconMap = {
@@ -81,7 +92,7 @@ const TextIcon = ({ icon }) => {
     text: '¶',
     bulletList: '•',
     numberedList: '1.',
-    checkbox: '☑',
+    checkbox: '✓',  // Changed from ☑ to ✓ for better compatibility
     question: '?',
     alignLeft: '⬅',
     alignCenter: '⬛',
@@ -105,7 +116,8 @@ const TextIcon = ({ icon }) => {
       alignItems: 'center',
       justifyContent: 'center',
       width: '20px',
-      height: '20px'
+      height: '20px',
+      pointerEvents: 'none'  // Let parent handle events
     }}>
       {iconMap[icon] || icon}
     </span>
@@ -1598,7 +1610,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 <Button
                   size="slim"
                   disclosure
-                  onClick={() => setShowLineHeightPopover(!showLineHeightPopover)}
+                  onClick={createMobileFriendlyHandler(() => setShowLineHeightPopover(!showLineHeightPopover))}
+                  onTouchEnd={createMobileFriendlyHandler(() => setShowLineHeightPopover(!showLineHeightPopover))}
+                  style={{
+                    WebkitTapHighlightColor: 'transparent'
+                  }}
                 >
                   <TextIcon icon="sort" />
                 </Button>
@@ -1753,7 +1769,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           <Tooltip content="Insert Link">
             <Button
               size="slim"
-              onClick={() => setShowLinkModal(true)}
+              onClick={createMobileFriendlyHandler(() => setShowLinkModal(true))}
+              onTouchEnd={createMobileFriendlyHandler(() => setShowLinkModal(true))}
+              style={{
+                WebkitTapHighlightColor: 'transparent'
+              }}
             >
               <TextIcon icon="link" />
             </Button>
@@ -1763,7 +1783,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           <Tooltip content="Insert Image">
             <Button
               size="slim"
-              onClick={() => setShowImageModal(true)}
+              onClick={createMobileFriendlyHandler(() => setShowImageModal(true))}
+              onTouchEnd={createMobileFriendlyHandler(() => setShowImageModal(true))}
+              style={{
+                WebkitTapHighlightColor: 'transparent'
+              }}
             >
               <TextIcon icon="image" />
             </Button>
@@ -1773,7 +1797,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           <Tooltip content="Insert YouTube Video">
             <Button
               size="slim"
-              onClick={() => setShowVideoModal(true)}
+              onClick={createMobileFriendlyHandler(() => setShowVideoModal(true))}
+              onTouchEnd={createMobileFriendlyHandler(() => setShowVideoModal(true))}
+              style={{
+                WebkitTapHighlightColor: 'transparent'
+              }}
             >
               <Icon source={LogoYoutubeIcon} />
             </Button>
@@ -1907,16 +1935,21 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             <Button
               data-testid="version-toolbar-button"
               size="slim"
-              onClick={() => {
+              onClick={createMobileFriendlyHandler(() => {
                 console.debug('Version button clicked');
                 setShowVersionPopover(!showVersionPopover);
-              }}
+              })}
+              onTouchEnd={createMobileFriendlyHandler(() => {
+                console.debug('Version button touched');
+                setShowVersionPopover(!showVersionPopover);
+              })}
               icon={ClockIcon}
               style={{ 
                 backgroundColor: '#f0f0f0', 
                 border: '2px solid #007ace',
                 minWidth: '32px',
-                minHeight: '32px'
+                minHeight: '32px',
+                WebkitTapHighlightColor: 'transparent'
               }}
             >
               🕐
@@ -2817,7 +2850,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     <Button
                       size="slim"
                       disclosure
-                      onClick={() => setShowLineHeightPopover(!showLineHeightPopover)}
+                      onClick={createMobileFriendlyHandler(() => setShowLineHeightPopover(!showLineHeightPopover))}
+                      onTouchEnd={createMobileFriendlyHandler(() => setShowLineHeightPopover(!showLineHeightPopover))}
+                      style={{
+                        WebkitTapHighlightColor: 'transparent'
+                      }}
                     >
                       <TextIcon icon="sort" />
                     </Button>
@@ -2972,7 +3009,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               <Tooltip content="Insert Link">
                 <Button
                   size="slim"
-                  onClick={() => setShowLinkModal(true)}
+                  onClick={createMobileFriendlyHandler(() => setShowLinkModal(true))}
+                  onTouchEnd={createMobileFriendlyHandler(() => setShowLinkModal(true))}
+                  style={{
+                    WebkitTapHighlightColor: 'transparent'
+                  }}
                 >
                   <TextIcon icon="link" />
                 </Button>
@@ -2982,7 +3023,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               <Tooltip content="Insert Image">
                 <Button
                   size="slim"
-                  onClick={() => setShowImageModal(true)}
+                  onClick={createMobileFriendlyHandler(() => setShowImageModal(true))}
+                  onTouchEnd={createMobileFriendlyHandler(() => setShowImageModal(true))}
+                  style={{
+                    WebkitTapHighlightColor: 'transparent'
+                  }}
                 >
                   <TextIcon icon="image" />
                 </Button>
@@ -2992,7 +3037,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               <Tooltip content="Insert YouTube Video">
                 <Button
                   size="slim"
-                  onClick={() => setShowVideoModal(true)}
+                  onClick={createMobileFriendlyHandler(() => setShowVideoModal(true))}
+                  onTouchEnd={createMobileFriendlyHandler(() => setShowVideoModal(true))}
+                  style={{
+                    WebkitTapHighlightColor: 'transparent'
+                  }}
                 >
                   <Icon source={LogoYoutubeIcon} />
                 </Button>
@@ -3126,16 +3175,21 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 <Button
                   data-testid="version-toolbar-button-fullscreen"
                   size="slim"
-                  onClick={() => {
+                  onClick={createMobileFriendlyHandler(() => {
                     console.debug('Version button clicked (fullscreen)');
                     setShowVersionPopover(!showVersionPopover);
-                  }}
+                  })}
+                  onTouchEnd={createMobileFriendlyHandler(() => {
+                    console.debug('Version button touched (fullscreen)');
+                    setShowVersionPopover(!showVersionPopover);
+                  })}
                   icon={ClockIcon}
                   style={{ 
                     backgroundColor: '#f0f0f0', 
                     border: '2px solid #007ace',
                     minWidth: '32px',
-                    minHeight: '32px'
+                    minHeight: '32px',
+                    WebkitTapHighlightColor: 'transparent'
                   }}
                 >
                   🕐

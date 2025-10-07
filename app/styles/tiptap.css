@@ -494,3 +494,57 @@
   padding: 0;
   font-size: inherit;
 }
+
+/* Mobile touch support */
+@media (max-width: 768px), (pointer: coarse) {
+  /* Ensure buttons are touchable on mobile */
+  .Polaris-Button {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    pointer-events: auto !important;
+    min-height: 44px; /* iOS minimum touch target size */
+    min-width: 44px;
+  }
+  
+  /* Ensure toolbar buttons work on touch devices */
+  .Polaris-ButtonGroup .Polaris-Button,
+  .notion-editor-toolbar .Polaris-Button {
+    pointer-events: auto !important;
+    cursor: pointer;
+  }
+  
+  /* Ensure icons are visible and clickable */
+  .Polaris-Button span,
+  .Polaris-Button svg,
+  .Polaris-Icon {
+    pointer-events: none; /* Let clicks pass through to button */
+  }
+  
+  /* Ensure tooltips don't interfere with clicks */
+  .Polaris-Tooltip {
+    pointer-events: none;
+  }
+  
+  /* Ensure modal backdrop is clickable */
+  .Polaris-Backdrop {
+    pointer-events: auto !important;
+  }
+  
+  /* Ensure modal content is properly positioned and clickable */
+  .Polaris-Modal-Dialog,
+  .Polaris-Modal-Dialog__Modal {
+    pointer-events: auto !important;
+  }
+  
+  /* Ensure popover content is clickable */
+  .Polaris-Popover__Pane,
+  .Polaris-Popover__Content {
+    pointer-events: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Fix for iOS Safari modal issues */
+  .Polaris-Modal-Dialog {
+    -webkit-overflow-scrolling: touch;
+  }
+}
