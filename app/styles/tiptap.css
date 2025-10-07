@@ -594,7 +594,7 @@
   }
   
   .Polaris-Modal-Dialog__Modal {
-    max-width: 90vw !important;
+  max-width: 90vw !important;
     max-height: 90vh !important;
     margin: 0 !important;
     position: relative !important;
@@ -613,7 +613,7 @@
   .Polaris-Popover__Pane {
     position: absolute !important;
     /* Let Polaris handle the positioning, but ensure it's visible */
-    max-width: 90vw !important;
+  max-width: 90vw !important;
     max-height: 60vh !important;
   }
   
@@ -700,8 +700,8 @@ body > .Polaris-Portal {
   contain: layout style !important;
 }
 
-/* Override any overflow hidden that might clip Polaris components */
-.mobile-fullscreen-modal * {
+/* Fix overflow for toolbar elements only */
+.mobile-fullscreen-modal .ProseMirror-toolbar * {
   overflow: visible !important;
 }
 
@@ -726,17 +726,36 @@ body > .Polaris-Portal {
   pointer-events: auto !important;
 }
 
-/* Debug styles - make Polaris components highly visible for testing */
-.Polaris-Modal-Dialog {
-  border: 3px solid red !important;
-  background: yellow !important;
+/* Fix toolbar icon corruption */
+.ProseMirror-toolbar button {
+  background: transparent !important;
+  border: 1px solid #dee2e6 !important;
+  border-radius: 4px !important;
 }
 
-.Polaris-Popover__Pane {
-  border: 3px solid blue !important;
-  background: lightblue !important;
+.ProseMirror-toolbar button:hover {
+  background: #f8f9fa !important;
 }
 
-.Polaris-Backdrop {
-  background: rgba(255, 0, 0, 0.3) !important;
+.ProseMirror-toolbar button:active {
+  background: #e9ecef !important;
+}
+
+/* Fix icon display issues */
+.ProseMirror-toolbar i,
+.ProseMirror-toolbar .fas,
+.ProseMirror-toolbar .far {
+  color: inherit !important;
+  background: transparent !important;
+}
+
+/* Remove any black overlays */
+.ProseMirror-toolbar * {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Ensure proper button styling */
+.ProseMirror-toolbar button:not([style*="background"]) {
+  background: white !important;
 }
