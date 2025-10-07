@@ -528,23 +528,61 @@
   /* Ensure modal backdrop is clickable */
   .Polaris-Backdrop {
     pointer-events: auto !important;
+    z-index: 99999990 !important; /* Higher than mobile editor modal (9999999) */
   }
   
-  /* Ensure modal content is properly positioned and clickable */
+  /* Ensure modal content is properly positioned and clickable - MUST be above mobile editor */
   .Polaris-Modal-Dialog,
   .Polaris-Modal-Dialog__Modal {
     pointer-events: auto !important;
+    z-index: 99999991 !important; /* Higher than backdrop */
   }
   
-  /* Ensure popover content is clickable */
+  /* Specific override for modals within mobile editor */
+  .mobile-fullscreen-modal .Polaris-Modal-Dialog,
+  .mobile-fullscreen-modal .Polaris-Modal-Dialog__Modal {
+    z-index: 99999991 !important;
+  }
+  
+  /* Ensure popover content is clickable and visible above mobile editor */
   .Polaris-Popover__Pane,
   .Polaris-Popover__Content {
     pointer-events: auto !important;
     -webkit-overflow-scrolling: touch;
+    z-index: 99999992 !important; /* Highest - popovers should be on top */
+  }
+  
+  /* Specific override for popovers within mobile editor */
+  .mobile-fullscreen-modal .Polaris-Popover__Pane,
+  .mobile-fullscreen-modal .Polaris-Popover__Content {
+    z-index: 99999992 !important;
   }
   
   /* Fix for iOS Safari modal issues */
   .Polaris-Modal-Dialog {
     -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Ensure modal header (with close button) stays on top */
+  .Polaris-Modal-Header {
+    z-index: 99999993 !important;
+  }
+  
+  /* Ensure mobile editor doesn't clip child modals/popovers */
+  .mobile-fullscreen-modal {
+    overflow: visible !important;
+  }
+  
+  /* Allow modals and popovers to escape overflow:hidden containers */
+  .Polaris-Modal-Dialog,
+  .Polaris-Popover__Pane {
+    position: fixed !important;
+  }
+  
+  /* Ensure modals are centered and visible on mobile screens */
+  .Polaris-Modal-Dialog__Modal {
+    max-width: 90vw !important;
+    max-height: 90vh !important;
+    margin: auto !important;
   }
 }

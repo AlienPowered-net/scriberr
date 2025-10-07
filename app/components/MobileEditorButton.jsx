@@ -278,7 +278,9 @@ const MobileEditorButton = ({
           <div style={{
             flex: 1,
             backgroundColor: '#ffffff',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            position: 'relative',
+            zIndex: 1
           }}>
             <AdvancedRTE
               value={value}
