@@ -495,23 +495,23 @@
   font-size: inherit;
 }
 
-/* Version History Popover - Force larger width and prevent horizontal scroll */
+/* Version History Popover - Compact layout with no horizontal scroll */
 .Polaris-Popover__Pane:has([style*="Version History"]) {
-  min-width: 700px !important;
+  min-width: 600px !important;
   max-width: 90vw !important;
 }
 
 .Polaris-Popover__Content:has([style*="Version History"]) {
-  min-width: 700px !important;
+  min-width: 600px !important;
   max-width: 90vw !important;
   overflow-x: hidden !important;
 }
 
 /* When in comparison mode, make wider */
 .Polaris-Popover__Pane:has([style*="vs"]) {
-  min-width: 900px !important;
+  min-width: 800px !important;
 }
 
 .Polaris-Popover__Content:has([style*="vs"]) {
-  min-width: 900px !important;
+  min-width: 800px !important;
 }
