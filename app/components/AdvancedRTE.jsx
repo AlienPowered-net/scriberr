@@ -188,6 +188,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showLineHeightPopover, setShowLineHeightPopover] = useState(false);
+  const [showLineHeightPicker, setShowLineHeightPicker] = useState(false);
   const [showVersionPopover, setShowVersionPopover] = useState(false);
   const [showVersionNameModal, setShowVersionNameModal] = useState(false);
   const [versionNameInput, setVersionNameInput] = useState('');
@@ -2476,93 +2477,30 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             </Modal.Section>
           </Modal>
 
-          {/* Line Height Button with Popover */}
-          <Popover
-            active={showLineHeightPopover}
-            activator={
-              <button
-                onClick={createMobileFriendlyHandler(() => setShowLineHeightPopover(!showLineHeightPopover))}
-                style={{
-                  padding: "6px 8px",
-                  border: "1px solid #dee2e6",
-                  borderRadius: "4px",
-                  backgroundColor: "white",
-                  color: "#495057",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  fontSize: "13px",
-                  minWidth: "32px",
-                  height: "32px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  WebkitTapHighlightColor: 'transparent',
-                  touchAction: 'manipulation'
-                }}
-                title="Line Height"
-              >
-                <TextIcon icon="lineHeight" />
-              </button>
-            }
-            onClose={() => setShowLineHeightPopover(false)}
-            preferredPosition="below"
-            preferredAlignment="left"
-            fullWidth={false}
+          {/* Line Height Button with Custom Modal */}
+          <button
+            onClick={createMobileFriendlyHandler(() => setShowLineHeightPicker(!showLineHeightPicker))}
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
+              backgroundColor: showLineHeightPicker ? '#007bff' : 'white',
+              color: showLineHeightPicker ? 'white' : '#495057',
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation'
+            }}
+            title="Line Height"
           >
-            <ActionList
-              items={[
-                {
-                  content: 'Normal',
-                  onAction: () => {
-                    editor.chain().focus().setLineHeight('normal').run();
-                    setShowLineHeightPopover(false);
-                  }
-                },
-                {
-                  content: '1.0',
-                  onAction: () => {
-                    editor.chain().focus().setLineHeight('1.0').run();
-                    setShowLineHeightPopover(false);
-                  }
-                },
-                {
-                  content: '1.15',
-                  onAction: () => {
-                    editor.chain().focus().setLineHeight('1.15').run();
-                    setShowLineHeightPopover(false);
-                  }
-                },
-                {
-                  content: '1.5',
-                  onAction: () => {
-                    editor.chain().focus().setLineHeight('1.5').run();
-                    setShowLineHeightPopover(false);
-                  }
-                },
-                {
-                  content: '2.0',
-                  onAction: () => {
-                    editor.chain().focus().setLineHeight('2.0').run();
-                    setShowLineHeightPopover(false);
-                  }
-                },
-                {
-                  content: '4.0',
-                  onAction: () => {
-                    editor.chain().focus().setLineHeight('4.0').run();
-                    setShowLineHeightPopover(false);
-                  }
-                },
-                {
-                  content: '4.5',
-                  onAction: () => {
-                    editor.chain().focus().setLineHeight('4.5').run();
-                    setShowLineHeightPopover(false);
-                  }
-                },
-              ]}
-            />
-          </Popover>
+            <TextIcon icon="lineHeight" />
+          </button>
 
           
           {/* Text Formatting */}
@@ -4809,6 +4747,80 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           <div style={{ marginTop: '12px', textAlign: 'right' }}>
             <button 
               onClick={() => setShowHighlightPicker(false)}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Line Height Picker */}
+      {showLineHeightPicker && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: 'white',
+          border: '1px solid #dee2e6',
+          borderRadius: '8px',
+          padding: '16px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 99999995,
+          maxWidth: '300px',
+          width: '90vw'
+        }}>
+          <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600' }}>Line Height</h3>
+          <div style={{ display: 'grid', gap: '8px' }}>
+            {[
+              { name: 'Normal', value: 'normal' },
+              { name: '1.0', value: '1.0' },
+              { name: '1.15', value: '1.15' },
+              { name: '1.5', value: '1.5' },
+              { name: '2.0', value: '2.0' },
+              { name: '4.0', value: '4.0' },
+              { name: '4.5', value: '4.5' }
+            ].map((item) => (
+              <button
+                key={item.name}
+                onClick={() => {
+                  editor.chain().focus().setLineHeight(item.value).run();
+                  setShowLineHeightPicker(false);
+                }}
+                style={{
+                  padding: '10px',
+                  border: '1px solid #dee2e6',
+                  borderRadius: '4px',
+                  backgroundColor: 'white',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.2s',
+                  fontSize: '14px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'scale(1.02)';
+                  e.target.style.backgroundColor = '#f0f0f0';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'scale(1)';
+                  e.target.style.backgroundColor = 'white';
+                }}
+              >
+                {item.name}
+              </button>
+            ))}
+          </div>
+          <div style={{ marginTop: '12px', textAlign: 'right' }}>
+            <button 
+              onClick={() => setShowLineHeightPicker(false)}
               style={{
                 padding: '8px 16px',
                 backgroundColor: '#007bff',
