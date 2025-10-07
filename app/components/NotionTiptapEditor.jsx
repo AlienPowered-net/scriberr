@@ -67,13 +67,10 @@ import {
 } from '@shopify/polaris-icons';
 import './NotionTiptapEditor.css';
 
-// Helper function to handle mobile touch events
+// Helper function to ensure handlers work properly on both mobile and desktop
+// Keep it simple - just call the handler without interfering with Polaris event handling
 const createMobileFriendlyHandler = (handler) => {
-  return (e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+  return () => {
     handler();
   };
 };
@@ -1611,9 +1608,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   size="slim"
                   disclosure
                   onClick={createMobileFriendlyHandler(() => setShowLineHeightPopover(!showLineHeightPopover))}
-                  onTouchEnd={createMobileFriendlyHandler(() => setShowLineHeightPopover(!showLineHeightPopover))}
                   style={{
-                    WebkitTapHighlightColor: 'transparent'
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation'
                   }}
                 >
                   <TextIcon icon="sort" />
@@ -1770,9 +1767,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             <Button
               size="slim"
               onClick={createMobileFriendlyHandler(() => setShowLinkModal(true))}
-              onTouchEnd={createMobileFriendlyHandler(() => setShowLinkModal(true))}
               style={{
-                WebkitTapHighlightColor: 'transparent'
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
               }}
             >
               <TextIcon icon="link" />
@@ -1784,9 +1781,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             <Button
               size="slim"
               onClick={createMobileFriendlyHandler(() => setShowImageModal(true))}
-              onTouchEnd={createMobileFriendlyHandler(() => setShowImageModal(true))}
               style={{
-                WebkitTapHighlightColor: 'transparent'
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
               }}
             >
               <TextIcon icon="image" />
@@ -1798,9 +1795,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             <Button
               size="slim"
               onClick={createMobileFriendlyHandler(() => setShowVideoModal(true))}
-              onTouchEnd={createMobileFriendlyHandler(() => setShowVideoModal(true))}
               style={{
-                WebkitTapHighlightColor: 'transparent'
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
               }}
             >
               <Icon source={LogoYoutubeIcon} />
@@ -1939,17 +1936,14 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 console.debug('Version button clicked');
                 setShowVersionPopover(!showVersionPopover);
               })}
-              onTouchEnd={createMobileFriendlyHandler(() => {
-                console.debug('Version button touched');
-                setShowVersionPopover(!showVersionPopover);
-              })}
               icon={ClockIcon}
               style={{ 
                 backgroundColor: '#f0f0f0', 
                 border: '2px solid #007ace',
                 minWidth: '32px',
                 minHeight: '32px',
-                WebkitTapHighlightColor: 'transparent'
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
               }}
             >
               🕐
@@ -2851,9 +2845,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                       size="slim"
                       disclosure
                       onClick={createMobileFriendlyHandler(() => setShowLineHeightPopover(!showLineHeightPopover))}
-                      onTouchEnd={createMobileFriendlyHandler(() => setShowLineHeightPopover(!showLineHeightPopover))}
                       style={{
-                        WebkitTapHighlightColor: 'transparent'
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation'
                       }}
                     >
                       <TextIcon icon="sort" />
@@ -3010,9 +3004,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 <Button
                   size="slim"
                   onClick={createMobileFriendlyHandler(() => setShowLinkModal(true))}
-                  onTouchEnd={createMobileFriendlyHandler(() => setShowLinkModal(true))}
                   style={{
-                    WebkitTapHighlightColor: 'transparent'
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation'
                   }}
                 >
                   <TextIcon icon="link" />
@@ -3024,9 +3018,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 <Button
                   size="slim"
                   onClick={createMobileFriendlyHandler(() => setShowImageModal(true))}
-                  onTouchEnd={createMobileFriendlyHandler(() => setShowImageModal(true))}
                   style={{
-                    WebkitTapHighlightColor: 'transparent'
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation'
                   }}
                 >
                   <TextIcon icon="image" />
@@ -3038,9 +3032,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 <Button
                   size="slim"
                   onClick={createMobileFriendlyHandler(() => setShowVideoModal(true))}
-                  onTouchEnd={createMobileFriendlyHandler(() => setShowVideoModal(true))}
                   style={{
-                    WebkitTapHighlightColor: 'transparent'
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation'
                   }}
                 >
                   <Icon source={LogoYoutubeIcon} />
@@ -3179,17 +3173,14 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     console.debug('Version button clicked (fullscreen)');
                     setShowVersionPopover(!showVersionPopover);
                   })}
-                  onTouchEnd={createMobileFriendlyHandler(() => {
-                    console.debug('Version button touched (fullscreen)');
-                    setShowVersionPopover(!showVersionPopover);
-                  })}
                   icon={ClockIcon}
                   style={{ 
                     backgroundColor: '#f0f0f0', 
                     border: '2px solid #007ace',
                     minWidth: '32px',
                     minHeight: '32px',
-                    WebkitTapHighlightColor: 'transparent'
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation'
                   }}
                 >
                   🕐
