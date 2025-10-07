@@ -50,6 +50,14 @@ import {
   ClockIcon
 } from '@shopify/polaris-icons';
 
+// Helper function to ensure handlers work properly on both mobile and desktop
+// Keep it simple - just call the handler without interfering with Polaris event handling
+const createMobileFriendlyHandler = (handler) => {
+  return () => {
+    handler();
+  };
+};
+
 // Simple icon component using emoji/text since many Polaris icons don't exist
 const TextIcon = ({ icon }) => {
   const iconMap = {
@@ -65,7 +73,7 @@ const TextIcon = ({ icon }) => {
     lineHeight: <MeasurementSizeIcon />,
     bulletList: '•',
     numberedList: '1.',
-    checkbox: '☑',
+    checkbox: '✓',  // Changed from ☑ to ✓ for better compatibility
     question: '?',
     alignLeft: '⬅',
     alignCenter: '⬛',
@@ -89,7 +97,8 @@ const TextIcon = ({ icon }) => {
       alignItems: 'center',
       justifyContent: 'center',
       width: '20px',
-      height: '20px'
+      height: '20px',
+      pointerEvents: 'none'  // Let parent handle events
     }}>
       {iconMap[icon] || icon}
     </span>
@@ -1700,7 +1709,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <i className="fas fa-table"></i>
           </button>
           <button
-            onClick={() => setShowLinkModal(true)}
+            onClick={createMobileFriendlyHandler(() => setShowLinkModal(true))}
             style={{
               padding: "6px 8px",
               border: "1px solid #dee2e6",
@@ -1721,7 +1730,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <i className="fas fa-link"></i>
           </button>
           <button
-            onClick={() => setShowImageModal(true)}
+            onClick={createMobileFriendlyHandler(() => setShowImageModal(true))}
             style={{
               padding: "6px 8px",
               border: "1px solid #dee2e6",
@@ -1742,7 +1751,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <i className="fas fa-image"></i>
           </button>
           <button
-            onClick={() => setShowVideoModal(true)}
+            onClick={createMobileFriendlyHandler(() => setShowVideoModal(true))}
             style={{
               padding: "6px 8px",
               border: "1px solid #dee2e6",
@@ -2269,16 +2278,18 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <Button
               data-testid="version-toolbar-button"
               size="slim"
-              onClick={() => {
+              onClick={createMobileFriendlyHandler(() => {
                 console.debug('Version button clicked');
                 setShowVersionPopover(!showVersionPopover);
-              }}
+              })}
               icon={ClockIcon}
               style={{ 
                 backgroundColor: '#f0f0f0', 
                 border: '2px solid #007ace',
                 minWidth: '32px',
-                minHeight: '32px'
+                minHeight: '32px',
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
               }}
             />
           </Tooltip>
@@ -2470,7 +2481,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             active={showLineHeightPopover}
             activator={
               <button
-                onClick={() => setShowLineHeightPopover(!showLineHeightPopover)}
+                onClick={createMobileFriendlyHandler(() => setShowLineHeightPopover(!showLineHeightPopover))}
                 style={{
                   padding: "6px 8px",
                   border: "1px solid #dee2e6",
@@ -2484,7 +2495,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   height: "32px",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center"
+                  justifyContent: "center",
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation'
                 }}
                 title="Line Height"
               >
@@ -2894,7 +2907,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <i className="fas fa-table"></i>
           </button>
           <button
-            onClick={() => setShowLinkModal(true)}
+            onClick={createMobileFriendlyHandler(() => setShowLinkModal(true))}
             style={{
               padding: "6px 8px",
               border: "1px solid #dee2e6",
@@ -2915,7 +2928,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <i className="fas fa-link"></i>
           </button>
           <button
-            onClick={() => setShowImageModal(true)}
+            onClick={createMobileFriendlyHandler(() => setShowImageModal(true))}
             style={{
               padding: "6px 8px",
               border: "1px solid #dee2e6",
@@ -2936,7 +2949,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <i className="fas fa-image"></i>
           </button>
           <button
-            onClick={() => setShowVideoModal(true)}
+            onClick={createMobileFriendlyHandler(() => setShowVideoModal(true))}
             style={{
               padding: "6px 8px",
               border: "1px solid #dee2e6",
@@ -3273,7 +3286,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               <i className="fas fa-underline"></i>
             </button>
             <button
-              onClick={() => setShowLinkModal(true)}
+              onClick={createMobileFriendlyHandler(() => setShowLinkModal(true))}
               style={{
                 padding: "6px 8px",
                 border: "none",
