@@ -494,13 +494,3 @@
   padding: 0;
   font-size: inherit;
 }
-
-/* Version History Popover - Compact layout with no horizontal scroll */
-.Polaris-Popover__Pane:has([style*="Version History"]) {
-  max-width: 90vw !important;
-}
-
-.Polaris-Popover__Content:has([style*="Version History"]) {
-  max-width: 90vw !important;
-  overflow-x: hidden !important;
-}

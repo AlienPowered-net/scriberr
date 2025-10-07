@@ -1903,102 +1903,101 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
 
           {/* Version Management */}
-          <Popover
-            active={showVersionPopover}
-            activator={
-              <Tooltip content="Version History">
-                <Button
-                  data-testid="version-toolbar-button"
-                  size="slim"
-                  onClick={() => {
-                    console.debug('Version button clicked');
-                    setShowVersionPopover(!showVersionPopover);
-                  }}
-                  icon={ClockIcon}
-                  style={{ 
-                    backgroundColor: '#f0f0f0', 
-                    border: '2px solid #007ace',
-                    minWidth: '32px',
-                    minHeight: '32px'
-                  }}
-                >
-                  🕐
-                </Button>
-              </Tooltip>
-            }
+          <Tooltip content="Version History">
+            <Button
+              data-testid="version-toolbar-button"
+              size="slim"
+              onClick={() => {
+                console.debug('Version button clicked');
+                setShowVersionPopover(!showVersionPopover);
+              }}
+              icon={ClockIcon}
+              style={{ 
+                backgroundColor: '#f0f0f0', 
+                border: '2px solid #007ace',
+                minWidth: '32px',
+                minHeight: '32px'
+              }}
+            >
+              🕐
+            </Button>
+          </Tooltip>
+          
+          {/* Version History Modal */}
+          <Modal
+            open={showVersionPopover}
             onClose={() => setShowVersionPopover(false)}
-            preferredAlignment="left"
-            preferredPosition="below"
+            title="Version History"
+            primaryAction={{
+              content: 'Create New',
+              onAction: () => {
+                const versionTitle = prompt('Enter a title for this version (optional):');
+                createVersion(versionTitle);
+                setShowVersionPopover(false);
+              }
+            }}
+            secondaryActions={[
+              {
+                content: 'Close',
+                onAction: () => setShowVersionPopover(false),
+              },
+            ]}
           >
-            <div style={{ padding: '16px', minWidth: '300px', maxWidth: '400px' }}>
-              <BlockStack gap="4">
-                <InlineStack gap="2" align="space-between">
-                  <Text variant="headingMd">Version History</Text>
-                  <Button
-                    size="slim"
-                    onClick={() => {
-                      const versionTitle = prompt('Enter a title for this version (optional):');
-                      createVersion(versionTitle);
-                      setShowVersionPopover(false);
-                    }}
-                  >
-                    Create New
-                  </Button>
-                </InlineStack>
-                
-                {versions.length > 0 ? (
-                  <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                    <BlockStack gap="2">
-                      {versions.map((version, index) => (
-                        <Card key={version.id} padding="3">
-                          <Card.Section>
-                            <InlineStack gap="3" align="space-between">
-                              <BlockStack gap="1">
-                                <InlineStack gap="2" align="start">
-                                  <Text variant="bodyMd" fontWeight="medium">
-                                    {version.versionTitle || version.title}
-                                  </Text>
-                                  {version.isAuto && (
-                                    <Badge size="small" tone="info">Auto</Badge>
-                                  )}
-                                </InlineStack>
-                                <Text variant="bodySm" color="subdued">
-                                  {new Date(version.createdAt).toLocaleString()}
+            <Modal.Section>
+              {versions.length > 0 ? (
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  <BlockStack gap="3">
+                    {versions.map((version, index) => (
+                      <Card key={version.id} padding="3">
+                        <Card.Section>
+                          <InlineStack gap="3" align="space-between">
+                            <BlockStack gap="1">
+                              <InlineStack gap="2" align="start">
+                                <Text variant="bodyMd" fontWeight="medium">
+                                  {version.versionTitle || version.title}
                                 </Text>
-                                {index > 0 && (
-                                  <Button
-                                    size="micro"
-                                    variant="plain"
-                                    onClick={() => {
-                                      // Compare with previous version
-                                      const prevVersion = versions[index - 1];
-                                      compareVersions(prevVersion, version);
-                                    }}
-                                  >
-                                    Compare with previous
-                                  </Button>
+                                {version.isAuto && (
+                                  <Badge size="small" tone="info">Auto</Badge>
                                 )}
-                              </BlockStack>
-                              <Button
-                                size="slim"
-                                onClick={() => restoreVersion(version)}
-                              >
-                                Restore
-                              </Button>
-                            </InlineStack>
-                          </Card.Section>
-                        </Card>
-                      ))}
-                    </BlockStack>
-                  </div>
-                ) : (
+                              </InlineStack>
+                              <Text variant="bodySm" color="subdued">
+                                {new Date(version.createdAt).toLocaleString()}
+                              </Text>
+                              {index > 0 && (
+                                <Button
+                                  size="micro"
+                                  variant="plain"
+                                  onClick={() => {
+                                    // Compare with previous version
+                                    const prevVersion = versions[index - 1];
+                                    compareVersions(prevVersion, version);
+                                  }}
+                                >
+                                  Compare with previous
+                                </Button>
+                              )}
+                            </BlockStack>
+                            <Button
+                              size="slim"
+                              onClick={() => restoreVersion(version)}
+                            >
+                              Restore
+                            </Button>
+                          </InlineStack>
+                        </Card.Section>
+                      </Card>
+                    ))}
+                  </BlockStack>
+                </div>
+              ) : (
+                <div style={{ padding: '40px 20px', textAlign: 'center' }}>
                   <Text variant="bodyMd" color="subdued">
                     No versions available yet. Create your first version!
                   </Text>
-                )}
-              </BlockStack>
-            </div>
-          </Popover>
+                </div>
+              )}
+            </Modal.Section>
+          </Modal>
 
           {/* Divider */}
           <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
@@ -3123,102 +3122,25 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
 
               {/* Version Management */}
-              <Popover
-                active={showVersionPopover}
-                activator={
-                  <Tooltip content="Version History">
-                    <Button
-                      data-testid="version-toolbar-button-fullscreen"
-                      size="slim"
-                      onClick={() => {
-                        console.debug('Version button clicked (fullscreen)');
-                        setShowVersionPopover(!showVersionPopover);
-                      }}
-                      icon={ClockIcon}
-                      style={{ 
-                        backgroundColor: '#f0f0f0', 
-                        border: '2px solid #007ace',
-                        minWidth: '32px',
-                        minHeight: '32px'
-                      }}
-                    >
-                      🕐
-                    </Button>
-                  </Tooltip>
-                }
-                onClose={() => setShowVersionPopover(false)}
-                preferredAlignment="left"
-                preferredPosition="below"
-              >
-                <div style={{ padding: '16px', minWidth: '300px', maxWidth: '400px' }}>
-                  <BlockStack gap="4">
-                    <InlineStack gap="2" align="space-between">
-                      <Text variant="headingMd">Version History</Text>
-                      <Button
-                        size="slim"
-                        onClick={() => {
-                          const versionTitle = prompt('Enter a title for this version (optional):');
-                          createVersion(versionTitle);
-                          setShowVersionPopover(false);
-                        }}
-                      >
-                        Create New
-                      </Button>
-                    </InlineStack>
-                    
-                    {versions.length > 0 ? (
-                      <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                        <BlockStack gap="2">
-                          {versions.map((version, index) => (
-                            <Card key={version.id} padding="3">
-                              <Card.Section>
-                                <InlineStack gap="3" align="space-between">
-                                  <BlockStack gap="1">
-                                    <InlineStack gap="2" align="start">
-                                      <Text variant="bodyMd" fontWeight="medium">
-                                        {version.versionTitle || version.title}
-                                      </Text>
-                                      {version.isAuto && (
-                                        <Badge size="small" tone="info">Auto</Badge>
-                                      )}
-                                    </InlineStack>
-                                    <Text variant="bodySm" color="subdued">
-                                      {new Date(version.createdAt).toLocaleString()}
-                                    </Text>
-                                    {index > 0 && (
-                                      <Button
-                                        size="micro"
-                                        variant="plain"
-                                        onClick={() => {
-                                          // Compare with previous version
-                                          const prevVersion = versions[index - 1];
-                                          compareVersions(prevVersion, version);
-                                        }}
-                                      >
-                                        Compare with previous
-                                      </Button>
-                                    )}
-                                  </BlockStack>
-                                  <Button
-                                    size="slim"
-                                    onClick={() => restoreVersion(version)}
-                                  >
-                                    Restore
-                                  </Button>
-                                </InlineStack>
-                              </Card.Section>
-                            </Card>
-                          ))}
-                        </BlockStack>
-                      </div>
-                    ) : (
-                      <Text variant="bodyMd" color="subdued">
-                        No versions available yet. Create your first version!
-                      </Text>
-                    )}
-                  </BlockStack>
-                </div>
-              </Popover>
+              <Tooltip content="Version History">
+                <Button
+                  data-testid="version-toolbar-button-fullscreen"
+                  size="slim"
+                  onClick={() => {
+                    console.debug('Version button clicked (fullscreen)');
+                    setShowVersionPopover(!showVersionPopover);
+                  }}
+                  icon={ClockIcon}
+                  style={{ 
+                    backgroundColor: '#f0f0f0', 
+                    border: '2px solid #007ace',
+                    minWidth: '32px',
+                    minHeight: '32px'
+                  }}
+                >
+                  🕐
+                </Button>
+              </Tooltip>
 
               {/* Divider */}
               <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />

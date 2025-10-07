@@ -2265,85 +2265,65 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           </button>
 
           {/* Version Management */}
-          <Popover
-            active={showVersionPopover}
-            activator={
-              <Tooltip content="Version History">
-                <Button
-                  data-testid="version-toolbar-button"
-                  size="slim"
-                  onClick={() => {
-                    console.debug('Version button clicked');
-                    setShowVersionPopover(!showVersionPopover);
-                  }}
-                  icon={ClockIcon}
-                  style={{ 
-                    backgroundColor: '#f0f0f0', 
-                    border: '2px solid #007ace',
-                    minWidth: '32px',
-                    minHeight: '32px'
-                  }}
-                />
-              </Tooltip>
-            }
+          <Tooltip content="Version History">
+            <Button
+              data-testid="version-toolbar-button"
+              size="slim"
+              onClick={() => {
+                console.debug('Version button clicked');
+                setShowVersionPopover(!showVersionPopover);
+              }}
+              icon={ClockIcon}
+              style={{ 
+                backgroundColor: '#f0f0f0', 
+                border: '2px solid #007ace',
+                minWidth: '32px',
+                minHeight: '32px'
+              }}
+            />
+          </Tooltip>
+          
+          {/* Version History Modal */}
+          <Modal
+            open={showVersionPopover}
             onClose={() => setShowVersionPopover(false)}
-            preferredAlignment="left"
-            preferredPosition="below"
+            title="Version History"
+            large
+            primaryAction={{
+              content: 'Create New',
+              onAction: () => {
+                setShowVersionPopover(false);
+                setTimeout(() => {
+                  setShowVersionNameModal(true);
+                }, 50);
+              }
+            }}
+            secondaryActions={[
+              {
+                content: compareMode ? 'Cancel Compare' : 'Compare Versions',
+                onAction: () => {
+                  if (compareMode) {
+                    setCompareMode(false);
+                    setSelectedVersions({ version1: null, version2: null });
+                    setComparisonResult(null);
+                  } else {
+                    setCompareMode(true);
+                    setComparisonResult(null);
+                  }
+                }
+              },
+              ...(compareMode && selectedVersions.version1 && selectedVersions.version2 ? [{
+                content: 'View Diff',
+                onAction: compareVersions
+              }] : []),
+              {
+                content: 'Close',
+                onAction: () => setShowVersionPopover(false),
+              },
+            ]}
           >
-            <div style={{ 
-              padding: '20px', 
-              minWidth: comparisonResult ? '800px' : '600px',
-              maxWidth: '90vw', 
-              boxSizing: 'border-box'
-            }}>
+            <Modal.Section>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between', 
-                  gap: '12px',
-                  flexWrap: 'nowrap',
-                  marginBottom: '8px'
-                }}>
-                  <Text variant="headingLg">Version History</Text>
-                  <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
-                    <Button
-                      size="slim"
-                      onClick={() => {
-                        if (compareMode) {
-                          setCompareMode(false);
-                          setSelectedVersions({ version1: null, version2: null });
-                          setComparisonResult(null);
-                        } else {
-                          setCompareMode(true);
-                          setComparisonResult(null);
-                        }
-                      }}
-                    >
-                      {compareMode ? 'Cancel' : 'Compare'}
-                    </Button>
-                    {compareMode && selectedVersions.version1 && selectedVersions.version2 && (
-                      <Button
-                        size="slim"
-                        variant="primary"
-                        onClick={compareVersions}
-                      >
-                        View Diff
-                      </Button>
-                    )}
-                    <Button
-                      size="slim"
-                      onClick={() => {
-                        setShowVersionPopover(false);
-                        setTimeout(() => {
-                          setShowVersionNameModal(true);
-                        }, 50);
-                      }}
-                    >
-                      Create New
-                    </Button>
-                  </div>
-                </div>
                 
                 {comparisonResult ? (
                   <div>
@@ -2482,8 +2462,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   </div>
                 )}
               </div>
-            </div>
-          </Popover>
+            </Modal.Section>
+          </Modal>
 
           {/* Line Height Button with Popover */}
           <Popover
