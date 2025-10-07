@@ -2290,11 +2290,22 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             preferredAlignment="left"
             preferredPosition="below"
           >
-            <div style={{ padding: '20px', width: comparisonResult ? '1400px' : '1000px', maxWidth: '95vw', boxSizing: 'border-box', overflowX: 'hidden' }}>
-              <BlockStack gap="5">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', width: '100%', flexWrap: 'wrap' }}>
+            <div style={{ 
+              padding: '24px', 
+              minWidth: comparisonResult ? '900px' : '700px',
+              maxWidth: '90vw', 
+              boxSizing: 'border-box'
+            }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between', 
+                  gap: '16px',
+                  flexWrap: 'nowrap'
+                }}>
                   <Text variant="headingLg">Version History</Text>
-                  <InlineStack gap="2">
+                  <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                     <Button
                       size="slim"
                       onClick={() => {
@@ -2308,7 +2319,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                         }
                       }}
                     >
-                      {compareMode ? 'Cancel Compare' : 'Compare Versions'}
+                      {compareMode ? 'Cancel' : 'Compare'}
                     </Button>
                     {compareMode && selectedVersions.version1 && selectedVersions.version2 && (
                       <Button
@@ -2316,7 +2327,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                         variant="primary"
                         onClick={compareVersions}
                       >
-                        View Comparison
+                        View Diff
                       </Button>
                     )}
                     <Button
@@ -2330,28 +2341,29 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     >
                       Create New
                     </Button>
-                  </InlineStack>
+                  </div>
                 </div>
                 
                 {comparisonResult ? (
-                  <div style={{ width: '100%' }}>
-                    <div style={{ display: 'flex', gap: '16px', marginBottom: '20px', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', alignItems: 'center' }}>
                       <Button onClick={() => setComparisonResult(null)}>
-                        ← Back to Versions
+                        ← Back
                       </Button>
-                      <Text variant="headingMd" fontWeight="semibold">
-                        Comparing: {comparisonResult.version1.versionTitle || comparisonResult.version1.title} vs {comparisonResult.version2.versionTitle || comparisonResult.version2.title}
-                      </Text>
+                      <div style={{ fontSize: '15px', fontWeight: 600 }}>
+                        {comparisonResult.version1.versionTitle || comparisonResult.version1.title} vs {comparisonResult.version2.versionTitle || comparisonResult.version2.title}
+                      </div>
                     </div>
                     <div style={{
-                      padding: '24px',
+                      padding: '20px',
                       border: '1px solid #e1e3e5',
                       borderRadius: '8px',
                       backgroundColor: '#ffffff',
-                      maxHeight: '600px',
+                      maxHeight: '500px',
                       overflowY: 'auto',
                       lineHeight: '1.8',
-                      fontSize: '15px'
+                      fontSize: '15px',
+                      wordWrap: 'break-word'
                     }}>
                       {comparisonResult.diff.map((part, index) => (
                         <span
@@ -2370,21 +2382,22 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     </div>
                   </div>
                 ) : versions.length > 0 ? (
-                  <div style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'hidden', width: '100%' }}>
+                  <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
                     {compareMode && (
                       <div style={{ 
-                        padding: '16px',
-                        backgroundColor: '#f3f4f6',
+                        padding: '12px',
+                        backgroundColor: '#eff6ff',
+                        border: '1px solid #dbeafe',
                         borderRadius: '8px',
-                        marginBottom: '16px',
-                        fontSize: '15px',
-                        color: '#4b5563',
+                        marginBottom: '12px',
+                        fontSize: '14px',
+                        color: '#1e40af',
                         fontWeight: 500
                       }}>
-                        Select two versions to compare by clicking on them
+                        📋 Select two versions to compare
                       </div>
                     )}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       {versions.map((version) => {
                         const isSelected = selectedVersions.version1 === version.id || selectedVersions.version2 === version.id;
                         const selectionNumber = selectedVersions.version1 === version.id ? 1 : selectedVersions.version2 === version.id ? 2 : null;
@@ -2394,24 +2407,22 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                             key={version.id}
                             onClick={() => compareMode && toggleVersionSelection(version.id)}
                             style={{
-                              padding: '16px',
+                              padding: '14px',
                               border: isSelected ? '2px solid #2c6ecb' : '1px solid #e1e3e5',
-                              borderRadius: '10px',
+                              borderRadius: '8px',
                               backgroundColor: isSelected ? '#f0f7ff' : '#ffffff',
                               display: 'flex',
-                              alignItems: 'flex-start',
-                              gap: '16px',
-                              minWidth: 0,
-                              width: '75%',
-                              boxSizing: 'border-box',
+                              alignItems: 'center',
+                              gap: '12px',
                               cursor: compareMode ? 'pointer' : 'default',
-                              transition: 'all 0.2s'
+                              transition: 'all 0.2s',
+                              boxShadow: isSelected ? '0 2px 8px rgba(44, 110, 203, 0.15)' : 'none'
                             }}
                           >
                             {compareMode && (
                               <div style={{
-                                width: '32px',
-                                height: '32px',
+                                width: '28px',
+                                height: '28px',
                                 borderRadius: '50%',
                                 border: isSelected ? '2px solid #2c6ecb' : '2px solid #d1d5db',
                                 backgroundColor: isSelected ? '#2c6ecb' : 'transparent',
@@ -2419,40 +2430,39 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 color: 'white',
-                                fontSize: '14px',
+                                fontSize: '13px',
                                 fontWeight: 'bold',
                                 flexShrink: 0
                               }}>
                                 {selectionNumber || ''}
                               </div>
                             )}
-                            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                                 <div style={{ 
-                                  flex: 1, 
-                                  minWidth: 0, 
-                                  overflow: 'hidden', 
-                                  textOverflow: 'ellipsis', 
-                                  whiteSpace: 'nowrap',
                                   fontWeight: 600,
-                                  fontSize: '15px'
+                                  fontSize: '15px',
+                                  color: '#1f2937'
                                 }}>
                                   {version.versionTitle || version.title}
                                 </div>
                                 {version.isAuto && (
-                                  <Badge size="medium" tone="info">Auto</Badge>
+                                  <Badge tone="info">Auto</Badge>
                                 )}
                               </div>
-                              <div style={{ fontSize: '14px', color: '#6d7175' }}>
+                              <div style={{ fontSize: '13px', color: '#6b7280' }}>
                                 {new Date(version.createdAt).toLocaleString()}
                               </div>
                             </div>
                             {!compareMode && (
-                              <Button
-                                onClick={() => restoreVersion(version)}
-                              >
-                                Restore
-                              </Button>
+                              <div style={{ flexShrink: 0 }}>
+                                <Button
+                                  size="slim"
+                                  onClick={() => restoreVersion(version)}
+                                >
+                                  Restore
+                                </Button>
+                              </div>
                             )}
                           </div>
                         );
@@ -2460,11 +2470,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     </div>
                   </div>
                 ) : (
-                  <Text variant="bodyLg" color="subdued">
-                    No versions available yet. Create your first version!
-                  </Text>
+                  <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                    <Text variant="bodyMd" color="subdued">
+                      No versions available yet. Create your first version!
+                    </Text>
+                  </div>
                 )}
-              </BlockStack>
+              </div>
             </div>
           </Popover>
 

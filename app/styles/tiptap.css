@@ -495,15 +495,23 @@
   font-size: inherit;
 }
 
-/* Version History Popover - Force larger width */
-[data-testid="version-toolbar-button"] ~ .Polaris-PositionedOverlay .Polaris-Popover__Content,
-.Polaris-Popover__Content:has([style*="Version History"]) {
-  min-width: 1000px !important;
-  max-width: 95vw !important;
+/* Version History Popover - Force larger width and prevent horizontal scroll */
+.Polaris-Popover__Pane:has([style*="Version History"]) {
+  min-width: 700px !important;
+  max-width: 90vw !important;
 }
 
-/* When in comparison mode, make even wider */
-.Polaris-Popover__Content:has([style*="Comparing:"]) {
-  min-width: 1400px !important;
-  max-width: 95vw !important;
+.Polaris-Popover__Content:has([style*="Version History"]) {
+  min-width: 700px !important;
+  max-width: 90vw !important;
+  overflow-x: hidden !important;
+}
+
+/* When in comparison mode, make wider */
+.Polaris-Popover__Pane:has([style*="vs"]) {
+  min-width: 900px !important;
+}
+
+.Polaris-Popover__Content:has([style*="vs"]) {
+  min-width: 900px !important;
 }
