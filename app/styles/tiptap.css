@@ -494,3 +494,16 @@
   padding: 0;
   font-size: inherit;
 }
+
+/* Version History Popover - Force larger width */
+[data-testid="version-toolbar-button"] ~ .Polaris-PositionedOverlay .Polaris-Popover__Content,
+.Polaris-Popover__Content:has([style*="Version History"]) {
+  min-width: 1000px !important;
+  max-width: 95vw !important;
+}
+
+/* When in comparison mode, make even wider */
+.Polaris-Popover__Content:has([style*="Comparing:"]) {
+  min-width: 1400px !important;
+  max-width: 95vw !important;
+}
