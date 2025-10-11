@@ -2285,31 +2285,26 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 console.debug('Version button clicked');
                 setShowVersionPopover(!showVersionPopover);
               })}
-              style={{ 
-                WebkitTapHighlightColor: 'transparent',
-                touchAction: 'manipulation'
-              }}
             >
               <Icon source={ClockIcon} />
             </Button>
           </Tooltip>
           
           {/* Version History Modal */}
-          {typeof document !== 'undefined' && showVersionPopover && createPortal(
-            <Modal
-              open={showVersionPopover}
-              onClose={() => setShowVersionPopover(false)}
-              title="Version History"
-              large
-              primaryAction={{
-                content: 'Create New',
-                onAction: () => {
-                  setShowVersionPopover(false);
-                  setTimeout(() => {
-                    setShowVersionNameModal(true);
-                  }, 50);
-                }
-              }}
+          <Modal
+            open={showVersionPopover}
+            onClose={() => setShowVersionPopover(false)}
+            title="Version History"
+            large
+            primaryAction={{
+              content: 'Create New',
+              onAction: () => {
+                setShowVersionPopover(false);
+                setTimeout(() => {
+                  setShowVersionNameModal(true);
+                }, 50);
+              }
+            }}
             secondaryActions={[
               {
                 content: compareMode ? 'Cancel Compare' : 'Compare Versions',
@@ -2475,9 +2470,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 )}
               </div>
             </Modal.Section>
-          </Modal>,
-          document.body
-          )}
+          </Modal>
 
           {/* Line Height Button with Custom Modal */}
           <button
@@ -4183,63 +4176,57 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       </div>
 
       {/* Modals */}
-      {typeof document !== 'undefined' && showImageModal && createPortal(
-        <Modal
-          open={showImageModal}
-          onClose={() => setShowImageModal(false)}
-          title="Insert Image"
-          primaryAction={{
-            content: 'Insert',
-            onAction: insertImage,
-          }}
-          secondaryActions={[
-            {
-              content: 'Cancel',
-              onAction: () => setShowImageModal(false),
-            },
-          ]}
-        >
-          <Modal.Section>
-            <TextField
-              label="Image URL"
-              value={imageUrl}
-              onChange={setImageUrl}
-              placeholder="https://example.com/image.jpg"
-              autoComplete="off"
-            />
-          </Modal.Section>
-        </Modal>,
-        document.body
-      )}
+      <Modal
+        open={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        title="Insert Image"
+        primaryAction={{
+          content: 'Insert',
+          onAction: insertImage,
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: () => setShowImageModal(false),
+          },
+        ]}
+      >
+        <Modal.Section>
+          <TextField
+            label="Image URL"
+            value={imageUrl}
+            onChange={setImageUrl}
+            placeholder="https://example.com/image.jpg"
+            autoComplete="off"
+          />
+        </Modal.Section>
+      </Modal>
 
-      {typeof document !== 'undefined' && showVideoModal && createPortal(
-        <Modal
-          open={showVideoModal}
-          onClose={() => setShowVideoModal(false)}
-          title="Insert Video"
-          primaryAction={{
-            content: 'Insert',
-            onAction: insertVideo,
-          }}
-          secondaryActions={[
-            {
-              content: 'Cancel',
-              onAction: () => setShowVideoModal(false),
-            },
-          ]}
-        >
-          <Modal.Section>
-            <TextField
-              label="YouTube URL"
-              value={videoUrl}
-              onChange={setVideoUrl}
-              placeholder="https://www.youtube.com/watch?v=..."
-              autoComplete="off"
-            />
-          </Modal.Section>
-        </Modal>,
-        document.body
-      )}
+      <Modal
+        open={showVideoModal}
+        onClose={() => setShowVideoModal(false)}
+        title="Insert Video"
+        primaryAction={{
+          content: 'Insert',
+          onAction: insertVideo,
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: () => setShowVideoModal(false),
+          },
+        ]}
+      >
+        <Modal.Section>
+          <TextField
+            label="YouTube URL"
+            value={videoUrl}
+            onChange={setVideoUrl}
+            placeholder="https://www.youtube.com/watch?v=..."
+            autoComplete="off"
+          />
+        </Modal.Section>
+      </Modal>
 
       <Modal
         open={showLinkModal}
@@ -4279,63 +4266,57 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
 
       {/* Modals */}
-      {typeof document !== 'undefined' && showImageModal && createPortal(
-        <Modal
-          open={showImageModal}
-          onClose={() => setShowImageModal(false)}
-          title="Insert Image"
-          primaryAction={{
-            content: 'Insert',
-            onAction: insertImage,
-          }}
-          secondaryActions={[
-            {
-              content: 'Cancel',
-              onAction: () => setShowImageModal(false),
-            },
-          ]}
-        >
-          <Modal.Section>
-            <TextField
-              label="Image URL"
-              value={imageUrl}
-              onChange={setImageUrl}
-              placeholder="https://example.com/image.jpg"
-              autoComplete="off"
-            />
-          </Modal.Section>
-        </Modal>,
-        document.body
-      )}
+      <Modal
+        open={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        title="Insert Image"
+        primaryAction={{
+          content: 'Insert',
+          onAction: insertImage,
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: () => setShowImageModal(false),
+          },
+        ]}
+      >
+        <Modal.Section>
+          <TextField
+            label="Image URL"
+            value={imageUrl}
+            onChange={setImageUrl}
+            placeholder="https://example.com/image.jpg"
+            autoComplete="off"
+          />
+        </Modal.Section>
+      </Modal>
 
-      {typeof document !== 'undefined' && showVideoModal && createPortal(
-        <Modal
-          open={showVideoModal}
-          onClose={() => setShowVideoModal(false)}
-          title="Insert Video"
-          primaryAction={{
-            content: 'Insert',
-            onAction: insertVideo,
-          }}
-          secondaryActions={[
-            {
-              content: 'Cancel',
-              onAction: () => setShowVideoModal(false),
-            },
-          ]}
-        >
-          <Modal.Section>
-            <TextField
-              label="YouTube URL"
-              value={videoUrl}
-              onChange={setVideoUrl}
-              placeholder="https://www.youtube.com/watch?v=..."
-              autoComplete="off"
-            />
-          </Modal.Section>
-        </Modal>,
-        document.body
-      )}
+      <Modal
+        open={showVideoModal}
+        onClose={() => setShowVideoModal(false)}
+        title="Insert Video"
+        primaryAction={{
+          content: 'Insert',
+          onAction: insertVideo,
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: () => setShowVideoModal(false),
+          },
+        ]}
+      >
+        <Modal.Section>
+          <TextField
+            label="YouTube URL"
+            value={videoUrl}
+            onChange={setVideoUrl}
+            placeholder="https://www.youtube.com/watch?v=..."
+            autoComplete="off"
+          />
+        </Modal.Section>
+      </Modal>
 
       <Modal
         open={showLinkModal}

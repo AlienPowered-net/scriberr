@@ -1936,36 +1936,31 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 console.debug('Version button clicked');
                 setShowVersionPopover(!showVersionPopover);
               })}
-              style={{ 
-                WebkitTapHighlightColor: 'transparent',
-                touchAction: 'manipulation'
-              }}
             >
               <Icon source={ClockIcon} />
             </Button>
           </Tooltip>
           
           {/* Version History Modal */}
-          {typeof document !== 'undefined' && showVersionPopover && createPortal(
-            <Modal
-              open={showVersionPopover}
-              onClose={() => setShowVersionPopover(false)}
-              title="Version History"
-              primaryAction={{
-                content: 'Create New',
-                onAction: () => {
-                  const versionTitle = prompt('Enter a title for this version (optional):');
-                  createVersion(versionTitle);
-                  setShowVersionPopover(false);
-                }
-              }}
-              secondaryActions={[
-                {
-                  content: 'Close',
-                  onAction: () => setShowVersionPopover(false),
-                },
-              ]}
-            >
+          <Modal
+            open={showVersionPopover}
+            onClose={() => setShowVersionPopover(false)}
+            title="Version History"
+            primaryAction={{
+              content: 'Create New',
+              onAction: () => {
+                const versionTitle = prompt('Enter a title for this version (optional):');
+                createVersion(versionTitle);
+                setShowVersionPopover(false);
+              }
+            }}
+            secondaryActions={[
+              {
+                content: 'Close',
+                onAction: () => setShowVersionPopover(false),
+              },
+            ]}
+          >
             <Modal.Section>
               {versions.length > 0 ? (
                 <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
@@ -2020,9 +2015,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 </div>
               )}
             </Modal.Section>
-          </Modal>,
-          document.body
-          )}
+          </Modal>
 
           {/* Divider */}
           <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
@@ -2309,65 +2302,59 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         </Modal.Section>
       </Modal>
 
-      {typeof document !== 'undefined' && showImageModal && createPortal(
-        <Modal
-          open={showImageModal}
-          onClose={() => setShowImageModal(false)}
-          title="Insert Image"
-          primaryAction={{
-            content: 'Insert',
-            onAction: insertImage,
-          }}
-          secondaryActions={[
-            {
-              content: 'Cancel',
-              onAction: () => setShowImageModal(false),
-            },
-          ]}
-        >
-          <Modal.Section>
-            <TextField
-              label="Image URL"
-              value={imageUrl}
-              onChange={setImageUrl}
-              placeholder="https://example.com/image.jpg"
-              autoComplete="off"
-              helpText="Enter the URL of the image you want to embed"
-            />
-          </Modal.Section>
-        </Modal>,
-        document.body
-      )}
+      <Modal
+        open={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        title="Insert Image"
+        primaryAction={{
+          content: 'Insert',
+          onAction: insertImage,
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: () => setShowImageModal(false),
+          },
+        ]}
+      >
+        <Modal.Section>
+          <TextField
+            label="Image URL"
+            value={imageUrl}
+            onChange={setImageUrl}
+            placeholder="https://example.com/image.jpg"
+            autoComplete="off"
+            helpText="Enter the URL of the image you want to embed"
+          />
+        </Modal.Section>
+      </Modal>
 
-      {typeof document !== 'undefined' && showVideoModal && createPortal(
-        <Modal
-          open={showVideoModal}
-          onClose={() => setShowVideoModal(false)}
-          title="Insert Video"
-          primaryAction={{
-            content: 'Insert',
-            onAction: insertVideo,
-          }}
-          secondaryActions={[
-            {
-              content: 'Cancel',
-              onAction: () => setShowVideoModal(false),
-            },
-          ]}
-        >
-          <Modal.Section>
-            <TextField
-              label="YouTube URL"
-              value={videoUrl}
-              onChange={setVideoUrl}
-              placeholder="https://www.youtube.com/watch?v=..."
-              autoComplete="off"
-              helpText="Paste a YouTube video URL"
-            />
-          </Modal.Section>
-        </Modal>,
-        document.body
-      )}
+      <Modal
+        open={showVideoModal}
+        onClose={() => setShowVideoModal(false)}
+        title="Insert Video"
+        primaryAction={{
+          content: 'Insert',
+          onAction: insertVideo,
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: () => setShowVideoModal(false),
+          },
+        ]}
+      >
+        <Modal.Section>
+          <TextField
+            label="YouTube URL"
+            value={videoUrl}
+            onChange={setVideoUrl}
+            placeholder="https://www.youtube.com/watch?v=..."
+            autoComplete="off"
+            helpText="Paste a YouTube video URL"
+          />
+        </Modal.Section>
+      </Modal>
 
       {/* Version Modal */}
       <Modal
@@ -2429,17 +2416,16 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       </Modal>
 
       {/* Version Comparison Modal */}
-      {typeof document !== 'undefined' && showComparisonModal && createPortal(
-        <Modal
-          open={showComparisonModal}
-          onClose={() => setShowComparisonModal(false)}
-          title="Compare Versions"
-          large
-          primaryAction={{
-            content: 'Close',
-            onAction: () => setShowComparisonModal(false),
-          }}
-        >
+      <Modal
+        open={showComparisonModal}
+        onClose={() => setShowComparisonModal(false)}
+        title="Compare Versions"
+        large
+        primaryAction={{
+          content: 'Close',
+          onAction: () => setShowComparisonModal(false),
+        }}
+      >
         <Modal.Section>
           <BlockStack gap="4">
             {comparisonVersions.version1 && comparisonVersions.version2 ? (
@@ -2521,9 +2507,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             )}
           </BlockStack>
         </Modal.Section>
-      </Modal>,
-      document.body
-      )}
+      </Modal>
 
       {/* Fullscreen Editor */}
       {isExpanded && typeof document !== 'undefined' && createPortal(
@@ -3178,10 +3162,6 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     console.debug('Version button clicked (fullscreen)');
                     setShowVersionPopover(!showVersionPopover);
                   })}
-                  style={{ 
-                    WebkitTapHighlightColor: 'transparent',
-                    touchAction: 'manipulation'
-                  }}
                 >
                   <Icon source={ClockIcon} />
                 </Button>
