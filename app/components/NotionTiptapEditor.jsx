@@ -1614,7 +1614,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: 'manipulation'
                   }}
-                  icon={MenuVerticalIcon}
+                  icon={MeasurementSizeIcon}
                 />
               </Tooltip>
             }
@@ -1936,16 +1936,17 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 console.debug('Version button clicked');
                 setShowVersionPopover(!showVersionPopover);
               })}
-              icon={ClockIcon}
               style={{ 
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'manipulation'
               }}
-            />
+            >
+              <Icon source={ClockIcon} />
+            </Button>
           </Tooltip>
           
           {/* Version History Modal */}
-          <div style={{ zIndex: 10000000 }}>
+          {typeof document !== 'undefined' && showVersionPopover && createPortal(
             <Modal
               open={showVersionPopover}
               onClose={() => setShowVersionPopover(false)}
@@ -2019,8 +2020,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 </div>
               )}
             </Modal.Section>
-          </Modal>
-          </div>
+          </Modal>,
+          document.body
+          )}
 
           {/* Divider */}
           <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
@@ -2307,7 +2309,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         </Modal.Section>
       </Modal>
 
-      <div style={{ zIndex: 10000000 }}>
+      {typeof document !== 'undefined' && showImageModal && createPortal(
         <Modal
           open={showImageModal}
           onClose={() => setShowImageModal(false)}
@@ -2333,10 +2335,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               helpText="Enter the URL of the image you want to embed"
             />
           </Modal.Section>
-        </Modal>
-      </div>
+        </Modal>,
+        document.body
+      )}
 
-      <div style={{ zIndex: 10000000 }}>
+      {typeof document !== 'undefined' && showVideoModal && createPortal(
         <Modal
           open={showVideoModal}
           onClose={() => setShowVideoModal(false)}
@@ -2362,8 +2365,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               helpText="Paste a YouTube video URL"
             />
           </Modal.Section>
-        </Modal>
-      </div>
+        </Modal>,
+        document.body
+      )}
 
       {/* Version Modal */}
       <Modal
@@ -2425,7 +2429,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       </Modal>
 
       {/* Version Comparison Modal */}
-      <div style={{ zIndex: 10000000 }}>
+      {typeof document !== 'undefined' && showComparisonModal && createPortal(
         <Modal
           open={showComparisonModal}
           onClose={() => setShowComparisonModal(false)}
@@ -2517,8 +2521,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             )}
           </BlockStack>
         </Modal.Section>
-      </Modal>
-      </div>
+      </Modal>,
+      document.body
+      )}
 
       {/* Fullscreen Editor */}
       {isExpanded && typeof document !== 'undefined' && createPortal(
@@ -2851,7 +2856,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                         WebkitTapHighlightColor: 'transparent',
                         touchAction: 'manipulation'
                       }}
-                      icon={MenuVerticalIcon}
+                      icon={MeasurementSizeIcon}
                     />
                   </Tooltip>
                 }
@@ -3173,12 +3178,13 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     console.debug('Version button clicked (fullscreen)');
                     setShowVersionPopover(!showVersionPopover);
                   })}
-                  icon={ClockIcon}
                   style={{ 
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: 'manipulation'
                   }}
-                />
+                >
+                  <Icon source={ClockIcon} />
+                </Button>
               </Tooltip>
 
               {/* Divider */}

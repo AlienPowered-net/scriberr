@@ -2285,16 +2285,17 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 console.debug('Version button clicked');
                 setShowVersionPopover(!showVersionPopover);
               })}
-              icon={ClockIcon}
               style={{ 
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'manipulation'
               }}
-            />
+            >
+              <Icon source={ClockIcon} />
+            </Button>
           </Tooltip>
           
           {/* Version History Modal */}
-          <div style={{ zIndex: 10000000 }}>
+          {typeof document !== 'undefined' && showVersionPopover && createPortal(
             <Modal
               open={showVersionPopover}
               onClose={() => setShowVersionPopover(false)}
@@ -2474,8 +2475,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 )}
               </div>
             </Modal.Section>
-          </Modal>
-          </div>
+          </Modal>,
+          document.body
+          )}
 
           {/* Line Height Button with Custom Modal */}
           <button
@@ -2499,7 +2501,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             }}
             title="Line Height"
           >
-            <Icon source={MenuVerticalIcon} />
+            <Icon source={MeasurementSizeIcon} />
           </button>
 
           
@@ -4181,7 +4183,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       </div>
 
       {/* Modals */}
-      <div style={{ zIndex: 10000000 }}>
+      {typeof document !== 'undefined' && showImageModal && createPortal(
         <Modal
           open={showImageModal}
           onClose={() => setShowImageModal(false)}
@@ -4206,10 +4208,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               autoComplete="off"
             />
           </Modal.Section>
-        </Modal>
-      </div>
+        </Modal>,
+        document.body
+      )}
 
-      <div style={{ zIndex: 10000000 }}>
+      {typeof document !== 'undefined' && showVideoModal && createPortal(
         <Modal
           open={showVideoModal}
           onClose={() => setShowVideoModal(false)}
@@ -4234,8 +4237,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               autoComplete="off"
             />
           </Modal.Section>
-        </Modal>
-      </div>
+        </Modal>,
+        document.body
+      )}
 
       <Modal
         open={showLinkModal}
@@ -4275,7 +4279,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
 
       {/* Modals */}
-      <div style={{ zIndex: 10000000 }}>
+      {typeof document !== 'undefined' && showImageModal && createPortal(
         <Modal
           open={showImageModal}
           onClose={() => setShowImageModal(false)}
@@ -4300,10 +4304,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               autoComplete="off"
             />
           </Modal.Section>
-        </Modal>
-      </div>
+        </Modal>,
+        document.body
+      )}
 
-      <div style={{ zIndex: 10000000 }}>
+      {typeof document !== 'undefined' && showVideoModal && createPortal(
         <Modal
           open={showVideoModal}
           onClose={() => setShowVideoModal(false)}
@@ -4328,8 +4333,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               autoComplete="off"
             />
           </Modal.Section>
-        </Modal>
-      </div>
+        </Modal>,
+        document.body
+      )}
 
       <Modal
         open={showLinkModal}
