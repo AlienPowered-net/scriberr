@@ -1308,6 +1308,16 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     }
   };
 
+  // Debug modal state changes
+  useEffect(() => {
+    console.log('[AdvancedRTE] Modal states changed:', {
+      showVersionPopover,
+      showImageModal,
+      showVideoModal,
+      documentExists: typeof document !== 'undefined'
+    });
+  }, [showVersionPopover, showImageModal, showVideoModal]);
+
   if (!editor) {
     return (
       <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
@@ -1315,6 +1325,14 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       </div>
     );
   }
+
+  // Debug: Log render with modal states
+  console.log('[AdvancedRTE] Rendering with states:', {
+    showVersionPopover,
+    showImageModal,
+    showVideoModal,
+    documentUndefined: typeof document === 'undefined'
+  });
 
   // Fullscreen editor component that will be rendered via portal
   const FullscreenEditor = () => (
@@ -1733,7 +1751,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <i className="fas fa-link"></i>
           </button>
           <button
-            onClick={createMobileFriendlyHandler(() => setShowImageModal(true))}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Insert Image button clicked [AdvancedRTE], current state:', showImageModal);
+              setShowImageModal(true);
+              console.log('Image modal state set to true [AdvancedRTE]');
+            }}
             style={{
               padding: "6px 8px",
               border: "1px solid #dee2e6",
@@ -1754,7 +1778,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <i className="fas fa-image"></i>
           </button>
           <button
-            onClick={createMobileFriendlyHandler(() => setShowVideoModal(true))}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Insert YouTube button clicked [AdvancedRTE], current state:', showVideoModal);
+              setShowVideoModal(true);
+              console.log('Video modal state set to true [AdvancedRTE]');
+            }}
             style={{
               padding: "6px 8px",
               border: "1px solid #dee2e6",
@@ -2281,10 +2311,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <Button
               data-testid="version-toolbar-button"
               size="slim"
-              onClick={createMobileFriendlyHandler(() => {
-                console.debug('Version button clicked');
-                setShowVersionPopover(!showVersionPopover);
-              })}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Version button clicked [AdvancedRTE], current state:', showVersionPopover);
+                setShowVersionPopover(true);
+                console.log('Version modal state set to true [AdvancedRTE]');
+              }}
             >
               <Icon source={ClockIcon} />
             </Button>
@@ -2863,7 +2896,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <i className="fas fa-link"></i>
           </button>
           <button
-            onClick={createMobileFriendlyHandler(() => setShowImageModal(true))}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Insert Image button clicked [AdvancedRTE], current state:', showImageModal);
+              setShowImageModal(true);
+              console.log('Image modal state set to true [AdvancedRTE]');
+            }}
             style={{
               padding: "6px 8px",
               border: "1px solid #dee2e6",
@@ -2884,7 +2923,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <i className="fas fa-image"></i>
           </button>
           <button
-            onClick={createMobileFriendlyHandler(() => setShowVideoModal(true))}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Insert YouTube button clicked [AdvancedRTE], current state:', showVideoModal);
+              setShowVideoModal(true);
+              console.log('Video modal state set to true [AdvancedRTE]');
+            }}
             style={{
               padding: "6px 8px",
               border: "1px solid #dee2e6",
@@ -5070,6 +5115,432 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           </div>
         </div>
       )}
+
+      {/* Custom Modals - render directly to document.body with z-index above mobile wrapper */}
+      {typeof document !== 'undefined' && showVersionPopover && (() => {
+        console.log('RENDERING VERSION HISTORY MODAL VIA PORTAL [AdvancedRTE], showVersionPopover:', showVersionPopover);
+        return createPortal(
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 10000000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px',
+              overflow: 'auto'
+            }}
+            onClick={() => {
+              console.log('Modal overlay clicked - closing [AdvancedRTE]');
+              setShowVersionPopover(false);
+            }}
+          >
+            <div
+              style={{
+                position: 'relative',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                maxWidth: '600px',
+                width: '100%',
+                maxHeight: '80vh',
+                overflow: 'auto',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                zIndex: 1,
+                margin: 'auto'
+              }}
+              onClick={(e) => {
+                console.log('Modal content clicked - keeping open [AdvancedRTE]');
+                e.stopPropagation();
+              }}
+            >
+              <div style={{
+                padding: '20px',
+                borderBottom: '1px solid #e1e3e5',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Version History</h2>
+                <button
+                  onClick={() => setShowVersionPopover(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    padding: '0',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              <div style={{ padding: '20px' }}>
+                {versions.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {versions.map((version, index) => (
+                      <div key={version.id} style={{
+                        padding: '16px',
+                        border: '1px solid #e1e3e5',
+                        borderRadius: '8px',
+                        backgroundColor: '#f9fafb'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                          <div>
+                            <div style={{ fontWeight: 600, marginBottom: '4px' }}>
+                              {version.versionTitle || version.title}
+                              {version.isAuto && (
+                                <span style={{ 
+                                  marginLeft: '8px', 
+                                  fontSize: '12px', 
+                                  padding: '2px 8px', 
+                                  backgroundColor: '#dbeafe', 
+                                  color: '#1e40af',
+                                  borderRadius: '4px'
+                                }}>Auto</span>
+                              )}
+                            </div>
+                            <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                              {new Date(version.createdAt).toLocaleString()}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              restoreVersion(version);
+                              setShowVersionPopover(false);
+                            }}
+                            style={{
+                              padding: '8px 16px',
+                              backgroundColor: '#3b82f6',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '14px',
+                              fontWeight: 500
+                            }}
+                          >
+                            Restore
+                          </button>
+                        </div>
+                        {index > 0 && (
+                          <button
+                            onClick={() => {
+                              const prevVersion = versions[index - 1];
+                              compareVersions(prevVersion, version);
+                            }}
+                            style={{
+                              padding: '4px 8px',
+                              backgroundColor: 'transparent',
+                              color: '#3b82f6',
+                              border: '1px solid #3b82f6',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '12px'
+                            }}
+                          >
+                            Compare with previous
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280' }}>
+                    No versions available yet. Create your first version!
+                  </div>
+                )}
+                <div style={{ marginTop: '16px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                  <button
+                    onClick={() => {
+                      setShowVersionPopover(false);
+                      setTimeout(() => {
+                        setShowVersionNameModal(true);
+                      }, 50);
+                    }}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#10b981',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: 500
+                    }}
+                  >
+                    Create New
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        );
+      })()}
+
+      {/* Insert Image Modal */}
+      {typeof document !== 'undefined' && showImageModal && (() => {
+        console.log('RENDERING IMAGE MODAL VIA PORTAL [AdvancedRTE], showImageModal:', showImageModal);
+        return createPortal(
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 10000000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px',
+              overflow: 'auto'
+            }}
+            onClick={() => {
+              console.log('Image modal overlay clicked - closing [AdvancedRTE]');
+              setShowImageModal(false);
+            }}
+          >
+            <div
+              style={{
+                position: 'relative',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                maxWidth: '500px',
+                width: '100%',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                zIndex: 1,
+                margin: 'auto'
+              }}
+              onClick={(e) => {
+                console.log('Image modal content clicked - keeping open [AdvancedRTE]');
+                e.stopPropagation();
+              }}
+            >
+              <div style={{
+                padding: '20px',
+                borderBottom: '1px solid #e1e3e5',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Insert Image</h2>
+                <button
+                  onClick={() => setShowImageModal(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    padding: '0',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              <div style={{ padding: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Image URL</label>
+                <input
+                  type="text"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  placeholder="https://example.com/image.jpg"
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
+                  Enter the URL of the image you want to embed
+                </div>
+                <div style={{ marginTop: '16px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                  <button
+                    onClick={() => setShowImageModal(false)}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#f3f4f6',
+                      color: '#374151',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: 500
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      insertImage();
+                      setShowImageModal(false);
+                    }}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#3b82f6',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: 500
+                    }}
+                  >
+                    Insert
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        );
+      })()}
+
+      {/* Insert YouTube Video Modal */}
+      {typeof document !== 'undefined' && showVideoModal && (() => {
+        console.log('RENDERING YOUTUBE MODAL VIA PORTAL [AdvancedRTE], showVideoModal:', showVideoModal);
+        return createPortal(
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 10000000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px',
+              overflow: 'auto'
+            }}
+            onClick={() => {
+              console.log('Video modal overlay clicked - closing [AdvancedRTE]');
+              setShowVideoModal(false);
+            }}
+          >
+            <div
+              style={{
+                position: 'relative',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                maxWidth: '500px',
+                width: '100%',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                zIndex: 1,
+                margin: 'auto'
+              }}
+              onClick={(e) => {
+                console.log('Video modal content clicked - keeping open [AdvancedRTE]');
+                e.stopPropagation();
+              }}
+            >
+              <div style={{
+                padding: '20px',
+                borderBottom: '1px solid #e1e3e5',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Insert YouTube Video</h2>
+                <button
+                  onClick={() => setShowVideoModal(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    padding: '0',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              <div style={{ padding: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>YouTube URL</label>
+                <input
+                  type="text"
+                  value={videoUrl}
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
+                  Paste a YouTube video URL
+                </div>
+                <div style={{ marginTop: '16px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                  <button
+                    onClick={() => setShowVideoModal(false)}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#f3f4f6',
+                      color: '#374151',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: 500
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      insertVideo();
+                      setShowVideoModal(false);
+                    }}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#3b82f6',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: 500
+                    }}
+                  >
+                    Insert
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        );
+      })()}
 
     </>
   );
