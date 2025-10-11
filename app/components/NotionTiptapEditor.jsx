@@ -63,7 +63,9 @@ import {
   DiscountIcon,
   OrderDraftIcon,
   ProfileIcon,
-  ClockIcon
+  ClockIcon,
+  MenuVerticalIcon,
+  ChecklistIcon
 } from '@shopify/polaris-icons';
 import './NotionTiptapEditor.css';
 
@@ -1612,9 +1614,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: 'manipulation'
                   }}
-                >
-                  <TextIcon icon="sort" />
-                </Button>
+                  icon={MenuVerticalIcon}
+                />
               </Tooltip>
             }
             onClose={() => setShowLineHeightPopover(false)}
@@ -1730,9 +1731,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 size="slim"
                 pressed={editor.isActive('taskList')}
                 onClick={() => editor.chain().focus().toggleTaskList().run()}
-              >
-                <TextIcon icon="checkbox" />
-              </Button>
+                icon={ChecklistIcon}
+              />
             </Tooltip>
           </ButtonGroup>
 
@@ -1938,38 +1938,33 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               })}
               icon={ClockIcon}
               style={{ 
-                backgroundColor: '#f0f0f0', 
-                border: '2px solid #007ace',
-                minWidth: '32px',
-                minHeight: '32px',
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'manipulation'
               }}
-            >
-              🕐
-            </Button>
+            />
           </Tooltip>
           
           {/* Version History Modal */}
-          <Modal
-            open={showVersionPopover}
-            onClose={() => setShowVersionPopover(false)}
-            title="Version History"
-            primaryAction={{
-              content: 'Create New',
-              onAction: () => {
-                const versionTitle = prompt('Enter a title for this version (optional):');
-                createVersion(versionTitle);
-                setShowVersionPopover(false);
-              }
-            }}
-            secondaryActions={[
-              {
-                content: 'Close',
-                onAction: () => setShowVersionPopover(false),
-              },
-            ]}
-          >
+          <div style={{ zIndex: 10000000 }}>
+            <Modal
+              open={showVersionPopover}
+              onClose={() => setShowVersionPopover(false)}
+              title="Version History"
+              primaryAction={{
+                content: 'Create New',
+                onAction: () => {
+                  const versionTitle = prompt('Enter a title for this version (optional):');
+                  createVersion(versionTitle);
+                  setShowVersionPopover(false);
+                }
+              }}
+              secondaryActions={[
+                {
+                  content: 'Close',
+                  onAction: () => setShowVersionPopover(false),
+                },
+              ]}
+            >
             <Modal.Section>
               {versions.length > 0 ? (
                 <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
@@ -2025,6 +2020,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               )}
             </Modal.Section>
           </Modal>
+          </div>
 
           {/* Divider */}
           <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
@@ -2311,59 +2307,63 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         </Modal.Section>
       </Modal>
 
-      <Modal
-        open={showImageModal}
-        onClose={() => setShowImageModal(false)}
-        title="Insert Image"
-        primaryAction={{
-          content: 'Insert',
-          onAction: insertImage,
-        }}
-        secondaryActions={[
-          {
-            content: 'Cancel',
-            onAction: () => setShowImageModal(false),
-          },
-        ]}
-      >
-        <Modal.Section>
-          <TextField
-            label="Image URL"
-            value={imageUrl}
-            onChange={setImageUrl}
-            placeholder="https://example.com/image.jpg"
-            autoComplete="off"
-            helpText="Enter the URL of the image you want to embed"
-          />
-        </Modal.Section>
-      </Modal>
+      <div style={{ zIndex: 10000000 }}>
+        <Modal
+          open={showImageModal}
+          onClose={() => setShowImageModal(false)}
+          title="Insert Image"
+          primaryAction={{
+            content: 'Insert',
+            onAction: insertImage,
+          }}
+          secondaryActions={[
+            {
+              content: 'Cancel',
+              onAction: () => setShowImageModal(false),
+            },
+          ]}
+        >
+          <Modal.Section>
+            <TextField
+              label="Image URL"
+              value={imageUrl}
+              onChange={setImageUrl}
+              placeholder="https://example.com/image.jpg"
+              autoComplete="off"
+              helpText="Enter the URL of the image you want to embed"
+            />
+          </Modal.Section>
+        </Modal>
+      </div>
 
-      <Modal
-        open={showVideoModal}
-        onClose={() => setShowVideoModal(false)}
-        title="Insert Video"
-        primaryAction={{
-          content: 'Insert',
-          onAction: insertVideo,
-        }}
-        secondaryActions={[
-          {
-            content: 'Cancel',
-            onAction: () => setShowVideoModal(false),
-          },
-        ]}
-      >
-        <Modal.Section>
-          <TextField
-            label="YouTube URL"
-            value={videoUrl}
-            onChange={setVideoUrl}
-            placeholder="https://www.youtube.com/watch?v=..."
-            autoComplete="off"
-            helpText="Paste a YouTube video URL"
-          />
-        </Modal.Section>
-      </Modal>
+      <div style={{ zIndex: 10000000 }}>
+        <Modal
+          open={showVideoModal}
+          onClose={() => setShowVideoModal(false)}
+          title="Insert Video"
+          primaryAction={{
+            content: 'Insert',
+            onAction: insertVideo,
+          }}
+          secondaryActions={[
+            {
+              content: 'Cancel',
+              onAction: () => setShowVideoModal(false),
+            },
+          ]}
+        >
+          <Modal.Section>
+            <TextField
+              label="YouTube URL"
+              value={videoUrl}
+              onChange={setVideoUrl}
+              placeholder="https://www.youtube.com/watch?v=..."
+              autoComplete="off"
+              helpText="Paste a YouTube video URL"
+            />
+          </Modal.Section>
+        </Modal>
+      </div>
 
       {/* Version Modal */}
       <Modal
@@ -2425,16 +2425,17 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       </Modal>
 
       {/* Version Comparison Modal */}
-      <Modal
-        open={showComparisonModal}
-        onClose={() => setShowComparisonModal(false)}
-        title="Compare Versions"
-        large
-        primaryAction={{
-          content: 'Close',
-          onAction: () => setShowComparisonModal(false),
-        }}
-      >
+      <div style={{ zIndex: 10000000 }}>
+        <Modal
+          open={showComparisonModal}
+          onClose={() => setShowComparisonModal(false)}
+          title="Compare Versions"
+          large
+          primaryAction={{
+            content: 'Close',
+            onAction: () => setShowComparisonModal(false),
+          }}
+        >
         <Modal.Section>
           <BlockStack gap="4">
             {comparisonVersions.version1 && comparisonVersions.version2 ? (
@@ -2517,6 +2518,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           </BlockStack>
         </Modal.Section>
       </Modal>
+      </div>
 
       {/* Fullscreen Editor */}
       {isExpanded && typeof document !== 'undefined' && createPortal(
@@ -2849,9 +2851,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                         WebkitTapHighlightColor: 'transparent',
                         touchAction: 'manipulation'
                       }}
-                    >
-                      <TextIcon icon="sort" />
-                    </Button>
+                      icon={MenuVerticalIcon}
+                    />
                   </Tooltip>
                 }
                 onClose={() => setShowLineHeightPopover(false)}
@@ -2967,9 +2968,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     size="slim"
                     pressed={editor.isActive('taskList')}
                     onClick={() => editor.chain().focus().toggleTaskList().run()}
-                  >
-                    <TextIcon icon="checkbox" />
-                  </Button>
+                    icon={ChecklistIcon}
+                  />
                 </Tooltip>
               </ButtonGroup>
 
@@ -3175,16 +3175,10 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   })}
                   icon={ClockIcon}
                   style={{ 
-                    backgroundColor: '#f0f0f0', 
-                    border: '2px solid #007ace',
-                    minWidth: '32px',
-                    minHeight: '32px',
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: 'manipulation'
                   }}
-                >
-                  🕐
-                </Button>
+                />
               </Tooltip>
 
               {/* Divider */}

@@ -47,7 +47,9 @@ import {
   OrderDraftIcon,
   ProfileIcon,
   MeasurementSizeIcon,
-  ClockIcon
+  ClockIcon,
+  MenuVerticalIcon,
+  ChecklistIcon
 } from '@shopify/polaris-icons';
 
 // Helper function to ensure handlers work properly on both mobile and desktop
@@ -1590,7 +1592,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             }}
             title="Task List"
           >
-            <CheckboxIcon />
+            <Icon source={ChecklistIcon} />
           </button>
           
           <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
@@ -2285,10 +2287,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               })}
               icon={ClockIcon}
               style={{ 
-                backgroundColor: '#f0f0f0', 
-                border: '2px solid #007ace',
-                minWidth: '32px',
-                minHeight: '32px',
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'manipulation'
               }}
@@ -2296,20 +2294,21 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           </Tooltip>
           
           {/* Version History Modal */}
-          <Modal
-            open={showVersionPopover}
-            onClose={() => setShowVersionPopover(false)}
-            title="Version History"
-            large
-            primaryAction={{
-              content: 'Create New',
-              onAction: () => {
-                setShowVersionPopover(false);
-                setTimeout(() => {
-                  setShowVersionNameModal(true);
-                }, 50);
-              }
-            }}
+          <div style={{ zIndex: 10000000 }}>
+            <Modal
+              open={showVersionPopover}
+              onClose={() => setShowVersionPopover(false)}
+              title="Version History"
+              large
+              primaryAction={{
+                content: 'Create New',
+                onAction: () => {
+                  setShowVersionPopover(false);
+                  setTimeout(() => {
+                    setShowVersionNameModal(true);
+                  }, 50);
+                }
+              }}
             secondaryActions={[
               {
                 content: compareMode ? 'Cancel Compare' : 'Compare Versions',
@@ -2476,6 +2475,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               </div>
             </Modal.Section>
           </Modal>
+          </div>
 
           {/* Line Height Button with Custom Modal */}
           <button
@@ -2499,7 +2499,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             }}
             title="Line Height"
           >
-            <TextIcon icon="lineHeight" />
+            <Icon source={MenuVerticalIcon} />
           </button>
 
           
@@ -2727,7 +2727,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             }}
             title="Task List"
           >
-            <CheckboxIcon />
+            <Icon source={ChecklistIcon} />
           </button>
           
           <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
@@ -4181,57 +4181,61 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       </div>
 
       {/* Modals */}
-      <Modal
-        open={showImageModal}
-        onClose={() => setShowImageModal(false)}
-        title="Insert Image"
-        primaryAction={{
-          content: 'Insert',
-          onAction: insertImage,
-        }}
-        secondaryActions={[
-          {
-            content: 'Cancel',
-            onAction: () => setShowImageModal(false),
-          },
-        ]}
-      >
-        <Modal.Section>
-          <TextField
-            label="Image URL"
-            value={imageUrl}
-            onChange={setImageUrl}
-            placeholder="https://example.com/image.jpg"
-            autoComplete="off"
-          />
-        </Modal.Section>
-      </Modal>
+      <div style={{ zIndex: 10000000 }}>
+        <Modal
+          open={showImageModal}
+          onClose={() => setShowImageModal(false)}
+          title="Insert Image"
+          primaryAction={{
+            content: 'Insert',
+            onAction: insertImage,
+          }}
+          secondaryActions={[
+            {
+              content: 'Cancel',
+              onAction: () => setShowImageModal(false),
+            },
+          ]}
+        >
+          <Modal.Section>
+            <TextField
+              label="Image URL"
+              value={imageUrl}
+              onChange={setImageUrl}
+              placeholder="https://example.com/image.jpg"
+              autoComplete="off"
+            />
+          </Modal.Section>
+        </Modal>
+      </div>
 
-      <Modal
-        open={showVideoModal}
-        onClose={() => setShowVideoModal(false)}
-        title="Insert Video"
-        primaryAction={{
-          content: 'Insert',
-          onAction: insertVideo,
-        }}
-        secondaryActions={[
-          {
-            content: 'Cancel',
-            onAction: () => setShowVideoModal(false),
-          },
-        ]}
-      >
-        <Modal.Section>
-          <TextField
-            label="YouTube URL"
-            value={videoUrl}
-            onChange={setVideoUrl}
-            placeholder="https://www.youtube.com/watch?v=..."
-            autoComplete="off"
-          />
-        </Modal.Section>
-      </Modal>
+      <div style={{ zIndex: 10000000 }}>
+        <Modal
+          open={showVideoModal}
+          onClose={() => setShowVideoModal(false)}
+          title="Insert Video"
+          primaryAction={{
+            content: 'Insert',
+            onAction: insertVideo,
+          }}
+          secondaryActions={[
+            {
+              content: 'Cancel',
+              onAction: () => setShowVideoModal(false),
+            },
+          ]}
+        >
+          <Modal.Section>
+            <TextField
+              label="YouTube URL"
+              value={videoUrl}
+              onChange={setVideoUrl}
+              placeholder="https://www.youtube.com/watch?v=..."
+              autoComplete="off"
+            />
+          </Modal.Section>
+        </Modal>
+      </div>
 
       <Modal
         open={showLinkModal}
@@ -4271,57 +4275,61 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
 
       {/* Modals */}
-      <Modal
-        open={showImageModal}
-        onClose={() => setShowImageModal(false)}
-        title="Insert Image"
-        primaryAction={{
-          content: 'Insert',
-          onAction: insertImage,
-        }}
-        secondaryActions={[
-          {
-            content: 'Cancel',
-            onAction: () => setShowImageModal(false),
-          },
-        ]}
-      >
-        <Modal.Section>
-          <TextField
-            label="Image URL"
-            value={imageUrl}
-            onChange={setImageUrl}
-            placeholder="https://example.com/image.jpg"
-            autoComplete="off"
-          />
-        </Modal.Section>
-      </Modal>
+      <div style={{ zIndex: 10000000 }}>
+        <Modal
+          open={showImageModal}
+          onClose={() => setShowImageModal(false)}
+          title="Insert Image"
+          primaryAction={{
+            content: 'Insert',
+            onAction: insertImage,
+          }}
+          secondaryActions={[
+            {
+              content: 'Cancel',
+              onAction: () => setShowImageModal(false),
+            },
+          ]}
+        >
+          <Modal.Section>
+            <TextField
+              label="Image URL"
+              value={imageUrl}
+              onChange={setImageUrl}
+              placeholder="https://example.com/image.jpg"
+              autoComplete="off"
+            />
+          </Modal.Section>
+        </Modal>
+      </div>
 
-      <Modal
-        open={showVideoModal}
-        onClose={() => setShowVideoModal(false)}
-        title="Insert Video"
-        primaryAction={{
-          content: 'Insert',
-          onAction: insertVideo,
-        }}
-        secondaryActions={[
-          {
-            content: 'Cancel',
-            onAction: () => setShowVideoModal(false),
-          },
-        ]}
-      >
-        <Modal.Section>
-          <TextField
-            label="YouTube URL"
-            value={videoUrl}
-            onChange={setVideoUrl}
-            placeholder="https://www.youtube.com/watch?v=..."
-            autoComplete="off"
-          />
-        </Modal.Section>
-      </Modal>
+      <div style={{ zIndex: 10000000 }}>
+        <Modal
+          open={showVideoModal}
+          onClose={() => setShowVideoModal(false)}
+          title="Insert Video"
+          primaryAction={{
+            content: 'Insert',
+            onAction: insertVideo,
+          }}
+          secondaryActions={[
+            {
+              content: 'Cancel',
+              onAction: () => setShowVideoModal(false),
+            },
+          ]}
+        >
+          <Modal.Section>
+            <TextField
+              label="YouTube URL"
+              value={videoUrl}
+              onChange={setVideoUrl}
+              placeholder="https://www.youtube.com/watch?v=..."
+              autoComplete="off"
+            />
+          </Modal.Section>
+        </Modal>
+      </div>
 
       <Modal
         open={showLinkModal}
