@@ -3119,227 +3119,388 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         document.body
       )}
 
-      {/* Portaled Modals - render directly to document.body to escape stacking contexts */}
-      {typeof document !== 'undefined' && createPortal(
-        <>
-          <Modal
-            open={showVersionPopover}
-            onClose={() => setShowVersionPopover(false)}
-            title="Version History"
-            primaryAction={{
-              content: 'Create New',
-              onAction: () => {
-                const versionTitle = prompt('Enter a title for this version (optional):');
-                createVersion(versionTitle);
-                setShowVersionPopover(false);
-              }
+      {/* Custom Modals - render directly to document.body with z-index above mobile wrapper */}
+      {typeof document !== 'undefined' && showVersionPopover && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 10000000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setShowVersionPopover(false)}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              maxWidth: '600px',
+              width: '100%',
+              maxHeight: '80vh',
+              overflow: 'auto',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
             }}
-            secondaryActions={[
-              {
-                content: 'Close',
-                onAction: () => setShowVersionPopover(false),
-              },
-            ]}
+            onClick={(e) => e.stopPropagation()}
           >
-            <Modal.Section>
+            <div style={{
+              padding: '20px',
+              borderBottom: '1px solid #e1e3e5',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Version History</h2>
+              <button
+                onClick={() => setShowVersionPopover(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  padding: '0',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                ×
+              </button>
+            </div>
               {versions.length > 0 ? (
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                  <BlockStack gap="3">
-                    {versions.map((version, index) => (
-                      <Card key={version.id} padding="3">
-                        <Card.Section>
-                          <InlineStack gap="3" align="space-between">
-                            <BlockStack gap="1">
-                              <InlineStack gap="2" align="start">
-                                <Text variant="bodyMd" fontWeight="medium">
-                                  {version.versionTitle || version.title}
-                                </Text>
-                                {version.isAuto && (
-                                  <Badge size="small" tone="info">Auto</Badge>
-                                )}
-                              </InlineStack>
-                              <Text variant="bodySm" color="subdued">
-                                {new Date(version.createdAt).toLocaleString()}
-                              </Text>
-                              {index > 0 && (
-                                <Button
-                                  size="micro"
-                                  variant="plain"
-                                  onClick={() => {
-                                    const prevVersion = versions[index - 1];
-                                    compareVersions(prevVersion, version);
-                                  }}
-                                >
-                                  Compare with previous
-                                </Button>
-                              )}
-                            </BlockStack>
-                            <Button
-                              size="slim"
-                              onClick={() => restoreVersion(version)}
-                            >
-                              Restore
-                            </Button>
-                          </InlineStack>
-                        </Card.Section>
-                      </Card>
-                    ))}
-                  </BlockStack>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {versions.map((version, index) => (
+                    <div key={version.id} style={{
+                      padding: '16px',
+                      border: '1px solid #e1e3e5',
+                      borderRadius: '8px',
+                      backgroundColor: '#f9fafb'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                        <div>
+                          <div style={{ fontWeight: 600, marginBottom: '4px' }}>
+                            {version.versionTitle || version.title}
+                            {version.isAuto && (
+                              <span style={{ 
+                                marginLeft: '8px', 
+                                fontSize: '12px', 
+                                padding: '2px 8px', 
+                                backgroundColor: '#dbeafe', 
+                                color: '#1e40af',
+                                borderRadius: '4px'
+                              }}>Auto</span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                            {new Date(version.createdAt).toLocaleString()}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            restoreVersion(version);
+                            setShowVersionPopover(false);
+                          }}
+                          style={{
+                            padding: '8px 16px',
+                            backgroundColor: '#3b82f6',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            fontWeight: 500
+                          }}
+                        >
+                          Restore
+                        </button>
+                      </div>
+                      {index > 0 && (
+                        <button
+                          onClick={() => {
+                            const prevVersion = versions[index - 1];
+                            compareVersions(prevVersion, version);
+                          }}
+                          style={{
+                            padding: '4px 8px',
+                            backgroundColor: 'transparent',
+                            color: '#3b82f6',
+                            border: '1px solid #3b82f6',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '12px'
+                          }}
+                        >
+                          Compare with previous
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
               ) : (
-                <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-                  <Text variant="bodyMd" color="subdued">
-                    No versions available yet. Create your first version!
-                  </Text>
+                <div style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280' }}>
+                  No versions available yet. Create your first version!
                 </div>
               )}
-            </Modal.Section>
-          </Modal>
+              <div style={{ marginTop: '16px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => {
+                    const versionTitle = prompt('Enter a title for this version (optional):');
+                    createVersion(versionTitle);
+                    setShowVersionPopover(false);
+                  }}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 500
+                  }}
+                >
+                  Create New
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
-          <Modal
-            open={showImageModal}
-            onClose={() => setShowImageModal(false)}
-            title="Insert Image"
-            primaryAction={{
-              content: 'Insert',
-              onAction: insertImage,
+      {/* Insert Image Modal */}
+      {typeof document !== 'undefined' && showImageModal && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 10000000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setShowImageModal(false)}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              maxWidth: '500px',
+              width: '100%',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
             }}
-            secondaryActions={[
-              {
-                content: 'Cancel',
-                onAction: () => setShowImageModal(false),
-              },
-            ]}
+            onClick={(e) => e.stopPropagation()}
           >
-            <Modal.Section>
-              <TextField
-                label="Image URL"
+            <div style={{
+              padding: '20px',
+              borderBottom: '1px solid #e1e3e5',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Insert Image</h2>
+              <button
+                onClick={() => setShowImageModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  padding: '0',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ padding: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Image URL</label>
+              <input
+                type="text"
                 value={imageUrl}
-                onChange={setImageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
                 placeholder="https://example.com/image.jpg"
-                autoComplete="off"
-                helpText="Enter the URL of the image you want to embed"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  boxSizing: 'border-box'
+                }}
               />
-            </Modal.Section>
-          </Modal>
+              <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
+                Enter the URL of the image you want to embed
+              </div>
+              <div style={{ marginTop: '16px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setShowImageModal(false)}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#f3f4f6',
+                    color: '#374151',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 500
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    insertImage();
+                    setShowImageModal(false);
+                  }}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 500
+                  }}
+                >
+                  Insert
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
-          <Modal
-            open={showVideoModal}
-            onClose={() => setShowVideoModal(false)}
-            title="Insert Video"
-            primaryAction={{
-              content: 'Insert',
-              onAction: insertVideo,
+      {/* Insert YouTube Video Modal */}
+      {typeof document !== 'undefined' && showVideoModal && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 10000000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }}
+          onClick={() => setShowVideoModal(false)}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              maxWidth: '500px',
+              width: '100%',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
             }}
-            secondaryActions={[
-              {
-                content: 'Cancel',
-                onAction: () => setShowVideoModal(false),
-              },
-            ]}
+            onClick={(e) => e.stopPropagation()}
           >
-            <Modal.Section>
-              <TextField
-                label="YouTube URL"
+            <div style={{
+              padding: '20px',
+              borderBottom: '1px solid #e1e3e5',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Insert YouTube Video</h2>
+              <button
+                onClick={() => setShowVideoModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  padding: '0',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ padding: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>YouTube URL</label>
+              <input
+                type="text"
                 value={videoUrl}
-                onChange={setVideoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
                 placeholder="https://www.youtube.com/watch?v=..."
-                autoComplete="off"
-                helpText="Paste a YouTube video URL"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  boxSizing: 'border-box'
+                }}
               />
-            </Modal.Section>
-          </Modal>
-
-          <Modal
-            open={showComparisonModal}
-            onClose={() => setShowComparisonModal(false)}
-            title="Compare Versions"
-            large
-            primaryAction={{
-              content: 'Close',
-              onAction: () => setShowComparisonModal(false),
-            }}
-          >
-            <Modal.Section>
-              <BlockStack gap="4">
-                {comparisonVersions.version1 && comparisonVersions.version2 ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div>
-                      <Card>
-                        <Card.Section>
-                          <BlockStack gap="2">
-                            <Text variant="headingMd">
-                              {comparisonVersions.version1.versionTitle || comparisonVersions.version1.title}
-                            </Text>
-                            <Text variant="bodySm" color="subdued">
-                              {new Date(comparisonVersions.version1.createdAt).toLocaleString()}
-                            </Text>
-                            <div 
-                              style={{ 
-                                border: '1px solid #e1e3e5', 
-                                borderRadius: '4px', 
-                                padding: '12px',
-                                backgroundColor: '#f6f6f7',
-                                maxHeight: '400px',
-                                overflowY: 'auto'
-                              }}
-                              dangerouslySetInnerHTML={{ 
-                                __html: comparisonVersions.version1.content 
-                              }}
-                            />
-                            <Button
-                              size="slim"
-                              onClick={() => restoreVersion(comparisonVersions.version1)}
-                            >
-                              Restore This Version
-                            </Button>
-                          </BlockStack>
-                        </Card.Section>
-                      </Card>
-                    </div>
-                    <div>
-                      <Card>
-                        <Card.Section>
-                          <BlockStack gap="2">
-                            <Text variant="headingMd">
-                              {comparisonVersions.version2.versionTitle || comparisonVersions.version2.title}
-                            </Text>
-                            <Text variant="bodySm" color="subdued">
-                              {new Date(comparisonVersions.version2.createdAt).toLocaleString()}
-                            </Text>
-                            <div 
-                              style={{ 
-                                border: '1px solid #e1e3e5', 
-                                borderRadius: '4px', 
-                                padding: '12px',
-                                backgroundColor: '#f6f6f7',
-                                maxHeight: '400px',
-                                overflowY: 'auto'
-                              }}
-                              dangerouslySetInnerHTML={{ 
-                                __html: comparisonVersions.version2.content 
-                              }}
-                            />
-                            <Button
-                              size="slim"
-                              onClick={() => restoreVersion(comparisonVersions.version2)}
-                            >
-                              Restore This Version
-                            </Button>
-                          </BlockStack>
-                        </Card.Section>
-                      </Card>
-                    </div>
-                  </div>
-                ) : (
-                  <Text variant="bodyMd" color="subdued">
-                    No versions selected for comparison.
-                  </Text>
-                )}
-              </BlockStack>
-            </Modal.Section>
-          </Modal>
-        </>,
+              <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
+                Paste a YouTube video URL
+              </div>
+              <div style={{ marginTop: '16px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setShowVideoModal(false)}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#f3f4f6',
+                    color: '#374151',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 500
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    insertVideo();
+                    setShowVideoModal(false);
+                  }}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 500
+                  }}
+                >
+                  Insert
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
         document.body
       )}
     </div>
