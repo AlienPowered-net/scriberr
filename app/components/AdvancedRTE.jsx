@@ -190,7 +190,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [showLineHeightPopover, setShowLineHeightPopover] = useState(false);
   const [showLineHeightPicker, setShowLineHeightPicker] = useState(false);
   const [showVersionPopover, setShowVersionPopover] = useState(false);
-  const [showVersionPicker, setShowVersionPicker] = useState(false);
   const [showVersionNameModal, setShowVersionNameModal] = useState(false);
   const [versionNameInput, setVersionNameInput] = useState('');
   const [versions, setVersions] = useState([]);
@@ -2276,37 +2275,65 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           </button>
 
           {/* Version Management */}
-              <Tooltip content="Version History">
-            <button
-                  data-testid="version-toolbar-button"
+          <Tooltip content="Version History">
+            <Button
+              data-testid="version-toolbar-button"
+              size="slim"
               onClick={createMobileFriendlyHandler(() => {
-                    console.debug('Version button clicked');
-                setShowVersionPicker(!showVersionPicker);
+                console.debug('Version button clicked');
+                setShowVersionPopover(!showVersionPopover);
               })}
-                  style={{ 
-                padding: "6px 8px",
-                border: "1px solid #dee2e6",
-                borderRadius: "4px",
-                backgroundColor: showVersionPicker ? '#007bff' : 'white',
-                color: showVersionPicker ? 'white' : '#495057',
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                fontSize: "13px",
-                minWidth: "32px",
-                height: "32px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+              icon={ClockIcon}
+              style={{ 
+                backgroundColor: '#f0f0f0', 
+                border: '2px solid #007ace',
+                minWidth: '32px',
+                minHeight: '32px',
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'manipulation'
               }}
-              title="Version History"
-            >
-              <i className="fas fa-clock"></i>
-            </button>
+            />
           </Tooltip>
           
-          {/* Version History Custom Modal */}
+          {/* Version History Modal */}
+          <Modal
+            open={showVersionPopover}
+            onClose={() => setShowVersionPopover(false)}
+            title="Version History"
+            large
+            primaryAction={{
+              content: 'Create New',
+              onAction: () => {
+                setShowVersionPopover(false);
+                setTimeout(() => {
+                  setShowVersionNameModal(true);
+                }, 50);
+              }
+            }}
+            secondaryActions={[
+              {
+                content: compareMode ? 'Cancel Compare' : 'Compare Versions',
+                onAction: () => {
+                  if (compareMode) {
+                    setCompareMode(false);
+                    setSelectedVersions({ version1: null, version2: null });
+                    setComparisonResult(null);
+                  } else {
+                    setCompareMode(true);
+                    setComparisonResult(null);
+                  }
+                }
+              },
+              ...(compareMode && selectedVersions.version1 && selectedVersions.version2 ? [{
+                content: 'View Diff',
+                onAction: compareVersions
+              }] : []),
+              {
+                content: 'Close',
+                onAction: () => setShowVersionPopover(false),
+              },
+            ]}
+          >
             <Modal.Section>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 
@@ -2447,226 +2474,33 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   </div>
                 )}
               </div>
-      {/* Version History Picker */}
-      {showVersionPicker && (
-        <div style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          backgroundColor: 'white',
-          border: '1px solid #dee2e6',
-          borderRadius: '8px',
-          padding: '16px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          zIndex: 99999995,
-          maxWidth: '90vw',
-          maxHeight: '80vh',
-          width: '500px',
-          overflow: 'auto'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Version History</h3>
-            <button 
-              onClick={() => setShowVersionPicker(false)}
-              style={{
-                padding: '4px 8px',
-                backgroundColor: 'transparent',
-                border: 'none',
-                fontSize: '18px',
-                cursor: 'pointer'
-              }}
-            >
-              ×
-            </button>
-            </div>
-
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-              <button
-              onClick={() => {
-                setShowVersionPicker(false);
-                setTimeout(() => {
-                  setShowVersionNameModal(true);
-                }, 50);
-              }}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
-            >
-              Create New
-            </button>
-            
-            <button 
-              onClick={() => {
-                if (compareMode) {
-                  setCompareMode(false);
-                  setSelectedVersions({ version1: null, version2: null });
-                  setComparisonResult(null);
-                } else {
-                  setCompareMode(true);
-                  setComparisonResult(null);
-                }
-              }}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: compareMode ? '#dc3545' : '#6c757d',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
-            >
-              {compareMode ? 'Cancel Compare' : 'Compare Versions'}
-            </button>
-          </div>
-
-          <div style={{ maxHeight: '400px', overflow: 'auto' }}>
-            {versions && versions.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {versions.map((version, index) => (
-                  <div key={version.id || index} style={{
-                    border: '1px solid #dee2e6',
-                    borderRadius: '6px',
-                    padding: '12px',
-                    backgroundColor: '#f8f9fa'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                      <div>
-                        <div style={{ fontWeight: '600', fontSize: '14px' }}>
-                          {version.versionTitle || version.title || `Version ${index + 1}`}
-                        </div>
-                        <div style={{ fontSize: '12px', color: '#6c757d' }}>
-                          {new Date(version.createdAt).toLocaleString()}
-                        </div>
-                      </div>
-                      
-                      {compareMode && (
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          <button
-                            onClick={() => {
-                              if (selectedVersions.version1?.id === version.id) {
-                                setSelectedVersions(prev => ({ ...prev, version1: null }));
-                              } else if (!selectedVersions.version1) {
-                                setSelectedVersions(prev => ({ ...prev, version1: version }));
-                              }
-                            }}
-                            style={{
-                              padding: '4px 8px',
-                              backgroundColor: selectedVersions.version1?.id === version.id ? '#007bff' : '#e9ecef',
-                              color: selectedVersions.version1?.id === version.id ? 'white' : '#495057',
-                              border: 'none',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              fontSize: '12px'
-                            }}
-                          >
-                            {selectedVersions.version1?.id === version.id ? 'Selected 1' : 'Select 1'}
-                          </button>
-                          
-                          <button
-                            onClick={() => {
-                              if (selectedVersions.version2?.id === version.id) {
-                                setSelectedVersions(prev => ({ ...prev, version2: null }));
-                              } else if (!selectedVersions.version2) {
-                                setSelectedVersions(prev => ({ ...prev, version2: version }));
-                              }
-                            }}
-                            style={{
-                              padding: '4px 8px',
-                              backgroundColor: selectedVersions.version2?.id === version.id ? '#28a745' : '#e9ecef',
-                              color: selectedVersions.version2?.id === version.id ? 'white' : '#495057',
-                              border: 'none',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              fontSize: '12px'
-                            }}
-                          >
-                            {selectedVersions.version2?.id === version.id ? 'Selected 2' : 'Select 2'}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div style={{ fontSize: '12px', color: '#6c757d', marginBottom: '8px' }}>
-                      {version.content ? version.content.substring(0, 100) + '...' : 'No content preview'}
-                    </div>
-                    
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        onClick={async () => {
-                          try {
-                            if (version.snapshot) {
-                              editor.commands.setContent(version.snapshot);
-                            } else {
-                              editor.commands.setContent(version.content);
-                            }
-                            
-                            setShowVersionPicker(false);
-                            setHasUnsavedChanges(false);
-                            
-                            await loadVersions();
-                          } catch (error) {
-                            console.error('Error restoring version:', error);
-                          }
-                        }}
-                        style={{
-                          padding: '6px 12px',
-                          backgroundColor: '#28a745',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
-                      >
-                        Restore
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-                <div style={{ fontSize: '14px', color: '#6c757d' }}>
-                  No versions available yet. Create your first version!
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+            </Modal.Section>
+          </Modal>
 
           {/* Line Height Button with Custom Modal */}
           <button
             onClick={createMobileFriendlyHandler(() => setShowLineHeightPicker(!showLineHeightPicker))}
-                style={{
-                  padding: "6px 8px",
-                  border: "1px solid #dee2e6",
-                  borderRadius: "4px",
+            style={{
+              padding: "6px 8px",
+              border: "1px solid #dee2e6",
+              borderRadius: "4px",
               backgroundColor: showLineHeightPicker ? '#007bff' : 'white',
               color: showLineHeightPicker ? 'white' : '#495057',
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  fontSize: "13px",
-                  minWidth: "32px",
-                  height: "32px",
-                  display: "flex",
-                  alignItems: "center",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              fontSize: "13px",
+              minWidth: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
               justifyContent: "center",
               WebkitTapHighlightColor: 'transparent',
               touchAction: 'manipulation'
-                }}
-                title="Line Height"
-              >
-                <TextIcon icon="lineHeight" />
-              </button>
+            }}
+            title="Line Height"
+          >
+            <TextIcon icon="lineHeight" />
+          </button>
 
           
           {/* Text Formatting */}
