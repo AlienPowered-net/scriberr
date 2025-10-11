@@ -1283,6 +1283,16 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     };
   }, []);
 
+  // Debug modal state changes
+  useEffect(() => {
+    console.log('Modal states changed:', {
+      showVersionPopover,
+      showImageModal,
+      showVideoModal,
+      documentExists: typeof document !== 'undefined'
+    });
+  }, [showVersionPopover, showImageModal, showVideoModal]);
+
   if (!editor) {
     return (
       <Card>
@@ -1295,6 +1305,13 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     );
   }
 
+  // Debug: Log render with modal states
+  console.log('NotionTiptapEditor rendering with states:', {
+    showVersionPopover,
+    showImageModal,
+    showVideoModal,
+    documentUndefined: typeof document === 'undefined'
+  });
 
   return (
     <div className="notion-tiptap-container">
@@ -1780,11 +1797,13 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           <Tooltip content="Insert Image">
             <Button
               size="slim"
-              onClick={createMobileFriendlyHandler(() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 console.log('Insert Image button clicked, current state:', showImageModal);
                 setShowImageModal(true);
                 console.log('Image modal state set to true');
-              })}
+              }}
               style={{
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'manipulation'
@@ -1798,11 +1817,13 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           <Tooltip content="Insert YouTube Video">
             <Button
               size="slim"
-              onClick={createMobileFriendlyHandler(() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 console.log('Insert YouTube button clicked, current state:', showVideoModal);
                 setShowVideoModal(true);
                 console.log('Video modal state set to true');
-              })}
+              }}
               style={{
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'manipulation'
@@ -1940,11 +1961,17 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             <Button
               data-testid="version-toolbar-button"
               size="slim"
-              onClick={createMobileFriendlyHandler(() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 console.log('Version button clicked, current state:', showVersionPopover);
                 setShowVersionPopover(true);
                 console.log('Version modal state set to true');
-              })}
+                // Force a small delay to ensure state updates
+                setTimeout(() => {
+                  console.log('After timeout, showVersionPopover should be:', true);
+                }, 100);
+              }}
             >
               <Icon source={ClockIcon} />
             </Button>
@@ -2943,10 +2970,13 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 <Button
                   data-testid="version-toolbar-button-fullscreen"
                   size="slim"
-                  onClick={createMobileFriendlyHandler(() => {
-                    console.debug('Version button clicked (fullscreen)');
-                    setShowVersionPopover(!showVersionPopover);
-                  })}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Version button clicked (fullscreen), current state:', showVersionPopover);
+                    setShowVersionPopover(true);
+                    console.log('Version modal state set to true (fullscreen)');
+                  }}
                 >
                   <Icon source={ClockIcon} />
                 </Button>
