@@ -3175,6 +3175,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 ×
               </button>
             </div>
+            <div style={{ padding: '20px' }}>
               {versions.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {versions.map((version, index) => (
