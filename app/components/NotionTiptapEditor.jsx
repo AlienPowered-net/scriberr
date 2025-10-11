@@ -3162,44 +3162,45 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       {typeof document !== 'undefined' && showVersionPopover && (() => {
         console.log('RENDERING VERSION HISTORY MODAL VIA PORTAL, showVersionPopover:', showVersionPopover);
         return createPortal(
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 10000000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '20px',
-              overflow: 'auto'
-            }}
-            onClick={() => {
-              console.log('Modal overlay clicked - closing');
-              setShowVersionPopover(false);
-            }}
-          >
-          <div
-            style={{
-              position: 'relative',
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              maxWidth: '600px',
-              width: '100%',
-              maxHeight: '80vh',
-              overflow: 'auto',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-              zIndex: 1,
-              margin: 'auto'
-            }}
-            onClick={(e) => {
-              console.log('Modal content clicked - keeping open');
-              e.stopPropagation();
-            }}
-          >
+          <>
+            {/* Backdrop */}
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 10000000
+              }}
+              onClick={() => {
+                console.log('Modal backdrop clicked - closing');
+                setShowVersionPopover(false);
+              }}
+            />
+            {/* Modal Content */}
+            <div
+              style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                maxWidth: '600px',
+                width: '90%',
+                maxHeight: '80vh',
+                overflow: 'auto',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                zIndex: 10000001,
+                pointerEvents: 'auto'
+              }}
+              onClick={(e) => {
+                console.log('Modal content clicked - keeping open');
+                e.stopPropagation();
+              }}
+            >
             <div style={{
               padding: '20px',
               borderBottom: '1px solid #e1e3e5',
@@ -3323,9 +3324,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 </button>
               </div>
             </div>
-          </div>
-        </div>,
-        document.body
+          </>,
+          document.body
         );
       })()}
 
@@ -3333,42 +3333,43 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       {typeof document !== 'undefined' && showImageModal && (() => {
         console.log('RENDERING IMAGE MODAL VIA PORTAL, showImageModal:', showImageModal);
         return createPortal(
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 10000000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '20px',
-              overflow: 'auto'
-            }}
-            onClick={() => {
-              console.log('Image modal overlay clicked - closing');
-              setShowImageModal(false);
-            }}
-          >
-          <div
-            style={{
-              position: 'relative',
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              maxWidth: '500px',
-              width: '100%',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-              zIndex: 1,
-              margin: 'auto'
-            }}
-            onClick={(e) => {
-              console.log('Image modal content clicked - keeping open');
-              e.stopPropagation();
-            }}
-          >
+          <>
+            {/* Backdrop */}
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 10000000
+              }}
+              onClick={() => {
+                console.log('Image modal backdrop clicked - closing');
+                setShowImageModal(false);
+              }}
+            />
+            {/* Modal Content */}
+            <div
+              style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                maxWidth: '500px',
+                width: '90%',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                zIndex: 10000001,
+                pointerEvents: 'auto'
+              }}
+              onClick={(e) => {
+                console.log('Image modal content clicked - keeping open');
+                e.stopPropagation();
+              }}
+            >
             <div style={{
               padding: '20px',
               borderBottom: '1px solid #e1e3e5',
@@ -3450,9 +3451,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 </button>
               </div>
             </div>
-          </div>
-        </div>,
-        document.body
+          </>,
+          document.body
         );
       })()}
 
@@ -3460,42 +3460,43 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       {typeof document !== 'undefined' && showVideoModal && (() => {
         console.log('RENDERING YOUTUBE MODAL VIA PORTAL, showVideoModal:', showVideoModal);
         return createPortal(
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 10000000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '20px',
-              overflow: 'auto'
-            }}
-            onClick={() => {
-              console.log('Video modal overlay clicked - closing');
-              setShowVideoModal(false);
-            }}
-          >
-          <div
-            style={{
-              position: 'relative',
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              maxWidth: '500px',
-              width: '100%',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-              zIndex: 1,
-              margin: 'auto'
-            }}
-            onClick={(e) => {
-              console.log('Video modal content clicked - keeping open');
-              e.stopPropagation();
-            }}
-          >
+          <>
+            {/* Backdrop */}
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 10000000
+              }}
+              onClick={() => {
+                console.log('Video modal backdrop clicked - closing');
+                setShowVideoModal(false);
+              }}
+            />
+            {/* Modal Content */}
+            <div
+              style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                maxWidth: '500px',
+                width: '90%',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                zIndex: 10000001,
+                pointerEvents: 'auto'
+              }}
+              onClick={(e) => {
+                console.log('Video modal content clicked - keeping open');
+                e.stopPropagation();
+              }}
+            >
             <div style={{
               padding: '20px',
               borderBottom: '1px solid #e1e3e5',
@@ -3577,9 +3578,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 </button>
               </div>
             </div>
-          </div>
-        </div>,
-        document.body
+          </>,
+          document.body
         );
       })()}
     </div>

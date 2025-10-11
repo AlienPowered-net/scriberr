@@ -5120,38 +5120,39 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       {typeof document !== 'undefined' && showVersionPopover && (() => {
         console.log('RENDERING VERSION HISTORY MODAL VIA PORTAL [AdvancedRTE], showVersionPopover:', showVersionPopover);
         return createPortal(
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 10000000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '20px',
-              overflow: 'auto'
-            }}
-            onClick={() => {
-              console.log('Modal overlay clicked - closing [AdvancedRTE]');
-              setShowVersionPopover(false);
-            }}
-          >
+          <>
+            {/* Backdrop */}
             <div
               style={{
-                position: 'relative',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 10000000
+              }}
+              onClick={() => {
+                console.log('Modal backdrop clicked - closing [AdvancedRTE]');
+                setShowVersionPopover(false);
+              }}
+            />
+            {/* Modal Content */}
+            <div
+              style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
                 backgroundColor: 'white',
                 borderRadius: '8px',
                 maxWidth: '600px',
-                width: '100%',
+                width: '90%',
                 maxHeight: '80vh',
                 overflow: 'auto',
                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                zIndex: 1,
-                margin: 'auto'
+                zIndex: 10000001,
+                pointerEvents: 'auto'
               }}
               onClick={(e) => {
                 console.log('Modal content clicked - keeping open [AdvancedRTE]');
@@ -5283,7 +5284,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 </div>
               </div>
             </div>
-          </div>,
+          </>,
           document.body
         );
       })()}
@@ -5292,36 +5293,37 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       {typeof document !== 'undefined' && showImageModal && (() => {
         console.log('RENDERING IMAGE MODAL VIA PORTAL [AdvancedRTE], showImageModal:', showImageModal);
         return createPortal(
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 10000000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '20px',
-              overflow: 'auto'
-            }}
-            onClick={() => {
-              console.log('Image modal overlay clicked - closing [AdvancedRTE]');
-              setShowImageModal(false);
-            }}
-          >
+          <>
+            {/* Backdrop */}
             <div
               style={{
-                position: 'relative',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 10000000
+              }}
+              onClick={() => {
+                console.log('Image modal backdrop clicked - closing [AdvancedRTE]');
+                setShowImageModal(false);
+              }}
+            />
+            {/* Modal Content */}
+            <div
+              style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
                 backgroundColor: 'white',
                 borderRadius: '8px',
                 maxWidth: '500px',
-                width: '100%',
+                width: '90%',
                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                zIndex: 1,
-                margin: 'auto'
+                zIndex: 10000001,
+                pointerEvents: 'auto'
               }}
               onClick={(e) => {
                 console.log('Image modal content clicked - keeping open [AdvancedRTE]');
@@ -5410,7 +5412,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 </div>
               </div>
             </div>
-          </div>,
+          </>,
           document.body
         );
       })()}
@@ -5419,36 +5421,37 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       {typeof document !== 'undefined' && showVideoModal && (() => {
         console.log('RENDERING YOUTUBE MODAL VIA PORTAL [AdvancedRTE], showVideoModal:', showVideoModal);
         return createPortal(
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 10000000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '20px',
-              overflow: 'auto'
-            }}
-            onClick={() => {
-              console.log('Video modal overlay clicked - closing [AdvancedRTE]');
-              setShowVideoModal(false);
-            }}
-          >
+          <>
+            {/* Backdrop */}
             <div
               style={{
-                position: 'relative',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 10000000
+              }}
+              onClick={() => {
+                console.log('Video modal backdrop clicked - closing [AdvancedRTE]');
+                setShowVideoModal(false);
+              }}
+            />
+            {/* Modal Content */}
+            <div
+              style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
                 backgroundColor: 'white',
                 borderRadius: '8px',
                 maxWidth: '500px',
-                width: '100%',
+                width: '90%',
                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                zIndex: 1,
-                margin: 'auto'
+                zIndex: 10000001,
+                pointerEvents: 'auto'
               }}
               onClick={(e) => {
                 console.log('Video modal content clicked - keeping open [AdvancedRTE]');
@@ -5537,7 +5540,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 </div>
               </div>
             </div>
-          </div>,
+          </>,
           document.body
         );
       })()}
