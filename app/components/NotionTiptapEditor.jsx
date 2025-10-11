@@ -1941,82 +1941,6 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             </Button>
           </Tooltip>
           
-          {/* Version History Modal */}
-          <Modal
-            open={showVersionPopover}
-            onClose={() => setShowVersionPopover(false)}
-            title="Version History"
-            primaryAction={{
-              content: 'Create New',
-              onAction: () => {
-                const versionTitle = prompt('Enter a title for this version (optional):');
-                createVersion(versionTitle);
-                setShowVersionPopover(false);
-              }
-            }}
-            secondaryActions={[
-              {
-                content: 'Close',
-                onAction: () => setShowVersionPopover(false),
-              },
-            ]}
-          >
-            <Modal.Section>
-              {versions.length > 0 ? (
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                  <BlockStack gap="3">
-                    {versions.map((version, index) => (
-                      <Card key={version.id} padding="3">
-                        <Card.Section>
-                          <InlineStack gap="3" align="space-between">
-                            <BlockStack gap="1">
-                              <InlineStack gap="2" align="start">
-                                <Text variant="bodyMd" fontWeight="medium">
-                                  {version.versionTitle || version.title}
-                                </Text>
-                                {version.isAuto && (
-                                  <Badge size="small" tone="info">Auto</Badge>
-                                )}
-                              </InlineStack>
-                              <Text variant="bodySm" color="subdued">
-                                {new Date(version.createdAt).toLocaleString()}
-                              </Text>
-                              {index > 0 && (
-                                <Button
-                                  size="micro"
-                                  variant="plain"
-                                  onClick={() => {
-                                    // Compare with previous version
-                                    const prevVersion = versions[index - 1];
-                                    compareVersions(prevVersion, version);
-                                  }}
-                                >
-                                  Compare with previous
-                                </Button>
-                              )}
-                            </BlockStack>
-                            <Button
-                              size="slim"
-                              onClick={() => restoreVersion(version)}
-                            >
-                              Restore
-                            </Button>
-                          </InlineStack>
-                        </Card.Section>
-                      </Card>
-                    ))}
-                  </BlockStack>
-                </div>
-              ) : (
-                <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-                  <Text variant="bodyMd" color="subdued">
-                    No versions available yet. Create your first version!
-                  </Text>
-                </div>
-              )}
-            </Modal.Section>
-          </Modal>
-
           {/* Divider */}
           <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
 
@@ -2302,60 +2226,6 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         </Modal.Section>
       </Modal>
 
-      <Modal
-        open={showImageModal}
-        onClose={() => setShowImageModal(false)}
-        title="Insert Image"
-        primaryAction={{
-          content: 'Insert',
-          onAction: insertImage,
-        }}
-        secondaryActions={[
-          {
-            content: 'Cancel',
-            onAction: () => setShowImageModal(false),
-          },
-        ]}
-      >
-        <Modal.Section>
-          <TextField
-            label="Image URL"
-            value={imageUrl}
-            onChange={setImageUrl}
-            placeholder="https://example.com/image.jpg"
-            autoComplete="off"
-            helpText="Enter the URL of the image you want to embed"
-          />
-        </Modal.Section>
-      </Modal>
-
-      <Modal
-        open={showVideoModal}
-        onClose={() => setShowVideoModal(false)}
-        title="Insert Video"
-        primaryAction={{
-          content: 'Insert',
-          onAction: insertVideo,
-        }}
-        secondaryActions={[
-          {
-            content: 'Cancel',
-            onAction: () => setShowVideoModal(false),
-          },
-        ]}
-      >
-        <Modal.Section>
-          <TextField
-            label="YouTube URL"
-            value={videoUrl}
-            onChange={setVideoUrl}
-            placeholder="https://www.youtube.com/watch?v=..."
-            autoComplete="off"
-            helpText="Paste a YouTube video URL"
-          />
-        </Modal.Section>
-      </Modal>
-
       {/* Version Modal */}
       <Modal
         open={showVersionModal}
@@ -2409,100 +2279,6 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             ) : (
               <Text variant="bodyMd" color="subdued">
                 No versions available yet. Create your first version!
-              </Text>
-            )}
-          </BlockStack>
-        </Modal.Section>
-      </Modal>
-
-      {/* Version Comparison Modal */}
-      <Modal
-        open={showComparisonModal}
-        onClose={() => setShowComparisonModal(false)}
-        title="Compare Versions"
-        large
-        primaryAction={{
-          content: 'Close',
-          onAction: () => setShowComparisonModal(false),
-        }}
-      >
-        <Modal.Section>
-          <BlockStack gap="4">
-            {comparisonVersions.version1 && comparisonVersions.version2 ? (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                {/* Version 1 */}
-                <div>
-                  <Card>
-                    <Card.Section>
-                      <BlockStack gap="2">
-                        <Text variant="headingMd">
-                          {comparisonVersions.version1.versionTitle || comparisonVersions.version1.title}
-                        </Text>
-                        <Text variant="bodySm" color="subdued">
-                          {new Date(comparisonVersions.version1.createdAt).toLocaleString()}
-                        </Text>
-                        <div 
-                          style={{ 
-                            border: '1px solid #e1e3e5', 
-                            borderRadius: '4px', 
-                            padding: '12px',
-                            backgroundColor: '#f6f6f7',
-                            maxHeight: '400px',
-                            overflowY: 'auto'
-                          }}
-                          dangerouslySetInnerHTML={{ 
-                            __html: comparisonVersions.version1.content 
-                          }}
-                        />
-                        <Button
-                          size="slim"
-                          onClick={() => restoreVersion(comparisonVersions.version1)}
-                        >
-                          Restore This Version
-                        </Button>
-                      </BlockStack>
-                    </Card.Section>
-                  </Card>
-                </div>
-
-                {/* Version 2 */}
-                <div>
-                  <Card>
-                    <Card.Section>
-                      <BlockStack gap="2">
-                        <Text variant="headingMd">
-                          {comparisonVersions.version2.versionTitle || comparisonVersions.version2.title}
-                        </Text>
-                        <Text variant="bodySm" color="subdued">
-                          {new Date(comparisonVersions.version2.createdAt).toLocaleString()}
-                        </Text>
-                        <div 
-                          style={{ 
-                            border: '1px solid #e1e3e5', 
-                            borderRadius: '4px', 
-                            padding: '12px',
-                            backgroundColor: '#f6f6f7',
-                            maxHeight: '400px',
-                            overflowY: 'auto'
-                          }}
-                          dangerouslySetInnerHTML={{ 
-                            __html: comparisonVersions.version2.content 
-                          }}
-                        />
-                        <Button
-                          size="slim"
-                          onClick={() => restoreVersion(comparisonVersions.version2)}
-                        >
-                          Restore This Version
-                        </Button>
-                      </BlockStack>
-                    </Card.Section>
-                  </Card>
-                </div>
-              </div>
-            ) : (
-              <Text variant="bodyMd" color="subdued">
-                No versions selected for comparison.
               </Text>
             )}
           </BlockStack>
@@ -3340,6 +3116,230 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             )}
           </div>
         </div>,
+        document.body
+      )}
+
+      {/* Portaled Modals - render directly to document.body to escape stacking contexts */}
+      {typeof document !== 'undefined' && createPortal(
+        <>
+          <Modal
+            open={showVersionPopover}
+            onClose={() => setShowVersionPopover(false)}
+            title="Version History"
+            primaryAction={{
+              content: 'Create New',
+              onAction: () => {
+                const versionTitle = prompt('Enter a title for this version (optional):');
+                createVersion(versionTitle);
+                setShowVersionPopover(false);
+              }
+            }}
+            secondaryActions={[
+              {
+                content: 'Close',
+                onAction: () => setShowVersionPopover(false),
+              },
+            ]}
+          >
+            <Modal.Section>
+              {versions.length > 0 ? (
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  <BlockStack gap="3">
+                    {versions.map((version, index) => (
+                      <Card key={version.id} padding="3">
+                        <Card.Section>
+                          <InlineStack gap="3" align="space-between">
+                            <BlockStack gap="1">
+                              <InlineStack gap="2" align="start">
+                                <Text variant="bodyMd" fontWeight="medium">
+                                  {version.versionTitle || version.title}
+                                </Text>
+                                {version.isAuto && (
+                                  <Badge size="small" tone="info">Auto</Badge>
+                                )}
+                              </InlineStack>
+                              <Text variant="bodySm" color="subdued">
+                                {new Date(version.createdAt).toLocaleString()}
+                              </Text>
+                              {index > 0 && (
+                                <Button
+                                  size="micro"
+                                  variant="plain"
+                                  onClick={() => {
+                                    const prevVersion = versions[index - 1];
+                                    compareVersions(prevVersion, version);
+                                  }}
+                                >
+                                  Compare with previous
+                                </Button>
+                              )}
+                            </BlockStack>
+                            <Button
+                              size="slim"
+                              onClick={() => restoreVersion(version)}
+                            >
+                              Restore
+                            </Button>
+                          </InlineStack>
+                        </Card.Section>
+                      </Card>
+                    ))}
+                  </BlockStack>
+                </div>
+              ) : (
+                <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                  <Text variant="bodyMd" color="subdued">
+                    No versions available yet. Create your first version!
+                  </Text>
+                </div>
+              )}
+            </Modal.Section>
+          </Modal>
+
+          <Modal
+            open={showImageModal}
+            onClose={() => setShowImageModal(false)}
+            title="Insert Image"
+            primaryAction={{
+              content: 'Insert',
+              onAction: insertImage,
+            }}
+            secondaryActions={[
+              {
+                content: 'Cancel',
+                onAction: () => setShowImageModal(false),
+              },
+            ]}
+          >
+            <Modal.Section>
+              <TextField
+                label="Image URL"
+                value={imageUrl}
+                onChange={setImageUrl}
+                placeholder="https://example.com/image.jpg"
+                autoComplete="off"
+                helpText="Enter the URL of the image you want to embed"
+              />
+            </Modal.Section>
+          </Modal>
+
+          <Modal
+            open={showVideoModal}
+            onClose={() => setShowVideoModal(false)}
+            title="Insert Video"
+            primaryAction={{
+              content: 'Insert',
+              onAction: insertVideo,
+            }}
+            secondaryActions={[
+              {
+                content: 'Cancel',
+                onAction: () => setShowVideoModal(false),
+              },
+            ]}
+          >
+            <Modal.Section>
+              <TextField
+                label="YouTube URL"
+                value={videoUrl}
+                onChange={setVideoUrl}
+                placeholder="https://www.youtube.com/watch?v=..."
+                autoComplete="off"
+                helpText="Paste a YouTube video URL"
+              />
+            </Modal.Section>
+          </Modal>
+
+          <Modal
+            open={showComparisonModal}
+            onClose={() => setShowComparisonModal(false)}
+            title="Compare Versions"
+            large
+            primaryAction={{
+              content: 'Close',
+              onAction: () => setShowComparisonModal(false),
+            }}
+          >
+            <Modal.Section>
+              <BlockStack gap="4">
+                {comparisonVersions.version1 && comparisonVersions.version2 ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <Card>
+                        <Card.Section>
+                          <BlockStack gap="2">
+                            <Text variant="headingMd">
+                              {comparisonVersions.version1.versionTitle || comparisonVersions.version1.title}
+                            </Text>
+                            <Text variant="bodySm" color="subdued">
+                              {new Date(comparisonVersions.version1.createdAt).toLocaleString()}
+                            </Text>
+                            <div 
+                              style={{ 
+                                border: '1px solid #e1e3e5', 
+                                borderRadius: '4px', 
+                                padding: '12px',
+                                backgroundColor: '#f6f6f7',
+                                maxHeight: '400px',
+                                overflowY: 'auto'
+                              }}
+                              dangerouslySetInnerHTML={{ 
+                                __html: comparisonVersions.version1.content 
+                              }}
+                            />
+                            <Button
+                              size="slim"
+                              onClick={() => restoreVersion(comparisonVersions.version1)}
+                            >
+                              Restore This Version
+                            </Button>
+                          </BlockStack>
+                        </Card.Section>
+                      </Card>
+                    </div>
+                    <div>
+                      <Card>
+                        <Card.Section>
+                          <BlockStack gap="2">
+                            <Text variant="headingMd">
+                              {comparisonVersions.version2.versionTitle || comparisonVersions.version2.title}
+                            </Text>
+                            <Text variant="bodySm" color="subdued">
+                              {new Date(comparisonVersions.version2.createdAt).toLocaleString()}
+                            </Text>
+                            <div 
+                              style={{ 
+                                border: '1px solid #e1e3e5', 
+                                borderRadius: '4px', 
+                                padding: '12px',
+                                backgroundColor: '#f6f6f7',
+                                maxHeight: '400px',
+                                overflowY: 'auto'
+                              }}
+                              dangerouslySetInnerHTML={{ 
+                                __html: comparisonVersions.version2.content 
+                              }}
+                            />
+                            <Button
+                              size="slim"
+                              onClick={() => restoreVersion(comparisonVersions.version2)}
+                            >
+                              Restore This Version
+                            </Button>
+                          </BlockStack>
+                        </Card.Section>
+                      </Card>
+                    </div>
+                  </div>
+                ) : (
+                  <Text variant="bodyMd" color="subdued">
+                    No versions selected for comparison.
+                  </Text>
+                )}
+              </BlockStack>
+            </Modal.Section>
+          </Modal>
+        </>,
         document.body
       )}
     </div>
