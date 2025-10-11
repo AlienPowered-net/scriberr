@@ -49,7 +49,7 @@ import {
   MeasurementSizeIcon,
   ClockIcon,
   MenuVerticalIcon,
-  ChecklistIcon
+  ClipboardChecklistIcon
 } from '@shopify/polaris-icons';
 
 // Helper function to ensure handlers work properly on both mobile and desktop
@@ -1592,7 +1592,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             }}
             title="Task List"
           >
-            <Icon source={ChecklistIcon} />
+            <Icon source={ClipboardChecklistIcon} />
           </button>
           
           <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />
@@ -2727,7 +2727,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             }}
             title="Task List"
           >
-            <Icon source={ChecklistIcon} />
+            <Icon source={ClipboardChecklistIcon} />
           </button>
           
           <div style={{ width: "1px", height: "24px", backgroundColor: "#dee2e6", margin: "0 4px" }} />

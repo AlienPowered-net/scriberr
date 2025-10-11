@@ -65,7 +65,7 @@ import {
   ProfileIcon,
   ClockIcon,
   MenuVerticalIcon,
-  ChecklistIcon
+  ClipboardChecklistIcon
 } from '@shopify/polaris-icons';
 import './NotionTiptapEditor.css';
 
@@ -1731,7 +1731,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 size="slim"
                 pressed={editor.isActive('taskList')}
                 onClick={() => editor.chain().focus().toggleTaskList().run()}
-                icon={ChecklistIcon}
+                icon={ClipboardChecklistIcon}
               />
             </Tooltip>
           </ButtonGroup>
@@ -2968,7 +2968,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                     size="slim"
                     pressed={editor.isActive('taskList')}
                     onClick={() => editor.chain().focus().toggleTaskList().run()}
-                    icon={ChecklistIcon}
+                    icon={ClipboardChecklistIcon}
                   />
                 </Tooltip>
               </ButtonGroup>
