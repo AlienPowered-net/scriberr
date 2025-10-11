@@ -1,0 +1,168 @@
+[1mdiff --git a/app/components/AdvancedRTE.jsx b/app/components/AdvancedRTE.jsx[m
+[1mindex ccddb64..cce001b 100644[m
+[1m--- a/app/components/AdvancedRTE.jsx[m
+[1m+++ b/app/components/AdvancedRTE.jsx[m
+[36m@@ -190,7 +190,6 @@[m [mconst AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi[m
+   const [showLineHeightPopover, setShowLineHeightPopover] = useState(false);[m
+   const [showLineHeightPicker, setShowLineHeightPicker] = useState(false);[m
+   const [showVersionPopover, setShowVersionPopover] = useState(false);[m
+[31m-  const [showVersionPicker, setShowVersionPicker] = useState(false);[m
+   const [showVersionNameModal, setShowVersionNameModal] = useState(false);[m
+   const [versionNameInput, setVersionNameInput] = useState('');[m
+   const [versions, setVersions] = useState([]);[m
+[36m@@ -2276,37 +2275,65 @@[m [mconst AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi[m
+           </button>[m
+ [m
+           {/* Version Management */}[m
+[31m-              <Tooltip content="Version History">[m
+[31m-            <button[m
+[31m-                  data-testid="version-toolbar-button"[m
+[32m+[m[32m          <Tooltip content="Version History">[m
+[32m+[m[32m            <Button[m
+[32m+[m[32m              data-testid="version-toolbar-button"[m
+[32m+[m[32m              size="slim"[m
+               onClick={createMobileFriendlyHandler(() => {[m
+[31m-                    console.debug('Version button clicked');[m
+[31m-                setShowVersionPicker(!showVersionPicker);[m
+[32m+[m[32m                console.debug('Version button clicked');[m
+[32m+[m[32m                setShowVersionPopover(!showVersionPopover);[m
+               })}[m
+[31m-                  style={{ [m
+[31m-                padding: "6px 8px",[m
+[31m-                border: "1px solid #dee2e6",[m
+[31m-                borderRadius: "4px",[m
+[31m-                backgroundColor: showVersionPicker ? '#007bff' : 'white',[m
+[31m-                color: showVersionPicker ? 'white' : '#495057',[m
+[31m-                cursor: "pointer",[m
+[31m-                transition: "all 0.2s ease",[m
+[31m-                fontSize: "13px",[m
+[31m-                minWidth: "32px",[m
+[31m-                height: "32px",[m
+[31m-                display: "flex",[m
+[31m-                alignItems: "center",[m
+[31m-                justifyContent: "center",[m
+[32m+[m[32m              icon={ClockIcon}[m
+[32m+[m[32m              style={{[m[41m [m
+[32m+[m[32m                backgroundColor: '#f0f0f0',[m[41m [m
+[32m+[m[32m                border: '2px solid #007ace',[m
+[32m+[m[32m                minWidth: '32px',[m
+[32m+[m[32m                minHeight: '32px',[m
+                 WebkitTapHighlightColor: 'transparent',[m
+                 touchAction: 'manipulation'[m
+               }}[m
+[31m-              title="Version History"[m
+[31m-            >[m
+[31m-              <i className="fas fa-clock"></i>[m
+[31m-            </button>[m
+[32m+[m[32m            />[m
+           </Tooltip>[m
+           [m
+[31m-          {/* Version History Custom Modal */}[m
+[32m+[m[32m          {/* Version History Modal */}[m
+[32m+[m[32m          <Modal[m
+[32m+[m[32m            open={showVersionPopover}[m
+[32m+[m[32m            onClose={() => setShowVersionPopover(false)}[m
+[32m+[m[32m            title="Version History"[m
+[32m+[m[32m            large[m
+[32m+[m[32m            primaryAction={{[m
+[32m+[m[32m              content: 'Create New',[m
+[32m+[m[32m              onAction: () => {[m
+[32m+[m[32m                setShowVersionPopover(false);[m
+[32m+[m[32m                setTimeout(() => {[m
+[32m+[m[32m                  setShowVersionNameModal(true);[m
+[32m+[m[32m                }, 50);[m
+[32m+[m[32m              }[m
+[32m+[m[32m            }}[m
+[32m+[m[32m            secondaryActions={[[m
+[32m+[m[32m              {[m
+[32m+[m[32m                content: compareMode ? 'Cancel Compare' : 'Compare Versions',[m
+[32m+[m[32m                onAction: () => {[m
+[32m+[m[32m                  if (compareMode) {[m
+[32m+[m[32m                    setCompareMode(false);[m
+[32m+[m[32m                    setSelectedVersions({ version1: null, version2: null });[m
+[32m+[m[32m                    setComparisonResult(null);[m
+[32m+[m[32m                  } else {[m
+[32m+[m[32m                    setCompareMode(true);[m
+[32m+[m[32m                    setComparisonResult(null);[m
+[32m+[m[32m                  }[m
+[32m+[m[32m                }[m
+[32m+[m[32m              },[m
+[32m+[m[32m              ...(compareMode && selectedVersions.version1 && selectedVersions.version2 ? [{[m
+[32m+[m[32m                content: 'View Diff',[m
+[32m+[m[32m                onAction: compareVersions[m
+[32m+[m[32m              }] : []),[m
+[32m+[m[32m              {[m
+[32m+[m[32m                content: 'Close',[m
+[32m+[m[32m                onAction: () => setShowVersionPopover(false),[m
+[32m+[m[32m              },[m
+[32m+[m[32m            ]}[m
+[32m+[m[32m          >[m
+             <Modal.Section>[m
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>[m
+                 [m
+[36m@@ -2447,226 +2474,33 @@[m [mconst AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi[m
+                   </div>[m
+                 )}[m
+               </div>[m
+[31m-      {/* Version History Picker */}[m
+[31m-      {showVersionPicker && ([m
+[31m-        <div style={{[m
+[31m-          position: 'fixed',[m
+[31m-          top: '50%',[m
+[31m-          left: '50%',[m
+[31m-          transform: 'translate(-50%, -50%)',[m
+[31m-          backgroundColor: 'white',[m
+[31m-          border: '1px solid #dee2e6',[m
+[31m-          borderRadius: '8px',[m
+[31m-          padding: '16px',[m
+[31m-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',[m
+[31m-          zIndex: 99999995,[m
+[31m-          maxWidth: '90vw',[m
+[31m-          maxHeight: '80vh',[m
+[31m-          width: '500px',[m
+[31m-          overflow: 'auto'[m
+[31m-        }}>[m
+[31m-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>[m
+[31m-            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Version History</h3>[m
+[31m-            <button [m
+[31m-              onClick={() => setShowVersionPicker(false)}[m
+[31m-              style={{[m
+[31m-                padding: '4px 8px',[m
+[31m-                backgroundColor: 'transparent',[m
+[31m-                border: 'none',[m
+[31m-                fontSize: '18px',[m
+[31m-                cursor: 'pointer'[m
+[31m-              }}[m
+[31m-            >[m
+[31m-              ×[m
+[31m-            </button>[m
+[31m-            </div>[m
+[31m-[m
+[31m-          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>[m
+[31m-              <button[m
+[31m-              onClick={() => {[m
+[31m-                setShowVersionPicker(false);[m
+[31m-                setTimeout(() => {[m
+[31m-                  setShowVersionNameModal(true);[m
+[31m-                }, 50);[m
+[31m-              }}[m
+[31m-              style={{[m
+[31m-                padding: '8px 16px',[m
+[31m-                backgroundColor: '#007bff',[m
+[31m-                color: 'white',[m
+[31m-                border: 'none',[m
+[31m-                borderRadius: '4px',[m
+[31m-                cursor: 'pointer',[m
+[31m-                fontSize: '14px'[m
+[31m-              }}[m
+[31m-            >[m
+[31m-              Create New[m
+[31m-            </button>[m
+[31m-            [m
+[31m-            <button [m
+[31m-              onClick={() => {[m
+[31m-                if (compareMode) {[m
+[31m-                  setCompareMode(false);[m
+[31m-                  setSelectedVersions({ version1: null, version2: null });[m
+[31m-                  setComparisonResult(null);[m
+[3

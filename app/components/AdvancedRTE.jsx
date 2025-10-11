@@ -5284,7 +5284,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 </div>
               </div>
             </div>
-          </div>
           </>,
           document.body
         );
