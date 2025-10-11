@@ -3324,7 +3324,6 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 </button>
               </div>
             </div>
-            </div>
           </>,
           document.body
         );
@@ -3452,7 +3451,6 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 </button>
               </div>
             </div>
-            </div>
           </>,
           document.body
         );
@@ -3579,7 +3577,6 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   Insert
                 </button>
               </div>
-            </div>
             </div>
           </>,
           document.body
