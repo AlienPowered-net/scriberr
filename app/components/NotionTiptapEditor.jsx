@@ -3158,8 +3158,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         document.body
       )}
 
-      {/* Custom Modals - render directly to document.body with z-index above mobile wrapper */}
-      {typeof document !== 'undefined' && showVersionPopover && (() => {
+      {/* Custom Modals - render directly to document.body with z-index above mobile wrapper - MOBILE ONLY */}
+      {typeof document !== 'undefined' && showVersionPopover && window.innerWidth <= 768 && (() => {
         console.log('RENDERING VERSION HISTORY MODAL VIA PORTAL, showVersionPopover:', showVersionPopover);
         return createPortal(
           <>
@@ -3330,8 +3330,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         );
       })()}
 
-      {/* Insert Image Modal */}
-      {typeof document !== 'undefined' && showImageModal && (() => {
+      {/* Insert Image Modal - MOBILE ONLY */}
+      {typeof document !== 'undefined' && showImageModal && window.innerWidth <= 768 && (() => {
         console.log('RENDERING IMAGE MODAL VIA PORTAL, showImageModal:', showImageModal);
         return createPortal(
           <>
@@ -3410,7 +3410,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   border: '1px solid #d1d5db',
                   borderRadius: '6px',
                   fontSize: '14px',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  pointerEvents: 'auto',
+                  zIndex: 100000000
                 }}
               />
               <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
@@ -3458,8 +3460,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         );
       })()}
 
-      {/* Insert YouTube Video Modal */}
-      {typeof document !== 'undefined' && showVideoModal && (() => {
+      {/* Insert YouTube Video Modal - MOBILE ONLY */}
+      {typeof document !== 'undefined' && showVideoModal && window.innerWidth <= 768 && (() => {
         console.log('RENDERING YOUTUBE MODAL VIA PORTAL, showVideoModal:', showVideoModal);
         return createPortal(
           <>
@@ -3538,7 +3540,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   border: '1px solid #d1d5db',
                   borderRadius: '6px',
                   fontSize: '14px',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  pointerEvents: 'auto',
+                  zIndex: 100000000
                 }}
               />
               <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>

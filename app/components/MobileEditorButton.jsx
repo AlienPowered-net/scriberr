@@ -290,6 +290,7 @@ const MobileEditorButton = ({
               placeholder={placeholder}
               isMobileProp={true}
               onFullscreenChange={onFullscreenChange}
+              noteId={editingNoteId}
             />
           </div>
         </div>

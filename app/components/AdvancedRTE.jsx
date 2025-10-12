@@ -5116,8 +5116,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         </div>
       )}
 
-      {/* Custom Modals - render directly to document.body with z-index above mobile wrapper */}
-      {typeof document !== 'undefined' && showVersionPopover && (() => {
+      {/* Custom Modals - render directly to document.body with z-index above mobile wrapper - MOBILE ONLY */}
+      {typeof document !== 'undefined' && showVersionPopover && isMobile && (() => {
         console.log('RENDERING VERSION HISTORY MODAL VIA PORTAL [AdvancedRTE], showVersionPopover:', showVersionPopover);
         return createPortal(
           <>
@@ -5289,8 +5289,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         );
       })()}
 
-      {/* Insert Image Modal */}
-      {typeof document !== 'undefined' && showImageModal && (() => {
+      {/* Insert Image Modal - MOBILE ONLY */}
+      {typeof document !== 'undefined' && showImageModal && isMobile && (() => {
         console.log('RENDERING IMAGE MODAL VIA PORTAL [AdvancedRTE], showImageModal:', showImageModal);
         return createPortal(
           <>
@@ -5369,7 +5369,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     border: '1px solid #d1d5db',
                     borderRadius: '6px',
                     fontSize: '14px',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
+                    pointerEvents: 'auto',
+                    zIndex: 100000000
                   }}
                 />
                 <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
@@ -5417,8 +5419,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         );
       })()}
 
-      {/* Insert YouTube Video Modal */}
-      {typeof document !== 'undefined' && showVideoModal && (() => {
+      {/* Insert YouTube Video Modal - MOBILE ONLY */}
+      {typeof document !== 'undefined' && showVideoModal && isMobile && (() => {
         console.log('RENDERING YOUTUBE MODAL VIA PORTAL [AdvancedRTE], showVideoModal:', showVideoModal);
         return createPortal(
           <>
@@ -5497,7 +5499,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     border: '1px solid #d1d5db',
                     borderRadius: '6px',
                     fontSize: '14px',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
+                    pointerEvents: 'auto',
+                    zIndex: 100000000
                   }}
                 />
                 <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
