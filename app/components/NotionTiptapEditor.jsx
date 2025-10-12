@@ -1138,6 +1138,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     try {
       // Set loading state
       setRestoringVersionId(version.id);
+      console.log('Setting restoringVersionId to:', version.id);
       
       // Create a pre-restore checkpoint if requested
       if (createCheckpoint) {
@@ -1151,8 +1152,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         editor.commands.setContent(version.content);
       }
       
-      // Show spinner for 0.5 seconds
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Show spinner for 1 second to make it more visible
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       setShowVersionModal(false);
       setShowVersionPopover(false);
@@ -1225,6 +1226,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
 
       // Set loading state
       setDeletingVersionId(version.id);
+      console.log('Setting deletingVersionId to:', version.id);
 
       const response = await fetch('/api/delete-note-version', {
         method: 'POST',
@@ -1238,8 +1240,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       if (response.ok) {
         console.log('[NotionTiptapEditor] Version deleted successfully');
         
-        // Show spinner for 0.5 seconds
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Show spinner for 1 second to make it more visible
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Update versions state directly to avoid triggering auto-save
         setVersions(prev => prev.filter(v => v.id !== version.id));
@@ -1455,11 +1457,27 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     showVersionPopover,
     showImageModal,
     showVideoModal,
-    documentUndefined: typeof document === 'undefined'
+    documentUndefined: typeof document === 'undefined',
+    deletingVersionId,
+    restoringVersionId,
+    restorationInfo
   });
 
   return (
     <div className="notion-tiptap-container">
+      {/* Debug State Display */}
+      {(deletingVersionId || restoringVersionId) && (
+        <div style={{ 
+          padding: '4px 8px', 
+          backgroundColor: '#fff3cd', 
+          borderBottom: '1px solid #ffeaa7',
+          fontSize: '12px',
+          color: '#856404'
+        }}>
+          DEBUG: deletingVersionId={deletingVersionId}, restoringVersionId={restoringVersionId}
+        </div>
+      )}
+      
       {/* Status Pills */}
       {restorationInfo && (
         <div style={{ padding: '8px 16px', borderBottom: '1px solid #e1e3e5' }}>
@@ -2460,8 +2478,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                             size="slim"
                             onClick={() => handleRestoreClick(version)}
                             disabled={restoringVersionId === version.id || deletingVersionId === version.id}
-                            loading={restoringVersionId === version.id}
                           >
+                            {restoringVersionId === version.id && <Spinner size="small" />}
                             Restore
                           </Button>
                           <Button
@@ -2469,8 +2487,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                             tone="critical"
                             onClick={() => deleteVersion(version)}
                             disabled={restoringVersionId === version.id || deletingVersionId === version.id}
-                            loading={deletingVersionId === version.id}
                           >
+                            {deletingVersionId === version.id && <Spinner size="small" />}
                             Delete
                           </Button>
                         </InlineStack>
