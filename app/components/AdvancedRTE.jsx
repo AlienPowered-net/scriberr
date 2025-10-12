@@ -5388,44 +5388,45 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                               </button>
                             </div>
                           </div>
-                        {/* Compare Versions Button */}
-                        <div style={{ marginTop: '8px' }}>
-                          <button
-                            onClick={() => setMobileCompareMode(!mobileCompareMode)}
-                            style={{
-                              padding: '6px 12px',
-                              backgroundColor: mobileCompareMode ? '#3b82f6' : 'transparent',
-                              color: mobileCompareMode ? 'white' : '#3b82f6',
-                              border: '1px solid #3b82f6',
-                              borderRadius: '6px',
-                              cursor: 'pointer',
-                              fontSize: '13px',
-                              fontWeight: 500
-                            }}
-                          >
-                            {mobileCompareMode ? 'Cancel Compare' : 'Compare Versions'}
-                          </button>
-                          {mobileCompareMode && mobileSelectedVersions.version1 && mobileSelectedVersions.version2 && (
+                          {/* Compare Versions Button */}
+                          <div style={{ marginTop: '8px' }}>
                             <button
-                              onClick={compareMobileVersions}
+                              onClick={() => setMobileCompareMode(!mobileCompareMode)}
                               style={{
-                                marginLeft: '8px',
                                 padding: '6px 12px',
-                                backgroundColor: '#10b981',
-                                color: 'white',
-                                border: 'none',
+                                backgroundColor: mobileCompareMode ? '#3b82f6' : 'transparent',
+                                color: mobileCompareMode ? 'white' : '#3b82f6',
+                                border: '1px solid #3b82f6',
                                 borderRadius: '6px',
                                 cursor: 'pointer',
                                 fontSize: '13px',
                                 fontWeight: 500
                               }}
                             >
-                              Compare Selected
+                              {mobileCompareMode ? 'Cancel Compare' : 'Compare Versions'}
                             </button>
-                          )}
+                            {mobileCompareMode && mobileSelectedVersions.version1 && mobileSelectedVersions.version2 && (
+                              <button
+                                onClick={compareMobileVersions}
+                                style={{
+                                  marginLeft: '8px',
+                                  padding: '6px 12px',
+                                  backgroundColor: '#10b981',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  fontSize: '13px',
+                                  fontWeight: 500
+                                }}
+                              >
+                                Compare Selected
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280' }}>

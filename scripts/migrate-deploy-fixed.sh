@@ -15,7 +15,7 @@ if npx prisma migrate deploy; then
     
     # Ensure CustomMention table exists even after successful migration
     echo "Ensuring CustomMention table exists..."
-    if npx prisma db execute --stdin << 'CUSTOMEOF'
+    if npx prisma db execute --schema prisma/schema.prisma --stdin << 'CUSTOMEOF'
 DO $$
 BEGIN
     -- Ensure CustomMention table exists
@@ -77,7 +77,7 @@ fi
 echo "All migration resolution attempts failed, attempting direct database fix..."
 
 # Use Prisma to execute raw SQL to fix the database state
-if npx prisma db execute --stdin << 'EOF'
+if npx prisma db execute --schema prisma/schema.prisma --stdin << 'EOF'
 -- Force fix the database state
 DO $$
 BEGIN
