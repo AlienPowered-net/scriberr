@@ -234,6 +234,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   const [deletingVersionId, setDeletingVersionId] = useState(null);
   const [restoringVersionId, setRestoringVersionId] = useState(null);
   const [restorationInfo, setRestorationInfo] = useState(null);
+  const [currentVersionId, setCurrentVersionId] = useState(null);
+  const [showRestoreDialog, setShowRestoreDialog] = useState(false);
+  const [pendingRestoreVersion, setPendingRestoreVersion] = useState(null);
   const editorRef = useRef(null);
   const slashMenuRef = useRef(null);
   const autoVersionIntervalRef = useRef(null);
@@ -1114,6 +1117,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         if (!isAuto) {
           hasPendingChange.current = false;
           lastContentRef.current = content;
+          // Set this as the current version
+          setCurrentVersionId(newVersion.id);
         }
         
         if (onVersionCreated) {
@@ -1127,15 +1132,17 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     }
   };
 
-  const restoreVersion = async (version) => {
+  const restoreVersion = async (version, createCheckpoint = false) => {
     if (!editor || !version || !noteId) return;
     
     try {
       // Set loading state
       setRestoringVersionId(version.id);
       
-      // Create a pre-restore checkpoint with current content
-      await createVersion(`Pre-restore checkpoint - ${new Date().toLocaleTimeString()}`, true);
+      // Create a pre-restore checkpoint if requested
+      if (createCheckpoint) {
+        await createVersion(`Pre-restore checkpoint - ${new Date().toLocaleTimeString()}`, true);
+      }
       
       // Restore the selected version
       if (version.snapshot) {
@@ -1151,7 +1158,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       setShowVersionPopover(false);
       setHasUnsavedChanges(false);
       
-      // Set restoration info to show the blue pill
+      // Set this version as current and show restoration info
+      setCurrentVersionId(version.id);
       setRestorationInfo({
         title: version.versionTitle || version.title || 'Unknown Version',
         time: version.createdAt
@@ -1168,6 +1176,20 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     }
   };
 
+  const handleRestoreClick = (version) => {
+    // Show dialog asking if user wants to create restore point
+    setPendingRestoreVersion(version);
+    setShowRestoreDialog(true);
+  };
+
+  const confirmRestore = (createCheckpoint) => {
+    if (pendingRestoreVersion) {
+      restoreVersion(pendingRestoreVersion, createCheckpoint);
+      setPendingRestoreVersion(null);
+      setShowRestoreDialog(false);
+    }
+  };
+
   const loadVersions = async () => {
     if (!noteId) return;
     
@@ -1176,6 +1198,11 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       if (response.ok) {
         const versionsData = await response.json();
         setVersions(versionsData);
+        
+        // Set the first (most recent) version as current if no current version is set
+        if (versionsData.length > 0 && !currentVersionId) {
+          setCurrentVersionId(versionsData[0].id);
+        }
       }
     } catch (error) {
       console.error('Failed to load versions:', error);
@@ -1217,6 +1244,16 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         // Update versions state directly to avoid triggering auto-save
         setVersions(prev => prev.filter(v => v.id !== version.id));
         
+        // If we deleted the current version, set the next most recent as current
+        if (currentVersionId === version.id) {
+          const remainingVersions = versions.filter(v => v.id !== version.id);
+          if (remainingVersions.length > 0) {
+            setCurrentVersionId(remainingVersions[0].id);
+          } else {
+            setCurrentVersionId(null);
+          }
+        }
+        
         // Clear loading state
         setDeletingVersionId(null);
       } else {
@@ -1231,13 +1268,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   };
 
   const isCurrentVersion = (version) => {
-    if (!editor || !version) return false;
-    const currentContent = editor.getHTML();
-    const versionContent = version.content || '';
-    // Normalize content for comparison (remove extra whitespace)
-    const normalizedCurrent = currentContent.replace(/\s+/g, ' ').trim();
-    const normalizedVersion = versionContent.replace(/\s+/g, ' ').trim();
-    return normalizedCurrent === normalizedVersion;
+    // Use tracked current version ID instead of content comparison
+    return currentVersionId === version.id;
   };
 
   const toggleMobileVersionSelection = (versionId) => {
@@ -1331,6 +1363,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           } else {
             const newVersion = await res.json();
             setVersions(prev => [newVersion, ...prev.slice(0, 19)]);
+            setCurrentVersionId(newVersion.id); // Set auto-saved version as current
             setDebugInfo(prev => ({ ...prev, lastVersion: new Date().toLocaleTimeString() }));
             console.debug('Auto-version created:', newVersion.id);
           }
@@ -2425,7 +2458,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                         <InlineStack gap="2">
                           <Button
                             size="slim"
-                            onClick={() => restoreVersion(version)}
+                            onClick={() => handleRestoreClick(version)}
                             disabled={restoringVersionId === version.id || deletingVersionId === version.id}
                             loading={restoringVersionId === version.id}
                           >
@@ -2451,6 +2484,45 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 No versions available yet. Create your first version!
               </Text>
             )}
+          </BlockStack>
+        </Modal.Section>
+      </Modal>
+
+      {/* Restore Dialog */}
+      <Modal
+        open={showRestoreDialog}
+        onClose={() => {
+          setShowRestoreDialog(false);
+          setPendingRestoreVersion(null);
+        }}
+        title="Restore Version"
+        primaryAction={{
+          content: 'Restore with Checkpoint',
+          onAction: () => confirmRestore(true),
+        }}
+        secondaryActions={[
+          {
+            content: 'Restore without Checkpoint',
+            onAction: () => confirmRestore(false),
+          },
+          {
+            content: 'Cancel',
+            onAction: () => {
+              setShowRestoreDialog(false);
+              setPendingRestoreVersion(null);
+            },
+          },
+        ]}
+      >
+        <Modal.Section>
+          <BlockStack gap="4">
+            <Text variant="bodyMd">
+              You're about to restore to "{pendingRestoreVersion?.versionTitle || pendingRestoreVersion?.title || 'Unknown Version'}" 
+              created on {pendingRestoreVersion ? new Date(pendingRestoreVersion.createdAt).toLocaleString() : ''}.
+            </Text>
+            <Text variant="bodyMd" color="subdued">
+              Would you like to create a restore point with your current content before restoring? This will save your current work as a checkpoint in case you need to revert back.
+            </Text>
           </BlockStack>
         </Modal.Section>
       </Modal>
@@ -3450,7 +3522,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                           <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                             <button
                               onClick={() => {
-                                restoreVersion(version);
+                                handleRestoreClick(version);
                                 setShowVersionPopover(false);
                               }}
                               disabled={restoringVersionId === version.id || deletingVersionId === version.id}
