@@ -3418,6 +3418,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                               Delete
                             </button>
                           </div>
+                        </div>
                         {/* Compare Versions Button */}
                         <div style={{ marginTop: '8px' }}>
                           <button
@@ -3454,7 +3455,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                             </button>
                           )}
                         </div>
-                    </div>
+                      </div>
                   ))}
                 </div>
               ) : (
