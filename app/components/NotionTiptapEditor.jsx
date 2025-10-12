@@ -229,6 +229,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   const [lastAutoVersion, setLastAutoVersion] = useState(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [debugInfo, setDebugInfo] = useState({ lastChange: null, lastVersion: null });
+  const [mobileCompareMode, setMobileCompareMode] = useState(false);
+  const [mobileSelectedVersions, setMobileSelectedVersions] = useState({ version1: null, version2: null });
   const editorRef = useRef(null);
   const slashMenuRef = useRef(null);
   const autoVersionIntervalRef = useRef(null);
@@ -1161,6 +1163,74 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     setComparisonVersions({ version1, version2 });
     setShowComparisonModal(true);
     setShowVersionPopover(false);
+  };
+
+  const deleteVersion = async (version) => {
+    console.log('[NotionTiptapEditor] deleteVersion called', { versionId: version.id });
+    try {
+      if (!noteId) {
+        console.error('[NotionTiptapEditor] Cannot delete version: noteId is missing');
+        return;
+      }
+
+      const response = await fetch('/api/delete-note-version', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          noteId: noteId,
+          versionId: version.id
+        })
+      });
+
+      if (response.ok) {
+        console.log('[NotionTiptapEditor] Version deleted successfully');
+        // Reload versions to get the updated list
+        await loadVersions();
+      } else {
+        const errorData = await response.json();
+        console.error('[NotionTiptapEditor] Failed to delete version:', errorData);
+      }
+    } catch (error) {
+      console.error('[NotionTiptapEditor] Failed to delete version:', error);
+    }
+  };
+
+  const isCurrentVersion = (version) => {
+    if (!editor || !version) return false;
+    const currentContent = editor.getHTML();
+    const versionContent = version.content || '';
+    // Normalize content for comparison (remove extra whitespace)
+    const normalizedCurrent = currentContent.replace(/\s+/g, ' ').trim();
+    const normalizedVersion = versionContent.replace(/\s+/g, ' ').trim();
+    return normalizedCurrent === normalizedVersion;
+  };
+
+  const toggleMobileVersionSelection = (versionId) => {
+    setMobileSelectedVersions(prev => {
+      if (prev.version1 === versionId) {
+        return { version1: null, version2: prev.version2 };
+      } else if (prev.version2 === versionId) {
+        return { version1: prev.version1, version2: null };
+      } else if (!prev.version1) {
+        return { version1: versionId, version2: prev.version2 };
+      } else if (!prev.version2) {
+        return { version1: prev.version1, version2: versionId };
+      } else {
+        return { version1: versionId, version2: null };
+      }
+    });
+  };
+
+  const compareMobileVersions = async () => {
+    const version1 = versions.find(v => v.id === mobileSelectedVersions.version1);
+    const version2 = versions.find(v => v.id === mobileSelectedVersions.version2);
+    
+    if (version1 && version2) {
+      compareVersions(version1, version2);
+      setMobileCompareMode(false);
+      setMobileSelectedVersions({ version1: null, version2: null });
+      setShowVersionPopover(false);
+    }
   };
 
   // Auto-versioning functionality with robust change detection
@@ -3228,72 +3298,162 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               </button>
             </div>
             <div style={{ padding: '20px' }}>
+              {/* Create New Version Button */}
+              <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
+                <button
+                  onClick={() => setShowVersionNameModal(true)}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                  }}
+                >
+                  Create New Version
+                </button>
+              </div>
+
               {versions.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {versions.map((version, index) => (
-                    <div key={version.id} style={{
-                      padding: '16px',
-                      border: '1px solid #e1e3e5',
-                      borderRadius: '8px',
-                      backgroundColor: '#f9fafb'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                        <div>
-                          <div style={{ fontWeight: 600, marginBottom: '4px' }}>
-                            {version.versionTitle || version.title}
-                            {version.isAuto && (
-                              <span style={{ 
-                                marginLeft: '8px', 
-                                fontSize: '12px', 
-                                padding: '2px 8px', 
-                                backgroundColor: '#dbeafe', 
-                                color: '#1e40af',
-                                borderRadius: '4px'
-                              }}>Auto</span>
+                  {versions.map((version, index) => {
+                    const isCurrent = isCurrentVersion(version);
+                    return (
+                      <div 
+                        key={version.id} 
+                        onClick={() => mobileCompareMode && toggleMobileVersionSelection(version.id)}
+                        style={{
+                          padding: '16px',
+                          border: isCurrent ? '2px solid #10b981' : mobileCompareMode && (mobileSelectedVersions.version1 === version.id || mobileSelectedVersions.version2 === version.id) ? '2px solid #3b82f6' : '1px solid #e1e3e5',
+                          borderRadius: '8px',
+                          backgroundColor: isCurrent ? '#f0fdf4' : mobileCompareMode && (mobileSelectedVersions.version1 === version.id || mobileSelectedVersions.version2 === version.id) ? '#f0f7ff' : '#f9fafb',
+                          boxShadow: isCurrent ? '0 2px 8px rgba(16, 185, 129, 0.15)' : mobileCompareMode && (mobileSelectedVersions.version1 === version.id || mobileSelectedVersions.version2 === version.id) ? '0 2px 8px rgba(59, 130, 246, 0.15)' : 'none',
+                          cursor: mobileCompareMode ? 'pointer' : 'default'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                          <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                            {mobileCompareMode && (
+                              <div style={{
+                                width: '24px',
+                                height: '24px',
+                                borderRadius: '50%',
+                                border: (mobileSelectedVersions.version1 === version.id || mobileSelectedVersions.version2 === version.id) ? '2px solid #3b82f6' : '2px solid #d1d5db',
+                                backgroundColor: (mobileSelectedVersions.version1 === version.id || mobileSelectedVersions.version2 === version.id) ? '#3b82f6' : 'transparent',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontSize: '12px',
+                                fontWeight: 'bold',
+                                flexShrink: 0,
+                                marginTop: '2px'
+                              }}>
+                                {mobileSelectedVersions.version1 === version.id ? '1' : mobileSelectedVersions.version2 === version.id ? '2' : ''}
+                              </div>
                             )}
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {version.versionTitle || version.title}
+                                {version.isAuto && (
+                                  <span style={{ 
+                                    fontSize: '12px', 
+                                    padding: '2px 8px', 
+                                    backgroundColor: '#dbeafe', 
+                                    color: '#1e40af',
+                                    borderRadius: '4px'
+                                  }}>Auto</span>
+                                )}
+                                {isCurrent && (
+                                  <span style={{ 
+                                    fontSize: '12px', 
+                                    padding: '2px 8px', 
+                                    backgroundColor: '#10b981', 
+                                    color: 'white',
+                                    borderRadius: '4px'
+                                  }}>Current</span>
+                                )}
+                              </div>
+                              <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                                {new Date(version.createdAt).toLocaleString()}
+                              </div>
+                            </div>
                           </div>
-                          <div style={{ fontSize: '14px', color: '#6b7280' }}>
-                            {new Date(version.createdAt).toLocaleString()}
+                          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                            <button
+                              onClick={() => {
+                                restoreVersion(version);
+                                setShowVersionPopover(false);
+                              }}
+                              style={{
+                                padding: '8px 16px',
+                                backgroundColor: '#3b82f6',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                fontWeight: 500
+                              }}
+                            >
+                              Restore
+                            </button>
+                            <button
+                              onClick={() => deleteVersion(version)}
+                              style={{
+                                padding: '8px 12px',
+                                backgroundColor: '#ef4444',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                fontWeight: 500
+                              }}
+                            >
+                              Delete
+                            </button>
                           </div>
+                        {/* Compare Versions Button */}
+                        <div style={{ marginTop: '8px' }}>
+                          <button
+                            onClick={() => setMobileCompareMode(!mobileCompareMode)}
+                            style={{
+                              padding: '6px 12px',
+                              backgroundColor: mobileCompareMode ? '#3b82f6' : 'transparent',
+                              color: mobileCompareMode ? 'white' : '#3b82f6',
+                              border: '1px solid #3b82f6',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '13px',
+                              fontWeight: 500
+                            }}
+                          >
+                            {mobileCompareMode ? 'Cancel Compare' : 'Compare Versions'}
+                          </button>
+                          {mobileCompareMode && mobileSelectedVersions.version1 && mobileSelectedVersions.version2 && (
+                            <button
+                              onClick={compareMobileVersions}
+                              style={{
+                                marginLeft: '8px',
+                                padding: '6px 12px',
+                                backgroundColor: '#10b981',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '13px',
+                                fontWeight: 500
+                              }}
+                            >
+                              Compare Selected
+                            </button>
+                          )}
                         </div>
-                        <button
-                          onClick={() => {
-                            restoreVersion(version);
-                            setShowVersionPopover(false);
-                          }}
-                          style={{
-                            padding: '8px 16px',
-                            backgroundColor: '#3b82f6',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            fontSize: '14px',
-                            fontWeight: 500
-                          }}
-                        >
-                          Restore
-                        </button>
-                      </div>
-                      {index > 0 && (
-                        <button
-                          onClick={() => {
-                            const prevVersion = versions[index - 1];
-                            compareVersions(prevVersion, version);
-                          }}
-                          style={{
-                            padding: '4px 8px',
-                            backgroundColor: 'transparent',
-                            color: '#3b82f6',
-                            border: '1px solid #3b82f6',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '12px'
-                          }}
-                        >
-                          Compare with previous
-                        </button>
-                      )}
                     </div>
                   ))}
                 </div>
