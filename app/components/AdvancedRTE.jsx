@@ -5130,7 +5130,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 right: 0,
                 bottom: 0,
                 backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                zIndex: 10000000
+                zIndex: 99999998
               }}
               onClick={() => {
                 console.log('Modal backdrop clicked - closing [AdvancedRTE]');
@@ -5151,7 +5151,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 maxHeight: '80vh',
                 overflow: 'auto',
                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                zIndex: 10000001,
+                zIndex: 99999999,
                 pointerEvents: 'auto'
               }}
               onClick={(e) => {
@@ -5303,7 +5303,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 right: 0,
                 bottom: 0,
                 backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                zIndex: 10000000
+                zIndex: 99999998
               }}
               onClick={() => {
                 console.log('Image modal backdrop clicked - closing [AdvancedRTE]');
@@ -5322,7 +5322,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 maxWidth: '500px',
                 width: '90%',
                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                zIndex: 10000001,
+                zIndex: 99999999,
                 pointerEvents: 'auto'
               }}
               onClick={(e) => {
@@ -5431,7 +5431,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 right: 0,
                 bottom: 0,
                 backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                zIndex: 10000000
+                zIndex: 99999998
               }}
               onClick={() => {
                 console.log('Video modal backdrop clicked - closing [AdvancedRTE]');
@@ -5450,7 +5450,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 maxWidth: '500px',
                 width: '90%',
                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                zIndex: 10000001,
+                zIndex: 99999999,
                 pointerEvents: 'auto'
               }}
               onClick={(e) => {
