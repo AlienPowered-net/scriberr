@@ -3456,7 +3456,8 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                           )}
                         </div>
                       </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280' }}>
