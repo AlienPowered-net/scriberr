@@ -1259,15 +1259,24 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   };
 
   const compareMobileVersions = async () => {
-    const version1 = versions.find(v => v.id === mobileSelectedVersions.version1);
-    const version2 = versions.find(v => v.id === mobileSelectedVersions.version2);
-    
-    if (version1 && version2) {
-      await compareVersions(version1, version2);
-      setMobileCompareMode(false);
-      setMobileSelectedVersions({ version1: null, version2: null });
-      setShowVersionPopover(false);
+    if (!mobileSelectedVersions.version1 || !mobileSelectedVersions.version2) {
+      console.error('Both versions must be selected for comparison');
+      return;
     }
+    
+    // Set the desktop selectedVersions state to match mobile selections
+    setSelectedVersions({
+      version1: mobileSelectedVersions.version1,
+      version2: mobileSelectedVersions.version2
+    });
+    
+    // Call the comparison function
+    compareVersions();
+    
+    // Clean up mobile compare mode
+    setMobileCompareMode(false);
+    setMobileSelectedVersions({ version1: null, version2: null });
+    setShowVersionPopover(false);
   };
 
   const loadVersions = async () => {
@@ -5427,7 +5436,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                             padding: '16px',
                             border: isCurrent ? '2px solid #10b981' : mobileCompareMode && (mobileSelectedVersions.version1 === version.id || mobileSelectedVersions.version2 === version.id) ? '2px solid #3b82f6' : '1px solid #e1e3e5',
                             borderRadius: '8px',
-                            backgroundColor: isCurrent ? '#f0fdf4' : mobileCompareMode && (mobileSelectedVersions.version1 === version.id || mobileSelectedVersions.version2 === version.id) ? '#f0f7ff' : '#f9fafb',
+                            backgroundColor: isCurrent ? '#f0fdf4' : mobileCompareMode && (mobileSelectedVersions.version1 === version.id || mobileSelectedVersions.version2 === version.id) ? '#f0f7ff' : '#ffffff',
                             boxShadow: isCurrent ? '0 2px 8px rgba(16, 185, 129, 0.15)' : mobileCompareMode && (mobileSelectedVersions.version1 === version.id || mobileSelectedVersions.version2 === version.id) ? '0 2px 8px rgba(59, 130, 246, 0.15)' : 'none',
                             cursor: mobileCompareMode ? 'pointer' : 'default'
                           }}
@@ -5483,35 +5492,47 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                             <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                               <button
                                 onClick={() => {
-                                  restoreVersion(version);
-                                  setShowVersionPopover(false);
+                                  handleRestoreClick(version);
+                                  // Don't close popover here - let the dialog handle it
                                 }}
+                                disabled={restoringVersionId === version.id || deletingVersionId === version.id}
                                 style={{
                                   padding: '8px 16px',
                                   backgroundColor: '#3b82f6',
                                   color: 'white',
                                   border: 'none',
                                   borderRadius: '6px',
-                                  cursor: 'pointer',
+                                  cursor: restoringVersionId === version.id || deletingVersionId === version.id ? 'not-allowed' : 'pointer',
                                   fontSize: '14px',
-                                  fontWeight: 500
+                                  fontWeight: 500,
+                                  opacity: restoringVersionId === version.id || deletingVersionId === version.id ? 0.6 : 1,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px'
                                 }}
                               >
+                                {restoringVersionId === version.id && <Spinner size="small" />}
                                 Restore
                               </button>
                               <button
                                 onClick={() => deleteVersion(version)}
+                                disabled={restoringVersionId === version.id || deletingVersionId === version.id}
                                 style={{
                                   padding: '8px 12px',
                                   backgroundColor: '#ef4444',
                                   color: 'white',
                                   border: 'none',
                                   borderRadius: '6px',
-                                  cursor: 'pointer',
+                                  cursor: restoringVersionId === version.id || deletingVersionId === version.id ? 'not-allowed' : 'pointer',
                                   fontSize: '14px',
-                                  fontWeight: 500
+                                  fontWeight: 500,
+                                  opacity: restoringVersionId === version.id || deletingVersionId === version.id ? 0.6 : 1,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px'
                                 }}
                               >
+                                {deletingVersionId === version.id && <Spinner size="small" />}
                                 Delete
                               </button>
                             </div>
