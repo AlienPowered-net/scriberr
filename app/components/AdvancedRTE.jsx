@@ -204,6 +204,12 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const autoVersionIntervalRef = useRef(null);
   const [mobileCompareMode, setMobileCompareMode] = useState(false);
   const [mobileSelectedVersions, setMobileSelectedVersions] = useState({ version1: null, version2: null });
+  const [deletingVersionId, setDeletingVersionId] = useState(null);
+  const [restoringVersionId, setRestoringVersionId] = useState(null);
+  const [restorationInfo, setRestorationInfo] = useState(null);
+  const [currentVersionId, setCurrentVersionId] = useState(null);
+  const [showRestoreDialog, setShowRestoreDialog] = useState(false);
+  const [pendingRestoreVersion, setPendingRestoreVersion] = useState(null);
   const [imageUrl, setImageUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
@@ -286,6 +292,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       document.body.classList.remove('editor-fullscreen-active');
     };
   }, []);
+
+  // Clear restoration pill when user makes changes or auto-saves
+  useEffect(() => {
+    if (restorationInfo && hasUnsavedChanges) {
+      setRestorationInfo(null);
+    }
+  }, [hasUnsavedChanges, restorationInfo]);
 
   const editor = useEditor({
     extensions: [
@@ -1084,6 +1097,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         setLastAutoVersion(new Date());
         setHasUnsavedChanges(false);
         
+        // Set this as the current version for manual versions
+        if (!isAuto) {
+          setCurrentVersionId(newVersion.id);
+        }
+        
         if (onVersionCreated) {
           onVersionCreated(newVersion);
         }
@@ -1098,13 +1116,17 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     }
   };
 
-  const restoreVersion = async (version) => {
+  const restoreVersion = async (version, createCheckpoint = false) => {
     if (!editor || !version || !noteId) return;
     
     try {
-      // If there are unsaved changes, create a new version to preserve them
-      if (hasUnsavedChanges) {
-        await createVersion(`Auto-saved before revert - ${new Date().toLocaleString()}`, true);
+      // Set loading state
+      setRestoringVersionId(version.id);
+      console.log('[AdvancedRTE] Setting restoringVersionId to:', version.id);
+      
+      // Create a pre-restore checkpoint if requested
+      if (createCheckpoint) {
+        await createVersion(`Pre-restore checkpoint - ${new Date().toLocaleTimeString()}`, true);
       }
       
       // Restore the selected version
@@ -1114,13 +1136,41 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         editor.commands.setContent(version.content);
       }
       
+      // Show spinner for 1 second to make it more visible
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       setShowVersionPopover(false);
       setHasUnsavedChanges(false);
+      
+      // Set this version as current and show restoration info
+      setCurrentVersionId(version.id);
+      setRestorationInfo({
+        title: version.versionTitle || version.title || 'Unknown Version',
+        time: version.createdAt
+      });
+      
+      // Clear loading state
+      setRestoringVersionId(null);
       
       // Reload versions to get the updated list
       await loadVersions();
     } catch (error) {
       console.error('Failed to restore version:', error);
+      setRestoringVersionId(null);
+    }
+  };
+
+  const handleRestoreClick = (version) => {
+    // Show dialog asking if user wants to create restore point
+    setPendingRestoreVersion(version);
+    setShowRestoreDialog(true);
+  };
+
+  const confirmRestore = (createCheckpoint) => {
+    if (pendingRestoreVersion) {
+      restoreVersion(pendingRestoreVersion, createCheckpoint);
+      setPendingRestoreVersion(null);
+      setShowRestoreDialog(false);
     }
   };
 
@@ -1131,6 +1181,10 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         console.error('[AdvancedRTE] Cannot delete version: noteId is missing');
         return;
       }
+
+      // Set loading state
+      setDeletingVersionId(version.id);
+      console.log('[AdvancedRTE] Setting deletingVersionId to:', version.id);
 
       const response = await fetch('/api/delete-note-version', {
         method: 'POST',
@@ -1143,25 +1197,39 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
       if (response.ok) {
         console.log('[AdvancedRTE] Version deleted successfully');
-        // Reload versions to get the updated list
-        await loadVersions();
+        
+        // Show spinner for 1 second to make it more visible
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Update versions state directly to avoid triggering auto-save
+        setVersions(prev => prev.filter(v => v.id !== version.id));
+        
+        // If we deleted the current version, set the next most recent as current
+        if (currentVersionId === version.id) {
+          const remainingVersions = versions.filter(v => v.id !== version.id);
+          if (remainingVersions.length > 0) {
+            setCurrentVersionId(remainingVersions[0].id);
+          } else {
+            setCurrentVersionId(null);
+          }
+        }
+        
+        // Clear loading state
+        setDeletingVersionId(null);
       } else {
         const errorData = await response.json();
         console.error('[AdvancedRTE] Failed to delete version:', errorData);
+        setDeletingVersionId(null);
       }
     } catch (error) {
       console.error('[AdvancedRTE] Failed to delete version:', error);
+      setDeletingVersionId(null);
     }
   };
 
   const isCurrentVersion = (version) => {
-    if (!editor || !version) return false;
-    const currentContent = editor.getHTML();
-    const versionContent = version.content || '';
-    // Normalize content for comparison (remove extra whitespace)
-    const normalizedCurrent = currentContent.replace(/\s+/g, ' ').trim();
-    const normalizedVersion = versionContent.replace(/\s+/g, ' ').trim();
-    return normalizedCurrent === normalizedVersion;
+    // Use tracked current version ID instead of content comparison
+    return currentVersionId === version.id;
   };
 
   const toggleMobileVersionSelection = (versionId) => {
@@ -1206,6 +1274,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         const versionsData = await response.json();
         console.log('[AdvancedRTE] Loaded versions:', versionsData.length, 'versions');
         setVersions(versionsData);
+        
+        // Set the first (most recent) version as current if no current version is set
+        if (versionsData.length > 0 && !currentVersionId) {
+          setCurrentVersionId(versionsData[0].id);
+        }
       } else {
         const errorData = await response.json();
         console.error('[AdvancedRTE] Failed to load versions:', errorData);
@@ -1332,6 +1405,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               const newVersion = await res.json();
               console.log('[AdvancedRTE] Auto-version created successfully:', newVersion);
               setVersions(prev => [newVersion, ...prev.slice(0, 19)]);
+              setCurrentVersionId(newVersion.id); // Set auto-saved version as current
               setLastAutoVersion(new Date());
               setDebugInfo(prev => ({
                 ...prev,
@@ -2293,6 +2367,28 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       }}
       ref={editorRef}
     >
+        {/* Debug State Display */}
+        {(deletingVersionId || restoringVersionId) && (
+          <div style={{ 
+            padding: '4px 8px', 
+            backgroundColor: '#fff3cd', 
+            borderBottom: '1px solid #ffeaa7',
+            fontSize: '12px',
+            color: '#856404'
+          }}>
+            DEBUG: deletingVersionId={deletingVersionId}, restoringVersionId={restoringVersionId}
+          </div>
+        )}
+        
+        {/* Status Pills */}
+        {restorationInfo && (
+          <div style={{ padding: '8px 16px', borderBottom: '1px solid #e1e3e5' }}>
+            <Badge tone="info">
+              Reverted to {restorationInfo.title} at {new Date(restorationInfo.time).toLocaleTimeString()}
+            </Badge>
+          </div>
+        )}
+
       {/* Toolbar */}
       <div className="advanced-rte-toolbar" style={{ 
         borderBottom: isMobileProp ? "none" : "1px solid #e1e5e9", 
@@ -2557,15 +2653,19 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                               <div style={{ flexShrink: 0, marginLeft: '8px', display: 'flex', gap: '8px' }}>
                                 <Button
                                   size="slim"
-                                  onClick={() => restoreVersion(version)}
+                                  onClick={() => handleRestoreClick(version)}
+                                  disabled={restoringVersionId === version.id || deletingVersionId === version.id}
                                 >
+                                  {restoringVersionId === version.id && <Spinner size="small" />}
                                   Restore
                                 </Button>
                                 <Button
                                   size="slim"
                                   tone="critical"
                                   onClick={() => deleteVersion(version)}
+                                  disabled={restoringVersionId === version.id || deletingVersionId === version.id}
                                 >
+                                  {deletingVersionId === version.id && <Spinner size="small" />}
                                   Delete
                                 </Button>
                               </div>
@@ -2583,6 +2683,45 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   </div>
                 )}
               </div>
+            </Modal.Section>
+          </Modal>
+
+          {/* Restore Dialog */}
+          <Modal
+            open={showRestoreDialog}
+            onClose={() => {
+              setShowRestoreDialog(false);
+              setPendingRestoreVersion(null);
+            }}
+            title="Restore Version"
+            primaryAction={{
+              content: 'Restore with Checkpoint',
+              onAction: () => confirmRestore(true),
+            }}
+            secondaryActions={[
+              {
+                content: 'Restore without Checkpoint',
+                onAction: () => confirmRestore(false),
+              },
+              {
+                content: 'Cancel',
+                onAction: () => {
+                  setShowRestoreDialog(false);
+                  setPendingRestoreVersion(null);
+                },
+              },
+            ]}
+          >
+            <Modal.Section>
+              <BlockStack gap="4">
+                <Text variant="bodyMd">
+                  You're about to restore to "{pendingRestoreVersion?.versionTitle || pendingRestoreVersion?.title || 'Unknown Version'}" 
+                  created on {pendingRestoreVersion ? new Date(pendingRestoreVersion.createdAt).toLocaleString() : ''}.
+                </Text>
+                <Text variant="bodyMd" color="subdued">
+                  Would you like to create a restore point with your current content before restoring? This will save your current work as a checkpoint in case you need to revert back.
+                </Text>
+              </BlockStack>
             </Modal.Section>
           </Modal>
 
