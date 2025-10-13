@@ -202,8 +202,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [debugInfo, setDebugInfo] = useState({ lastChange: null, lastVersion: null });
   const autoVersionIntervalRef = useRef(null);
-  const [mobileCompareMode, setMobileCompareMode] = useState(false);
-  const [mobileSelectedVersions, setMobileSelectedVersions] = useState({ version1: null, version2: null });
   const [deletingVersionId, setDeletingVersionId] = useState(null);
   const [restoringVersionId, setRestoringVersionId] = useState(null);
   const [restorationInfo, setRestorationInfo] = useState(null);
@@ -1177,8 +1175,10 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const handleRestoreClick = (version) => {
     // Show dialog asking if user wants to create restore point
     console.log('[AdvancedRTE] handleRestoreClick called for version:', version.id);
+    console.log('[AdvancedRTE] Setting pendingRestoreVersion and showRestoreDialog to true');
     setPendingRestoreVersion(version);
     setShowRestoreDialog(true);
+    console.log('[AdvancedRTE] States set - pendingRestoreVersion:', version.id, 'showRestoreDialog: true');
   };
 
   const confirmRestore = (createCheckpoint) => {
@@ -1251,42 +1251,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     return currentVersionId === version.id;
   };
 
-  const toggleMobileVersionSelection = (versionId) => {
-    setMobileSelectedVersions(prev => {
-      if (prev.version1 === versionId) {
-        return { version1: null, version2: prev.version2 };
-      } else if (prev.version2 === versionId) {
-        return { version1: prev.version1, version2: null };
-      } else if (!prev.version1) {
-        return { version1: versionId, version2: prev.version2 };
-      } else if (!prev.version2) {
-        return { version1: prev.version1, version2: versionId };
-      } else {
-        return { version1: versionId, version2: null };
-      }
-    });
-  };
-
-  const compareMobileVersions = async () => {
-    if (!mobileSelectedVersions.version1 || !mobileSelectedVersions.version2) {
-      console.error('Both versions must be selected for comparison');
-      return;
-    }
-    
-    // Set the desktop selectedVersions state to match mobile selections
-    setSelectedVersions({
-      version1: mobileSelectedVersions.version1,
-      version2: mobileSelectedVersions.version2
-    });
-    
-    // Call the comparison function
-    compareVersions();
-    
-    // Clean up mobile compare mode
-    setMobileCompareMode(false);
-    setMobileSelectedVersions({ version1: null, version2: null });
-    setShowVersionPopover(false);
-  };
 
   const loadVersions = async () => {
     console.log('[AdvancedRTE] loadVersions called with noteId:', noteId);
@@ -1503,7 +1467,12 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     showVersionPopover,
     showImageModal,
     showVideoModal,
-    documentUndefined: typeof document === 'undefined'
+    documentUndefined: typeof document === 'undefined',
+    deletingVersionId,
+    restoringVersionId,
+    restorationInfo,
+    showRestoreDialog,
+    pendingRestoreVersion: pendingRestoreVersion?.id
   });
 
   // Fullscreen editor component that will be rendered via portal
@@ -2501,7 +2470,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             open={showVersionPopover}
             onClose={() => setShowVersionPopover(false)}
             title="Version History"
-            large
+            large={!isMobile}
             primaryAction={{
               content: 'Create New',
               onAction: () => {
@@ -5349,286 +5318,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         </div>
       )}
 
-      {/* Custom Modals - render directly to document.body with z-index above mobile wrapper - MOBILE ONLY */}
-      {typeof document !== 'undefined' && showVersionPopover && isMobile && (() => {
-        console.log('RENDERING VERSION HISTORY MODAL VIA PORTAL [AdvancedRTE], showVersionPopover:', showVersionPopover);
-        return createPortal(
-          <>
-            {/* Backdrop */}
-            <div
-              style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                zIndex: 99999998
-              }}
-              onClick={() => {
-                console.log('Modal backdrop clicked - closing [AdvancedRTE]');
-                setShowVersionPopover(false);
-              }}
-            />
-            {/* Modal Content */}
-            <div
-              style={{
-                position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                backgroundColor: 'white',
-                borderRadius: '8px',
-                maxWidth: '600px',
-                width: '90%',
-                maxHeight: '80vh',
-                overflow: 'auto',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                zIndex: 99999999,
-                pointerEvents: 'auto'
-              }}
-              onClick={(e) => {
-                console.log('Modal content clicked - keeping open [AdvancedRTE]');
-                e.stopPropagation();
-              }}
-            >
-              <div style={{
-                padding: '20px',
-                borderBottom: '1px solid #e1e3e5',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Version History</h2>
-                <button
-                  onClick={() => setShowVersionPopover(false)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    fontSize: '24px',
-                    cursor: 'pointer',
-                    padding: '0',
-                    width: '32px',
-                    height: '32px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-              <div style={{ padding: '20px' }}>
-                {/* Create New Version Button */}
-                <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
-                  <button
-                    onClick={() => setShowVersionNameModal(true)}
-                    style={{
-                      padding: '12px 24px',
-                      backgroundColor: '#10b981',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontSize: '16px',
-                      fontWeight: 600,
-                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-                    }}
-                  >
-                    Create New Version
-                  </button>
-                </div>
-
-                {versions.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {versions.map((version, index) => {
-                      const isCurrent = isCurrentVersion(version);
-                      return (
-                        <div 
-                          key={version.id} 
-                          onClick={() => mobileCompareMode && toggleMobileVersionSelection(version.id)}
-                          style={{
-                            padding: '16px',
-                            border: isCurrent ? '2px solid #10b981' : mobileCompareMode && (mobileSelectedVersions.version1 === version.id || mobileSelectedVersions.version2 === version.id) ? '2px solid #3b82f6' : '1px solid #e1e3e5',
-                            borderRadius: '8px',
-                            backgroundColor: isCurrent ? '#f0fdf4' : mobileCompareMode && (mobileSelectedVersions.version1 === version.id || mobileSelectedVersions.version2 === version.id) ? '#f0f7ff' : '#ffffff',
-                            boxShadow: isCurrent ? '0 2px 8px rgba(16, 185, 129, 0.15)' : mobileCompareMode && (mobileSelectedVersions.version1 === version.id || mobileSelectedVersions.version2 === version.id) ? '0 2px 8px rgba(59, 130, 246, 0.15)' : 'none',
-                            cursor: mobileCompareMode ? 'pointer' : 'default'
-                          }}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                            <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                              {mobileCompareMode && (
-                                <div style={{
-                                  width: '24px',
-                                  height: '24px',
-                                  borderRadius: '50%',
-                                  border: (mobileSelectedVersions.version1 === version.id || mobileSelectedVersions.version2 === version.id) ? '2px solid #3b82f6' : '2px solid #d1d5db',
-                                  backgroundColor: (mobileSelectedVersions.version1 === version.id || mobileSelectedVersions.version2 === version.id) ? '#3b82f6' : 'transparent',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  color: 'white',
-                                  fontSize: '12px',
-                                  fontWeight: 'bold',
-                                  flexShrink: 0,
-                                  marginTop: '2px'
-                                }}>
-                                  {mobileSelectedVersions.version1 === version.id ? '1' : mobileSelectedVersions.version2 === version.id ? '2' : ''}
-                                </div>
-                              )}
-                              <div style={{ flex: 1 }}>
-                                <div style={{ fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  {version.versionTitle || version.title}
-                                  {version.isAuto && (
-                                    <span style={{ 
-                                      fontSize: '12px', 
-                                      padding: '2px 8px', 
-                                      backgroundColor: '#dbeafe', 
-                                      color: '#1e40af',
-                                      borderRadius: '4px'
-                                    }}>Auto</span>
-                                  )}
-                                  {isCurrent && (
-                                    <span style={{ 
-                                      fontSize: '12px', 
-                                      padding: '2px 8px', 
-                                      backgroundColor: '#10b981', 
-                                      color: 'white',
-                                      borderRadius: '4px'
-                                    }}>Current</span>
-                                  )}
-                                </div>
-                                <div style={{ fontSize: '14px', color: '#6b7280' }}>
-                                  {new Date(version.createdAt).toLocaleString()}
-                                </div>
-                              </div>
-                            </div>
-                            <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation(); // Prevent modal backdrop click
-                                  handleRestoreClick(version);
-                                  // Don't close popover here - let the dialog handle it
-                                }}
-                                disabled={restoringVersionId === version.id || deletingVersionId === version.id}
-                                style={{
-                                  padding: '8px 16px',
-                                  backgroundColor: '#3b82f6',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '6px',
-                                  cursor: restoringVersionId === version.id || deletingVersionId === version.id ? 'not-allowed' : 'pointer',
-                                  fontSize: '14px',
-                                  fontWeight: 500,
-                                  opacity: restoringVersionId === version.id || deletingVersionId === version.id ? 0.6 : 1,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '6px'
-                                }}
-                              >
-                                {restoringVersionId === version.id && <Spinner size="small" />}
-                                Restore
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation(); // Prevent modal backdrop click
-                                  deleteVersion(version);
-                                }}
-                                disabled={restoringVersionId === version.id || deletingVersionId === version.id}
-                                style={{
-                                  padding: '8px 12px',
-                                  backgroundColor: '#ef4444',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '6px',
-                                  cursor: restoringVersionId === version.id || deletingVersionId === version.id ? 'not-allowed' : 'pointer',
-                                  fontSize: '14px',
-                                  fontWeight: 500,
-                                  opacity: restoringVersionId === version.id || deletingVersionId === version.id ? 0.6 : 1,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '6px'
-                                }}
-                              >
-                                {deletingVersionId === version.id && <Spinner size="small" />}
-                                Delete
-                              </button>
-                            </div>
-                          </div>
-                          {/* Compare Versions Button */}
-                          <div style={{ marginTop: '8px' }}>
-                            <button
-                              onClick={() => setMobileCompareMode(!mobileCompareMode)}
-                              style={{
-                                padding: '6px 12px',
-                                backgroundColor: mobileCompareMode ? '#3b82f6' : 'transparent',
-                                color: mobileCompareMode ? 'white' : '#3b82f6',
-                                border: '1px solid #3b82f6',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                                fontSize: '13px',
-                                fontWeight: 500
-                              }}
-                            >
-                              {mobileCompareMode ? 'Cancel Compare' : 'Compare Versions'}
-                            </button>
-                            {mobileCompareMode && mobileSelectedVersions.version1 && mobileSelectedVersions.version2 && (
-                              <button
-                                onClick={compareMobileVersions}
-                                style={{
-                                  marginLeft: '8px',
-                                  padding: '6px 12px',
-                                  backgroundColor: '#10b981',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '6px',
-                                  cursor: 'pointer',
-                                  fontSize: '13px',
-                                  fontWeight: 500
-                                }}
-                              >
-                                Compare Selected
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280' }}>
-                    No versions available yet. Create your first version!
-                  </div>
-                )}
-                <div style={{ marginTop: '16px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                  <button
-                    onClick={() => {
-                      setShowVersionPopover(false);
-                      setTimeout(() => {
-                        setShowVersionNameModal(true);
-                      }, 50);
-                    }}
-                    style={{
-                      padding: '10px 20px',
-                      backgroundColor: '#10b981',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: 500
-                    }}
-                  >
-                    Create New
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>,
-          document.body
-        );
-      })()}
 
       {/* Insert Image Modal - MOBILE ONLY */}
       {typeof document !== 'undefined' && showImageModal && isMobile && (() => {
