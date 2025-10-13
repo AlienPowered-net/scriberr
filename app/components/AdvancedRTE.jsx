@@ -1121,7 +1121,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   };
 
   const restoreVersion = async (version, createCheckpoint = false) => {
-    if (!editor || !version || !noteId) return;
+    console.log('[AdvancedRTE] restoreVersion called with:', { versionId: version.id, createCheckpoint });
+    if (!editor || !version || !noteId) {
+      console.error('[AdvancedRTE] restoreVersion failed - missing editor, version, or noteId');
+      return;
+    }
     
     try {
       // Set loading state
@@ -1172,15 +1176,20 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
   const handleRestoreClick = (version) => {
     // Show dialog asking if user wants to create restore point
+    console.log('[AdvancedRTE] handleRestoreClick called for version:', version.id);
     setPendingRestoreVersion(version);
     setShowRestoreDialog(true);
   };
 
   const confirmRestore = (createCheckpoint) => {
+    console.log('[AdvancedRTE] confirmRestore called with createCheckpoint:', createCheckpoint);
     if (pendingRestoreVersion) {
+      console.log('[AdvancedRTE] Starting restore for version:', pendingRestoreVersion.id);
       restoreVersion(pendingRestoreVersion, createCheckpoint);
       setPendingRestoreVersion(null);
       setShowRestoreDialog(false);
+    } else {
+      console.error('[AdvancedRTE] confirmRestore called but no pendingRestoreVersion');
     }
   };
 
