@@ -2660,7 +2660,10 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                               <div style={{ flexShrink: 0, marginLeft: '8px', display: 'flex', gap: '8px' }}>
                                 <Button
                                   size="slim"
-                                  onClick={() => handleRestoreClick(version)}
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent modal backdrop click
+                                    handleRestoreClick(version);
+                                  }}
                                   disabled={restoringVersionId === version.id || deletingVersionId === version.id}
                                 >
                                   {restoringVersionId === version.id && <Spinner size="small" />}
@@ -2669,7 +2672,10 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                                 <Button
                                   size="slim"
                                   tone="critical"
-                                  onClick={() => deleteVersion(version)}
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent modal backdrop click
+                                    deleteVersion(version);
+                                  }}
                                   disabled={restoringVersionId === version.id || deletingVersionId === version.id}
                                 >
                                   {deletingVersionId === version.id && <Spinner size="small" />}
@@ -5500,7 +5506,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                             </div>
                             <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                               <button
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent modal backdrop click
                                   handleRestoreClick(version);
                                   // Don't close popover here - let the dialog handle it
                                 }}
@@ -5524,7 +5531,10 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                                 Restore
                               </button>
                               <button
-                                onClick={() => deleteVersion(version)}
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent modal backdrop click
+                                  deleteVersion(version);
+                                }}
                                 disabled={restoringVersionId === version.id || deletingVersionId === version.id}
                                 style={{
                                   padding: '8px 12px',
