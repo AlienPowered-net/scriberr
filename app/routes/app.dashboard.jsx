@@ -544,6 +544,7 @@ export default function Index() {
   const [newTagInput, setNewTagInput] = useState("");
   const [autoSaveNotification, setAutoSaveNotification] = useState("");
   const [autoSaveNotificationTime, setAutoSaveNotificationTime] = useState(null);
+  const [restorationInfo, setRestorationInfo] = useState(null);
   
   // Multi-select states
   const [selectedNotes, setSelectedNotes] = useState([]);
@@ -976,12 +977,18 @@ export default function Index() {
                 <i className="far fa-edit" style={{ fontSize: "20px" }}></i>
                 Note Editor
               </Text>
-              {(autoSaveNotification || hasUnsavedChanges) && (
+              {(autoSaveNotification || hasUnsavedChanges || restorationInfo) && (
                 <div style={{ marginTop: "4px" }}>
                   {autoSaveNotification && (
-                    <Badge tone="success" size="large" style={{ marginBottom: hasUnsavedChanges ? "4px" : "0" }}>
+                    <Badge tone="success" size="large" style={{ marginBottom: (hasUnsavedChanges || restorationInfo) ? "4px" : "0" }}>
                       <i className="fas fa-check-circle" style={{ fontSize: "12px", marginRight: "4px" }}></i>
                       {autoSaveNotification}
+                    </Badge>
+                  )}
+                  {restorationInfo && (
+                    <Badge tone="info" size="large" style={{ marginBottom: hasUnsavedChanges ? "4px" : "0" }}>
+                      <i className="fas fa-undo" style={{ fontSize: "12px", marginRight: "4px" }}></i>
+                      Reverted to {restorationInfo.title} at {new Date(restorationInfo.time).toLocaleTimeString()}
                     </Badge>
                   )}
                   {hasUnsavedChanges && (
@@ -1628,6 +1635,11 @@ export default function Index() {
       JSON.stringify(noteTags) !== JSON.stringify(currentNote.tags || []);
 
     setHasUnsavedChanges(hasChanges);
+    
+    // Clear restoration info when unsaved changes occur
+    if (hasChanges && restorationInfo) {
+      setRestorationInfo(null);
+    }
     
     // Clear auto-save notification when changes are detected, but only if it's been shown for at least 4 seconds
     if (hasChanges && autoSaveNotification && autoSaveNotificationTime) {
@@ -2948,6 +2960,8 @@ export default function Index() {
         setAutoSaveNotificationTime(Date.now());
         setHasUnsavedChanges(false);
         setHasBeenSavedOnce(true);
+        // Clear restoration info when auto-save occurs
+        setRestorationInfo(null);
       }
     } catch (error) {
       console.error('Auto-save failed:', error);
@@ -4442,12 +4456,18 @@ export default function Index() {
                   <i className="far fa-edit" style={{ fontSize: "20px" }}></i>
                   Note Editor
                 </Text>
-                {(autoSaveNotification || hasUnsavedChanges) && (
+                {(autoSaveNotification || hasUnsavedChanges || restorationInfo) && (
                   <div style={{ marginTop: "4px" }}>
                     {autoSaveNotification && (
-                      <Badge tone="success" size="large" style={{ marginBottom: hasUnsavedChanges ? "4px" : "0" }}>
+                      <Badge tone="success" size="large" style={{ marginBottom: (hasUnsavedChanges || restorationInfo) ? "4px" : "0" }}>
                         <i className="fas fa-check-circle" style={{ fontSize: "12px", marginRight: "4px" }}></i>
                         {autoSaveNotification}
+                      </Badge>
+                    )}
+                    {restorationInfo && (
+                      <Badge tone="info" size="large" style={{ marginBottom: hasUnsavedChanges ? "4px" : "0" }}>
+                        <i className="fas fa-undo" style={{ fontSize: "12px", marginRight: "4px" }}></i>
+                        Reverted to {restorationInfo.title} at {new Date(restorationInfo.time).toLocaleTimeString()}
                       </Badge>
                     )}
                     {hasUnsavedChanges && (
@@ -4672,6 +4692,7 @@ export default function Index() {
                       placeholder="Type your note here..."
                       onFullscreenChange={setIsEditorFullscreen}
                       noteId={editingNoteId}
+                      onRestorationInfoChange={setRestorationInfo}
                     />
                   )}
                 </div>
@@ -6821,6 +6842,7 @@ export default function Index() {
                       placeholder="Type your note here..."
                       onFullscreenChange={setIsEditorFullscreen}
                       noteId={editingNoteId}
+                      onRestorationInfoChange={setRestorationInfo}
                     />
                   )}
                 </div>

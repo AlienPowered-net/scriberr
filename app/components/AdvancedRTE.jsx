@@ -184,7 +184,7 @@ const getMetadataPreview = (type, metadata) => {
   }
 };
 
-const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobileProp = false, onFullscreenChange, noteId, onVersionCreated }) => {
+const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobileProp = false, onFullscreenChange, noteId, onVersionCreated, onRestorationInfoChange }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -297,8 +297,12 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   useEffect(() => {
     if (restorationInfo && hasUnsavedChanges) {
       setRestorationInfo(null);
+      // Notify parent component that restoration info should be cleared
+      if (onRestorationInfoChange) {
+        onRestorationInfoChange(null);
+      }
     }
-  }, [hasUnsavedChanges, restorationInfo]);
+  }, [hasUnsavedChanges, restorationInfo, onRestorationInfoChange]);
 
   const editor = useEditor({
     extensions: [
@@ -1144,10 +1148,16 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       
       // Set this version as current and show restoration info
       setCurrentVersionId(version.id);
-      setRestorationInfo({
+      const restorationData = {
         title: version.versionTitle || version.title || 'Unknown Version',
         time: version.createdAt
-      });
+      };
+      setRestorationInfo(restorationData);
+      
+      // Notify parent component about restoration info
+      if (onRestorationInfoChange) {
+        onRestorationInfoChange(restorationData);
+      }
       
       // Clear loading state
       setRestoringVersionId(null);
@@ -2367,27 +2377,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       }}
       ref={editorRef}
     >
-        {/* Debug State Display */}
-        {(deletingVersionId || restoringVersionId) && (
-          <div style={{ 
-            padding: '4px 8px', 
-            backgroundColor: '#fff3cd', 
-            borderBottom: '1px solid #ffeaa7',
-            fontSize: '12px',
-            color: '#856404'
-          }}>
-            DEBUG: deletingVersionId={deletingVersionId}, restoringVersionId={restoringVersionId}
-          </div>
-        )}
-        
-        {/* Status Pills */}
-        {restorationInfo && (
-          <div style={{ padding: '8px 16px', borderBottom: '1px solid #e1e3e5' }}>
-            <Badge tone="info">
-              Reverted to {restorationInfo.title} at {new Date(restorationInfo.time).toLocaleTimeString()}
-            </Badge>
-          </div>
-        )}
 
       {/* Toolbar */}
       <div className="advanced-rte-toolbar" style={{ 
