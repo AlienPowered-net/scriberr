@@ -2695,14 +2695,15 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           </Modal>
           )}
 
-          {/* Restore Dialog */}
-          <Modal
-            open={showRestoreDialog}
-            onClose={() => {
-              setShowRestoreDialog(false);
-              setPendingRestoreVersion(null);
-            }}
-            title="Restore Version"
+          {/* Restore Dialog - DESKTOP ONLY */}
+          {!isMobile && (
+            <Modal
+              open={showRestoreDialog}
+              onClose={() => {
+                setShowRestoreDialog(false);
+                setPendingRestoreVersion(null);
+              }}
+              title="Restore Version"
             primaryAction={{
               content: 'Restore with Checkpoint',
               onAction: () => confirmRestore(true),
@@ -2733,6 +2734,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               </BlockStack>
             </Modal.Section>
           </Modal>
+          )}
 
           {/* Line Height Button with Custom Modal */}
           <button
@@ -5427,7 +5429,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                         setShowVersionNameModal(true);
                       }, 50);
                     }}
-                    style={{ minHeight: 'auto' }}
+                    style={{ minHeight: 'unset', height: 'auto' }}
                   >
                     Create New Version
                   </Button>
@@ -5445,7 +5447,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                         setComparisonResult(null);
                       }
                     }}
-                    style={{ minHeight: 'auto' }}
+                    style={{ minHeight: 'unset', height: 'auto' }}
                   >
                     {compareMode ? 'Cancel Compare' : 'Compare Versions'}
                   </Button>
@@ -5545,7 +5547,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                                 }}
                                 disabled={restoringVersionId === version.id || deletingVersionId === version.id}
                                 loading={restoringVersionId === version.id}
-                                style={{ minHeight: 'auto' }}
+                                style={{ minHeight: 'unset', height: 'auto' }}
                               >
                                 Restore
                               </Button>
@@ -5559,7 +5561,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                                 }}
                                 disabled={restoringVersionId === version.id || deletingVersionId === version.id}
                                 loading={deletingVersionId === version.id}
-                                style={{ minHeight: 'auto' }}
+                                style={{ minHeight: 'unset', height: 'auto' }}
                               >
                                 Delete
                               </Button>
@@ -5592,7 +5594,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                           compareVersions();
                         }
                       }}
-                      style={{ minHeight: 'auto' }}
+                      style={{ minHeight: 'unset', height: 'auto' }}
                     >
                       View Diff
                     </Button>
@@ -5621,6 +5623,109 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          </>,
+          document.body
+        );
+      })()}
+
+      {/* Restore Dialog - MOBILE ONLY */}
+      {typeof document !== 'undefined' && showRestoreDialog && isMobile && (() => {
+        console.log('RENDERING RESTORE DIALOG VIA PORTAL [AdvancedRTE], showRestoreDialog:', showRestoreDialog);
+        return createPortal(
+          <>
+            {/* Backdrop */}
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                zIndex: 999999999
+              }}
+              onClick={() => {
+                console.log('Restore dialog backdrop clicked - closing [AdvancedRTE]');
+                setShowRestoreDialog(false);
+                setPendingRestoreVersion(null);
+              }}
+            />
+            {/* Dialog Content */}
+            <div
+              style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                maxWidth: '90vw',
+                width: '400px',
+                maxHeight: '80vh',
+                overflow: 'auto',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                zIndex: 1000000000,
+                pointerEvents: 'auto'
+              }}
+              onClick={(e) => {
+                console.log('Restore dialog content clicked - keeping open [AdvancedRTE]');
+                e.stopPropagation();
+              }}
+            >
+              <div style={{
+                padding: '20px',
+                borderBottom: '1px solid #e1e3e5'
+              }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600', marginBottom: '12px' }}>Restore Version</h2>
+                <p style={{ margin: 0, fontSize: '14px', color: '#6b7280', lineHeight: '1.5' }}>
+                  You're about to restore to "{pendingRestoreVersion?.versionTitle || pendingRestoreVersion?.title}" created on {pendingRestoreVersion ? new Date(pendingRestoreVersion.createdAt).toLocaleString() : ''}.
+                </p>
+                <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#6b7280', lineHeight: '1.5' }}>
+                  Would you like to create a restore point with your current content before restoring? This will save your current work as a checkpoint in case you need to revert back.
+                </p>
+              </div>
+              <div style={{
+                padding: '20px',
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'flex-end'
+              }}>
+                <Button
+                  size="medium"
+                  variant="secondary"
+                  onClick={() => {
+                    setShowRestoreDialog(false);
+                    setPendingRestoreVersion(null);
+                  }}
+                  style={{ minHeight: 'unset', height: 'auto' }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="medium"
+                  variant="secondary"
+                  tone="critical"
+                  onClick={() => {
+                    console.log('[AdvancedRTE] Mobile restore without checkpoint');
+                    confirmRestore(false);
+                  }}
+                  style={{ minHeight: 'unset', height: 'auto' }}
+                >
+                  Restore without Checkpoint
+                </Button>
+                <Button
+                  size="medium"
+                  variant="primary"
+                  onClick={() => {
+                    console.log('[AdvancedRTE] Mobile restore with checkpoint');
+                    confirmRestore(true);
+                  }}
+                  style={{ minHeight: 'unset', height: 'auto' }}
+                >
+                  Restore with Checkpoint
+                </Button>
               </div>
             </div>
           </>,
