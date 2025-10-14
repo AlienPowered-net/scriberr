@@ -5448,91 +5448,108 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                         <div 
                           key={version.id} 
                           style={{
-                            padding: '16px',
+                            padding: '12px 16px',
                             border: isCurrent ? '2px solid #10b981' : '1px solid #e1e3e5',
                             borderRadius: '8px',
                             backgroundColor: isCurrent ? '#f0fdf4' : '#ffffff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            transition: 'all 0.2s',
                             boxShadow: isCurrent ? '0 2px 8px rgba(16, 185, 129, 0.15)' : 'none'
                           }}
                         >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              <span style={{ 
+                                fontSize: '14px',
+                                color: '#1f2937',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                maxWidth: '200px'
+                              }}>
                                 {version.versionTitle || version.title}
-                                {version.isAuto && (
-                                  <span style={{ 
-                                    fontSize: '12px', 
-                                    padding: '2px 8px', 
-                                    backgroundColor: '#dbeafe', 
-                                    color: '#1e40af',
-                                    borderRadius: '4px'
-                                  }}>Auto</span>
-                                )}
-                                {isCurrent && (
-                                  <span style={{ 
-                                    fontSize: '12px', 
-                                    padding: '2px 8px', 
-                                    backgroundColor: '#10b981', 
-                                    color: 'white',
-                                    borderRadius: '4px'
-                                  }}>Current</span>
-                                )}
-                              </div>
-                              <div style={{ fontSize: '14px', color: '#6b7280' }}>
-                                {new Date(version.createdAt).toLocaleString()}
-                              </div>
-                            </div>
-                            <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation(); // Prevent modal backdrop click
-                                  handleRestoreClick(version);
-                                  // Don't close popover here - let the dialog handle it
-                                }}
-                                disabled={restoringVersionId === version.id || deletingVersionId === version.id}
-                                style={{
-                                  padding: '8px 16px',
-                                  backgroundColor: '#3b82f6',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '6px',
-                                  cursor: restoringVersionId === version.id || deletingVersionId === version.id ? 'not-allowed' : 'pointer',
-                                  fontSize: '14px',
+                              </span>
+                              {version.isAuto && (
+                                <span style={{ 
+                                  fontSize: '10px', 
+                                  padding: '2px 6px', 
+                                  backgroundColor: '#dbeafe', 
+                                  color: '#1e40af',
+                                  borderRadius: '4px',
                                   fontWeight: 500,
-                                  opacity: restoringVersionId === version.id || deletingVersionId === version.id ? 0.6 : 1,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '6px'
-                                }}
-                              >
-                                {restoringVersionId === version.id && <Spinner size="small" />}
-                                Restore
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation(); // Prevent modal backdrop click
-                                  deleteVersion(version);
-                                }}
-                                disabled={restoringVersionId === version.id || deletingVersionId === version.id}
-                                style={{
-                                  padding: '8px 12px',
-                                  backgroundColor: '#ef4444',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '6px',
-                                  cursor: restoringVersionId === version.id || deletingVersionId === version.id ? 'not-allowed' : 'pointer',
-                                  fontSize: '14px',
+                                  flexShrink: 0
+                                }}>Auto</span>
+                              )}
+                              {isCurrent && (
+                                <span style={{ 
+                                  fontSize: '10px', 
+                                  padding: '2px 6px', 
+                                  backgroundColor: '#dcfce7', 
+                                  color: '#166534',
+                                  borderRadius: '4px',
                                   fontWeight: 500,
-                                  opacity: restoringVersionId === version.id || deletingVersionId === version.id ? 0.6 : 1,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '6px'
-                                }}
-                              >
-                                {deletingVersionId === version.id && <Spinner size="small" />}
-                                Delete
-                              </button>
+                                  flexShrink: 0
+                                }}>Current</span>
+                              )}
                             </div>
+                            <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                              {new Date(version.createdAt).toLocaleString()}
+                            </div>
+                          </div>
+                          <div style={{ flexShrink: 0, display: 'flex', gap: '8px' }}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent modal backdrop click
+                                handleRestoreClick(version);
+                                // Don't close popover here - let the dialog handle it
+                              }}
+                              disabled={restoringVersionId === version.id || deletingVersionId === version.id}
+                              style={{
+                                padding: '6px 12px',
+                                backgroundColor: '#3b82f6',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: restoringVersionId === version.id || deletingVersionId === version.id ? 'not-allowed' : 'pointer',
+                                fontSize: '12px',
+                                fontWeight: 500,
+                                opacity: restoringVersionId === version.id || deletingVersionId === version.id ? 0.6 : 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {restoringVersionId === version.id && <Spinner size="small" />}
+                              Restore
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent modal backdrop click
+                                deleteVersion(version);
+                              }}
+                              disabled={restoringVersionId === version.id || deletingVersionId === version.id}
+                              style={{
+                                padding: '6px 12px',
+                                backgroundColor: '#ef4444',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: restoringVersionId === version.id || deletingVersionId === version.id ? 'not-allowed' : 'pointer',
+                                fontSize: '12px',
+                                fontWeight: 500,
+                                opacity: restoringVersionId === version.id || deletingVersionId === version.id ? 0.6 : 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {deletingVersionId === version.id && <Spinner size="small" />}
+                              Delete
+                            </button>
                           </div>
                         </div>
                       );
