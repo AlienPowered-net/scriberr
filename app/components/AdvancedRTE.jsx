@@ -2467,17 +2467,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             </Button>
           </Tooltip>
           
-          {/* Version History Modal */}
-          <Modal
-            open={showVersionPopover}
-            onClose={() => setShowVersionPopover(false)}
-            title="Version History"
-            large={!isMobile}
-            style={isMobile ? {
-              maxWidth: '95vw',
-              maxHeight: '90vh',
-              margin: '5vh auto'
-            } : {}}
+          {/* Version History Modal - DESKTOP ONLY */}
+          {!isMobile && (
+            <Modal
+              open={showVersionPopover}
+              onClose={() => setShowVersionPopover(false)}
+              title="Version History"
+              large
             primaryAction={{
               content: 'Create New',
               onAction: () => {
@@ -2697,6 +2693,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               </div>
             </Modal.Section>
           </Modal>
+          )}
 
           {/* Restore Dialog */}
           <Modal
@@ -5348,6 +5345,210 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         </div>
       )}
 
+      {/* Version History Modal - MOBILE ONLY */}
+      {typeof document !== 'undefined' && showVersionPopover && isMobile && (() => {
+        console.log('RENDERING VERSION HISTORY MODAL VIA PORTAL [AdvancedRTE], showVersionPopover:', showVersionPopover);
+        return createPortal(
+          <>
+            {/* Backdrop */}
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 99999998
+              }}
+              onClick={() => {
+                console.log('Modal backdrop clicked - closing [AdvancedRTE]');
+                setShowVersionPopover(false);
+              }}
+            />
+            {/* Modal Content */}
+            <div
+              style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                maxWidth: '95vw',
+                width: '90%',
+                maxHeight: '90vh',
+                overflow: 'auto',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                zIndex: 99999999,
+                pointerEvents: 'auto'
+              }}
+              onClick={(e) => {
+                console.log('Modal content clicked - keeping open [AdvancedRTE]');
+                e.stopPropagation();
+              }}
+            >
+              <div style={{
+                padding: '20px',
+                borderBottom: '1px solid #e1e3e5',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Version History</h2>
+                <button
+                  onClick={() => setShowVersionPopover(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    padding: '0',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              <div style={{ padding: '20px', maxHeight: '70vh', overflowY: 'auto' }}>
+                {/* Create New Version Button */}
+                <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
+                  <button
+                    onClick={() => {
+                      setShowVersionPopover(false);
+                      setTimeout(() => {
+                        setShowVersionNameModal(true);
+                      }, 50);
+                    }}
+                    style={{
+                      padding: '12px 24px',
+                      backgroundColor: '#10b981',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      fontWeight: 600,
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    }}
+                  >
+                    Create New Version
+                  </button>
+                </div>
+
+                {versions.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {versions.map((version, index) => {
+                      const isCurrent = isCurrentVersion(version);
+                      return (
+                        <div 
+                          key={version.id} 
+                          style={{
+                            padding: '16px',
+                            border: isCurrent ? '2px solid #10b981' : '1px solid #e1e3e5',
+                            borderRadius: '8px',
+                            backgroundColor: isCurrent ? '#f0fdf4' : '#ffffff',
+                            boxShadow: isCurrent ? '0 2px 8px rgba(16, 185, 129, 0.15)' : 'none'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {version.versionTitle || version.title}
+                                {version.isAuto && (
+                                  <span style={{ 
+                                    fontSize: '12px', 
+                                    padding: '2px 8px', 
+                                    backgroundColor: '#dbeafe', 
+                                    color: '#1e40af',
+                                    borderRadius: '4px'
+                                  }}>Auto</span>
+                                )}
+                                {isCurrent && (
+                                  <span style={{ 
+                                    fontSize: '12px', 
+                                    padding: '2px 8px', 
+                                    backgroundColor: '#10b981', 
+                                    color: 'white',
+                                    borderRadius: '4px'
+                                  }}>Current</span>
+                                )}
+                              </div>
+                              <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                                {new Date(version.createdAt).toLocaleString()}
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent modal backdrop click
+                                  handleRestoreClick(version);
+                                  // Don't close popover here - let the dialog handle it
+                                }}
+                                disabled={restoringVersionId === version.id || deletingVersionId === version.id}
+                                style={{
+                                  padding: '8px 16px',
+                                  backgroundColor: '#3b82f6',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '6px',
+                                  cursor: restoringVersionId === version.id || deletingVersionId === version.id ? 'not-allowed' : 'pointer',
+                                  fontSize: '14px',
+                                  fontWeight: 500,
+                                  opacity: restoringVersionId === version.id || deletingVersionId === version.id ? 0.6 : 1,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px'
+                                }}
+                              >
+                                {restoringVersionId === version.id && <Spinner size="small" />}
+                                Restore
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent modal backdrop click
+                                  deleteVersion(version);
+                                }}
+                                disabled={restoringVersionId === version.id || deletingVersionId === version.id}
+                                style={{
+                                  padding: '8px 12px',
+                                  backgroundColor: '#ef4444',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '6px',
+                                  cursor: restoringVersionId === version.id || deletingVersionId === version.id ? 'not-allowed' : 'pointer',
+                                  fontSize: '14px',
+                                  fontWeight: 500,
+                                  opacity: restoringVersionId === version.id || deletingVersionId === version.id ? 0.6 : 1,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px'
+                                }}
+                              >
+                                {deletingVersionId === version.id && <Spinner size="small" />}
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280' }}>
+                    No versions available yet. Create your first version!
+                  </div>
+                )}
+              </div>
+            </div>
+          </>,
+          document.body
+        );
+      })()}
 
       {/* Insert Image Modal - MOBILE ONLY */}
       {typeof document !== 'undefined' && showImageModal && isMobile && (() => {
