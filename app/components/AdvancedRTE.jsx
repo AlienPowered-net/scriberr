@@ -1472,7 +1472,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     restoringVersionId,
     restorationInfo,
     showRestoreDialog,
-    pendingRestoreVersion: pendingRestoreVersion?.id
+    pendingRestoreVersion: pendingRestoreVersion?.id,
+    isMobile,
+    windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'undefined'
   });
 
   // Fullscreen editor component that will be rendered via portal
@@ -2471,6 +2473,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             onClose={() => setShowVersionPopover(false)}
             title="Version History"
             large={!isMobile}
+            style={isMobile ? {
+              maxWidth: '95vw',
+              maxHeight: '90vh',
+              margin: '5vh auto'
+            } : {}}
             primaryAction={{
               content: 'Create New',
               onAction: () => {
@@ -2505,7 +2512,16 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             ]}
           >
             <Modal.Section>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: '16px',
+                ...(isMobile && {
+                  maxHeight: '70vh',
+                  overflowY: 'auto',
+                  padding: '0 8px'
+                })
+              }}>
                 
                 {comparisonResult ? (
                   <div>
@@ -2571,16 +2587,21 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                             key={version.id}
                             onClick={() => compareMode && toggleVersionSelection(version.id)}
                             style={{
-                              padding: '12px 16px',
+                              padding: isMobile ? '8px 12px' : '12px 16px',
                               border: isCurrent ? '2px solid #10b981' : isSelected ? '2px solid #2c6ecb' : '1px solid #e1e3e5',
                               borderRadius: '8px',
                               backgroundColor: isCurrent ? '#f0fdf4' : isSelected ? '#f0f7ff' : '#ffffff',
                               display: 'flex',
                               alignItems: 'center',
-                              gap: '10px',
+                              gap: isMobile ? '8px' : '10px',
                               cursor: compareMode ? 'pointer' : 'default',
                               transition: 'all 0.2s',
-                              boxShadow: isCurrent ? '0 2px 8px rgba(16, 185, 129, 0.15)' : isSelected ? '0 2px 8px rgba(44, 110, 203, 0.15)' : 'none'
+                              boxShadow: isCurrent ? '0 2px 8px rgba(16, 185, 129, 0.15)' : isSelected ? '0 2px 8px rgba(44, 110, 203, 0.15)' : 'none',
+                              ...(isMobile && {
+                                flexDirection: 'column',
+                                alignItems: 'flex-start',
+                                gap: '8px'
+                              })
                             }}
                           >
                             {compareMode && (
@@ -2626,26 +2647,35 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                               </div>
                             </div>
                             {!compareMode && (
-                              <div style={{ flexShrink: 0, marginLeft: '8px', display: 'flex', gap: '8px' }}>
+                              <div style={{ 
+                                flexShrink: 0, 
+                                marginLeft: isMobile ? '0' : '8px', 
+                                marginTop: isMobile ? '8px' : '0',
+                                display: 'flex', 
+                                gap: isMobile ? '4px' : '8px',
+                                width: isMobile ? '100%' : 'auto'
+                              }}>
                                 <Button
-                                  size="slim"
+                                  size={isMobile ? "micro" : "slim"}
                                   onClick={(e) => {
                                     e.stopPropagation(); // Prevent modal backdrop click
                                     handleRestoreClick(version);
                                   }}
                                   disabled={restoringVersionId === version.id || deletingVersionId === version.id}
+                                  style={isMobile ? { flex: 1 } : {}}
                                 >
                                   {restoringVersionId === version.id && <Spinner size="small" />}
                                   Restore
                                 </Button>
                                 <Button
-                                  size="slim"
+                                  size={isMobile ? "micro" : "slim"}
                                   tone="critical"
                                   onClick={(e) => {
                                     e.stopPropagation(); // Prevent modal backdrop click
                                     deleteVersion(version);
                                   }}
                                   disabled={restoringVersionId === version.id || deletingVersionId === version.id}
+                                  style={isMobile ? { flex: 1 } : {}}
                                 >
                                   {deletingVersionId === version.id && <Spinner size="small" />}
                                   Delete
