@@ -1363,7 +1363,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     console.log('[AdvancedRTE] Starting auto-versioning timer for noteId:', noteId);
 
     const INTERVAL_MS = 30000; // 30 seconds
-    const lastContentRef = { current: '' };
+    const lastContentRef = { current: editor.getHTML() }; // Initialize with current content
 
     const timer = setInterval(async () => {
       console.log('[AdvancedRTE] Auto-version timer fired');
