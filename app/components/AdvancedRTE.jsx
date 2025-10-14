@@ -5415,50 +5415,82 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 </button>
               </div>
               <div style={{ padding: '20px', maxHeight: '70vh', overflowY: 'auto' }}>
-                {/* Create New Version Button */}
-                <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
-                  <button
+                {/* Action Buttons */}
+                <div style={{ marginBottom: '20px', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <Button
+                    size="medium"
+                    variant="primary"
+                    tone="success"
                     onClick={() => {
                       setShowVersionPopover(false);
                       setTimeout(() => {
                         setShowVersionNameModal(true);
                       }, 50);
                     }}
-                    style={{
-                      padding: '12px 24px',
-                      backgroundColor: '#10b981',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontSize: '16px',
-                      fontWeight: 600,
-                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-                    }}
                   >
                     Create New Version
-                  </button>
+                  </Button>
+                  <Button
+                    size="medium"
+                    variant="secondary"
+                    tone="info"
+                    onClick={() => {
+                      if (compareMode) {
+                        setCompareMode(false);
+                        setSelectedVersions({ version1: null, version2: null });
+                        setComparisonResult(null);
+                      } else {
+                        setCompareMode(true);
+                        setComparisonResult(null);
+                      }
+                    }}
+                  >
+                    {compareMode ? 'Cancel Compare' : 'Compare Versions'}
+                  </Button>
                 </div>
 
                 {versions.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {versions.map((version, index) => {
                       const isCurrent = isCurrentVersion(version);
+                      const isSelected = selectedVersions.version1 === version.id || selectedVersions.version2 === version.id;
+                      const selectionNumber = selectedVersions.version1 === version.id ? 1 : selectedVersions.version2 === version.id ? 2 : null;
                       return (
                         <div 
-                          key={version.id} 
+                          key={version.id}
+                          onClick={() => compareMode && toggleVersionSelection(version.id)}
                           style={{
                             padding: '12px 16px',
-                            border: isCurrent ? '2px solid #10b981' : '1px solid #e1e3e5',
+                            border: isCurrent ? '2px solid #10b981' : isSelected ? '2px solid #2c6ecb' : '1px solid #e1e3e5',
                             borderRadius: '8px',
-                            backgroundColor: isCurrent ? '#f0fdf4' : '#ffffff',
+                            backgroundColor: isCurrent ? '#f0fdf4' : isSelected ? '#f0f7ff' : '#ffffff',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '10px',
                             transition: 'all 0.2s',
-                            boxShadow: isCurrent ? '0 2px 8px rgba(16, 185, 129, 0.15)' : 'none'
+                            boxShadow: isCurrent ? '0 2px 8px rgba(16, 185, 129, 0.15)' : isSelected ? '0 2px 8px rgba(44, 110, 203, 0.15)' : 'none',
+                            cursor: compareMode ? 'pointer' : 'default'
                           }}
                         >
+                          {compareMode && (
+                            <div style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '50%',
+                              border: isSelected ? '2px solid #2c6ecb' : '2px solid #d1d5db',
+                              backgroundColor: isSelected ? '#2c6ecb' : 'transparent',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0
+                            }}>
+                              {selectionNumber && (
+                                <span style={{ color: 'white', fontSize: '12px', fontWeight: 'bold' }}>
+                                  {selectionNumber}
+                                </span>
+                              )}
+                            </div>
+                          )}
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                               <span style={{ 
@@ -5498,59 +5530,37 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                               {new Date(version.createdAt).toLocaleString()}
                             </div>
                           </div>
-                          <div style={{ flexShrink: 0, display: 'flex', gap: '8px' }}>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation(); // Prevent modal backdrop click
-                                handleRestoreClick(version);
-                                // Don't close popover here - let the dialog handle it
-                              }}
-                              disabled={restoringVersionId === version.id || deletingVersionId === version.id}
-                              style={{
-                                padding: '6px 12px',
-                                backgroundColor: '#3b82f6',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '6px',
-                                cursor: restoringVersionId === version.id || deletingVersionId === version.id ? 'not-allowed' : 'pointer',
-                                fontSize: '12px',
-                                fontWeight: 500,
-                                opacity: restoringVersionId === version.id || deletingVersionId === version.id ? 0.6 : 1,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                whiteSpace: 'nowrap'
-                              }}
-                            >
-                              {restoringVersionId === version.id && <Spinner size="small" />}
-                              Restore
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation(); // Prevent modal backdrop click
-                                deleteVersion(version);
-                              }}
-                              disabled={restoringVersionId === version.id || deletingVersionId === version.id}
-                              style={{
-                                padding: '6px 12px',
-                                backgroundColor: '#ef4444',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '6px',
-                                cursor: restoringVersionId === version.id || deletingVersionId === version.id ? 'not-allowed' : 'pointer',
-                                fontSize: '12px',
-                                fontWeight: 500,
-                                opacity: restoringVersionId === version.id || deletingVersionId === version.id ? 0.6 : 1,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                whiteSpace: 'nowrap'
-                              }}
-                            >
-                              {deletingVersionId === version.id && <Spinner size="small" />}
-                              Delete
-                            </button>
-                          </div>
+                          {!compareMode && (
+                            <div style={{ flexShrink: 0, display: 'flex', gap: '8px' }}>
+                              <Button
+                                size="slim"
+                                variant="secondary"
+                                tone="info"
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent modal backdrop click
+                                  handleRestoreClick(version);
+                                  // Don't close popover here - let the dialog handle it
+                                }}
+                                disabled={restoringVersionId === version.id || deletingVersionId === version.id}
+                                loading={restoringVersionId === version.id}
+                              >
+                                Restore
+                              </Button>
+                              <Button
+                                size="slim"
+                                variant="secondary"
+                                tone="critical"
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent modal backdrop click
+                                  deleteVersion(version);
+                                }}
+                                disabled={restoringVersionId === version.id || deletingVersionId === version.id}
+                                loading={deletingVersionId === version.id}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -5558,6 +5568,52 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 ) : (
                   <div style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280' }}>
                     No versions available yet. Create your first version!
+                  </div>
+                )}
+
+                {/* Compare Mode Actions */}
+                {compareMode && selectedVersions.version1 && selectedVersions.version2 && (
+                  <div style={{ marginTop: '20px', padding: '16px', backgroundColor: '#f8f9fa', borderRadius: '8px', textAlign: 'center' }}>
+                    <div style={{ marginBottom: '12px', fontSize: '14px', color: '#6b7280' }}>
+                      Compare {selectedVersions.version1} and {selectedVersions.version2}
+                    </div>
+                    <Button
+                      size="medium"
+                      variant="primary"
+                      tone="info"
+                      onClick={() => {
+                        const version1 = versions.find(v => v.id === selectedVersions.version1);
+                        const version2 = versions.find(v => v.id === selectedVersions.version2);
+                        if (version1 && version2) {
+                          compareVersions();
+                        }
+                      }}
+                    >
+                      View Diff
+                    </Button>
+                  </div>
+                )}
+
+                {/* Comparison Result */}
+                {comparisonResult && (
+                  <div style={{ marginTop: '20px' }}>
+                    <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', alignItems: 'center' }}>
+                      <Button onClick={() => setComparisonResult(null)} size="slim" variant="secondary">
+                        ← Back to Versions
+                      </Button>
+                    </div>
+                    <div style={{ 
+                      padding: '16px', 
+                      backgroundColor: '#f8f9fa', 
+                      borderRadius: '8px',
+                      maxHeight: '300px',
+                      overflowY: 'auto',
+                      fontSize: '14px',
+                      lineHeight: '1.5',
+                      fontFamily: 'monospace'
+                    }}>
+                      <div dangerouslySetInnerHTML={{ __html: comparisonResult }} />
+                    </div>
                   </div>
                 )}
               </div>
