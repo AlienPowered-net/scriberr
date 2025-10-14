@@ -5427,6 +5427,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                         setShowVersionNameModal(true);
                       }, 50);
                     }}
+                    style={{ minHeight: 'auto' }}
                   >
                     Create New Version
                   </Button>
@@ -5444,6 +5445,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                         setComparisonResult(null);
                       }
                     }}
+                    style={{ minHeight: 'auto' }}
                   >
                     {compareMode ? 'Cancel Compare' : 'Compare Versions'}
                   </Button>
@@ -5543,6 +5545,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                                 }}
                                 disabled={restoringVersionId === version.id || deletingVersionId === version.id}
                                 loading={restoringVersionId === version.id}
+                                style={{ minHeight: 'auto' }}
                               >
                                 Restore
                               </Button>
@@ -5556,6 +5559,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                                 }}
                                 disabled={restoringVersionId === version.id || deletingVersionId === version.id}
                                 loading={deletingVersionId === version.id}
+                                style={{ minHeight: 'auto' }}
                               >
                                 Delete
                               </Button>
@@ -5588,6 +5592,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                           compareVersions();
                         }
                       }}
+                      style={{ minHeight: 'auto' }}
                     >
                       View Diff
                     </Button>
@@ -5598,7 +5603,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 {comparisonResult && (
                   <div style={{ marginTop: '20px' }}>
                     <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', alignItems: 'center' }}>
-                      <Button onClick={() => setComparisonResult(null)} size="slim" variant="secondary">
+                      <Button onClick={() => setComparisonResult(null)} size="slim" variant="secondary" style={{ minHeight: 'auto' }}>
                         ← Back to Versions
                       </Button>
                     </div>
