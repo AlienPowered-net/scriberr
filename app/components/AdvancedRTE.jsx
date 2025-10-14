@@ -5418,7 +5418,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               </div>
               <div style={{ padding: '20px', maxHeight: '70vh', overflowY: 'auto' }}>
                 {/* Action Buttons */}
-                <div style={{ marginBottom: '20px', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <div style={{ marginBottom: '20px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
                   <Button
                     size="medium"
                     variant="primary"
@@ -5451,6 +5451,25 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   >
                     {compareMode ? 'Cancel Compare' : 'Compare Versions'}
                   </Button>
+                  
+                  {/* View Differences Button - Only show when 2 versions are selected */}
+                  {compareMode && selectedVersions.version1 && selectedVersions.version2 && (
+                    <Button
+                      size="medium"
+                      variant="primary"
+                      tone="info"
+                      onClick={() => {
+                        const version1 = versions.find(v => v.id === selectedVersions.version1);
+                        const version2 = versions.find(v => v.id === selectedVersions.version2);
+                        if (version1 && version2) {
+                          compareVersions();
+                        }
+                      }}
+                      style={{ minHeight: 'unset', height: 'auto' }}
+                    >
+                      View Differences
+                    </Button>
+                  )}
                 </div>
 
                 {versions.length > 0 ? (
@@ -5577,29 +5596,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   </div>
                 )}
 
-                {/* Compare Mode Actions */}
-                {compareMode && selectedVersions.version1 && selectedVersions.version2 && (
-                  <div style={{ marginTop: '20px', padding: '16px', backgroundColor: '#f8f9fa', borderRadius: '8px', textAlign: 'center' }}>
-                    <div style={{ marginBottom: '12px', fontSize: '14px', color: '#6b7280' }}>
-                      Compare {selectedVersions.version1} and {selectedVersions.version2}
-                    </div>
-                    <Button
-                      size="medium"
-                      variant="primary"
-                      tone="info"
-                      onClick={() => {
-                        const version1 = versions.find(v => v.id === selectedVersions.version1);
-                        const version2 = versions.find(v => v.id === selectedVersions.version2);
-                        if (version1 && version2) {
-                          compareVersions();
-                        }
-                      }}
-                      style={{ minHeight: 'unset', height: 'auto' }}
-                    >
-                      View Diff
-                    </Button>
-                  </div>
-                )}
 
                 {/* Comparison Result */}
                 {comparisonResult && (
