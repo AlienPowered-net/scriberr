@@ -5955,7 +5955,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
                               {/* Action buttons */}
                               {!compareMode && !multiSelectMode && (
-                                <div style={{ flexShrink: 0, display: 'flex', gap: '8px', flexDirection: 'column' }}>
+                                <div style={{ flexShrink: 0, display: 'flex', gap: '8px', flexDirection: 'row' }}>
                                   <Button
                                     size="slim"
                                     variant="secondary"
