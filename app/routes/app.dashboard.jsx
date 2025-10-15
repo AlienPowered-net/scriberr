@@ -3466,7 +3466,6 @@ export default function Index() {
           }
           
           .Polaris-Box {
-            margin-bottom: 5% !important;
           }
           
                         .Polaris-Card {

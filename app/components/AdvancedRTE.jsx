@@ -2535,7 +2535,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                       borderRadius: '8px',
                       backgroundColor: '#ffffff',
                       maxHeight: '500px',
-                      overflowY: 'auto',
                       lineHeight: '1.8',
                       fontSize: '15px',
                       wordWrap: 'break-word'
@@ -2557,7 +2556,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     </div>
                   </div>
                 ) : versions.length > 0 ? (
-                  <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                  <div style={{ maxHeight: '500px' }}>
                     {compareMode && (
                       <div style={{ 
                         padding: '12px',
