@@ -1,0 +1,36 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "REPLACE_WITH_CLIENT_ID_FROM_SHOPIFY"
+name = "Scriberr Labs"
+handle = "scriberr-labs"
+application_url = "https://scriberr-git-labs-alienpowered.vercel.app"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+
+[webhooks]
+api_version = "2025-07"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+[access_scopes]
+# Scopes required for entity mentions (@mentions for products, orders, customers, etc.)
+scopes = "read_products,read_orders,read_customers,read_discounts,read_draft_orders"
+
+[auth]
+redirect_urls = [
+  "https://scriberr-git-labs-alienpowered.vercel.app/auth/callback",
+  "https://scriberr-git-labs-alienpowered.vercel.app/auth/shopify/callback",
+  "https://scriberr-git-labs-alienpowered.vercel.app/api/auth/callback"
+]
+
+[pos]
+embedded = false
+
