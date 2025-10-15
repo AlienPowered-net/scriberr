@@ -5888,7 +5888,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                                   {isEditing ? (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, flexDirection: 'column', alignItems: 'stretch' }}>
+                                    <div style={{ display: 'flex', gap: '8px', flex: 1, flexDirection: 'column', alignItems: 'stretch' }}>
                                       <TextField
                                         value={editingVersionTitle}
                                         onChange={setEditingVersionTitle}

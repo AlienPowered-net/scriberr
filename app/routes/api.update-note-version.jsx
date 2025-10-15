@@ -1,5 +1,5 @@
 import { json } from "@remix-run/node";
-import { db } from "~/utils/db.server";
+import db from "../utils/db.server";
 
 export async function action({ request }) {
   if (request.method !== "PUT") {
