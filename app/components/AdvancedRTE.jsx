@@ -5416,199 +5416,38 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 </button>
               </div>
               <div style={{ padding: '20px', maxHeight: '70vh', overflowY: 'auto' }}>
-                {/* Action Buttons */}
-                <div style={{ marginBottom: '20px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <Button
-                    size="medium"
-                    variant="primary"
-                    tone="success"
-                    onClick={() => {
-                      setShowVersionPopover(false);
-                      setTimeout(() => {
-                        setShowVersionNameModal(true);
-                      }, 50);
-                    }}
-                    style={{ minHeight: 'unset', height: 'auto' }}
-                  >
-                    Create New Version
-                  </Button>
-                  <Button
-                    size="medium"
-                    variant="secondary"
-                    tone="info"
-                    onClick={() => {
-                      if (compareMode) {
-                        setCompareMode(false);
-                        setSelectedVersions({ version1: null, version2: null });
-                        setComparisonResult(null);
-                      } else {
-                        setCompareMode(true);
-                        setComparisonResult(null);
-                      }
-                    }}
-                    style={{ minHeight: 'unset', height: 'auto' }}
-                  >
-                    {compareMode ? 'Cancel Compare' : 'Compare Versions'}
-                  </Button>
-                  
-                  {/* View Differences Button - Only show when 2 versions are selected */}
-                  {compareMode && selectedVersions.version1 && selectedVersions.version2 && (
-                    <Button
-                      size="medium"
-                      variant="primary"
-                      tone="info"
-                      onClick={() => {
-                        const version1 = versions.find(v => v.id === selectedVersions.version1);
-                        const version2 = versions.find(v => v.id === selectedVersions.version2);
-                        if (version1 && version2) {
-                          compareVersions();
-                        }
-                      }}
-                      style={{ minHeight: 'unset', height: 'auto' }}
-                    >
-                      View Differences
-                    </Button>
-                  )}
-                </div>
-
-                {versions.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {versions.map((version, index) => {
-                      const isCurrent = isCurrentVersion(version);
-                      const isSelected = selectedVersions.version1 === version.id || selectedVersions.version2 === version.id;
-                      const selectionNumber = selectedVersions.version1 === version.id ? 1 : selectedVersions.version2 === version.id ? 2 : null;
-                      return (
-                        <div 
-                          key={version.id}
-                          onClick={() => compareMode && toggleVersionSelection(version.id)}
-                          style={{
-                            padding: '12px 16px',
-                            border: isCurrent ? '2px solid #10b981' : isSelected ? '2px solid #2c6ecb' : '1px solid #e1e3e5',
-                            borderRadius: '8px',
-                            backgroundColor: isCurrent ? '#f0fdf4' : isSelected ? '#f0f7ff' : '#ffffff',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            transition: 'all 0.2s',
-                            boxShadow: isCurrent ? '0 2px 8px rgba(16, 185, 129, 0.15)' : isSelected ? '0 2px 8px rgba(44, 110, 203, 0.15)' : 'none',
-                            cursor: compareMode ? 'pointer' : 'default'
-                          }}
-                        >
-                          {compareMode && (
-                            <div style={{
-                              width: '20px',
-                              height: '20px',
-                              borderRadius: '50%',
-                              border: isSelected ? '2px solid #2c6ecb' : '2px solid #d1d5db',
-                              backgroundColor: isSelected ? '#2c6ecb' : 'transparent',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0
-                            }}>
-                              {selectionNumber && (
-                                <span style={{ color: 'white', fontSize: '12px', fontWeight: 'bold' }}>
-                                  {selectionNumber}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                              <span style={{ 
-                                fontSize: '14px',
-                                color: '#1f2937',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                                maxWidth: '200px'
-                              }}>
-                                {version.versionTitle || version.title}
-                              </span>
-                              {version.isAuto && (
-                                <span style={{ 
-                                  fontSize: '10px', 
-                                  padding: '2px 6px', 
-                                  backgroundColor: '#dbeafe', 
-                                  color: '#1e40af',
-                                  borderRadius: '4px',
-                                  fontWeight: 500,
-                                  flexShrink: 0
-                                }}>Auto</span>
-                              )}
-                              {isCurrent && (
-                                <span style={{ 
-                                  fontSize: '10px', 
-                                  padding: '2px 6px', 
-                                  backgroundColor: '#dcfce7', 
-                                  color: '#166534',
-                                  borderRadius: '4px',
-                                  fontWeight: 500,
-                                  flexShrink: 0
-                                }}>Current</span>
-                              )}
-                            </div>
-                            <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                              {new Date(version.createdAt).toLocaleString()}
-                            </div>
-                          </div>
-                          {!compareMode && (
-                            <div style={{ flexShrink: 0, display: 'flex', gap: '8px' }}>
-                              <Button
-                                size="slim"
-                                variant="secondary"
-                                tone="info"
-                                onClick={(e) => {
-                                  e.stopPropagation(); // Prevent modal backdrop click
-                                  handleRestoreClick(version);
-                                  // Don't close popover here - let the dialog handle it
-                                }}
-                                disabled={restoringVersionId === version.id || deletingVersionId === version.id}
-                                loading={restoringVersionId === version.id}
-                                style={{ minHeight: 'unset', height: 'auto' }}
-                              >
-                                Restore
-                              </Button>
-                              <Button
-                                size="slim"
-                                variant="secondary"
-                                tone="critical"
-                                onClick={(e) => {
-                                  e.stopPropagation(); // Prevent modal backdrop click
-                                  deleteVersion(version);
-                                }}
-                                disabled={restoringVersionId === version.id || deletingVersionId === version.id}
-                                loading={deletingVersionId === version.id}
-                                style={{ minHeight: 'unset', height: 'auto' }}
-                              >
-                                Delete
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280' }}>
-                    No versions available yet. Create your first version!
-                  </div>
-                )}
-
-
-                {/* Comparison Result */}
-                {comparisonResult && (
-                  <div style={{ marginTop: '20px' }}>
+                {/* Show comparison result if available, otherwise show version list */}
+                {comparisonResult ? (
+                  // Comparison View
+                  <div>
                     <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', alignItems: 'center' }}>
-                      <Button onClick={() => setComparisonResult(null)} size="slim" variant="secondary" style={{ minHeight: 'auto' }}>
+                      <Button 
+                        onClick={() => setComparisonResult(null)} 
+                        size="slim" 
+                        variant="secondary" 
+                        style={{ minHeight: 'auto' }}
+                      >
                         ← Back to Versions
+                      </Button>
+                      <Button
+                        size="slim"
+                        variant="secondary"
+                        tone="info"
+                        onClick={() => {
+                          setCompareMode(false);
+                          setSelectedVersions({ version1: null, version2: null });
+                          setComparisonResult(null);
+                        }}
+                        style={{ minHeight: 'auto' }}
+                      >
+                        Cancel Compare
                       </Button>
                     </div>
                     <div style={{ 
                       padding: '16px', 
                       backgroundColor: '#f8f9fa', 
                       borderRadius: '8px',
-                      maxHeight: '300px',
+                      maxHeight: '400px',
                       overflowY: 'auto',
                       fontSize: '14px',
                       lineHeight: '1.5',
@@ -5629,6 +5468,188 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                         </span>
                       ))}
                     </div>
+                  </div>
+                ) : (
+                  // Version List View
+                  <div>
+                    {/* Action Buttons */}
+                    <div style={{ marginBottom: '20px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <Button
+                        size="medium"
+                        variant="primary"
+                        tone="success"
+                        onClick={() => {
+                          setShowVersionPopover(false);
+                          setTimeout(() => {
+                            setShowVersionNameModal(true);
+                          }, 50);
+                        }}
+                        style={{ minHeight: 'unset', height: 'auto' }}
+                      >
+                        Create New Version
+                      </Button>
+                      <Button
+                        size="medium"
+                        variant="secondary"
+                        tone="info"
+                        onClick={() => {
+                          if (compareMode) {
+                            setCompareMode(false);
+                            setSelectedVersions({ version1: null, version2: null });
+                            setComparisonResult(null);
+                          } else {
+                            setCompareMode(true);
+                            setComparisonResult(null);
+                          }
+                        }}
+                        style={{ minHeight: 'unset', height: 'auto' }}
+                      >
+                        {compareMode ? 'Cancel Compare' : 'Compare Versions'}
+                      </Button>
+                      
+                      {/* View Differences Button - Only show when 2 versions are selected */}
+                      {compareMode && selectedVersions.version1 && selectedVersions.version2 && (
+                        <Button
+                          size="medium"
+                          variant="primary"
+                          tone="info"
+                          onClick={() => {
+                            const version1 = versions.find(v => v.id === selectedVersions.version1);
+                            const version2 = versions.find(v => v.id === selectedVersions.version2);
+                            if (version1 && version2) {
+                              compareVersions();
+                            }
+                          }}
+                          style={{ minHeight: 'unset', height: 'auto' }}
+                        >
+                          View Differences
+                        </Button>
+                      )}
+                    </div>
+
+                    {versions.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {versions.map((version, index) => {
+                          const isCurrent = isCurrentVersion(version);
+                          const isSelected = selectedVersions.version1 === version.id || selectedVersions.version2 === version.id;
+                          const selectionNumber = selectedVersions.version1 === version.id ? 1 : selectedVersions.version2 === version.id ? 2 : null;
+                          return (
+                            <div 
+                              key={version.id}
+                              onClick={() => compareMode && toggleVersionSelection(version.id)}
+                              style={{
+                                padding: '12px 16px',
+                                border: isCurrent ? '2px solid #10b981' : isSelected ? '2px solid #2c6ecb' : '1px solid #e1e3e5',
+                                borderRadius: '8px',
+                                backgroundColor: isCurrent ? '#f0fdf4' : isSelected ? '#f0f7ff' : '#ffffff',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                transition: 'all 0.2s',
+                                boxShadow: isCurrent ? '0 2px 8px rgba(16, 185, 129, 0.15)' : isSelected ? '0 2px 8px rgba(44, 110, 203, 0.15)' : 'none',
+                                cursor: compareMode ? 'pointer' : 'default'
+                              }}
+                            >
+                              {compareMode && (
+                                <div style={{
+                                  width: '20px',
+                                  height: '20px',
+                                  borderRadius: '50%',
+                                  border: isSelected ? '2px solid #2c6ecb' : '2px solid #d1d5db',
+                                  backgroundColor: isSelected ? '#2c6ecb' : 'transparent',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  flexShrink: 0
+                                }}>
+                                  {selectionNumber && (
+                                    <span style={{ color: 'white', fontSize: '12px', fontWeight: 'bold' }}>
+                                      {selectionNumber}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                  <span style={{ 
+                                    fontSize: '14px',
+                                    color: '#1f2937',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    maxWidth: '200px'
+                                  }}>
+                                    {version.versionTitle || version.title}
+                                  </span>
+                                  {version.isAuto && (
+                                    <span style={{ 
+                                      fontSize: '10px', 
+                                      padding: '2px 6px', 
+                                      backgroundColor: '#dbeafe', 
+                                      color: '#1e40af',
+                                      borderRadius: '4px',
+                                      fontWeight: 500,
+                                      flexShrink: 0
+                                    }}>Auto</span>
+                                  )}
+                                  {isCurrent && (
+                                    <span style={{ 
+                                      fontSize: '10px', 
+                                      padding: '2px 6px', 
+                                      backgroundColor: '#dcfce7', 
+                                      color: '#166534',
+                                      borderRadius: '4px',
+                                      fontWeight: 500,
+                                      flexShrink: 0
+                                    }}>Current</span>
+                                  )}
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                                  {new Date(version.createdAt).toLocaleString()}
+                                </div>
+                              </div>
+                              {!compareMode && (
+                                <div style={{ flexShrink: 0, display: 'flex', gap: '8px' }}>
+                                  <Button
+                                    size="slim"
+                                    variant="secondary"
+                                    tone="info"
+                                    onClick={(e) => {
+                                      e.stopPropagation(); // Prevent modal backdrop click
+                                      handleRestoreClick(version);
+                                      // Don't close popover here - let the dialog handle it
+                                    }}
+                                    disabled={restoringVersionId === version.id || deletingVersionId === version.id}
+                                    loading={restoringVersionId === version.id}
+                                    style={{ minHeight: 'unset', height: 'auto' }}
+                                  >
+                                    Restore
+                                  </Button>
+                                  <Button
+                                    size="slim"
+                                    variant="secondary"
+                                    tone="critical"
+                                    onClick={(e) => {
+                                      e.stopPropagation(); // Prevent modal backdrop click
+                                      deleteVersion(version);
+                                    }}
+                                    disabled={restoringVersionId === version.id || deletingVersionId === version.id}
+                                    loading={deletingVersionId === version.id}
+                                    style={{ minHeight: 'unset', height: 'auto' }}
+                                  >
+                                    Delete
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div style={{ padding: '40px 20px', textAlign: 'center', color: '#6b7280' }}>
+                        No versions available yet. Create your first version!
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
