@@ -1,5 +1,5 @@
 import { json } from "@remix-run/node";
-import db from "../utils/db.server";
+import { prisma } from "../utils/db.server";
 
 export async function action({ request }) {
   if (request.method !== "PUT") {
@@ -14,7 +14,7 @@ export async function action({ request }) {
     }
 
     // Update the version title
-    const updatedVersion = await db.noteVersion.update({
+    const updatedVersion = await prisma.noteVersion.update({
       where: { id: versionId },
       data: { versionTitle: versionTitle || null }
     });
