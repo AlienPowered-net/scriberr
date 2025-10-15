@@ -207,6 +207,12 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [restorationInfo, setRestorationInfo] = useState(null);
   const [currentVersionId, setCurrentVersionId] = useState(null);
   const [showRestoreDialog, setShowRestoreDialog] = useState(false);
+  
+  // Multi-select state
+  const [multiSelectMode, setMultiSelectMode] = useState(false);
+  const [selectedVersionIds, setSelectedVersionIds] = useState(new Set());
+  const [editingVersionId, setEditingVersionId] = useState(null);
+  const [editingVersionTitle, setEditingVersionTitle] = useState('');
   const [pendingRestoreVersion, setPendingRestoreVersion] = useState(null);
   const [imageUrl, setImageUrl] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
@@ -1328,6 +1334,86 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     } else {
       // Replace version1 with new selection
       setSelectedVersions({ version1: versionId, version2: selectedVersions.version2 });
+    }
+  };
+
+  // Multi-select functions
+  const toggleMultiSelect = (versionId) => {
+    setSelectedVersionIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(versionId)) {
+        newSet.delete(versionId);
+      } else {
+        newSet.add(versionId);
+      }
+      return newSet;
+    });
+  };
+
+  const selectAllVersions = () => {
+    setSelectedVersionIds(new Set(versions.map(v => v.id)));
+  };
+
+  const deselectAllVersions = () => {
+    setSelectedVersionIds(new Set());
+  };
+
+  const bulkDeleteVersions = async () => {
+    if (selectedVersionIds.size === 0) return;
+    
+    const versionIdsToDelete = Array.from(selectedVersionIds);
+    setDeletingVersionId('bulk'); // Use 'bulk' to indicate bulk operation
+    
+    try {
+      for (const versionId of versionIdsToDelete) {
+        await fetch('/api/delete-note-version', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ versionId })
+        });
+      }
+      
+      // Reload versions after bulk delete
+      await loadVersions();
+      setSelectedVersionIds(new Set());
+      setMultiSelectMode(false);
+    } catch (error) {
+      console.error('Error during bulk delete:', error);
+    } finally {
+      setDeletingVersionId(null);
+    }
+  };
+
+  const startEditingVersion = (version) => {
+    setEditingVersionId(version.id);
+    setEditingVersionTitle(version.versionTitle || version.title);
+  };
+
+  const cancelEditingVersion = () => {
+    setEditingVersionId(null);
+    setEditingVersionTitle('');
+  };
+
+  const saveVersionTitle = async (versionId, newTitle) => {
+    if (!newTitle.trim()) return;
+    
+    try {
+      const response = await fetch('/api/update-note-version', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          versionId, 
+          versionTitle: newTitle.trim() 
+        })
+      });
+      
+      if (response.ok) {
+        await loadVersions(); // Reload to get updated data
+        setEditingVersionId(null);
+        setEditingVersionTitle('');
+      }
+    } catch (error) {
+      console.error('Error updating version title:', error);
     }
   };
 
@@ -2485,6 +2571,20 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             }}
             secondaryActions={[
               {
+                content: multiSelectMode ? 'Exit Multi-Select' : 'Multi-Select',
+                onAction: () => {
+                  if (multiSelectMode) {
+                    setMultiSelectMode(false);
+                    setSelectedVersionIds(new Set());
+                  } else {
+                    setMultiSelectMode(true);
+                    setCompareMode(false);
+                    setSelectedVersions({ version1: null, version2: null });
+                    setComparisonResult(null);
+                  }
+                }
+              },
+              {
                 content: compareMode ? 'Cancel Compare' : 'Compare Versions',
                 onAction: () => {
                   if (compareMode) {
@@ -2493,6 +2593,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     setComparisonResult(null);
                   } else {
                     setCompareMode(true);
+                    setMultiSelectMode(false);
+                    setSelectedVersionIds(new Set());
                     setComparisonResult(null);
                   }
                 }
@@ -2501,9 +2603,18 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 content: 'View Diff',
                 onAction: compareVersions
               }] : []),
+              ...(multiSelectMode && selectedVersionIds.size > 0 ? [{
+                content: `Delete Selected (${selectedVersionIds.size})`,
+                onAction: bulkDeleteVersions,
+                destructive: true
+              }] : []),
               {
                 content: 'Close',
-                onAction: () => setShowVersionPopover(false),
+                onAction: () => {
+                  setShowVersionPopover(false);
+                  setMultiSelectMode(false);
+                  setSelectedVersionIds(new Set());
+                },
               },
             ]}
           >
@@ -2557,6 +2668,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   </div>
                 ) : versions.length > 0 ? (
                   <div style={{ maxHeight: '500px' }}>
+                    {/* Mode indicators */}
                     {compareMode && (
                       <div style={{ 
                         padding: '12px',
@@ -2571,34 +2683,88 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                         📋 Select two versions to compare
                       </div>
                     )}
+                    
+                    {multiSelectMode && (
+                      <div style={{ 
+                        padding: '12px',
+                        backgroundColor: '#fef3c7',
+                        border: '1px solid #f59e0b',
+                        borderRadius: '8px',
+                        marginBottom: '12px',
+                        fontSize: '14px',
+                        color: '#92400e',
+                        fontWeight: 500,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <span>📝 Select versions to delete or rename</span>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <Button size="slim" onClick={selectAllVersions}>
+                            Select All
+                          </Button>
+                          <Button size="slim" onClick={deselectAllVersions}>
+                            Deselect All
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {versions.map((version) => {
                         const isSelected = selectedVersions.version1 === version.id || selectedVersions.version2 === version.id;
                         const selectionNumber = selectedVersions.version1 === version.id ? 1 : selectedVersions.version2 === version.id ? 2 : null;
                         const isCurrent = isCurrentVersion(version);
+                        const isMultiSelected = selectedVersionIds.has(version.id);
+                        const isEditing = editingVersionId === version.id;
                         
                         return (
                           <div 
                             key={version.id}
-                            onClick={() => compareMode && toggleVersionSelection(version.id)}
+                            onClick={() => {
+                              if (multiSelectMode) {
+                                toggleMultiSelect(version.id);
+                              } else if (compareMode) {
+                                toggleVersionSelection(version.id);
+                              }
+                            }}
                             style={{
-                              padding: isMobile ? '8px 12px' : '12px 16px',
-                              border: isCurrent ? '2px solid #10b981' : isSelected ? '2px solid #2c6ecb' : '1px solid #e1e3e5',
+                              padding: '12px 16px',
+                              border: isCurrent ? '2px solid #10b981' : 
+                                     isMultiSelected ? '2px solid #f59e0b' :
+                                     isSelected ? '2px solid #2c6ecb' : '1px solid #e1e3e5',
                               borderRadius: '8px',
-                              backgroundColor: isCurrent ? '#f0fdf4' : isSelected ? '#f0f7ff' : '#ffffff',
+                              backgroundColor: isCurrent ? '#f0fdf4' : 
+                                            isMultiSelected ? '#fffbeb' :
+                                            isSelected ? '#f0f7ff' : '#ffffff',
                               display: 'flex',
                               alignItems: 'center',
-                              gap: isMobile ? '8px' : '10px',
-                              cursor: compareMode ? 'pointer' : 'default',
+                              gap: '10px',
+                              cursor: (multiSelectMode || compareMode) ? 'pointer' : 'default',
                               transition: 'all 0.2s',
-                              boxShadow: isCurrent ? '0 2px 8px rgba(16, 185, 129, 0.15)' : isSelected ? '0 2px 8px rgba(44, 110, 203, 0.15)' : 'none',
-                              ...(isMobile && {
-                                flexDirection: 'column',
-                                alignItems: 'flex-start',
-                                gap: '8px'
-                              })
+                              boxShadow: isCurrent ? '0 2px 8px rgba(16, 185, 129, 0.15)' : 
+                                          isMultiSelected ? '0 2px 8px rgba(245, 158, 11, 0.15)' :
+                                          isSelected ? '0 2px 8px rgba(44, 110, 203, 0.15)' : 'none'
                             }}
                           >
+                            {/* Selection indicators */}
+                            {multiSelectMode && (
+                              <div style={{
+                                width: '20px',
+                                height: '20px',
+                                borderRadius: '4px',
+                                border: isMultiSelected ? '2px solid #f59e0b' : '2px solid #d1d5db',
+                                backgroundColor: isMultiSelected ? '#f59e0b' : 'transparent',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0
+                              }}>
+                                {isMultiSelected && (
+                                  <span style={{ color: 'white', fontSize: '12px' }}>✓</span>
+                                )}
+                              </div>
+                            )}
+                            
                             {compareMode && (
                               <div style={{
                                 width: '24px',
@@ -2617,62 +2783,96 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                                 {selectionNumber || ''}
                               </div>
                             )}
+
                             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '3px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                                <div style={{ 
-                                  fontWeight: 600,
-                                  fontSize: '14px',
-                                  color: '#1f2937',
-                                  maxWidth: '200px',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap'
-                                }}>
-                                  {version.versionTitle || version.title}
-                                </div>
-                                {version.isAuto && (
-                                  <Badge tone="info" size="small">Auto</Badge>
-                                )}
-                                {isCurrent && (
-                                  <Badge tone="success" size="small">Current</Badge>
+                                {isEditing ? (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                                    <TextField
+                                      value={editingVersionTitle}
+                                      onChange={setEditingVersionTitle}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          saveVersionTitle(version.id, editingVersionTitle);
+                                        } else if (e.key === 'Escape') {
+                                          cancelEditingVersion();
+                                        }
+                                      }}
+                                      autoFocus
+                                      style={{ flex: 1 }}
+                                    />
+                                    <Button size="slim" onClick={() => saveVersionTitle(version.id, editingVersionTitle)}>
+                                      Save
+                                    </Button>
+                                    <Button size="slim" variant="secondary" onClick={cancelEditingVersion}>
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div style={{ 
+                                      fontWeight: 600,
+                                      fontSize: '14px',
+                                      color: '#1f2937',
+                                      maxWidth: '200px',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap'
+                                    }}>
+                                      {version.versionTitle || version.title}
+                                    </div>
+                                    {version.isAuto && (
+                                      <Badge tone="info" size="small">Auto</Badge>
+                                    )}
+                                    {isCurrent && (
+                                      <Badge tone="success" size="small">Current</Badge>
+                                    )}
+                                  </>
                                 )}
                               </div>
                               <div style={{ fontSize: '12px', color: '#6b7280' }}>
                                 {new Date(version.createdAt).toLocaleString()}
                               </div>
                             </div>
-                            {!compareMode && (
-                              <div style={{ 
-                                flexShrink: 0, 
-                                marginLeft: isMobile ? '0' : '8px', 
-                                marginTop: isMobile ? '8px' : '0',
-                                display: 'flex', 
-                                gap: isMobile ? '4px' : '8px',
-                                width: isMobile ? '100%' : 'auto'
-                              }}>
+                            {/* Action buttons */}
+                            {!compareMode && !multiSelectMode && (
+                              <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                                 <Button
-                                  size={isMobile ? "micro" : "slim"}
+                                  size="slim"
+                                  variant="secondary"
+                                  tone="info"
                                   onClick={(e) => {
-                                    e.stopPropagation(); // Prevent modal backdrop click
+                                    e.stopPropagation();
+                                    startEditingVersion(version);
+                                  }}
+                                  disabled={editingVersionId === version.id}
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  size="slim"
+                                  variant="secondary"
+                                  tone="info"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     handleRestoreClick(version);
                                   }}
                                   disabled={restoringVersionId === version.id || deletingVersionId === version.id}
-                                  style={isMobile ? { flex: 1 } : {}}
+                                  loading={restoringVersionId === version.id}
                                 >
-                                  {restoringVersionId === version.id && <Spinner size="small" />}
                                   Restore
                                 </Button>
                                 <Button
-                                  size={isMobile ? "micro" : "slim"}
+                                  size="slim"
+                                  variant="secondary"
                                   tone="critical"
                                   onClick={(e) => {
-                                    e.stopPropagation(); // Prevent modal backdrop click
+                                    e.stopPropagation();
                                     deleteVersion(version);
                                   }}
                                   disabled={restoringVersionId === version.id || deletingVersionId === version.id}
-                                  style={isMobile ? { flex: 1 } : {}}
+                                  loading={deletingVersionId === version.id}
                                 >
-                                  {deletingVersionId === version.id && <Spinner size="small" />}
                                   Delete
                                 </Button>
                               </div>
@@ -5488,6 +5688,27 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                       >
                         Create New Version
                       </Button>
+                      
+                      <Button
+                        size="medium"
+                        variant="secondary"
+                        tone="info"
+                        onClick={() => {
+                          if (multiSelectMode) {
+                            setMultiSelectMode(false);
+                            setSelectedVersionIds(new Set());
+                          } else {
+                            setMultiSelectMode(true);
+                            setCompareMode(false);
+                            setSelectedVersions({ version1: null, version2: null });
+                            setComparisonResult(null);
+                          }
+                        }}
+                        style={{ minHeight: 'unset', height: 'auto' }}
+                      >
+                        {multiSelectMode ? 'Exit Multi-Select' : 'Multi-Select'}
+                      </Button>
+                      
                       <Button
                         size="medium"
                         variant="secondary"
@@ -5499,6 +5720,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                             setComparisonResult(null);
                           } else {
                             setCompareMode(true);
+                            setMultiSelectMode(false);
+                            setSelectedVersionIds(new Set());
                             setComparisonResult(null);
                           }
                         }}
@@ -5525,7 +5748,65 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                           View Differences
                         </Button>
                       )}
+                      
+                      {/* Bulk Delete Button - Only show when versions are selected in multi-select mode */}
+                      {multiSelectMode && selectedVersionIds.size > 0 && (
+                        <Button
+                          size="medium"
+                          variant="primary"
+                          tone="critical"
+                          onClick={bulkDeleteVersions}
+                          loading={deletingVersionId === 'bulk'}
+                          style={{ minHeight: 'unset', height: 'auto' }}
+                        >
+                          Delete Selected ({selectedVersionIds.size})
+                        </Button>
+                      )}
                     </div>
+
+                    {/* Mode indicators for mobile */}
+                    {compareMode && (
+                      <div style={{ 
+                        padding: '12px',
+                        backgroundColor: '#eff6ff',
+                        border: '1px solid #dbeafe',
+                        borderRadius: '8px',
+                        marginBottom: '12px',
+                        fontSize: '14px',
+                        color: '#1e40af',
+                        fontWeight: 500
+                      }}>
+                        📋 Select two versions to compare
+                      </div>
+                    )}
+                    
+                    {multiSelectMode && (
+                      <div style={{ 
+                        padding: '12px',
+                        backgroundColor: '#fef3c7',
+                        border: '1px solid #f59e0b',
+                        borderRadius: '8px',
+                        marginBottom: '12px',
+                        fontSize: '14px',
+                        color: '#92400e',
+                        fontWeight: 500,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        gap: '8px'
+                      }}>
+                        <span>📝 Select versions to delete or rename</span>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <Button size="slim" onClick={selectAllVersions}>
+                            Select All
+                          </Button>
+                          <Button size="slim" onClick={deselectAllVersions}>
+                            Deselect All
+                          </Button>
+                        </div>
+                      </div>
+                    )}
 
                     {versions.length > 0 ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -5533,23 +5814,57 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                           const isCurrent = isCurrentVersion(version);
                           const isSelected = selectedVersions.version1 === version.id || selectedVersions.version2 === version.id;
                           const selectionNumber = selectedVersions.version1 === version.id ? 1 : selectedVersions.version2 === version.id ? 2 : null;
+                          const isMultiSelected = selectedVersionIds.has(version.id);
+                          const isEditing = editingVersionId === version.id;
+                          
                           return (
                             <div 
                               key={version.id}
-                              onClick={() => compareMode && toggleVersionSelection(version.id)}
+                              onClick={() => {
+                                if (multiSelectMode) {
+                                  toggleMultiSelect(version.id);
+                                } else if (compareMode) {
+                                  toggleVersionSelection(version.id);
+                                }
+                              }}
                               style={{
                                 padding: '12px 16px',
-                                border: isCurrent ? '2px solid #10b981' : isSelected ? '2px solid #2c6ecb' : '1px solid #e1e3e5',
+                                border: isCurrent ? '2px solid #10b981' : 
+                                       isMultiSelected ? '2px solid #f59e0b' :
+                                       isSelected ? '2px solid #2c6ecb' : '1px solid #e1e3e5',
                                 borderRadius: '8px',
-                                backgroundColor: isCurrent ? '#f0fdf4' : isSelected ? '#f0f7ff' : '#ffffff',
+                                backgroundColor: isCurrent ? '#f0fdf4' : 
+                                              isMultiSelected ? '#fffbeb' :
+                                              isSelected ? '#f0f7ff' : '#ffffff',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '10px',
                                 transition: 'all 0.2s',
-                                boxShadow: isCurrent ? '0 2px 8px rgba(16, 185, 129, 0.15)' : isSelected ? '0 2px 8px rgba(44, 110, 203, 0.15)' : 'none',
-                                cursor: compareMode ? 'pointer' : 'default'
+                                boxShadow: isCurrent ? '0 2px 8px rgba(16, 185, 129, 0.15)' : 
+                                            isMultiSelected ? '0 2px 8px rgba(245, 158, 11, 0.15)' :
+                                            isSelected ? '0 2px 8px rgba(44, 110, 203, 0.15)' : 'none',
+                                cursor: (multiSelectMode || compareMode) ? 'pointer' : 'default'
                               }}
                             >
+                              {/* Selection indicators */}
+                              {multiSelectMode && (
+                                <div style={{
+                                  width: '20px',
+                                  height: '20px',
+                                  borderRadius: '4px',
+                                  border: isMultiSelected ? '2px solid #f59e0b' : '2px solid #d1d5db',
+                                  backgroundColor: isMultiSelected ? '#f59e0b' : 'transparent',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  flexShrink: 0
+                                }}>
+                                  {isMultiSelected && (
+                                    <span style={{ color: 'white', fontSize: '12px' }}>✓</span>
+                                  )}
+                                </div>
+                              )}
+                              
                               {compareMode && (
                                 <div style={{
                                   width: '20px',
@@ -5569,55 +5884,98 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                                   )}
                                 </div>
                               )}
+
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontWeight: 600, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                                  <span style={{ 
-                                    fontSize: '14px',
-                                    color: '#1f2937',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                    maxWidth: '200px'
-                                  }}>
-                                    {version.versionTitle || version.title}
-                                  </span>
-                                  {version.isAuto && (
-                                    <span style={{ 
-                                      fontSize: '10px', 
-                                      padding: '2px 6px', 
-                                      backgroundColor: '#dbeafe', 
-                                      color: '#1e40af',
-                                      borderRadius: '4px',
-                                      fontWeight: 500,
-                                      flexShrink: 0
-                                    }}>Auto</span>
-                                  )}
-                                  {isCurrent && (
-                                    <span style={{ 
-                                      fontSize: '10px', 
-                                      padding: '2px 6px', 
-                                      backgroundColor: '#dcfce7', 
-                                      color: '#166534',
-                                      borderRadius: '4px',
-                                      fontWeight: 500,
-                                      flexShrink: 0
-                                    }}>Current</span>
+                                  {isEditing ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, flexDirection: 'column', alignItems: 'stretch' }}>
+                                      <TextField
+                                        value={editingVersionTitle}
+                                        onChange={setEditingVersionTitle}
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            saveVersionTitle(version.id, editingVersionTitle);
+                                          } else if (e.key === 'Escape') {
+                                            cancelEditingVersion();
+                                          }
+                                        }}
+                                        autoFocus
+                                        style={{ flex: 1 }}
+                                      />
+                                      <div style={{ display: 'flex', gap: '8px' }}>
+                                        <Button size="slim" onClick={() => saveVersionTitle(version.id, editingVersionTitle)}>
+                                          Save
+                                        </Button>
+                                        <Button size="slim" variant="secondary" onClick={cancelEditingVersion}>
+                                          Cancel
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <span style={{ 
+                                        fontSize: '14px',
+                                        color: '#1f2937',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                        maxWidth: '200px'
+                                      }}>
+                                        {version.versionTitle || version.title}
+                                      </span>
+                                      {version.isAuto && (
+                                        <span style={{ 
+                                          fontSize: '10px', 
+                                          padding: '2px 6px', 
+                                          backgroundColor: '#dbeafe', 
+                                          color: '#1e40af',
+                                          borderRadius: '4px',
+                                          fontWeight: 500,
+                                          flexShrink: 0
+                                        }}>Auto</span>
+                                      )}
+                                      {isCurrent && (
+                                        <span style={{ 
+                                          fontSize: '10px', 
+                                          padding: '2px 6px', 
+                                          backgroundColor: '#dcfce7', 
+                                          color: '#166534',
+                                          borderRadius: '4px',
+                                          fontWeight: 500,
+                                          flexShrink: 0
+                                        }}>Current</span>
+                                      )}
+                                    </>
                                   )}
                                 </div>
                                 <div style={{ fontSize: '12px', color: '#6b7280' }}>
                                   {new Date(version.createdAt).toLocaleString()}
                                 </div>
                               </div>
-                              {!compareMode && (
-                                <div style={{ flexShrink: 0, display: 'flex', gap: '8px' }}>
+
+                              {/* Action buttons */}
+                              {!compareMode && !multiSelectMode && (
+                                <div style={{ flexShrink: 0, display: 'flex', gap: '8px', flexDirection: 'column' }}>
                                   <Button
                                     size="slim"
                                     variant="secondary"
                                     tone="info"
                                     onClick={(e) => {
-                                      e.stopPropagation(); // Prevent modal backdrop click
+                                      e.stopPropagation();
+                                      startEditingVersion(version);
+                                    }}
+                                    disabled={editingVersionId === version.id}
+                                    style={{ minHeight: 'unset', height: 'auto' }}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    size="slim"
+                                    variant="secondary"
+                                    tone="info"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       handleRestoreClick(version);
-                                      // Don't close popover here - let the dialog handle it
                                     }}
                                     disabled={restoringVersionId === version.id || deletingVersionId === version.id}
                                     loading={restoringVersionId === version.id}
@@ -5630,7 +5988,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                                     variant="secondary"
                                     tone="critical"
                                     onClick={(e) => {
-                                      e.stopPropagation(); // Prevent modal backdrop click
+                                      e.stopPropagation();
                                       deleteVersion(version);
                                     }}
                                     disabled={restoringVersionId === version.id || deletingVersionId === version.id}
