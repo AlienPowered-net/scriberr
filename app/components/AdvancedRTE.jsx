@@ -5614,7 +5614,20 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                       lineHeight: '1.5',
                       fontFamily: 'monospace'
                     }}>
-                      <div dangerouslySetInnerHTML={{ __html: comparisonResult }} />
+                      {comparisonResult.diff.map((part, index) => (
+                        <span
+                          key={index}
+                          style={{
+                            backgroundColor: part.added ? '#d4edda' : part.removed ? '#f8d7da' : 'transparent',
+                            textDecoration: part.removed ? 'line-through' : 'none',
+                            color: part.added ? '#155724' : part.removed ? '#721c24' : '#000000',
+                            padding: part.added || part.removed ? '2px 4px' : '0',
+                            borderRadius: '3px'
+                          }}
+                        >
+                          {part.value}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 )}

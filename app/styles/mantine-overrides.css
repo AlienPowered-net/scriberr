@@ -72,3 +72,12 @@ select {
   height: 2.00rem !important;
   width: 2.00rem !important;
 }
+
+/* Fix Polaris scrollable shadow positioning */
+.Polaris-Scrollable--hasBottomShadow {
+  --pc-scrollable-shadow-bottom: 0 var(--pc-scrollable-shadow-size) var(--pc-scrollable-shadow-size) var(--pc-scrollable-shadow-color) !important;
+}
+
+.Polaris-Scrollable--hasTopShadow {
+  --pc-scrollable-shadow-top: 0 calc(var(--pc-scrollable-shadow-size) * -1) var(--pc-scrollable-shadow-size) var(--pc-scrollable-shadow-color) !important;
+}
