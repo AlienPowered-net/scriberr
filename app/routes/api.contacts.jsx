@@ -1,182 +1,145 @@
 import { json } from "@remix-run/node";
-import { shopify } from "../shopify.server";
-import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
+import { authenticate } from "../shopify.server";
+import { PrismaClient } from "@prisma/client";
 
-// GET - Fetch all contacts for the shop
-export async function loader({ request }) {
+const prisma = new PrismaClient();
+
+export const loader = async ({ request }) => {
+  const { session } = await authenticate.admin(request);
+  
   try {
-    const { session } = await shopify.authenticate.admin(request);
-    const shopId = await getOrCreateShopId(session.shop);
-
     const contacts = await prisma.contact.findMany({
-      where: { shopId },
+      where: { shopId: session.shop },
       include: {
-        folder: {
-          select: {
-            id: true,
-            name: true,
-            icon: true,
-            iconColor: true
-          }
-        }
+        folder: true
       },
-      orderBy: [
-        { folder: { position: 'asc' } },
-        { createdAt: 'desc' }
-      ]
+      orderBy: { createdAt: 'desc' }
     });
 
-    return json({ success: true, contacts });
+    return json(contacts);
   } catch (error) {
-    console.error('Error fetching contacts:', error);
-    return json({ success: false, contacts: [], error: error.message }, { status: 500 });
+    console.error('Error loading contacts:', error);
+    return json({ error: 'Failed to load contacts' }, { status: 500 });
   }
-}
+};
 
-// POST - Create, update, or delete contacts
-export async function action({ request }) {
+export const action = async ({ request }) => {
+  const { session } = await authenticate.admin(request);
+  const formData = await request.formData();
+  const action = formData.get("_action");
+
   try {
-    const { session } = await shopify.authenticate.admin(request);
-    const shopId = await getOrCreateShopId(session.shop);
-    
-    const formData = await request.formData();
-    const action = formData.get("_action");
-
-    if (action === "create") {
-      const type = formData.get("type");
-      const folderId = formData.get("folderId");
-      
-      // Validate required fields based on type
-      if (type === "PERSON") {
+    switch (action) {
+      case "create": {
+        const type = formData.get("type");
         const firstName = formData.get("firstName");
         const lastName = formData.get("lastName");
-        
-        if (!firstName || !lastName) {
-          return json({ success: false, error: "First name and last name are required for person contacts" }, { status: 400 });
-        }
-      } else if (type === "BUSINESS") {
         const businessName = formData.get("businessName");
-        
-        if (!businessName) {
-          return json({ success: false, error: "Business name is required for business contacts" }, { status: 400 });
-        }
-      }
+        const company = formData.get("company");
+        const phone = formData.get("phone");
+        const mobile = formData.get("mobile");
+        const email = formData.get("email");
+        const role = formData.get("role");
+        const memo = formData.get("memo");
+        const folderId = formData.get("folderId");
+        const pointsOfContact = formData.get("pointsOfContact");
 
-      // Parse points of contact for business type
-      let pointsOfContact = [];
-      if (type === "BUSINESS") {
-        const pointsOfContactStr = formData.get("pointsOfContact");
-        if (pointsOfContactStr) {
-          try {
-            pointsOfContact = JSON.parse(pointsOfContactStr);
-          } catch (e) {
-            console.error('Error parsing points of contact:', e);
-          }
+        if (!type) {
+          return json({ error: "Contact type is required" }, { status: 400 });
         }
-      }
 
-      const contact = await prisma.contact.create({
-        data: {
-          shopId,
+        if (type === "PERSON" && (!firstName || !lastName)) {
+          return json({ error: "First name and last name are required for person contacts" }, { status: 400 });
+        }
+
+        if (type === "BUSINESS" && !businessName) {
+          return json({ error: "Business name is required for business contacts" }, { status: 400 });
+        }
+
+        const contactData = {
+          shopId: session.shop,
+          type,
           folderId: folderId || null,
-          type,
-          firstName: formData.get("firstName") || null,
-          lastName: formData.get("lastName") || null,
-          businessName: formData.get("businessName") || null,
-          company: formData.get("company") || null,
-          phone: formData.get("phone") || null,
-          mobile: formData.get("mobile") || null,
-          email: formData.get("email") || null,
-          role: formData.get("role") || null,
-          memo: formData.get("memo") || null,
-          pointsOfContact: pointsOfContact.length > 0 ? pointsOfContact : null
-        },
-        include: {
-          folder: {
-            select: {
-              id: true,
-              name: true,
-              icon: true,
-              iconColor: true
-            }
-          }
-        }
-      });
+          ...(firstName && { firstName }),
+          ...(lastName && { lastName }),
+          ...(businessName && { businessName }),
+          ...(company && { company }),
+          ...(phone && { phone }),
+          ...(mobile && { mobile }),
+          ...(email && { email }),
+          ...(role && { role }),
+          ...(memo && { memo }),
+          ...(pointsOfContact && { pointsOfContact: JSON.parse(pointsOfContact) })
+        };
 
-      return json({ success: true, contact });
-    }
+        const contact = await prisma.contact.create({
+          data: contactData
+        });
 
-    if (action === "update") {
-      const id = formData.get("id");
-      const type = formData.get("type");
-      
-      if (!id) {
-        return json({ success: false, error: "Contact ID is required" }, { status: 400 });
+        return json(contact);
       }
 
-      // Parse points of contact for business type
-      let pointsOfContact = null;
-      if (type === "BUSINESS") {
-        const pointsOfContactStr = formData.get("pointsOfContact");
-        if (pointsOfContactStr) {
-          try {
-            const parsed = JSON.parse(pointsOfContactStr);
-            pointsOfContact = parsed.length > 0 ? parsed : null;
-          } catch (e) {
-            console.error('Error parsing points of contact:', e);
-          }
+      case "update": {
+        const id = formData.get("id");
+        const type = formData.get("type");
+        const firstName = formData.get("firstName");
+        const lastName = formData.get("lastName");
+        const businessName = formData.get("businessName");
+        const company = formData.get("company");
+        const phone = formData.get("phone");
+        const mobile = formData.get("mobile");
+        const email = formData.get("email");
+        const role = formData.get("role");
+        const memo = formData.get("memo");
+        const folderId = formData.get("folderId");
+        const pointsOfContact = formData.get("pointsOfContact");
+
+        if (!id) {
+          return json({ error: "Contact ID is required" }, { status: 400 });
         }
+
+        const updateData = {
+          ...(type && { type }),
+          ...(firstName !== null && { firstName }),
+          ...(lastName !== null && { lastName }),
+          ...(businessName !== null && { businessName }),
+          ...(company !== null && { company }),
+          ...(phone !== null && { phone }),
+          ...(mobile !== null && { mobile }),
+          ...(email !== null && { email }),
+          ...(role !== null && { role }),
+          ...(memo !== null && { memo }),
+          ...(folderId !== null && { folderId: folderId || null }),
+          ...(pointsOfContact && { pointsOfContact: JSON.parse(pointsOfContact) })
+        };
+
+        const contact = await prisma.contact.update({
+          where: { id },
+          data: updateData
+        });
+
+        return json(contact);
       }
 
-      const contact = await prisma.contact.update({
-        where: { id },
-        data: {
-          type,
-          folderId: formData.get("folderId") || null,
-          firstName: formData.get("firstName") || null,
-          lastName: formData.get("lastName") || null,
-          businessName: formData.get("businessName") || null,
-          company: formData.get("company") || null,
-          phone: formData.get("phone") || null,
-          mobile: formData.get("mobile") || null,
-          email: formData.get("email") || null,
-          role: formData.get("role") || null,
-          memo: formData.get("memo") || null,
-          pointsOfContact
-        },
-        include: {
-          folder: {
-            select: {
-              id: true,
-              name: true,
-              icon: true,
-              iconColor: true
-            }
-          }
+      case "delete": {
+        const id = formData.get("id");
+
+        if (!id) {
+          return json({ error: "Contact ID is required" }, { status: 400 });
         }
-      });
 
-      return json({ success: true, contact });
-    }
+        await prisma.contact.delete({
+          where: { id }
+        });
 
-    if (action === "delete") {
-      const id = formData.get("id");
-
-      if (!id) {
-        return json({ success: false, error: "Contact ID is required" }, { status: 400 });
+        return json({ success: true });
       }
 
-      await prisma.contact.delete({
-        where: { id }
-      });
-
-      return json({ success: true });
+      default:
+        return json({ error: "Invalid action" }, { status: 400 });
     }
-
-    return json({ success: false, error: "Invalid action" }, { status: 400 });
   } catch (error) {
     console.error('Error in contacts action:', error);
-    return json({ success: false, error: error.message }, { status: 500 });
+    return json({ error: "Failed to process request" }, { status: 500 });
   }
-}
+};

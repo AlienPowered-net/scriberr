@@ -4,6 +4,38 @@ import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
 
+export const loader = async ({ request }) => {
+  const { session } = await shopify.authenticate.admin(request);
+  const shopId = await getOrCreateShopId(session.shop);
+  
+  try {
+    // Load folders and contacts in parallel
+    const [folders, contacts] = await Promise.all([
+      prisma.contactFolder.findMany({
+        where: { shopId },
+        include: {
+          _count: {
+            select: { contacts: true }
+          }
+        },
+        orderBy: { position: 'asc' }
+      }),
+      prisma.contact.findMany({
+        where: { shopId },
+        include: {
+          folder: true
+        },
+        orderBy: { createdAt: 'desc' }
+      })
+    ]);
+
+    return json({ folders, contacts });
+  } catch (error) {
+    console.error('Error loading contacts data:', error);
+    return json({ folders: [], contacts: [] });
+  }
+};
+
 import {
   Page,
   Layout,
@@ -599,14 +631,27 @@ export default function ContactsPage() {
     
     try {
       const action = editingContact ? 'update' : 'create';
+      
+      // Create FormData object
+      const submitData = new FormData();
+      submitData.append('_action', action);
+      
+      if (editingContact) {
+        submitData.append('id', editingContact.id);
+      }
+      
+      // Add all form fields
+      Object.keys(formData).forEach(key => {
+        if (key === 'pointsOfContact') {
+          submitData.append(key, JSON.stringify(formData[key]));
+        } else if (formData[key] !== null && formData[key] !== undefined) {
+          submitData.append(key, formData[key]);
+        }
+      });
+      
       const response = await fetch('/api/contacts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          _action: action,
-          ...formData,
-          id: editingContact?.id
-        })
+        body: submitData
       });
       
       if (response.ok) {
@@ -618,9 +663,44 @@ export default function ContactsPage() {
         setEditingContact(null);
         setShowNewContactForm(false);
         setFormData(getInitialFormData());
+      } else {
+        const error = await response.json();
+        console.error('Error saving contact:', error);
       }
     } catch (error) {
       console.error('Error saving contact:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Folder handlers
+  const handleCreateFolder = async (folderData) => {
+    setIsLoading(true);
+    
+    try {
+      const submitData = new FormData();
+      submitData.append('_action', 'create');
+      submitData.append('name', folderData.name);
+      submitData.append('icon', folderData.icon || 'folder');
+      submitData.append('iconColor', folderData.iconColor || '#f57c00');
+      
+      const response = await fetch('/api/contact-folders', {
+        method: 'POST',
+        body: submitData
+      });
+      
+      if (response.ok) {
+        // Refresh folders
+        const updatedFolders = await fetch('/api/contact-folders').then(r => r.json());
+        setFolders(updatedFolders);
+        setShowNewFolderModal(false);
+      } else {
+        const error = await response.json();
+        console.error('Error creating folder:', error);
+      }
+    } catch (error) {
+      console.error('Error creating folder:', error);
     } finally {
       setIsLoading(false);
     }
@@ -1009,11 +1089,7 @@ export default function ContactsPage() {
           <NewFolderModal
             isOpen={showNewFolderModal}
             onClose={() => setShowNewFolderModal(false)}
-            onSave={(folderData) => {
-              // Handle folder creation
-              console.log('Create folder:', folderData);
-              setShowNewFolderModal(false);
-            }}
+            onSave={handleCreateFolder}
           />
         )}
 
