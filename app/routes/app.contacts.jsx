@@ -27,7 +27,6 @@ import {
   Spinner
 } from "@shopify/polaris";
 import { 
-  AddIcon,
   DeleteIcon,
   EditIcon,
   FolderIcon,
@@ -592,7 +591,7 @@ export default function ContactsPage() {
                           <Text as="h2" variant="headingMd">Folders</Text>
                           <Button
                             onClick={() => setShowNewFolderModal(true)}
-                            icon={AddIcon}
+                            icon={EditIcon}
                             size="slim"
                           >
                             New Folder
@@ -660,7 +659,7 @@ export default function ContactsPage() {
                           </Text>
                           <Button
                             onClick={() => setShowNewContactForm(true)}
-                            icon={AddIcon}
+                            icon={EditIcon}
                             size="slim"
                           >
                             New Contact
