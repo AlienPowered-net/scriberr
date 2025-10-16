@@ -606,10 +606,31 @@ export default function ContactsPage() {
               }}>
                 <SortableColumn id={columnId}>
                   {columnId === 'folders' && (
-                    <Card sectioned>
-                      <BlockStack gap="400">
-                        <InlineStack align="space-between" blockAlign="center">
-                          <Text as="h2" variant="headingMd">Folders</Text>
+                    <Card style={{ 
+                      flex: "1", 
+                      display: "flex", 
+                      flexDirection: "column", 
+                      backgroundColor: "#fff", 
+                      height: "100%", 
+                      minHeight: "100%", 
+                      padding: "0", 
+                      margin: "0", 
+                      borderRadius: "8px", 
+                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", 
+                      border: "1px solid #e1e3e5" 
+                    }}>
+                      {/* Fixed Header Section */}
+                      <div style={{ 
+                        padding: "16px", 
+                        borderBottom: "1px solid #e1e3e5",
+                        backgroundColor: "white",
+                        flexShrink: 0
+                      }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+                          <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                            <i className="far fa-folder-open"></i>
+                            Folders
+                          </Text>
                           <Button
                             onClick={() => setShowNewFolderModal(true)}
                             icon={EditIcon}
@@ -617,67 +638,119 @@ export default function ContactsPage() {
                           >
                             New Folder
                           </Button>
-                        </InlineStack>
+                        </div>
 
-                        <ResourceList
-                          resourceName={{ singular: "folder", plural: "folders" }}
-                          items={folders.map(folder => ({
-                            id: folder.id,
-                            name: folder.name,
-                            count: folder._count.contacts
-                          }))}
-                          renderItem={({ id, name, count }) => {
-                            const folder = folders.find(f => f.id === id);
-                            const isSelected = selectedFolder?.id === id;
-                            
-                            return (
-                              <ResourceItem
-                                id={id}
-                                onClick={() => handleFolderSelect(folder)}
-                                shortcutActions={[
-                                  {
-                                    content: 'Edit',
-                                    onAction: () => console.log('Edit folder', id)
-                                  },
-                                  {
-                                    content: 'Delete',
-                                    onAction: () => console.log('Delete folder', id)
-                                  }
-                                ]}
-                              >
-                                <InlineStack gap="300" blockAlign="center">
-                                  <div style={{
-                                    width: '20px',
-                                    height: '20px',
-                                    backgroundColor: folder.iconColor,
-                                    borderRadius: '4px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontSize: '12px'
-                                  }}>
-                                    {folder.icon === 'folder' ? '📁' : folder.icon}
+                        {/* Scrollable Content */}
+                        <div style={{ 
+                          flex: "1", 
+                          overflowY: folders.length > 9 ? "auto" : "visible",
+                          overflowX: "hidden", 
+                          padding: "16px"
+                        }}>
+                          {folders.length === 0 ? (
+                            <div style={{ 
+                              display: "flex", 
+                              flexDirection: "column", 
+                              alignItems: "center", 
+                              justifyContent: "center", 
+                              height: "200px",
+                              textAlign: "center"
+                            }}>
+                              <div style={{ 
+                                width: "80px", 
+                                height: "80px", 
+                                borderRadius: "50%", 
+                                backgroundColor: "#f6f6f7", 
+                                display: "flex", 
+                                alignItems: "center", 
+                                justifyContent: "center", 
+                                marginBottom: "16px" 
+                              }}>
+                                <i className="far fa-folder-open" style={{ fontSize: "32px", color: "#8c9196" }}></i>
+                              </div>
+                              <Text as="h3" variant="headingMd" style={{ marginBottom: "8px" }}>
+                                Create your first folder
+                              </Text>
+                              <Text as="p" variant="bodyMd" tone="subdued" style={{ marginBottom: "16px" }}>
+                                Get organized by creating folders to group your contacts by topic, project, or category.
+                              </Text>
+                              <Button variant="primary" onClick={() => setShowNewFolderModal(true)}>
+                                Create folder
+                              </Button>
+                            </div>
+                          ) : (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                              {folders.map((folder) => {
+                                const isSelected = selectedFolder?.id === folder.id;
+                                return (
+                                  <div
+                                    key={folder.id}
+                                    onClick={() => handleFolderSelect(folder)}
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "12px",
+                                      padding: "12px",
+                                      borderRadius: "6px",
+                                      cursor: "pointer",
+                                      backgroundColor: isSelected ? "#f0f9ff" : "transparent",
+                                      border: isSelected ? "1px solid #0ea5e9" : "1px solid transparent",
+                                      transition: "all 0.2s ease"
+                                    }}
+                                  >
+                                    <div style={{
+                                      width: '20px',
+                                      height: '20px',
+                                      backgroundColor: folder.iconColor,
+                                      borderRadius: '4px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      fontSize: '12px'
+                                    }}>
+                                      {folder.icon === 'folder' ? '📁' : folder.icon}
+                                    </div>
+                                    <Text as="span" variant="bodyMd" fontWeight={isSelected ? "semibold" : "regular"}>
+                                      {folder.name}
+                                    </Text>
+                                    <Badge tone="info">{folder._count.contacts}</Badge>
                                   </div>
-                                  <Text as="span" variant="bodyMd" fontWeight={isSelected ? "semibold" : "regular"}>
-                                    {name}
-                                  </Text>
-                                  <Badge tone="info">{count}</Badge>
-                                </InlineStack>
-                              </ResourceItem>
-                            );
-                          }}
-                        />
-                      </BlockStack>
-                    </Card>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </Card>
                   )}
 
                   {columnId === 'contacts' && (
-                    <Card sectioned>
-                      <BlockStack gap="400">
-                        <InlineStack align="space-between" blockAlign="center">
-                          <Text as="h2" variant="headingMd">
-                            {selectedFolder ? selectedFolder.name : 'All Contacts'}
-                          </Text>
+                    <Card style={{ 
+                      flex: "1", 
+                      display: "flex", 
+                      flexDirection: "column", 
+                      backgroundColor: "#fff", 
+                      height: "100%", 
+                      minHeight: "100%", 
+                      padding: "0", 
+                      margin: "0", 
+                      borderRadius: "8px", 
+                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", 
+                      border: "1px solid #e1e3e5" 
+                    }}>
+                      {/* Fixed Header Section */}
+                      <div style={{ 
+                        padding: "16px", 
+                        borderBottom: "1px solid #e1e3e5",
+                        backgroundColor: "white",
+                        flexShrink: 0
+                      }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                          <div>
+                            <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                              <i className="far fa-address-book" style={{ fontSize: "20px" }}></i>
+                              {selectedFolder ? selectedFolder.name : 'All Contacts'}
+                            </Text>
+                          </div>
                           <Button
                             onClick={() => setShowNewContactForm(true)}
                             icon={EditIcon}
@@ -685,7 +758,7 @@ export default function ContactsPage() {
                           >
                             New Contact
                           </Button>
-                        </InlineStack>
+                        </div>
 
                         <TextField
                           label="Search contacts"
@@ -694,96 +767,172 @@ export default function ContactsPage() {
                           value={searchQuery}
                           onChange={setSearchQuery}
                         />
+                      </div>
 
+                      {/* Scrollable Content */}
+                      <div style={{ 
+                        flex: "1", 
+                        overflowY: filteredContacts.length > 1 ? "auto" : "visible",
+                        overflowX: "hidden", 
+                        padding: "16px"
+                      }}>
                         {filteredContacts.length > 0 ? (
-                          <ResourceList
-                            resourceName={{ singular: "contact", plural: "contacts" }}
-                            items={filteredContacts}
-                            renderItem={(contact) => (
-                              <ResourceItem
-                                id={contact.id}
-                                shortcutActions={[
-                                  {
-                                    content: 'Edit',
-                                    onAction: () => setEditingContact(contact)
-                                  },
-                                  {
-                                    content: 'Delete',
-                                    onAction: () => handleContactDelete(contact.id)
-                                  }
-                                ]}
+                          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                            {filteredContacts.map((contact) => (
+                              <div
+                                key={contact.id}
+                                onClick={() => setEditingContact(contact)}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "12px",
+                                  padding: "12px",
+                                  borderRadius: "6px",
+                                  cursor: "pointer",
+                                  backgroundColor: "transparent",
+                                  border: "1px solid transparent",
+                                  transition: "all 0.2s ease"
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.target.style.backgroundColor = "#f6f6f7";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.target.style.backgroundColor = "transparent";
+                                }}
                               >
-                                <InlineStack gap="300" blockAlign="center">
-                                  <Avatar
-                                    size="small"
-                                    source={contact.type === 'PERSON' ? '👤' : '🏢'}
-                                  />
-                                  <BlockStack gap="100">
-                                    <Text as="span" variant="bodyMd" fontWeight="semibold">
-                                      {contact.type === 'PERSON' 
-                                        ? `${contact.firstName || ''} ${contact.lastName || ''}`.trim()
-                                        : contact.businessName
-                                      }
-                                    </Text>
-                                    <InlineStack gap="200" blockAlign="center">
-                                      <Badge tone={contact.type === 'PERSON' ? 'info' : 'success'}>
-                                        {contact.type === 'PERSON' ? 'Person' : 'Business'}
-                                      </Badge>
-                                      {contact.company && (
-                                        <Text as="span" variant="bodySm" tone="subdued">
-                                          {contact.company}
-                                        </Text>
-                                      )}
-                                    </InlineStack>
-                                  </BlockStack>
-                                </InlineStack>
-                              </ResourceItem>
-                            )}
-                          />
+                                <Avatar
+                                  size="small"
+                                  source={contact.type === 'PERSON' ? '👤' : '🏢'}
+                                />
+                                <div style={{ flex: 1 }}>
+                                  <Text as="span" variant="bodyMd" fontWeight="semibold">
+                                    {contact.type === 'PERSON' 
+                                      ? `${contact.firstName || ''} ${contact.lastName || ''}`.trim()
+                                      : contact.businessName
+                                    }
+                                  </Text>
+                                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
+                                    <Badge tone={contact.type === 'PERSON' ? 'info' : 'success'}>
+                                      {contact.type === 'PERSON' ? 'Person' : 'Business'}
+                                    </Badge>
+                                    {contact.company && (
+                                      <Text as="span" variant="bodySm" tone="subdued">
+                                        {contact.company}
+                                      </Text>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         ) : (
-                          <EmptyState
-                            heading="No contacts found"
-                            action={{
-                              content: 'Create your first contact',
-                              onAction: () => setShowNewContactForm(true)
-                            }}
-                            image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
-                          >
-                            <p>Start building your contact list by adding people and businesses.</p>
-                          </EmptyState>
+                          <div style={{ 
+                            display: "flex", 
+                            flexDirection: "column", 
+                            alignItems: "center", 
+                            justifyContent: "center", 
+                            height: "200px",
+                            textAlign: "center"
+                          }}>
+                            <div style={{ 
+                              width: "80px", 
+                              height: "80px", 
+                              borderRadius: "50%", 
+                              backgroundColor: "#f6f6f7", 
+                              display: "flex", 
+                              alignItems: "center", 
+                              justifyContent: "center", 
+                              marginBottom: "16px" 
+                            }}>
+                              <i className="far fa-address-book" style={{ fontSize: "32px", color: "#8c9196" }}></i>
+                            </div>
+                            <Text as="h3" variant="headingMd" style={{ marginBottom: "8px" }}>
+                              No contacts found
+                            </Text>
+                            <Text as="p" variant="bodyMd" tone="subdued" style={{ marginBottom: "16px" }}>
+                              Start building your contact list by adding people and businesses.
+                            </Text>
+                            <Button variant="primary" onClick={() => setShowNewContactForm(true)}>
+                              Create your first contact
+                            </Button>
+                          </div>
                         )}
-                      </BlockStack>
+                      </div>
                     </Card>
                   )}
 
                   {columnId === 'form' && (
-                    <div>
-                      {editingContact ? (
-                        <ContactForm
-                          contact={editingContact}
-                          folders={folders}
-                          onSave={handleContactSave}
-                          onCancel={() => setEditingContact(null)}
-                          isEditing={true}
-                        />
-                      ) : showNewContactForm ? (
-                        <ContactForm
-                          folders={folders}
-                          onSave={handleContactSave}
-                          onCancel={() => setShowNewContactForm(false)}
-                          isEditing={false}
-                        />
-                      ) : (
-                        <Card sectioned>
-                          <EmptyState
-                            heading="Select a contact to edit"
-                            image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
-                          >
-                            <p>Choose a contact from the list to edit, or create a new one.</p>
-                          </EmptyState>
-                        </Card>
-                      )}
-                    </div>
+                    <Card style={{ 
+                      flex: "1", 
+                      display: "flex", 
+                      flexDirection: "column", 
+                      backgroundColor: "#fff", 
+                      height: "100%", 
+                      minHeight: "100%", 
+                      padding: "0", 
+                      margin: "0", 
+                      borderRadius: "8px", 
+                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", 
+                      border: "1px solid #e1e3e5" 
+                    }}>
+                      <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div>
+                          <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                            <i className="far fa-edit" style={{ fontSize: "20px" }}></i>
+                            Contact Editor
+                          </Text>
+                        </div>
+                      </div>
+                      <div style={{ padding: "16px 16px 16px 16px", flex: "1", overflowY: "auto" }}>
+                        {editingContact ? (
+                          <ContactForm
+                            contact={editingContact}
+                            folders={folders}
+                            onSave={handleContactSave}
+                            onCancel={() => setEditingContact(null)}
+                            isEditing={true}
+                          />
+                        ) : showNewContactForm ? (
+                          <ContactForm
+                            folders={folders}
+                            onSave={handleContactSave}
+                            onCancel={() => setShowNewContactForm(false)}
+                            isEditing={false}
+                          />
+                        ) : (
+                          <div style={{ 
+                            display: "flex", 
+                            flexDirection: "column", 
+                            alignItems: "center", 
+                            justifyContent: "center", 
+                            height: "200px",
+                            textAlign: "center"
+                          }}>
+                            <div style={{ 
+                              width: "80px", 
+                              height: "80px", 
+                              borderRadius: "50%", 
+                              backgroundColor: "#f6f6f7", 
+                              display: "flex", 
+                              alignItems: "center", 
+                              justifyContent: "center", 
+                              marginBottom: "16px" 
+                            }}>
+                              <i className="far fa-edit" style={{ fontSize: "32px", color: "#8c9196" }}></i>
+                            </div>
+                            <Text as="h3" variant="headingMd" style={{ marginBottom: "8px" }}>
+                              Select a contact to edit
+                            </Text>
+                            <Text as="p" variant="bodyMd" tone="subdued" style={{ marginBottom: "16px" }}>
+                              Choose a contact from the list to edit, or create a new one.
+                            </Text>
+                            <Button variant="primary" onClick={() => setShowNewContactForm(true)}>
+                              Create new contact
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
                   )}
                 </SortableColumn>
               </div>
