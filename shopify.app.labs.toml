@@ -28,7 +28,8 @@ scopes = "read_products,read_orders,read_customers,read_discounts,read_draft_ord
 redirect_urls = [
   "https://scriberr-git-labs-alienpowered.vercel.app/auth/callback",
   "https://scriberr-git-labs-alienpowered.vercel.app/auth/shopify/callback",
-  "https://scriberr-git-labs-alienpowered.vercel.app/api/auth/callback"
+  "https://scriberr-git-labs-alienpowered.vercel.app/api/auth/callback",
+  "https://scriberr-git-labs-alienpowered.vercel.app/api/auth/shopify/callback"
 ]
 
 [pos]
