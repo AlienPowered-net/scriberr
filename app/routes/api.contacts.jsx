@@ -7,9 +7,29 @@ const prisma = new PrismaClient();
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
   
+  // Ensure we have a valid shop
+  if (!session?.shop) {
+    return json({ error: "Invalid session or shop not found" }, { status: 401 });
+  }
+  
   try {
+    // Ensure the shop exists in the database
+    let shop = await prisma.shop.findUnique({
+      where: { domain: session.shop }
+    });
+
+    if (!shop) {
+      // Create the shop if it doesn't exist
+      shop = await prisma.shop.create({
+        data: {
+          domain: session.shop,
+          installedAt: new Date()
+        }
+      });
+    }
+
     const contacts = await prisma.contact.findMany({
-      where: { shopId: session.shop },
+      where: { shopId: shop.id },
       include: {
         folder: true
       },
@@ -25,10 +45,31 @@ export const loader = async ({ request }) => {
 
 export const action = async ({ request }) => {
   const { session } = await authenticate.admin(request);
+  
+  // Ensure we have a valid shop
+  if (!session?.shop) {
+    return json({ error: "Invalid session or shop not found" }, { status: 401 });
+  }
+
   const formData = await request.formData();
   const action = formData.get("_action");
 
   try {
+    // Ensure the shop exists in the database
+    let shop = await prisma.shop.findUnique({
+      where: { domain: session.shop }
+    });
+
+    if (!shop) {
+      // Create the shop if it doesn't exist
+      shop = await prisma.shop.create({
+        data: {
+          domain: session.shop,
+          installedAt: new Date()
+        }
+      });
+    }
+
     switch (action) {
       case "create": {
         const type = formData.get("type");
@@ -57,7 +98,7 @@ export const action = async ({ request }) => {
         }
 
         const contactData = {
-          shopId: session.shop,
+          shopId: shop.id, // Use the shop ID from database, not session.shop
           type,
           folderId: folderId || null,
           ...(firstName && { firstName }),
