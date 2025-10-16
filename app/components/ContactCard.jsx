@@ -17,8 +17,8 @@ import {
   PhoneIcon,
   EmailIcon,
   CollectionIcon,
-  CopyIcon,
-  CloseIcon
+  EditIcon,
+  XIcon
 } from '@shopify/polaris-icons';
 
 const ContactCard = ({ 
@@ -107,7 +107,7 @@ const ContactCard = ({
             {variant === 'modal' && (
               <Button
                 size="micro"
-                icon={CopyIcon}
+                icon={EditIcon}
                 onClick={() => handleCopy(contact.email, 'email')}
                 disabled={copiedField === 'email'}
               >
@@ -126,7 +126,7 @@ const ContactCard = ({
             {variant === 'modal' && (
               <Button
                 size="micro"
-                icon={CopyIcon}
+                icon={EditIcon}
                 onClick={() => handleCopy(contact.phone, 'phone')}
                 disabled={copiedField === 'phone'}
               >
@@ -145,7 +145,7 @@ const ContactCard = ({
             {variant === 'modal' && (
               <Button
                 size="micro"
-                icon={CopyIcon}
+                icon={EditIcon}
                 onClick={() => handleCopy(contact.mobile, 'mobile')}
                 disabled={copiedField === 'mobile'}
               >
@@ -179,7 +179,7 @@ const ContactCard = ({
                     {variant === 'modal' && (
                       <Button
                         size="micro"
-                        icon={CopyIcon}
+                        icon={EditIcon}
                         onClick={() => handleCopy(point.phone, `point-phone-${index}`)}
                         disabled={copiedField === `point-phone-${index}`}
                       >
@@ -197,7 +197,7 @@ const ContactCard = ({
                     {variant === 'modal' && (
                       <Button
                         size="micro"
-                        icon={CopyIcon}
+                        icon={EditIcon}
                         onClick={() => handleCopy(point.email, `point-email-${index}`)}
                         disabled={copiedField === `point-email-${index}`}
                       >
