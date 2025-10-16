@@ -415,6 +415,24 @@ export default function ContactsPage() {
   const [selectedContact, setSelectedContact] = useState(null);
   const [formData, setFormData] = useState(getInitialFormData());
 
+  // Helper function to get initial form data
+  function getInitialFormData() {
+    return {
+      type: 'PERSON',
+      firstName: '',
+      lastName: '',
+      businessName: '',
+      company: '',
+      phone: '',
+      mobile: '',
+      email: '',
+      role: '',
+      memo: '',
+      folderId: null,
+      pointsOfContact: [{ name: '', phone: '', email: '' }]
+    };
+  }
+
   // Contact card state
   const [showContactCard, setShowContactCard] = useState(false);
   const [contactCardContact, setContactCardContact] = useState(null);
