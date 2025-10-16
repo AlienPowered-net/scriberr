@@ -23,7 +23,6 @@ import {
   ActionList,
   Modal,
   Select,
-  TextArea,
   Banner,
   Spinner
 } from "@shopify/polaris";
@@ -373,11 +372,11 @@ function ContactForm({
               </BlockStack>
             )}
 
-            <TextArea
+            <TextField
               label="Memo"
               value={formData.memo}
               onChange={(value) => setFormData(prev => ({ ...prev, memo: value }))}
-              rows={3}
+              multiline={3}
             />
 
             <ButtonGroup>
