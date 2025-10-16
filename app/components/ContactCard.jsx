@@ -13,10 +13,10 @@ import {
 } from '@shopify/polaris';
 import {
   PersonIcon,
-  StoreIcon,
+  ProductIcon,
   PhoneIcon,
   EmailIcon,
-  BuildingIcon,
+  CollectionIcon,
   CopyIcon,
   CloseIcon
 } from '@shopify/polaris-icons';
@@ -55,7 +55,7 @@ const ContactCard = ({
 
   // Get contact type icon
   const getTypeIcon = () => {
-    return contact.type === 'PERSON' ? PersonIcon : StoreIcon;
+    return contact.type === 'PERSON' ? PersonIcon : ProductIcon;
   };
 
   // Get contact type color
@@ -82,7 +82,7 @@ const ContactCard = ({
       {/* Company/Business info */}
       {contact.company && (
         <InlineStack gap="200" blockAlign="center">
-          <Icon source={BuildingIcon} tone="subdued" />
+          <Icon source={CollectionIcon} tone="subdued" />
           <Text as="span" variant="bodyMd">
             {contact.company}
           </Text>

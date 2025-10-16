@@ -33,10 +33,10 @@ import {
   EditIcon,
   FolderIcon,
   PersonIcon,
-  StoreIcon,
+  ProductIcon,
   PhoneIcon,
   EmailIcon,
-  BuildingIcon,
+  CollectionIcon,
   MenuVerticalIcon,
   DragHandleIcon
 } from "@shopify/polaris-icons";
