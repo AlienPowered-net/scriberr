@@ -4,6 +4,17 @@ const prisma = new PrismaClient();
 
 async function createContactsTables() {
   try {
+    console.log('Creating ContactType enum...');
+    
+    // Create ContactType enum FIRST (before tables that reference it)
+    await prisma.$executeRaw`
+      DO $$ BEGIN
+        CREATE TYPE "ContactType" AS ENUM ('PERSON', 'BUSINESS');
+      EXCEPTION
+        WHEN duplicate_object THEN null;
+      END $$;
+    `;
+
     console.log('Creating ContactFolder table...');
     
     // Create ContactFolder table
@@ -44,17 +55,6 @@ async function createContactsTables() {
         "updatedAt" TIMESTAMP(3) NOT NULL,
         CONSTRAINT "Contact_pkey" PRIMARY KEY ("id")
       )
-    `;
-
-    console.log('Creating ContactType enum...');
-    
-    // Create ContactType enum
-    await prisma.$executeRaw`
-      DO $$ BEGIN
-        CREATE TYPE "ContactType" AS ENUM ('PERSON', 'BUSINESS');
-      EXCEPTION
-        WHEN duplicate_object THEN null;
-      END $$;
     `;
 
     console.log('Creating indexes...');
