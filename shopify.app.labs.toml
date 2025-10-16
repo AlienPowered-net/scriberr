@@ -1,6 +1,6 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "REPLACE_WITH_CLIENT_ID_FROM_SHOPIFY"
+client_id = "041899506cd36d3e2f0bb95b906ec886"
 name = "Scriberr Labs"
 handle = "scriberr-labs"
 application_url = "https://scriberr-git-labs-alienpowered.vercel.app"
