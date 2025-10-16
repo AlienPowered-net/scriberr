@@ -3,7 +3,7 @@
   "version": "v.a297",
   "private": true,
   "scripts": {
-    "vercel-build": "prisma generate && npm run migrate-deploy && node scripts/init-database.js && npm run build",
+    "vercel-build": "prisma generate && npm run migrate-deploy && node scripts/init-database.js && node scripts/create-contacts-tables.js && npm run build",
     "migrate-deploy": "bash scripts/migrate-deploy-fixed.sh",
     "build": "remix vite:build",
     "increment-version": "node scripts/increment-version.js",
