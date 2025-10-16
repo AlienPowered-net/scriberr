@@ -94,49 +94,6 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-// Loader function
-export async function loader({ request }) {
-  try {
-    const { session } = await shopify.authenticate.admin(request);
-    const shopId = await getOrCreateShopId(session.shop);
-
-    // Fetch contact folders
-    const folders = await prisma.contactFolder.findMany({
-      where: { shopId },
-      include: {
-        _count: {
-          select: { contacts: true }
-        }
-      },
-      orderBy: { position: 'asc' }
-    });
-
-    // Fetch all contacts
-    const contacts = await prisma.contact.findMany({
-      where: { shopId },
-      include: {
-        folder: {
-          select: {
-            id: true,
-            name: true,
-            icon: true,
-            iconColor: true
-          }
-        }
-      },
-      orderBy: [
-        { folder: { position: 'asc' } },
-        { createdAt: 'desc' }
-      ]
-    });
-
-    return json({ folders, contacts });
-  } catch (error) {
-    console.error('Error loading contacts data:', error);
-    return json({ folders: [], contacts: [] });
-  }
-}
-
 // SortableColumn Component
 function SortableColumn({ id, children, ...props }) {
   const {
