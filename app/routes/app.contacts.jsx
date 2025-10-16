@@ -1,11 +1,11 @@
 import { json } from "@remix-run/node";
 import { useLoaderData, Form } from "@remix-run/react";
-import { shopify } from "../shopify.server";
+import { authenticate } from "../shopify.server";
 import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
 
 export const loader = async ({ request }) => {
-  const { session } = await shopify.authenticate.admin(request);
+  const { session } = await authenticate.admin(request);
   const shopId = await getOrCreateShopId(session.shop);
   
   try {

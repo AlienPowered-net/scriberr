@@ -46,12 +46,15 @@ export const loader = async ({ request }) => {
 };
 
 export const action = async ({ request }) => {
-  const { session } = await authenticate.admin(request);
-  
-  // Ensure we have a valid shop
-  if (!session?.shop) {
-    return json({ error: "Invalid session or shop not found" }, { status: 401 });
-  }
+  try {
+    const { session } = await authenticate.admin(request);
+    console.log('🔍 Contact Folders API - Session:', { shop: session?.shop, hasSession: !!session });
+    
+    // Ensure we have a valid shop
+    if (!session?.shop) {
+      console.log('❌ Contact Folders API - No valid shop in session');
+      return json({ error: "Invalid session or shop not found" }, { status: 401 });
+    }
 
   const formData = await request.formData();
   const action = formData.get("_action");
@@ -182,5 +185,9 @@ export const action = async ({ request }) => {
   } catch (error) {
     console.error('Error in contact folders action:', error);
     return json({ error: "Failed to process request" }, { status: 500 });
+  }
+  } catch (authError) {
+    console.error('❌ Contact Folders API - Authentication error:', authError);
+    return json({ error: "Authentication failed" }, { status: 401 });
   }
 };
