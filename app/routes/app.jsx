@@ -42,6 +42,7 @@ export default function App() {
           Home
         </Link>
         <Link to="/app/dashboard">Dashboard</Link>
+        <Link to="/app/contacts">Contacts</Link>
         <Link to="/app/settings">Settings</Link>
       </ui-nav-menu>
       <Outlet />

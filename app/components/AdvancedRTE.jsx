@@ -26,6 +26,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import CharacterCount from '@tiptap/extension-character-count';
 import { LineHeight } from './LineHeightExtension';
 import TiptapDragHandle from './TiptapDragHandle';
+import ContactCard from './ContactCard';
 import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, SkeletonDisplayText, Icon, Popover, ActionList, Tooltip, ButtonGroup, Badge } from '@shopify/polaris';
 import { 
@@ -241,6 +242,14 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [showToolbarTextColorPicker, setShowToolbarTextColorPicker] = useState(false);
   const [tempBorderColor, setTempBorderColor] = useState('#d1d5db');
   const [isMobile, setIsMobile] = useState(false);
+  
+  // Contact card state
+  const [showContactCard, setShowContactCard] = useState(false);
+  const [contactCardContact, setContactCardContact] = useState(null);
+  const [contactCardVariant, setContactCardVariant] = useState('tooltip');
+  const [contactCardPosition, setContactCardPosition] = useState({ x: 0, y: 0 });
+  const [hoverTimeout, setHoverTimeout] = useState(null);
+  
   const editorRef = useRef(null);
 
 
@@ -882,29 +891,107 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     }
   }, [value, editor]);
 
-  // Add global click handler for entity mentions (to handle saved mentions)
+  // Handle contact card display
+  const handleContactCardShow = async (contactId, variant, event) => {
+    try {
+      // Fetch full contact details
+      const response = await fetch(`/api/contacts`);
+      const result = await response.json();
+      
+      if (result.success) {
+        const contact = result.contacts.find(c => c.id === contactId);
+        if (contact) {
+          setContactCardContact(contact);
+          setContactCardVariant(variant);
+          
+          if (variant === 'tooltip' && event) {
+            const rect = event.target.getBoundingClientRect();
+            setContactCardPosition({
+              x: rect.right + 10,
+              y: rect.top
+            });
+          }
+          
+          setShowContactCard(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching contact details:', error);
+    }
+  };
+
+  const handleContactCardClose = () => {
+    setShowContactCard(false);
+    setContactCardContact(null);
+  };
+
+  // Add global click and hover handlers for entity mentions
   useEffect(() => {
-    const handleMentionClick = (event) => {
+    const handleMentionInteraction = (event) => {
       const target = event.target;
       if (target && target.classList && target.classList.contains('entity-mention')) {
-        const url = target.getAttribute('data-url');
-        if (url) {
-          event.preventDefault();
-          event.stopPropagation();
-          window.open(url, '_blank', 'noopener,noreferrer');
+        const contactId = target.getAttribute('data-id');
+        const type = target.getAttribute('data-type');
+        
+        // Only handle person and business mentions (not Shopify entities)
+        if (type === 'person' || type === 'business') {
+          if (event.type === 'click') {
+            event.preventDefault();
+            event.stopPropagation();
+            handleContactCardShow(contactId, 'modal', event);
+          } else if (event.type === 'mouseenter') {
+            // Clear any existing timeout
+            if (hoverTimeout) {
+              clearTimeout(hoverTimeout);
+            }
+            
+            // Set timeout for hover tooltip
+            const timeout = setTimeout(() => {
+              handleContactCardShow(contactId, 'tooltip', event);
+            }, 500); // 500ms delay
+            
+            setHoverTimeout(timeout);
+          } else if (event.type === 'mouseleave') {
+            // Clear hover timeout
+            if (hoverTimeout) {
+              clearTimeout(hoverTimeout);
+              setHoverTimeout(null);
+            }
+            
+            // Hide tooltip after a short delay
+            setTimeout(() => {
+              if (contactCardVariant === 'tooltip') {
+                setShowContactCard(false);
+                setContactCardContact(null);
+              }
+            }, 200);
+          }
+        } else {
+          // Handle Shopify entity mentions (existing behavior)
+          const url = target.getAttribute('data-url');
+          if (url && event.type === 'click') {
+            event.preventDefault();
+            event.stopPropagation();
+            window.open(url, '_blank', 'noopener,noreferrer');
+          }
         }
       }
     };
 
-    // Add click listener to editor
+    // Add event listeners to editor
     const editorElement = editorRef.current;
     if (editorElement) {
-      editorElement.addEventListener('click', handleMentionClick);
+      editorElement.addEventListener('click', handleMentionInteraction);
+      editorElement.addEventListener('mouseenter', handleMentionInteraction, true);
+      editorElement.addEventListener('mouseleave', handleMentionInteraction, true);
+      
       return () => {
-        editorElement.removeEventListener('click', handleMentionClick);
+        editorElement.removeEventListener('click', handleMentionInteraction);
+        editorElement.removeEventListener('mouseenter', handleMentionInteraction, true);
+        editorElement.removeEventListener('mouseleave', handleMentionInteraction, true);
       };
     }
-  }, [editor]);
+  }, [editor, hoverTimeout, contactCardVariant]);
 
   // Cleanup orphaned suggestion components on unmount
   useEffect(() => {
@@ -6379,6 +6466,17 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           document.body
         );
       })()}
+
+      {/* Contact Card Modal/Tooltip */}
+      {showContactCard && contactCardContact && (
+        <ContactCard
+          contact={contactCardContact}
+          variant={contactCardVariant}
+          isVisible={showContactCard}
+          onClose={handleContactCardClose}
+          position={contactCardPosition}
+        />
+      )}
 
     </>
   );

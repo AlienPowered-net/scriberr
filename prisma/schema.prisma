@@ -18,6 +18,8 @@ model Shop {
   folders   Folder[]
   notes     Note[]
   customMentions CustomMention[]
+  contactFolders ContactFolder[]
+  contacts  Contact[]
   createdAt DateTime @default(now())
 }
 
@@ -106,4 +108,57 @@ model CustomMention {
   shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
   @@index([shopId])
+}
+
+model ContactFolder {
+  id        String   @id @default(cuid())
+  shopId    String
+  name      String
+  icon      String   @default("folder")
+  iconColor String   @default("#f57c00")
+  position  Int      @default(0)
+  contacts  Contact[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId])
+  @@unique([shopId, name])
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  shopId    String
+  folderId  String?
+  type      ContactType @default(PERSON)
+  
+  // Person fields
+  firstName String?
+  lastName  String?
+  
+  // Business fields
+  businessName String?
+  
+  // Common fields
+  company   String?
+  phone     String?
+  mobile    String?
+  email     String?
+  role      String?
+  memo      String? @db.Text
+  
+  // Business-specific: points of contact (JSON array)
+  pointsOfContact Json? @default("[]")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  folder    ContactFolder? @relation(fields: [folderId], references: [id])
+
+  @@index([shopId, folderId])
+}
+
+enum ContactType {
+  PERSON
+  BUSINESS
 }

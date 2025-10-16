@@ -28,6 +28,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import CharacterCount from '@tiptap/extension-character-count';
 import TiptapDragHandle from './TiptapDragHandle';
 import { LineHeight } from './LineHeightExtension';
+import ContactCard from './ContactCard';
 import { createLowlight } from 'lowlight';
 import { 
   Button, 
@@ -237,6 +238,14 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   const [currentVersionId, setCurrentVersionId] = useState(null);
   const [showRestoreDialog, setShowRestoreDialog] = useState(false);
   const [pendingRestoreVersion, setPendingRestoreVersion] = useState(null);
+  
+  // Contact card state
+  const [showContactCard, setShowContactCard] = useState(false);
+  const [contactCardContact, setContactCardContact] = useState(null);
+  const [contactCardVariant, setContactCardVariant] = useState('tooltip');
+  const [contactCardPosition, setContactCardPosition] = useState({ x: 0, y: 0 });
+  const [hoverTimeout, setHoverTimeout] = useState(null);
+  
   const editorRef = useRef(null);
   const slashMenuRef = useRef(null);
   const autoVersionIntervalRef = useRef(null);
@@ -864,29 +873,107 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     }
   }, [value, editor]);
 
-  // Add global click handler for entity mentions (to handle saved mentions)
+  // Handle contact card display
+  const handleContactCardShow = async (contactId, variant, event) => {
+    try {
+      // Fetch full contact details
+      const response = await fetch(`/api/contacts`);
+      const result = await response.json();
+      
+      if (result.success) {
+        const contact = result.contacts.find(c => c.id === contactId);
+        if (contact) {
+          setContactCardContact(contact);
+          setContactCardVariant(variant);
+          
+          if (variant === 'tooltip' && event) {
+            const rect = event.target.getBoundingClientRect();
+            setContactCardPosition({
+              x: rect.right + 10,
+              y: rect.top
+            });
+          }
+          
+          setShowContactCard(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching contact details:', error);
+    }
+  };
+
+  const handleContactCardClose = () => {
+    setShowContactCard(false);
+    setContactCardContact(null);
+  };
+
+  // Add global click and hover handlers for entity mentions
   useEffect(() => {
-    const handleMentionClick = (event) => {
+    const handleMentionInteraction = (event) => {
       const target = event.target;
       if (target && target.classList && target.classList.contains('entity-mention')) {
-        const url = target.getAttribute('data-url');
-        if (url) {
-          event.preventDefault();
-          event.stopPropagation();
-          window.open(url, '_blank', 'noopener,noreferrer');
+        const contactId = target.getAttribute('data-id');
+        const type = target.getAttribute('data-type');
+        
+        // Only handle person and business mentions (not Shopify entities)
+        if (type === 'person' || type === 'business') {
+          if (event.type === 'click') {
+            event.preventDefault();
+            event.stopPropagation();
+            handleContactCardShow(contactId, 'modal', event);
+          } else if (event.type === 'mouseenter') {
+            // Clear any existing timeout
+            if (hoverTimeout) {
+              clearTimeout(hoverTimeout);
+            }
+            
+            // Set timeout for hover tooltip
+            const timeout = setTimeout(() => {
+              handleContactCardShow(contactId, 'tooltip', event);
+            }, 500); // 500ms delay
+            
+            setHoverTimeout(timeout);
+          } else if (event.type === 'mouseleave') {
+            // Clear hover timeout
+            if (hoverTimeout) {
+              clearTimeout(hoverTimeout);
+              setHoverTimeout(null);
+            }
+            
+            // Hide tooltip after a short delay
+            setTimeout(() => {
+              if (contactCardVariant === 'tooltip') {
+                setShowContactCard(false);
+                setContactCardContact(null);
+              }
+            }, 200);
+          }
+        } else {
+          // Handle Shopify entity mentions (existing behavior)
+          const url = target.getAttribute('data-url');
+          if (url && event.type === 'click') {
+            event.preventDefault();
+            event.stopPropagation();
+            window.open(url, '_blank', 'noopener,noreferrer');
+          }
         }
       }
     };
 
-    // Add click listener to editor
+    // Add event listeners to editor
     const editorElement = editorRef.current;
     if (editorElement) {
-      editorElement.addEventListener('click', handleMentionClick);
+      editorElement.addEventListener('click', handleMentionInteraction);
+      editorElement.addEventListener('mouseenter', handleMentionInteraction, true);
+      editorElement.addEventListener('mouseleave', handleMentionInteraction, true);
+      
       return () => {
-        editorElement.removeEventListener('click', handleMentionClick);
+        editorElement.removeEventListener('click', handleMentionInteraction);
+        editorElement.removeEventListener('mouseenter', handleMentionInteraction, true);
+        editorElement.removeEventListener('mouseleave', handleMentionInteraction, true);
       };
     }
-  }, [editor]);
+  }, [editor, hoverTimeout, contactCardVariant]);
 
   // Cleanup orphaned suggestion components on unmount
   useEffect(() => {
@@ -3917,6 +4004,17 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           document.body
         );
       })()}
+
+      {/* Contact Card Modal/Tooltip */}
+      {showContactCard && contactCardContact && (
+        <ContactCard
+          contact={contactCardContact}
+          variant={contactCardVariant}
+          isVisible={showContactCard}
+          onClose={handleContactCardClose}
+          position={contactCardPosition}
+        />
+      )}
     </div>
   );
 };

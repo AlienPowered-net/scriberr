@@ -39,84 +39,7 @@ export default function Settings() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   
-  // Custom Mentions states
-  const [customMentions, setCustomMentions] = useState([]);
-  const [showAddMentionModal, setShowAddMentionModal] = useState(false);
-  const [newMentionName, setNewMentionName] = useState("");
-  const [newMentionEmail, setNewMentionEmail] = useState("");
-  const [mentionAlertMessage, setMentionAlertMessage] = useState("");
 
-  // Fetch custom mentions on mount
-  useEffect(() => {
-    fetchCustomMentions();
-  }, []);
-
-  const fetchCustomMentions = async () => {
-    try {
-      const response = await fetch('/api/custom-mentions');
-      const data = await response.json();
-      if (data.success) {
-        setCustomMentions(data.mentions);
-      }
-    } catch (error) {
-      console.error('Error fetching custom mentions:', error);
-    }
-  };
-
-  const handleAddMention = async () => {
-    if (!newMentionName.trim() || !newMentionEmail.trim()) {
-      setMentionAlertMessage("Please enter both name and email");
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append("_action", "create");
-      formData.append("name", newMentionName.trim());
-      formData.append("email", newMentionEmail.trim());
-
-      const response = await fetch('/api/custom-mentions', {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        setCustomMentions([...customMentions, data.mention]);
-        setShowAddMentionModal(false);
-        setNewMentionName("");
-        setNewMentionEmail("");
-        setMentionAlertMessage("");
-      } else {
-        setMentionAlertMessage(data.error || "Failed to add mention");
-      }
-    } catch (error) {
-      console.error('Error adding mention:', error);
-      setMentionAlertMessage("Error adding mention");
-    }
-  };
-
-  const handleDeleteMention = async (id) => {
-    try {
-      const formData = new FormData();
-      formData.append("_action", "delete");
-      formData.append("id", id);
-
-      const response = await fetch('/api/custom-mentions', {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        setCustomMentions(customMentions.filter(m => m.id !== id));
-      }
-    } catch (error) {
-      console.error('Error deleting mention:', error);
-    }
-  };
 
   const handleOnboardingGuideToggle = (checked) => {
     setShowOnboardingGuide(checked);
@@ -298,75 +221,32 @@ export default function Settings() {
 
         <Divider />
 
-        {/* Custom Mentions Section */}
+        {/* Contacts Management Section */}
         <Card>
           <div style={{ padding: "16px" }}>
             <BlockStack gap="400">
               <Text as="h2" variant="headingMd">
-                Custom Mentions
+                Contact Management
               </Text>
               <Text as="p" variant="bodyMd" tone="subdued">
-                Add people you want to mention in your notes. Type @ in the editor to see and select them. Perfect for mentioning team members, clients, suppliers, or anyone else!
+                Manage your contacts and mentions in the new Contacts section. Create detailed contact cards for people and businesses, organize them in folders, and mention them in your notes.
               </Text>
               
-              {mentionAlertMessage && (
-                <Banner tone={mentionAlertMessage.includes('Success') ? 'success' : 'critical'}>
-                  {mentionAlertMessage}
-                </Banner>
-              )}
+              <Banner tone="info">
+                <Text as="p" variant="bodyMd">
+                  <strong>New Feature:</strong> Custom mentions have been upgraded to a full contact management system. 
+                  Visit the <a href="/app/contacts" style={{ color: '#008060', textDecoration: 'none' }}>Contacts page</a> to manage your contacts and create detailed contact cards.
+                </Text>
+              </Banner>
 
               <div>
-                <Button onClick={() => setShowAddMentionModal(true)}>
-                  Add Person
+                <Button 
+                  url="/app/contacts"
+                  variant="primary"
+                >
+                  Go to Contacts
                 </Button>
               </div>
-
-              {customMentions.length > 0 ? (
-                <div style={{ 
-                  border: '1px solid #e1e3e5', 
-                  borderRadius: '8px', 
-                  overflow: 'hidden'
-                }}>
-                  {customMentions.map((mention, index) => (
-                    <div 
-                      key={mention.id}
-                      style={{
-                        padding: '12px 16px',
-                        borderBottom: index < customMentions.length - 1 ? '1px solid #e1e3e5' : 'none',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        transition: 'background-color 0.2s'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
-                    >
-                      <div>
-                        <Text as="p" variant="bodyMd" fontWeight="semibold">
-                          {mention.name}
-                        </Text>
-                        <Text as="p" variant="bodySm" tone="subdued">
-                          {mention.email}
-                        </Text>
-                      </div>
-                      <Button
-                        tone="critical"
-                        size="slim"
-                        onClick={() => handleDeleteMention(mention.id)}
-                        icon={DeleteIcon}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <Banner tone="info">
-                  <Text as="p">
-                    No custom mentions added yet. Click "Add Person" to create your first mention.
-                  </Text>
-                </Banner>
-              )}
             </BlockStack>
           </div>
         </Card>
@@ -611,59 +491,6 @@ export default function Settings() {
         </Modal.Section>
       </Modal>
 
-      {/* Add Custom Mention Modal */}
-      <Modal
-        open={showAddMentionModal}
-        onClose={() => {
-          setShowAddMentionModal(false);
-          setNewMentionName("");
-          setNewMentionEmail("");
-          setMentionAlertMessage("");
-        }}
-        title="Add Person to Mentions"
-        primaryAction={{
-          content: 'Add',
-          onAction: handleAddMention,
-        }}
-        secondaryActions={[
-          {
-            content: 'Cancel',
-            onAction: () => {
-              setShowAddMentionModal(false);
-              setNewMentionName("");
-              setNewMentionEmail("");
-              setMentionAlertMessage("");
-            },
-          },
-        ]}
-      >
-        <Modal.Section>
-          <BlockStack gap="400">
-            {mentionAlertMessage && (
-              <Banner tone="critical">
-                {mentionAlertMessage}
-              </Banner>
-            )}
-            <TextField
-              label="Name"
-              value={newMentionName}
-              onChange={setNewMentionName}
-              placeholder="John Doe"
-              autoComplete="off"
-              helpText="The name that will appear in the mention list"
-            />
-            <TextField
-              label="Email"
-              value={newMentionEmail}
-              onChange={setNewMentionEmail}
-              placeholder="john@example.com"
-              autoComplete="off"
-              type="email"
-              helpText="Associated email address"
-            />
-          </BlockStack>
-        </Modal.Section>
-      </Modal>
       </BlockStack>
       </div>
 
