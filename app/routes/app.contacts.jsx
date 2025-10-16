@@ -589,8 +589,20 @@ export default function ContactsPage() {
             {columnOrder.map((columnId, index) => (
               <div key={`slot-${index}`} style={{ 
                 position: 'relative',
-                flex: 1,
-                minWidth: 0
+                ...(columnId === 'folders' ? {
+                  width: "380px",
+                  minWidth: "380px", 
+                  maxWidth: "380px",
+                  overflow: "hidden"
+                } : columnId === 'contacts' ? {
+                  width: "380px",
+                  minWidth: "380px",
+                  maxWidth: "380px", 
+                  overflow: "hidden"
+                } : {
+                  flex: "1",
+                  minWidth: "400px"
+                })
               }}>
                 <SortableColumn id={columnId}>
                   {columnId === 'folders' && (
