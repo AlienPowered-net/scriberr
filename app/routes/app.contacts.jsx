@@ -639,9 +639,10 @@ export default function ContactsPage() {
                             New Folder
                           </Button>
                         </div>
+                      </div>
 
-                        {/* Scrollable Content */}
-                        <div style={{ 
+                      {/* Scrollable Content */}
+                      <div style={{ 
                           flex: "1", 
                           overflowY: folders.length > 9 ? "auto" : "visible",
                           overflowX: "hidden", 
@@ -719,8 +720,8 @@ export default function ContactsPage() {
                               })}
                             </div>
                           )}
-                        </div>
-                      </Card>
+                      </div>
+                    </Card>
                   )}
 
                   {columnId === 'contacts' && (
