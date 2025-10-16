@@ -580,9 +580,18 @@ export default function ContactsPage() {
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
-          <Layout>
-            {columnOrder.map((columnId) => (
-              <Layout.Section key={columnId}>
+          <div className="app-layout" style={{ 
+            display: "flex", 
+            gap: "16px", 
+            minHeight: "calc(100vh - 80px)",
+            paddingBottom: "80px"
+          }}>
+            {columnOrder.map((columnId, index) => (
+              <div key={`slot-${index}`} style={{ 
+                position: 'relative',
+                flex: 1,
+                minWidth: 0
+              }}>
                 <SortableColumn id={columnId}>
                   {columnId === 'folders' && (
                     <Card sectioned>
@@ -765,9 +774,9 @@ export default function ContactsPage() {
                     </div>
                   )}
                 </SortableColumn>
-              </Layout.Section>
+              </div>
             ))}
-          </Layout>
+          </div>
 
           <DragOverlay>
             {activeId ? (
