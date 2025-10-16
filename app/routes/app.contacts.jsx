@@ -411,6 +411,9 @@ export default function ContactsPage() {
   const [showNewFolderModal, setShowNewFolderModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showContactDetails, setShowContactDetails] = useState(false);
+  const [selectedContact, setSelectedContact] = useState(null);
+  const [formData, setFormData] = useState(getInitialFormData());
 
   // Contact card state
   const [showContactCard, setShowContactCard] = useState(false);
@@ -420,7 +423,7 @@ export default function ContactsPage() {
 
   // DnD state
   const [activeId, setActiveId] = useState(null);
-  const [columnOrder, setColumnOrder] = useState(['folders', 'contacts', 'form']);
+  const [columnOrder, setColumnOrder] = useState(['folders', 'contacts']);
 
   // Filter contacts based on selected folder and search
   const filteredContacts = contacts.filter(contact => {
@@ -571,6 +574,40 @@ export default function ContactsPage() {
     setContactCardContact(null);
   };
 
+  // Form handlers
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      const action = editingContact ? 'update' : 'create';
+      const response = await fetch('/api/contacts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          _action: action,
+          ...formData,
+          id: editingContact?.id
+        })
+      });
+      
+      if (response.ok) {
+        // Refresh contacts
+        const updatedContacts = await fetch('/api/contacts').then(r => r.json());
+        setContacts(updatedContacts);
+        
+        // Reset form
+        setEditingContact(null);
+        setShowNewContactForm(false);
+        setFormData(getInitialFormData());
+      }
+    } catch (error) {
+      console.error('Error saving contact:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Page title="Contacts">
       <div style={{ paddingBottom: "80px" }}>
@@ -593,11 +630,6 @@ export default function ContactsPage() {
                   width: "380px",
                   minWidth: "380px", 
                   maxWidth: "380px",
-                  overflow: "hidden"
-                } : columnId === 'contacts' ? {
-                  width: "380px",
-                  minWidth: "380px",
-                  maxWidth: "380px", 
                   overflow: "hidden"
                 } : {
                   flex: "1",
@@ -749,50 +781,74 @@ export default function ContactsPage() {
                           <div>
                             <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                               <i className="far fa-address-book" style={{ fontSize: "20px" }}></i>
-                              {selectedFolder ? selectedFolder.name : 'All Contacts'}
+                              Contacts ({filteredContacts.length})
                             </Text>
                           </div>
                           <Button
                             onClick={() => setShowNewContactForm(true)}
-                            icon={EditIcon}
-                            size="slim"
+                            variant="primary"
                           >
-                            New Contact
+                            Add new contact
                           </Button>
                         </div>
 
                         <TextField
-                          label="Search contacts"
+                          label="Search contact"
                           labelHidden
-                          placeholder="Search contacts..."
+                          placeholder="Search contact"
                           value={searchQuery}
                           onChange={setSearchQuery}
                         />
                       </div>
 
+                      {/* Table Header */}
+                      {filteredContacts.length > 0 && (
+                        <div style={{ 
+                          padding: "12px 16px", 
+                          borderBottom: "1px solid #e1e3e5",
+                          backgroundColor: "#f6f6f7",
+                          display: "grid",
+                          gridTemplateColumns: "60px 1fr 1fr 1fr 120px 100px",
+                          gap: "16px",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          color: "#6d7175",
+                          textTransform: "uppercase"
+                        }}>
+                          <div>Profile</div>
+                          <div>First name</div>
+                          <div>Last name</div>
+                          <div>Contact Info</div>
+                          <div>Creation Date</div>
+                          <div>Tag</div>
+                        </div>
+                      )}
+
                       {/* Scrollable Content */}
                       <div style={{ 
                         flex: "1", 
                         overflowY: filteredContacts.length > 1 ? "auto" : "visible",
-                        overflowX: "hidden", 
-                        padding: "16px"
+                        overflowX: "hidden"
                       }}>
                         {filteredContacts.length > 0 ? (
-                          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                          <div style={{ display: "flex", flexDirection: "column" }}>
                             {filteredContacts.map((contact) => (
                               <div
                                 key={contact.id}
-                                onClick={() => setEditingContact(contact)}
+                                onClick={() => {
+                                  setSelectedContact(contact);
+                                  setShowContactDetails(true);
+                                }}
                                 style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: "12px",
-                                  padding: "12px",
-                                  borderRadius: "6px",
+                                  display: "grid",
+                                  gridTemplateColumns: "60px 1fr 1fr 1fr 120px 100px",
+                                  gap: "16px",
+                                  padding: "12px 16px",
+                                  borderBottom: "1px solid #f1f3f4",
                                   cursor: "pointer",
                                   backgroundColor: "transparent",
-                                  border: "1px solid transparent",
-                                  transition: "all 0.2s ease"
+                                  transition: "all 0.2s ease",
+                                  alignItems: "center"
                                 }}
                                 onMouseEnter={(e) => {
                                   e.target.style.backgroundColor = "#f6f6f7";
@@ -801,27 +857,63 @@ export default function ContactsPage() {
                                   e.target.style.backgroundColor = "transparent";
                                 }}
                               >
-                                <Avatar
-                                  size="small"
-                                  source={contact.type === 'PERSON' ? '👤' : '🏢'}
-                                />
-                                <div style={{ flex: 1 }}>
-                                  <Text as="span" variant="bodyMd" fontWeight="semibold">
-                                    {contact.type === 'PERSON' 
+                                {/* Profile Avatar */}
+                                <div style={{ display: "flex", alignItems: "center" }}>
+                                  <Avatar
+                                    size="small"
+                                    source={contact.type === 'PERSON' 
+                                      ? `${contact.firstName?.[0] || ''}${contact.lastName?.[0] || ''}`.toUpperCase()
+                                      : contact.businessName?.[0] || 'B'
+                                    }
+                                    name={contact.type === 'PERSON' 
                                       ? `${contact.firstName || ''} ${contact.lastName || ''}`.trim()
                                       : contact.businessName
                                     }
+                                  />
+                                </div>
+                                
+                                {/* First Name */}
+                                <div>
+                                  <Text as="span" variant="bodyMd">
+                                    {contact.firstName || '-'}
                                   </Text>
-                                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
-                                    <Badge tone={contact.type === 'PERSON' ? 'info' : 'success'}>
-                                      {contact.type === 'PERSON' ? 'Person' : 'Business'}
-                                    </Badge>
-                                    {contact.company && (
+                                </div>
+                                
+                                {/* Last Name */}
+                                <div>
+                                  <Text as="span" variant="bodyMd">
+                                    {contact.lastName || contact.businessName || '-'}
+                                  </Text>
+                                </div>
+                                
+                                {/* Contact Info */}
+                                <div>
+                                  <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                                    {contact.email && (
                                       <Text as="span" variant="bodySm" tone="subdued">
-                                        {contact.company}
+                                        {contact.email}
+                                      </Text>
+                                    )}
+                                    {contact.phone && (
+                                      <Text as="span" variant="bodySm" tone="subdued">
+                                        {contact.phone}
                                       </Text>
                                     )}
                                   </div>
+                                </div>
+                                
+                                {/* Creation Date */}
+                                <div>
+                                  <Text as="span" variant="bodySm" tone="subdued">
+                                    {new Date(contact.createdAt).toLocaleDateString()}
+                                  </Text>
+                                </div>
+                                
+                                {/* Tags */}
+                                <div>
+                                  <Badge tone={contact.type === 'PERSON' ? 'info' : 'success'}>
+                                    {contact.type === 'PERSON' ? 'Person' : 'Business'}
+                                  </Badge>
                                 </div>
                               </div>
                             ))}
@@ -833,7 +925,8 @@ export default function ContactsPage() {
                             alignItems: "center", 
                             justifyContent: "center", 
                             height: "200px",
-                            textAlign: "center"
+                            textAlign: "center",
+                            padding: "40px"
                           }}>
                             <div style={{ 
                               width: "80px", 
@@ -862,79 +955,6 @@ export default function ContactsPage() {
                     </Card>
                   )}
 
-                  {columnId === 'form' && (
-                    <Card style={{ 
-                      flex: "1", 
-                      display: "flex", 
-                      flexDirection: "column", 
-                      backgroundColor: "#fff", 
-                      height: "100%", 
-                      minHeight: "100%", 
-                      padding: "0", 
-                      margin: "0", 
-                      borderRadius: "8px", 
-                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", 
-                      border: "1px solid #e1e3e5" 
-                    }}>
-                      <div style={{ padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <div>
-                          <Text as="h2" variant="headingLg" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                            <i className="far fa-edit" style={{ fontSize: "20px" }}></i>
-                            Contact Editor
-                          </Text>
-                        </div>
-                      </div>
-                      <div style={{ padding: "16px 16px 16px 16px", flex: "1", overflowY: "auto" }}>
-                        {editingContact ? (
-                          <ContactForm
-                            contact={editingContact}
-                            folders={folders}
-                            onSave={handleContactSave}
-                            onCancel={() => setEditingContact(null)}
-                            isEditing={true}
-                          />
-                        ) : showNewContactForm ? (
-                          <ContactForm
-                            folders={folders}
-                            onSave={handleContactSave}
-                            onCancel={() => setShowNewContactForm(false)}
-                            isEditing={false}
-                          />
-                        ) : (
-                          <div style={{ 
-                            display: "flex", 
-                            flexDirection: "column", 
-                            alignItems: "center", 
-                            justifyContent: "center", 
-                            height: "200px",
-                            textAlign: "center"
-                          }}>
-                            <div style={{ 
-                              width: "80px", 
-                              height: "80px", 
-                              borderRadius: "50%", 
-                              backgroundColor: "#f6f6f7", 
-                              display: "flex", 
-                              alignItems: "center", 
-                              justifyContent: "center", 
-                              marginBottom: "16px" 
-                            }}>
-                              <i className="far fa-edit" style={{ fontSize: "32px", color: "#8c9196" }}></i>
-                            </div>
-                            <Text as="h3" variant="headingMd" style={{ marginBottom: "8px" }}>
-                              Select a contact to edit
-                            </Text>
-                            <Text as="p" variant="bodyMd" tone="subdued" style={{ marginBottom: "16px" }}>
-                              Choose a contact from the list to edit, or create a new one.
-                            </Text>
-                            <Button variant="primary" onClick={() => setShowNewContactForm(true)}>
-                              Create new contact
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </Card>
-                  )}
                 </SortableColumn>
               </div>
             ))}
@@ -978,6 +998,230 @@ export default function ContactsPage() {
             }}
           />
         )}
+
+        {/* Contact Edit/Create Modal */}
+        <Modal
+          open={editingContact !== null || showNewContactForm}
+          onClose={() => {
+            setEditingContact(null);
+            setShowNewContactForm(false);
+            setFormData(getInitialFormData());
+          }}
+          title={editingContact ? 'Edit Contact' : 'Add new contact'}
+          primaryAction={{
+            content: editingContact ? 'Update Contact' : 'Create Contact',
+            onAction: handleSubmit
+          }}
+          secondaryActions={[{
+            content: 'Cancel',
+            onAction: () => {
+              setEditingContact(null);
+              setShowNewContactForm(false);
+              setFormData(getInitialFormData());
+            }
+          }]}
+        >
+          <Modal.Section>
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <Select
+                label="Contact Type"
+                options={[
+                  { label: 'Person', value: 'PERSON' },
+                  { label: 'Business', value: 'BUSINESS' }
+                ]}
+                value={formData.type}
+                onChange={(value) => setFormData({ ...formData, type: value })}
+              />
+
+              {formData.type === 'PERSON' ? (
+                <>
+                  <TextField
+                    label="First Name"
+                    value={formData.firstName}
+                    onChange={(value) => setFormData({ ...formData, firstName: value })}
+                    required
+                  />
+                  <TextField
+                    label="Last Name"
+                    value={formData.lastName}
+                    onChange={(value) => setFormData({ ...formData, lastName: value })}
+                    required
+                  />
+                  <TextField
+                    label="Company"
+                    value={formData.company}
+                    onChange={(value) => setFormData({ ...formData, company: value })}
+                  />
+                  <TextField
+                    label="Phone"
+                    value={formData.phone}
+                    onChange={(value) => setFormData({ ...formData, phone: value })}
+                  />
+                  <TextField
+                    label="Mobile"
+                    value={formData.mobile}
+                    onChange={(value) => setFormData({ ...formData, mobile: value })}
+                  />
+                  <TextField
+                    label="Role"
+                    value={formData.role}
+                    onChange={(value) => setFormData({ ...formData, role: value })}
+                  />
+                  <TextField
+                    label="Email"
+                    value={formData.email}
+                    onChange={(value) => setFormData({ ...formData, email: value })}
+                  />
+                  <TextField
+                    label="Memo"
+                    value={formData.memo}
+                    onChange={(value) => setFormData({ ...formData, memo: value })}
+                    multiline={3}
+                  />
+                </>
+              ) : (
+                <>
+                  <TextField
+                    label="Business Name"
+                    value={formData.businessName}
+                    onChange={(value) => setFormData({ ...formData, businessName: value })}
+                    required
+                  />
+                  <TextField
+                    label="Business Phone"
+                    value={formData.phone}
+                    onChange={(value) => setFormData({ ...formData, phone: value })}
+                  />
+                  <TextField
+                    label="Business Email"
+                    value={formData.email}
+                    onChange={(value) => setFormData({ ...formData, email: value })}
+                  />
+                  <TextField
+                    label="Role"
+                    value={formData.role}
+                    onChange={(value) => setFormData({ ...formData, role: value })}
+                  />
+                  <TextField
+                    label="Memo"
+                    value={formData.memo}
+                    onChange={(value) => setFormData({ ...formData, memo: value })}
+                    multiline={3}
+                  />
+                  
+                  <div>
+                    <Text as="h3" variant="headingMd" style={{ marginBottom: "12px" }}>
+                      Points of Contact
+                    </Text>
+                    {formData.pointsOfContact.map((point, index) => (
+                      <div key={index} style={{ 
+                        display: "flex", 
+                        gap: "8px", 
+                        marginBottom: "12px",
+                        alignItems: "flex-end"
+                      }}>
+                        <TextField
+                          label="Name"
+                          value={point.name}
+                          onChange={(value) => {
+                            const newPoints = [...formData.pointsOfContact];
+                            newPoints[index] = { ...point, name: value };
+                            setFormData({ ...formData, pointsOfContact: newPoints });
+                          }}
+                        />
+                        <TextField
+                          label="Phone"
+                          value={point.phone}
+                          onChange={(value) => {
+                            const newPoints = [...formData.pointsOfContact];
+                            newPoints[index] = { ...point, phone: value };
+                            setFormData({ ...formData, pointsOfContact: newPoints });
+                          }}
+                        />
+                        <TextField
+                          label="Email"
+                          value={point.email}
+                          onChange={(value) => {
+                            const newPoints = [...formData.pointsOfContact];
+                            newPoints[index] = { ...point, email: value };
+                            setFormData({ ...formData, pointsOfContact: newPoints });
+                          }}
+                        />
+                        <Button
+                          variant="tertiary"
+                          icon={XIcon}
+                          onClick={() => {
+                            const newPoints = formData.pointsOfContact.filter((_, i) => i !== index);
+                            setFormData({ ...formData, pointsOfContact: newPoints });
+                          }}
+                        />
+                      </div>
+                    ))}
+                    <Button
+                      variant="tertiary"
+                      icon={EditIcon}
+                      onClick={() => {
+                        setFormData({
+                          ...formData,
+                          pointsOfContact: [...formData.pointsOfContact, { name: '', phone: '', email: '' }]
+                        });
+                      }}
+                    >
+                      Add Point of Contact
+                    </Button>
+                  </div>
+                </>
+              )}
+
+              <Select
+                label="Folder"
+                options={[
+                  { label: 'No folder', value: null },
+                  ...folders.map(folder => ({ label: folder.name, value: folder.id }))
+                ]}
+                value={formData.folderId}
+                onChange={(value) => setFormData({ ...formData, folderId: value })}
+              />
+            </form>
+          </Modal.Section>
+        </Modal>
+
+        {/* Contact Details Modal */}
+        <Modal
+          open={showContactDetails && selectedContact !== null}
+          onClose={() => {
+            setShowContactDetails(false);
+            setSelectedContact(null);
+          }}
+          title="Contact Details"
+          primaryAction={{
+            content: 'Edit',
+            onAction: () => {
+              setShowContactDetails(false);
+              setEditingContact(selectedContact);
+            }
+          }}
+          secondaryActions={[{
+            content: 'Close',
+            onAction: () => {
+              setShowContactDetails(false);
+              setSelectedContact(null);
+            }
+          }]}
+        >
+          <Modal.Section>
+            {selectedContact && (
+              <ContactCard 
+                contact={selectedContact} 
+                variant="modal" 
+                onClose={() => {
+                  setShowContactDetails(false);
+                  setSelectedContact(null);
+                }}
+              />
+            )}
+          </Modal.Section>
+        </Modal>
       </div>
     </Page>
   );
