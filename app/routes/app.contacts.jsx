@@ -582,8 +582,22 @@ export default function ContactsPage() {
   };
 
   // Form handlers
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    console.log('🚀 handleSubmit called', { editingContact: !!editingContact, showNewContactForm, formData });
+    
+    // Validate required fields
+    if (formData.type === 'PERSON') {
+      if (!formData.firstName || !formData.lastName) {
+        console.log('❌ Missing required fields for PERSON');
+        return;
+      }
+    } else if (formData.type === 'BUSINESS') {
+      if (!formData.businessName) {
+        console.log('❌ Missing required fields for BUSINESS');
+        return;
+      }
+    }
+    
     setIsLoading(true);
     
     try {
@@ -633,6 +647,13 @@ export default function ContactsPage() {
 
   // Folder handlers
   const handleCreateFolder = async (folderData) => {
+    console.log('🚀 handleCreateFolder called', folderData);
+    
+    if (!folderData.name) {
+      console.log('❌ Folder name is required');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
@@ -1073,7 +1094,7 @@ export default function ContactsPage() {
           }]}
         >
           <Modal.Section>
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <Select
                 label="Contact Type"
                 options={[
@@ -1233,7 +1254,7 @@ export default function ContactsPage() {
                 value={formData.folderId}
                 onChange={(value) => setFormData({ ...formData, folderId: value })}
               />
-            </form>
+            </div>
           </Modal.Section>
         </Modal>
 
