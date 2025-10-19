@@ -85,6 +85,27 @@ export const action = async ({ request }) => {
           return json({ error: "Folder name is required" }, { status: 400 });
         }
 
+        const trimmedName = name.toString().trim();
+        if (!trimmedName) {
+          return json({ error: "Folder name cannot be empty" });
+        }
+
+        if (trimmedName.length > 35) {
+          return json({ error: "Folder name cannot exceed 35 characters" });
+        }
+
+        // Check if a folder with this name already exists
+        const existingFolder = await prisma.contactFolder.findFirst({
+          where: { 
+            shopId: shop.id,
+            name: trimmedName
+          },
+        });
+
+        if (existingFolder) {
+          return json({ error: "A folder with this name already exists" });
+        }
+
         // Get the highest position
         const lastFolder = await prisma.contactFolder.findFirst({
           where: { shopId: shop.id },
@@ -96,14 +117,14 @@ export const action = async ({ request }) => {
         const folder = await prisma.contactFolder.create({
           data: {
             shopId: shop.id,
-            name,
+            name: trimmedName,
             icon,
             iconColor,
             position
           }
         });
 
-        return json(folder);
+        return json({ success: true, folder, message: "Folder created successfully" });
       }
 
       case "rename": {
@@ -114,12 +135,35 @@ export const action = async ({ request }) => {
           return json({ error: "Folder ID and name are required" }, { status: 400 });
         }
 
-        const folder = await prisma.contactFolder.update({
-          where: { id },
-          data: { name }
+        const trimmedName = name.toString().trim();
+        if (!trimmedName) {
+          return json({ error: "Folder name cannot be empty" });
+        }
+
+        if (trimmedName.length > 35) {
+          return json({ error: "Folder name cannot exceed 35 characters" });
+        }
+
+        // Check if a folder with this name already exists
+        const existingFolder = await prisma.contactFolder.findFirst({
+          where: { 
+            shopId: shop.id,
+            name: trimmedName,
+            id: { not: id } // Exclude the current folder
+          },
         });
 
-        return json(folder);
+        if (existingFolder) {
+          return json({ error: "A folder with this name already exists" });
+        }
+
+        // Update the folder name
+        await prisma.contactFolder.update({
+          where: { id },
+          data: { name: trimmedName },
+        });
+        
+        return json({ success: true, message: "Folder renamed successfully" });
       }
 
       case "delete": {
@@ -140,7 +184,7 @@ export const action = async ({ request }) => {
           where: { id }
         });
 
-        return json({ success: true });
+        return json({ success: true, message: "Folder deleted successfully" });
       }
 
       case "update-icon": {
@@ -160,7 +204,7 @@ export const action = async ({ request }) => {
           }
         });
 
-        return json(folder);
+        return json({ success: true, folder, message: "Folder icon updated successfully" });
       }
 
       case "reorder": {
