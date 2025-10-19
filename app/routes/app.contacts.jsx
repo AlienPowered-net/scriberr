@@ -56,7 +56,8 @@ import {
   Modal,
   Select,
   Banner,
-  Spinner
+  Spinner,
+  Icon
 } from "@shopify/polaris";
 import { 
   DeleteIcon,
