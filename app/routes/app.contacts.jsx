@@ -445,6 +445,22 @@ export default function ContactsPage() {
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState(""); // "error" or "success"
 
+  // Mobile detection and layout state
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileActiveSection, setMobileActiveSection] = useState('folders'); // 'folders', 'contacts', 'editor'
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Close folder menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -489,6 +505,11 @@ export default function ContactsPage() {
     setSelectedFolder(folder);
     setShowNewContactForm(false);
     setEditingContact(null);
+    
+    // Navigate to contacts section on mobile
+    if (isMobile) {
+      setMobileActiveSection('contacts');
+    }
   };
 
   // Handle folder drag and drop
@@ -653,6 +674,38 @@ export default function ContactsPage() {
       setAlertMessage("Failed to update folder icon");
       setAlertType("error");
       setTimeout(() => setAlertMessage(''), 3000);
+    }
+  };
+
+  // Handle contact edit on mobile
+  const handleContactEdit = (contact) => {
+    setEditingContact(contact);
+    setFormData({
+      type: contact.type,
+      firstName: contact.firstName || '',
+      lastName: contact.lastName || '',
+      businessName: contact.businessName || '',
+      email: contact.email || '',
+      phone: contact.phone || '',
+      address: contact.address || '',
+      notes: contact.notes || '',
+      folderId: contact.folderId || null,
+      pointsOfContact: contact.pointsOfContact || []
+    });
+    
+    if (isMobile) {
+      setMobileActiveSection('editor');
+    }
+  };
+
+  // Handle new contact on mobile
+  const handleNewContact = () => {
+    setShowNewContactForm(true);
+    setEditingContact(null);
+    setFormData(getInitialFormData());
+    
+    if (isMobile) {
+      setMobileActiveSection('editor');
     }
   };
 
@@ -833,6 +886,11 @@ export default function ContactsPage() {
           setShowNewContactForm(false);
           setFormData(getInitialFormData());
           
+          // Navigate back to contacts section on mobile
+          if (isMobile) {
+            setMobileActiveSection('contacts');
+          }
+          
           setAlertMessage(editingContact ? "Contact updated successfully" : "Contact created successfully");
           setAlertType("success");
           setTimeout(() => setAlertMessage(''), 3000);
@@ -916,45 +974,48 @@ export default function ContactsPage() {
   };
 
   return (
-    <Page title="Contacts">
-      {/* Toast Notifications */}
-      {alertMessage && (
-        <div 
-          style={{
-            position: "fixed",
-            top: "20px",
-            right: "20px",
-            padding: "12px 16px",
-            borderRadius: "6px",
-            color: "white",
-            fontSize: "14px",
-            fontWeight: "500",
-            zIndex: 10002,
-            maxWidth: "300px",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-            animation: "slideIn 0.3s ease-out",
-            backgroundColor: alertType === 'error' ? "#d82c0d" : "#008060",
-            textAlign: "left"
-          }}
-        >
-          {alertMessage}
-        </div>
-      )}
+    <>
+      {/* Desktop Layout */}
+      {!isMobile && (
+        <Page title="Contacts">
+          {/* Toast Notifications */}
+          {alertMessage && (
+            <div 
+              style={{
+                position: "fixed",
+                top: "20px",
+                right: "20px",
+                padding: "12px 16px",
+                borderRadius: "6px",
+                color: "white",
+                fontSize: "14px",
+                fontWeight: "500",
+                zIndex: 10002,
+                maxWidth: "300px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                animation: "slideIn 0.3s ease-out",
+                backgroundColor: alertType === 'error' ? "#d82c0d" : "#008060",
+                textAlign: "left"
+              }}
+            >
+              {alertMessage}
+            </div>
+          )}
 
-      <style>{`
-        @keyframes slideIn {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-      `}</style>
+          <style>{`
+            @keyframes slideIn {
+              from {
+                transform: translateX(100%);
+                opacity: 0;
+              }
+              to {
+                transform: translateX(0);
+                opacity: 1;
+              }
+            }
+          `}</style>
 
-      <div style={{ paddingBottom: "80px" }}>
+          <div style={{ paddingBottom: "80px" }}>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -1529,114 +1590,120 @@ export default function ContactsPage() {
           />
         )}
 
-        {/* New Folder Modal */}
-        {showNewFolderModal && (
-          <NewFolderModal
-            isOpen={showNewFolderModal}
-            onClose={() => setShowNewFolderModal(false)}
-            onCreateFolder={handleCreateFolder}
-          />
+        {/* Desktop Modals */}
+        {!isMobile && (
+          <>
+            {/* New Folder Modal */}
+            {showNewFolderModal && (
+              <NewFolderModal
+                isOpen={showNewFolderModal}
+                onClose={() => setShowNewFolderModal(false)}
+                onCreateFolder={handleCreateFolder}
+              />
+            )}
+
+            {/* Rename Folder Modal */}
+            {showRenameFolderModal && (
+              <Modal
+                open={!!showRenameFolderModal}
+                onClose={() => setShowRenameFolderModal(null)}
+                title="Rename Folder"
+                primaryAction={{
+                  content: 'Save',
+                  onAction: async () => {
+                    if (editingFolderName.trim() && editingFolderName !== folders.find(f => f.id === showRenameFolderModal)?.name) {
+                      await handleFolderRename(showRenameFolderModal, editingFolderName.trim());
+                    }
+                    setShowRenameFolderModal(null);
+                    setEditingFolderName('');
+                  }
+                }}
+                secondaryActions={[{
+                  content: 'Cancel',
+                  onAction: () => {
+                    setShowRenameFolderModal(null);
+                    setEditingFolderName('');
+                  }
+                }]}
+              >
+                <Modal.Section>
+                  <TextField
+                    label="Folder Name"
+                    value={editingFolderName}
+                    onChange={setEditingFolderName}
+                    autoComplete="off"
+                  />
+                </Modal.Section>
+              </Modal>
+            )}
+
+            {/* Icon Picker Modal */}
+            {showIconPicker && (
+              <FolderIconPicker
+                isOpen={!!showIconPicker}
+                onClose={() => setShowIconPicker(null)}
+                onSelectIcon={async ({ icon, color }) => {
+                  await handleFolderIconChange(showIconPicker, icon, color);
+                  setShowIconPicker(null);
+                }}
+                currentIcon={folders.find(f => f.id === showIconPicker)?.icon || 'folder'}
+                currentColor={folders.find(f => f.id === showIconPicker)?.iconColor || '#f57c00'}
+                folderName={folders.find(f => f.id === showIconPicker)?.name || 'Folder'}
+              />
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteConfirm && (
+              <Modal
+                open={!!showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(null)}
+                title="Delete Folder"
+                primaryAction={{
+                  content: 'Delete',
+                  destructive: true,
+                  onAction: async () => {
+                    await handleFolderDelete(showDeleteConfirm);
+                    setShowDeleteConfirm(null);
+                  }
+                }}
+                secondaryActions={[{
+                  content: 'Cancel',
+                  onAction: () => setShowDeleteConfirm(null)
+                }]}
+              >
+                <Modal.Section>
+                  <Text as="p">
+                    Are you sure you want to delete this folder? All contacts in this folder will be moved to "All Contacts".
+                  </Text>
+                </Modal.Section>
+              </Modal>
+            )}
+          </>
         )}
 
-        {/* Rename Folder Modal */}
-        {showRenameFolderModal && (
+        {/* Contact Edit/Create Modal - Desktop Only */}
+        {!isMobile && (
           <Modal
-            open={!!showRenameFolderModal}
-            onClose={() => setShowRenameFolderModal(null)}
-            title="Rename Folder"
+            open={editingContact !== null || showNewContactForm}
+            onClose={() => {
+              setEditingContact(null);
+              setShowNewContactForm(false);
+              setFormData(getInitialFormData());
+            }}
+            title={editingContact ? 'Edit Contact' : 'Add new contact'}
             primaryAction={{
-              content: 'Save',
-              onAction: async () => {
-                if (editingFolderName.trim() && editingFolderName !== folders.find(f => f.id === showRenameFolderModal)?.name) {
-                  await handleFolderRename(showRenameFolderModal, editingFolderName.trim());
-                }
-                setShowRenameFolderModal(null);
-                setEditingFolderName('');
-              }
+              content: editingContact ? 'Update Contact' : 'Create Contact',
+              onAction: handleSubmit
             }}
             secondaryActions={[{
               content: 'Cancel',
               onAction: () => {
-                setShowRenameFolderModal(null);
-                setEditingFolderName('');
+                setEditingContact(null);
+                setShowNewContactForm(false);
+                setFormData(getInitialFormData());
               }
             }]}
           >
-            <Modal.Section>
-              <TextField
-                label="Folder Name"
-                value={editingFolderName}
-                onChange={setEditingFolderName}
-                autoComplete="off"
-              />
-            </Modal.Section>
-          </Modal>
-        )}
-
-        {/* Icon Picker Modal */}
-        {showIconPicker && (
-          <FolderIconPicker
-            isOpen={!!showIconPicker}
-            onClose={() => setShowIconPicker(null)}
-            onSelectIcon={async ({ icon, color }) => {
-              await handleFolderIconChange(showIconPicker, icon, color);
-              setShowIconPicker(null);
-            }}
-            currentIcon={folders.find(f => f.id === showIconPicker)?.icon || 'folder'}
-            currentColor={folders.find(f => f.id === showIconPicker)?.iconColor || '#f57c00'}
-            folderName={folders.find(f => f.id === showIconPicker)?.name || 'Folder'}
-          />
-        )}
-
-        {/* Delete Confirmation Modal */}
-        {showDeleteConfirm && (
-          <Modal
-            open={!!showDeleteConfirm}
-            onClose={() => setShowDeleteConfirm(null)}
-            title="Delete Folder"
-            primaryAction={{
-              content: 'Delete',
-              destructive: true,
-              onAction: async () => {
-                await handleFolderDelete(showDeleteConfirm);
-                setShowDeleteConfirm(null);
-              }
-            }}
-            secondaryActions={[{
-              content: 'Cancel',
-              onAction: () => setShowDeleteConfirm(null)
-            }]}
-          >
-            <Modal.Section>
-              <Text as="p">
-                Are you sure you want to delete this folder? All contacts in this folder will be moved to "All Contacts".
-              </Text>
-            </Modal.Section>
-          </Modal>
-        )}
-
-        {/* Contact Edit/Create Modal */}
-        <Modal
-          open={editingContact !== null || showNewContactForm}
-          onClose={() => {
-            setEditingContact(null);
-            setShowNewContactForm(false);
-            setFormData(getInitialFormData());
-          }}
-          title={editingContact ? 'Edit Contact' : 'Add new contact'}
-          primaryAction={{
-            content: editingContact ? 'Update Contact' : 'Create Contact',
-            onAction: handleSubmit
-          }}
-          secondaryActions={[{
-            content: 'Cancel',
-            onAction: () => {
-              setEditingContact(null);
-              setShowNewContactForm(false);
-              setFormData(getInitialFormData());
-            }
-          }]}
-        >
           <Modal.Section>
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <Select
@@ -1801,22 +1868,24 @@ export default function ContactsPage() {
             </div>
           </Modal.Section>
         </Modal>
+        )}
 
-        {/* Contact Details Modal */}
-        <Modal
-          open={showContactDetails && selectedContact !== null}
-          onClose={() => {
-            setShowContactDetails(false);
-            setSelectedContact(null);
-          }}
-          title="Contact Details"
-          primaryAction={{
-            content: 'Edit',
-            onAction: () => {
+        {/* Contact Details Modal - Desktop Only */}
+        {!isMobile && (
+          <Modal
+            open={showContactDetails && selectedContact !== null}
+            onClose={() => {
               setShowContactDetails(false);
-              setEditingContact(selectedContact);
-            }
-          }}
+              setSelectedContact(null);
+            }}
+            title="Contact Details"
+            primaryAction={{
+              content: 'Edit',
+              onAction: () => {
+                setShowContactDetails(false);
+                setEditingContact(selectedContact);
+              }
+            }}
           secondaryActions={[{
             content: 'Close',
             onAction: () => {
@@ -1838,7 +1907,775 @@ export default function ContactsPage() {
             )}
           </Modal.Section>
         </Modal>
+        )}
       </div>
     </Page>
+      )}
+
+      {/* Mobile Layout */}
+      {isMobile && (
+        <div 
+          className="mobile-layout"
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            backgroundColor: '#f6f6f7',
+            zIndex: 1
+          }}
+        >
+          {/* Mobile Toast Notifications */}
+          {alertMessage && (
+            <div 
+              style={{
+                position: "fixed",
+                top: "10px",
+                left: "10px",
+                right: "10px",
+                padding: "16px 20px",
+                borderRadius: "8px",
+                color: "white",
+                fontSize: "16px",
+                fontWeight: "600",
+                zIndex: 10001,
+                boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
+                animation: "slideIn 0.3s ease-out",
+                backgroundColor: alertType === 'error' ? "#d82c0d" : "#008060",
+                textAlign: "center",
+                border: "2px solid rgba(255,255,255,0.3)"
+              }}
+            >
+              {alertMessage}
+            </div>
+          )}
+
+          <style>{`
+            @keyframes slideIn {
+              from {
+                transform: translateX(100%);
+                opacity: 0;
+              }
+              to {
+                transform: translateX(0);
+                opacity: 1;
+              }
+            }
+            .mobile-layout {
+              height: 100vh;
+              overflow: hidden;
+            }
+            .mobile-section {
+              flex: 1;
+              overflow-y: auto;
+              -webkit-overflow-scrolling: touch;
+            }
+          `}</style>
+
+          {/* Mobile Header */}
+          <div style={{
+            backgroundColor: 'white',
+            borderBottom: '1px solid #e1e3e5',
+            padding: '16px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            {/* Left Navigation */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {mobileActiveSection === 'folders' && (
+                <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
+                  Folders
+                </h1>
+              )}
+              {mobileActiveSection === 'contacts' && (
+                <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
+                  Contacts
+                </h1>
+              )}
+              {(editingContact || showNewContactForm) && mobileActiveSection === 'editor' && (
+                <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
+                  {editingContact ? 'Edit Contact' : 'New Contact'}
+                </h1>
+              )}
+            </div>
+            
+            {/* Right Navigation */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {mobileActiveSection === 'folders' && (
+                <Button
+                  variant="primary"
+                  size="slim"
+                  onClick={() => setMobileActiveSection('contacts')}
+                  style={{ fontSize: '14px', fontWeight: '500' }}
+                >
+                  View Contacts
+                </Button>
+              )}
+              {mobileActiveSection === 'contacts' && (
+                <>
+                  <Button
+                    variant="secondary"
+                    size="slim"
+                    onClick={() => setMobileActiveSection('folders')}
+                    style={{ 
+                      fontSize: '14px', 
+                      fontWeight: '500', 
+                      backgroundColor: '#000000', 
+                      color: '#ffffff', 
+                      borderColor: '#000000' 
+                    }}
+                  >
+                    Back to Folders
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="slim"
+                    onClick={handleNewContact}
+                    style={{ fontSize: '14px', fontWeight: '500' }}
+                  >
+                    Add Contact
+                  </Button>
+                </>
+              )}
+              {(editingContact || showNewContactForm) && mobileActiveSection === 'editor' && (
+                <>
+                  <Button
+                    variant="secondary"
+                    size="slim"
+                    onClick={() => setMobileActiveSection('folders')}
+                    style={{ 
+                      fontSize: '14px', 
+                      fontWeight: '500', 
+                      backgroundColor: '#000000', 
+                      color: '#ffffff', 
+                      borderColor: '#000000' 
+                    }}
+                  >
+                    Back to Folders
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="slim"
+                    onClick={() => setMobileActiveSection('contacts')}
+                    style={{ fontSize: '14px', fontWeight: '500', backgroundColor: '#000000', color: '#ffffff', borderColor: '#000000' }}
+                  >
+                    Back to Contacts
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile Sections */}
+          <div style={{ 
+            display: mobileActiveSection === 'folders' ? 'block' : 'none',
+            flex: 1,
+            overflowY: 'auto',
+            padding: '16px',
+            WebkitOverflowScrolling: 'touch'
+          }}>
+            {/* Folders Section - Mobile */}
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '20px',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+              marginBottom: '16px'
+            }}>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                marginBottom: '16px' 
+              }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Folders</h2>
+                <Button
+                  variant="primary"
+                  size="slim"
+                  onClick={() => setShowNewFolderModal(true)}
+                  style={{ fontSize: '14px', fontWeight: '500' }}
+                >
+                  New Folder
+                </Button>
+              </div>
+
+              {/* Search Bar */}
+              <div style={{ marginBottom: '16px' }}>
+                <TextField
+                  placeholder="Search folders..."
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  prefix={<i className="far fa-search" style={{ color: '#666' }}></i>}
+                />
+              </div>
+
+              {/* All Contacts and All Tags buttons */}
+              <div style={{ 
+                display: 'flex', 
+                gap: '8px', 
+                marginBottom: '16px' 
+              }}>
+                <Button
+                  variant={!selectedFolder ? 'primary' : 'secondary'}
+                  size="slim"
+                  onClick={() => {
+                    setSelectedFolder(null);
+                    if (isMobile) setMobileActiveSection('contacts');
+                  }}
+                  style={{ fontSize: '14px', fontWeight: '500' }}
+                >
+                  All Contacts
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="slim"
+                  onClick={() => {
+                    // TODO: Implement tags functionality
+                  }}
+                  style={{ fontSize: '14px', fontWeight: '500' }}
+                >
+                  All Tags
+                </Button>
+              </div>
+
+              {/* Folders List */}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleFolderDragEnd}
+              >
+                <SortableContext
+                  items={folders.map(f => f.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div>
+                    {folders.length === 0 ? (
+                      <div style={{ 
+                        textAlign: 'center', 
+                        padding: '40px 20px', 
+                        color: '#666' 
+                      }}>
+                        <i className="far fa-folder" style={{ fontSize: '48px', marginBottom: '16px', display: 'block' }}></i>
+                        <p style={{ margin: 0, fontSize: '16px' }}>No folders yet</p>
+                        <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#999' }}>
+                          Create your first folder to organize contacts
+                        </p>
+                      </div>
+                    ) : (
+                      folders.map((folder) => (
+                        <DraggableFolder 
+                          key={folder.id} 
+                          folder={folder}
+                          selectedFolder={selectedFolder?.id}
+                          openFolderMenu={openFolderMenu}
+                          setOpenFolderMenu={setOpenFolderMenu}
+                          onFolderClick={handleFolderSelect}
+                        >
+                          {openFolderMenu === folder.id && (
+                            <div style={{
+                              position: 'absolute',
+                              top: '100%',
+                              right: '8px',
+                              backgroundColor: 'white',
+                              border: '1px solid #e1e3e5',
+                              borderRadius: '8px',
+                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                              zIndex: 1000,
+                              minWidth: '120px',
+                              padding: '4px 0'
+                            }}>
+                              <button
+                                onClick={() => {
+                                  setShowRenameFolderModal(folder.id);
+                                  setEditingFolderName(folder.name);
+                                  setOpenFolderMenu(null);
+                                }}
+                                style={{
+                                  width: '100%',
+                                  padding: '8px 12px',
+                                  border: 'none',
+                                  background: 'none',
+                                  textAlign: 'left',
+                                  cursor: 'pointer',
+                                  fontSize: '14px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px'
+                                }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                              >
+                                <i className="far fa-edit" style={{ fontSize: '12px' }}></i>
+                                Rename
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setShowIconPicker(folder.id);
+                                  setOpenFolderMenu(null);
+                                }}
+                                style={{
+                                  width: '100%',
+                                  padding: '8px 12px',
+                                  border: 'none',
+                                  background: 'none',
+                                  textAlign: 'left',
+                                  cursor: 'pointer',
+                                  fontSize: '14px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px'
+                                }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                              >
+                                <ExchangeIcon style={{ width: '15px', height: '15px' }} />
+                                Change Icon
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setShowDeleteConfirm(folder.id);
+                                  setOpenFolderMenu(null);
+                                }}
+                                style={{
+                                  width: '100%',
+                                  padding: '8px 12px',
+                                  border: 'none',
+                                  background: 'none',
+                                  textAlign: 'left',
+                                  cursor: 'pointer',
+                                  fontSize: '14px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  color: '#dc2626'
+                                }}
+                                onMouseEnter={(e) => e.target.style.backgroundColor = '#fef2f2'}
+                                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                              >
+                                <i className="far fa-trash-alt" style={{ fontSize: '12px' }}></i>
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </DraggableFolder>
+                      ))
+                    )}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </div>
+          </div>
+
+          <div style={{ 
+            display: mobileActiveSection === 'contacts' ? 'block' : 'none',
+            flex: 1,
+            overflowY: 'auto',
+            padding: '16px',
+            WebkitOverflowScrolling: 'touch'
+          }}>
+            {/* Contacts Section - Mobile */}
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '20px',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+              marginBottom: '16px'
+            }}>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                marginBottom: '16px' 
+              }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>
+                  {selectedFolder ? selectedFolder.name : 'All Contacts'}
+                </h2>
+                <Button
+                  variant="primary"
+                  size="slim"
+                  onClick={handleNewContact}
+                  style={{ fontSize: '14px', fontWeight: '500' }}
+                >
+                  Add Contact
+                </Button>
+              </div>
+
+              {/* Search Bar */}
+              <div style={{ marginBottom: '16px' }}>
+                <TextField
+                  placeholder="Search contacts..."
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  prefix={<i className="far fa-search" style={{ color: '#666' }}></i>}
+                />
+              </div>
+
+              {/* Contacts List */}
+              <div>
+                {filteredContacts.length === 0 ? (
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '40px 20px', 
+                    color: '#666' 
+                  }}>
+                    <i className="far fa-address-book" style={{ fontSize: '48px', marginBottom: '16px', display: 'block' }}></i>
+                    <p style={{ margin: 0, fontSize: '16px' }}>No contacts yet</p>
+                    <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#999' }}>
+                      Add your first contact to get started
+                    </p>
+                  </div>
+                ) : (
+                  filteredContacts.map((contact) => (
+                    <div
+                      key={contact.id}
+                      onClick={() => handleContactEdit(contact)}
+                      style={{
+                        padding: '16px',
+                        border: '1px solid #e1e3e5',
+                        borderRadius: '8px',
+                        marginBottom: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        backgroundColor: 'white'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#f6fff8';
+                        e.currentTarget.style.borderColor = '#008060';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'white';
+                        e.currentTarget.style.borderColor = '#e1e3e5';
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          backgroundColor: contact.type === 'PERSON' ? '#008060' : '#f57c00',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontSize: '18px',
+                          fontWeight: '600'
+                        }}>
+                          {contact.type === 'PERSON' ? (
+                            <PersonIcon style={{ width: '20px', height: '20px' }} />
+                          ) : (
+                            <ProductIcon style={{ width: '20px', height: '20px' }} />
+                          )}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <h3 style={{ 
+                            margin: 0, 
+                            fontSize: '16px', 
+                            fontWeight: '600',
+                            color: '#374151'
+                          }}>
+                            {contact.type === 'PERSON' 
+                              ? `${contact.firstName} ${contact.lastName}`.trim()
+                              : contact.businessName
+                            }
+                          </h3>
+                          {contact.email && (
+                            <p style={{ 
+                              margin: '4px 0 0 0', 
+                              fontSize: '14px', 
+                              color: '#666' 
+                            }}>
+                              {contact.email}
+                            </p>
+                          )}
+                          {contact.phone && (
+                            <p style={{ 
+                              margin: '2px 0 0 0', 
+                              fontSize: '14px', 
+                              color: '#666' 
+                            }}>
+                              {contact.phone}
+                            </p>
+                          )}
+                        </div>
+                        <i className="far fa-chevron-right" style={{ color: '#999', fontSize: '14px' }}></i>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ 
+            display: (editingContact || showNewContactForm) && mobileActiveSection === 'editor' ? 'block' : 'none',
+            flex: 1,
+            overflowY: 'auto',
+            padding: '16px',
+            WebkitOverflowScrolling: 'touch',
+            position: 'relative',
+            backgroundColor: 'white'
+          }}>
+            {/* Contact Editor Section - Mobile */}
+            <div style={{ padding: '20px' }}>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                marginBottom: '20px' 
+              }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>
+                  {editingContact ? 'Edit Contact' : 'New Contact'}
+                </h2>
+                <button
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#f6f6f7',
+                    border: '1px solid #e1e3e5',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: '500'
+                  }}
+                  onClick={() => setMobileActiveSection('contacts')}
+                >
+                  Cancel
+                </button>
+              </div>
+
+              {/* Contact Form - Mobile */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Contact Type */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                    Contact Type
+                  </label>
+                  <Select
+                    options={[
+                      { label: 'Person', value: 'PERSON' },
+                      { label: 'Business', value: 'BUSINESS' }
+                    ]}
+                    value={formData.type}
+                    onChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
+                  />
+                </div>
+
+                {/* Person Fields */}
+                {formData.type === 'PERSON' && (
+                  <>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                        First Name *
+                      </label>
+                      <TextField
+                        value={formData.firstName}
+                        onChange={(value) => setFormData(prev => ({ ...prev, firstName: value }))}
+                        placeholder="Enter first name"
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                        Last Name *
+                      </label>
+                      <TextField
+                        value={formData.lastName}
+                        onChange={(value) => setFormData(prev => ({ ...prev, lastName: value }))}
+                        placeholder="Enter last name"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Business Fields */}
+                {formData.type === 'BUSINESS' && (
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                      Business Name *
+                    </label>
+                    <TextField
+                      value={formData.businessName}
+                      onChange={(value) => setFormData(prev => ({ ...prev, businessName: value }))}
+                      placeholder="Enter business name"
+                    />
+                  </div>
+                )}
+
+                {/* Common Fields */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                    Email
+                  </label>
+                  <TextField
+                    type="email"
+                    value={formData.email}
+                    onChange={(value) => setFormData(prev => ({ ...prev, email: value }))}
+                    placeholder="Enter email address"
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                    Phone
+                  </label>
+                  <TextField
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(value) => setFormData(prev => ({ ...prev, phone: value }))}
+                    placeholder="Enter phone number"
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                    Address
+                  </label>
+                  <TextField
+                    multiline={3}
+                    value={formData.address}
+                    onChange={(value) => setFormData(prev => ({ ...prev, address: value }))}
+                    placeholder="Enter address"
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                    Notes
+                  </label>
+                  <TextField
+                    multiline={4}
+                    value={formData.notes}
+                    onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
+                    placeholder="Add notes about this contact"
+                  />
+                </div>
+
+                {/* Folder Selection */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                    Folder
+                  </label>
+                  <Select
+                    options={[
+                      { label: 'No folder', value: null },
+                      ...folders.map(folder => ({ label: folder.name, value: folder.id }))
+                    ]}
+                    value={formData.folderId}
+                    onChange={(value) => setFormData(prev => ({ ...prev, folderId: value }))}
+                  />
+                </div>
+
+                {/* Save Button */}
+                <div style={{ marginTop: '20px' }}>
+                  <Button
+                    variant="primary"
+                    size="large"
+                    onClick={handleSubmit}
+                    loading={isLoading}
+                    style={{ width: '100%', fontSize: '16px', fontWeight: '600' }}
+                  >
+                    {editingContact ? 'Update Contact' : 'Create Contact'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Modals */}
+          {isMobile && (
+            <>
+              {/* New Folder Modal */}
+              {showNewFolderModal && (
+                <NewFolderModal
+                  isOpen={showNewFolderModal}
+                  onClose={() => setShowNewFolderModal(false)}
+                  onCreateFolder={handleCreateFolder}
+                />
+              )}
+
+              {/* Rename Folder Modal */}
+              {showRenameFolderModal && (
+                <Modal
+                  open={!!showRenameFolderModal}
+                  onClose={() => setShowRenameFolderModal(null)}
+                  title="Rename Folder"
+                  primaryAction={{
+                    content: 'Save',
+                    onAction: async () => {
+                      if (editingFolderName.trim() && editingFolderName !== folders.find(f => f.id === showRenameFolderModal)?.name) {
+                        await handleFolderRename(showRenameFolderModal, editingFolderName.trim());
+                      }
+                      setShowRenameFolderModal(null);
+                      setEditingFolderName('');
+                    }
+                  }}
+                  secondaryActions={[{
+                    content: 'Cancel',
+                    onAction: () => {
+                      setShowRenameFolderModal(null);
+                      setEditingFolderName('');
+                    }
+                  }]}
+                >
+                  <Modal.Section>
+                    <TextField
+                      label="Folder Name"
+                      value={editingFolderName}
+                      onChange={setEditingFolderName}
+                      autoComplete="off"
+                    />
+                  </Modal.Section>
+                </Modal>
+              )}
+
+              {/* Icon Picker Modal */}
+              {showIconPicker && (
+                <FolderIconPicker
+                  isOpen={!!showIconPicker}
+                  onClose={() => setShowIconPicker(null)}
+                  onSelectIcon={async ({ icon, color }) => {
+                    await handleFolderIconChange(showIconPicker, icon, color);
+                    setShowIconPicker(null);
+                  }}
+                  currentIcon={folders.find(f => f.id === showIconPicker)?.icon || 'folder'}
+                  currentColor={folders.find(f => f.id === showIconPicker)?.iconColor || '#f57c00'}
+                  folderName={folders.find(f => f.id === showIconPicker)?.name || 'Folder'}
+                />
+              )}
+
+              {/* Delete Confirmation Modal */}
+              {showDeleteConfirm && (
+                <Modal
+                  open={!!showDeleteConfirm}
+                  onClose={() => setShowDeleteConfirm(null)}
+                  title="Delete Folder"
+                  primaryAction={{
+                    content: 'Delete',
+                    destructive: true,
+                    onAction: async () => {
+                      await handleFolderDelete(showDeleteConfirm);
+                      setShowDeleteConfirm(null);
+                    }
+                  }}
+                  secondaryActions={[{
+                    content: 'Cancel',
+                    onAction: () => setShowDeleteConfirm(null)
+                  }]}
+                >
+                  <Modal.Section>
+                    <Text as="p">
+                      Are you sure you want to delete this folder? All contacts in this folder will be moved to "All Contacts".
+                    </Text>
+                  </Modal.Section>
+                </Modal>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </>
   );
 }
