@@ -68,7 +68,8 @@ import {
   EmailIcon,
   CollectionIcon,
   MenuVerticalIcon,
-  DragHandleIcon
+  DragHandleIcon,
+  XIcon
 } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
 import FolderIconPicker from "../components/FolderIconPicker";
@@ -1067,7 +1068,7 @@ export default function ContactsPage() {
           <NewFolderModal
             isOpen={showNewFolderModal}
             onClose={() => setShowNewFolderModal(false)}
-            onSave={handleCreateFolder}
+            onCreateFolder={handleCreateFolder}
           />
         )}
 
