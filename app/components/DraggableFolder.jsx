@@ -90,20 +90,37 @@ const DraggableFolder = ({
             }
           }}
         >
-          <span style={{ 
-            fontWeight: "700", 
-            display: "flex", 
-            alignItems: "center", 
-            gap: "8px",
-            color: selectedFolder === folder.id ? "#008060" : "#374151",
-            fontSize: "14px"
-          }}>
-            <i className={`far fa-${folder.icon || 'folder'}`} style={{ 
-              fontSize: "18px", 
-              color: selectedFolder === folder.id ? "#008060" : (folder.iconColor || "#f57c00") 
-            }}></i>
-            {folder.name}
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
+            <span style={{ 
+              fontWeight: "700", 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "8px",
+              color: selectedFolder === folder.id ? "#008060" : "#374151",
+              fontSize: "14px"
+            }}>
+              <i className={`far fa-${folder.icon || 'folder'}`} style={{ 
+                fontSize: "18px", 
+                color: selectedFolder === folder.id ? "#008060" : (folder.iconColor || "#f57c00") 
+              }}></i>
+              {folder.name}
+            </span>
+            
+            {/* Active Badge */}
+            {selectedFolder === folder.id && (
+              <div style={{
+                padding: '2px 8px',
+                backgroundColor: '#f6fff8',
+                color: '#008060',
+                fontSize: '12px',
+                fontWeight: '500',
+                borderRadius: '12px',
+                border: '1px solid #008060'
+              }}>
+                Active
+              </div>
+            )}
+          </div>
           
           <div className="folder-menu-container" style={{ position: "relative", paddingRight: "8px" }}>
             <button
