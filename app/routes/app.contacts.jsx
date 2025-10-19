@@ -3519,102 +3519,6 @@ export default function ContactsPage() {
                 </Modal>
               )}
 
-              {/* Bulk Move Modal */}
-              {showBulkMoveModal && (
-                <div style={{ zIndex: 999999 }}>
-                  <Modal
-                    open={showBulkMoveModal}
-                    onClose={() => {
-                      setShowBulkMoveModal(false);
-                      setSelectedContacts([]);
-                    }}
-                    title="Move Contacts"
-                    primaryAction={{
-                      content: 'Move',
-                      onAction: () => {
-                        // This will be handled by folder selection
-                      }
-                    }}
-                    secondaryActions={[{
-                      content: 'Cancel',
-                      onAction: () => {
-                        setShowBulkMoveModal(false);
-                        setSelectedContacts([]);
-                      }
-                    }]}
-                  >
-                  <Modal.Section>
-                    <Text as="p" style={{ marginBottom: '16px' }}>
-                      Select a folder to move {selectedContacts.length} contact{selectedContacts.length > 1 ? 's' : ''} to nested folders.
-                    </Text>
-                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                      {folders.map((folder) => (
-                        <div
-                          key={folder.id}
-                          onClick={() => handleBulkMoveContacts(folder.id)}
-                          style={{
-                            padding: '12px',
-                            border: '1px solid #e1e3e5',
-                            borderRadius: '8px',
-                            marginBottom: '8px',
-                            cursor: 'pointer',
-                            backgroundColor: '#fafbfb',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px'
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: '24px',
-                              height: '24px',
-                              borderRadius: '4px',
-                              backgroundColor: folder.iconColor || '#f57c00',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}
-                          >
-                            <Icon 
-                              source={FolderIcon} 
-                              tone="base" 
-                            />
-                          </div>
-                          <span style={{ fontWeight: '500' }}>{folder.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </Modal.Section>
-                  </Modal>
-                </div>
-              )}
-
-              {/* Contact Delete Confirmation Modal */}
-              {showContactDeleteModal && (
-                <Modal
-                  open={!!showContactDeleteModal}
-                  onClose={() => setShowContactDeleteModal(null)}
-                  title="Delete Contact"
-                  primaryAction={{
-                    content: 'Delete',
-                    destructive: true,
-                    onAction: async () => {
-                      await confirmContactDelete(showContactDeleteModal);
-                      setShowContactDeleteModal(null);
-                    }
-                  }}
-                  secondaryActions={[{
-                    content: 'Cancel',
-                    onAction: () => setShowContactDeleteModal(null)
-                  }]}
-                >
-                  <Modal.Section>
-                    <Text as="p">
-                      Are you sure you want to delete this contact? This action is permanent and cannot be undone.
-                    </Text>
-                  </Modal.Section>
-                </Modal>
-              )}
 
               {/* Manage Menu Dropdown - Mobile */}
               {manageMenuContact && (
@@ -3752,6 +3656,101 @@ export default function ContactsPage() {
             </>
           )}
         </div>
+      )}
+
+      {/* Mobile Modals - Rendered outside mobile layout to avoid z-index conflicts */}
+      {isMobile && showBulkMoveModal && (
+        <Modal
+          open={showBulkMoveModal}
+          onClose={() => {
+            setShowBulkMoveModal(false);
+            setSelectedContacts([]);
+          }}
+          title="Move Contacts"
+          primaryAction={{
+            content: 'Move',
+            onAction: () => {
+              // This will be handled by folder selection
+            }
+          }}
+          secondaryActions={[{
+            content: 'Cancel',
+            onAction: () => {
+              setShowBulkMoveModal(false);
+              setSelectedContacts([]);
+            }
+          }]}
+        >
+          <Modal.Section>
+            <Text as="p" style={{ marginBottom: '16px' }}>
+              Select a folder to move {selectedContacts.length} contact{selectedContacts.length > 1 ? 's' : ''} to nested folders.
+            </Text>
+            <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              {folders.map((folder) => (
+                <div
+                  key={folder.id}
+                  onClick={() => handleBulkMoveContacts(folder.id)}
+                  style={{
+                    padding: '12px',
+                    border: '1px solid #e1e3e5',
+                    borderRadius: '8px',
+                    marginBottom: '8px',
+                    cursor: 'pointer',
+                    backgroundColor: '#fafbfb',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '4px',
+                      backgroundColor: folder.iconColor || '#f57c00',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <Icon 
+                      source={FolderIcon} 
+                      tone="base" 
+                    />
+                  </div>
+                  <span style={{ fontWeight: '500' }}>{folder.name}</span>
+                </div>
+              ))}
+            </div>
+          </Modal.Section>
+        </Modal>
+      )}
+
+      {/* Mobile Contact Delete Modal - Rendered outside mobile layout */}
+      {isMobile && showContactDeleteModal && (
+        <Modal
+          open={!!showContactDeleteModal}
+          onClose={() => setShowContactDeleteModal(null)}
+          title="Delete Contact"
+          primaryAction={{
+            content: 'Delete',
+            destructive: true,
+            onAction: async () => {
+              await confirmContactDelete(showContactDeleteModal);
+              setShowContactDeleteModal(null);
+            }
+          }}
+          secondaryActions={[{
+            content: 'Cancel',
+            onAction: () => setShowContactDeleteModal(null)
+          }]}
+        >
+          <Modal.Section>
+            <Text as="p">
+              Are you sure you want to delete this contact? This action is permanent and cannot be undone.
+            </Text>
+          </Modal.Section>
+        </Modal>
       )}
     </>
   );
