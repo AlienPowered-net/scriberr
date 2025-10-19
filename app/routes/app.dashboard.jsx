@@ -423,15 +423,7 @@ export default function Index() {
     setLocalNotes(notes);
   }, [notes]);
   
-  // Set selected folder from URL parameter
-  useEffect(() => {
-    if (initialFolderId && localFolders && localFolders.length > 0) {
-      const folderObject = localFolders.find(f => f.id === initialFolderId);
-      if (folderObject) {
-        setSelectedFolder(folderObject);
-      }
-    }
-  }, [initialFolderId, localFolders]);
+  // Set selected folder from URL parameter - moved after localFolders definition
 
   // Handle note selection from URL parameters - runs immediately on mount
   useEffect(() => {
@@ -448,19 +440,11 @@ export default function Index() {
         setBody(noteToSelect.content || "");
         setNoteTags(noteToSelect.tags || []);
         
-        // Set folder if provided
-        if (initialFolderId && localFolders && localFolders.length > 0) {
+        // Set folder if provided - moved after localFolders definition
+        if (initialFolderId) {
           setFolderId(initialFolderId);
-          const folderObject = localFolders.find(f => f.id === initialFolderId);
-          if (folderObject) {
-            setSelectedFolder(folderObject);
-          }
-        } else if (noteToSelect.folderId && localFolders && localFolders.length > 0) {
+        } else if (noteToSelect.folderId) {
           setFolderId(noteToSelect.folderId);
-          const folderObject = localFolders.find(f => f.id === noteToSelect.folderId);
-          if (folderObject) {
-            setSelectedFolder(folderObject);
-          }
         }
         
         // If mobile parameter is set, switch to editor view
@@ -1222,6 +1206,37 @@ export default function Index() {
   const [newFolderIcon, setNewFolderIcon] = useState('folder');
   const [newFolderIconColor, setNewFolderIconColor] = useState('rgba(255, 184, 0, 1)');
   const [localFolders, setLocalFolders] = useState(folders);
+  
+  // Set selected folder from URL parameter - now that localFolders is defined
+  useEffect(() => {
+    if (initialFolderId && localFolders && localFolders.length > 0) {
+      const folderObject = localFolders.find(f => f.id === initialFolderId);
+      if (folderObject) {
+        setSelectedFolder(folderObject);
+      }
+    }
+  }, [initialFolderId, localFolders]);
+  
+  // Handle note selection with folder objects - now that localFolders is defined
+  useEffect(() => {
+    if (initialNoteId && localNotes.length > 0 && localFolders && localFolders.length > 0) {
+      const noteToSelect = localNotes.find(note => note.id === initialNoteId);
+      if (noteToSelect) {
+        // Set folder if provided
+        if (initialFolderId) {
+          const folderObject = localFolders.find(f => f.id === initialFolderId);
+          if (folderObject) {
+            setSelectedFolder(folderObject);
+          }
+        } else if (noteToSelect.folderId) {
+          const folderObject = localFolders.find(f => f.id === noteToSelect.folderId);
+          if (folderObject) {
+            setSelectedFolder(folderObject);
+          }
+        }
+      }
+    }
+  }, [initialNoteId, localNotes, localFolders, initialFolderId]);
   
   // Mobile icon picker states
   const [mobileSelectedIcon, setMobileSelectedIcon] = useState('folder');
