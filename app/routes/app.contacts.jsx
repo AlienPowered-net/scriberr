@@ -2342,8 +2342,8 @@ export default function ContactsPage() {
                 onClick={() => setShowNewFolderModal(true)}
                 variant="primary"
                 size="large"
+                fullWidth
                 style={{
-                  width: '100%',
                   marginTop: '16px',
                   backgroundColor: '#000000',
                   borderColor: '#000000'
