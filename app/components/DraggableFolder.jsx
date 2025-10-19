@@ -13,6 +13,14 @@ const DraggableFolder = ({
   setOpenFolderMenu,
   ...props 
 }) => {
+  // Debug logging
+  console.log('DraggableFolder render:', {
+    folderId: folder.id,
+    folderIdType: typeof folder.id,
+    selectedFolder,
+    selectedFolderType: typeof selectedFolder,
+    isSelected: selectedFolder === folder.id
+  });
   const {
     attributes,
     listeners,
