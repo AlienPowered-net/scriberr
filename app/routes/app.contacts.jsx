@@ -2125,10 +2125,13 @@ export default function ContactsPage() {
               <button
                 onClick={() => {
                   if (manageMenuContact) {
-                    setShowBulkMoveModal(true);
-                    setSelectedContacts([manageMenuContact.id]);
+                    closeManageMenu();
+                    // Add a small delay to ensure manage menu is fully closed
+                    setTimeout(() => {
+                      setSelectedContacts([manageMenuContact.id]);
+                      setShowBulkMoveModal(true);
+                    }, 100);
                   }
-                  closeManageMenu();
                 }}
                 style={{
                   width: '100%',
@@ -2186,11 +2189,14 @@ export default function ContactsPage() {
               <button
                 onClick={() => {
                   if (manageMenuContact) {
-                    setShowBulkMoveModal(true);
-                    setSelectedContacts([manageMenuContact.id]);
-                    // We'll handle the duplicate logic in the bulk move modal
+                    closeManageMenu();
+                    // Add a small delay to ensure manage menu is fully closed
+                    setTimeout(() => {
+                      setSelectedContacts([manageMenuContact.id]);
+                      setShowBulkMoveModal(true);
+                      // We'll handle the duplicate logic in the bulk move modal
+                    }, 100);
                   }
-                  closeManageMenu();
                 }}
                 style={{
                   width: '100%',
@@ -3515,7 +3521,7 @@ export default function ContactsPage() {
 
               {/* Bulk Move Modal */}
               {showBulkMoveModal && (
-                <div style={{ zIndex: 99999 }}>
+                <div style={{ zIndex: 999999 }}>
                   <Modal
                     open={showBulkMoveModal}
                     onClose={() => {
@@ -3660,10 +3666,13 @@ export default function ContactsPage() {
                     <button
                       onClick={() => {
                         if (manageMenuContact) {
-                          setShowBulkMoveModal(true);
-                          setSelectedContacts([manageMenuContact.id]);
+                          closeManageMenu();
+                          // Add a small delay to ensure manage menu is fully closed
+                          setTimeout(() => {
+                            setSelectedContacts([manageMenuContact.id]);
+                            setShowBulkMoveModal(true);
+                          }, 100);
                         }
-                        closeManageMenu();
                       }}
                       style={{
                         width: '100%',
@@ -3711,11 +3720,14 @@ export default function ContactsPage() {
                     <button
                       onClick={() => {
                         if (manageMenuContact) {
-                          setShowBulkMoveModal(true);
-                          setSelectedContacts([manageMenuContact.id]);
-                          // We'll handle the duplicate logic in the bulk move modal
+                          closeManageMenu();
+                          // Add a small delay to ensure manage menu is fully closed
+                          setTimeout(() => {
+                            setSelectedContacts([manageMenuContact.id]);
+                            setShowBulkMoveModal(true);
+                            // We'll handle the duplicate logic in the bulk move modal
+                          }, 100);
                         }
-                        closeManageMenu();
                       }}
                       style={{
                         width: '100%',
