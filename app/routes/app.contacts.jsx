@@ -1000,10 +1000,20 @@ export default function ContactsPage() {
       const contactToDuplicate = contacts.find(c => c.id === contactId);
       if (!contactToDuplicate) return;
 
+      // Ensure we have a valid folder ID
+      const folderId = targetFolderId || selectedFolder?.id;
+      if (!folderId) {
+        setAlertMessage("Please select a folder to duplicate the contact to");
+        setAlertType("error");
+        setTimeout(() => setAlertMessage(''), 3000);
+        setIsLoading(false);
+        return;
+      }
+
       const formData = new FormData();
       formData.append('_action', 'create');
       formData.append('type', contactToDuplicate.type);
-      formData.append('folderId', targetFolderId);
+      formData.append('folderId', folderId);
       
       // Copy all contact data
       if (contactToDuplicate.firstName) formData.append('firstName', contactToDuplicate.firstName);
@@ -1905,7 +1915,8 @@ export default function ContactsPage() {
                                   >
                                     <Icon 
                                       source={contact.type === 'PERSON' ? PersonIcon : OrganizationIcon} 
-                                      tone="base" 
+                                      tone="base"
+                                      style={{ color: 'white' }}
                                     />
                                   </div>
                                 </div>
@@ -2071,7 +2082,7 @@ export default function ContactsPage() {
               border: '1px solid #e1e3e5',
               borderRadius: '8px',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-              zIndex: 1000,
+              zIndex: 99998,
               minWidth: '200px'
             }}
             onClick={(e) => e.stopPropagation()}
@@ -3161,7 +3172,8 @@ export default function ContactsPage() {
                         }}>
                           <Icon 
                             source={contact.type === 'PERSON' ? PersonIcon : OrganizationIcon} 
-                            tone="base" 
+                            tone="base"
+                            style={{ color: 'white' }}
                           />
                         </div>
                         <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => handleContactEdit(contact)}>
@@ -3503,7 +3515,7 @@ export default function ContactsPage() {
 
               {/* Bulk Move Modal */}
               {showBulkMoveModal && (
-                <div style={{ zIndex: 10002 }}>
+                <div style={{ zIndex: 99999 }}>
                   <Modal
                     open={showBulkMoveModal}
                     onClose={() => {
@@ -3610,7 +3622,7 @@ export default function ContactsPage() {
                     border: '1px solid #e1e3e5',
                     borderRadius: '8px',
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                    zIndex: 1001,
+                    zIndex: 99998,
                     minWidth: '200px'
                   }}
                   onClick={(e) => e.stopPropagation()}
