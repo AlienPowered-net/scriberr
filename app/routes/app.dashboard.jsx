@@ -425,7 +425,7 @@ export default function Index() {
   
   // Set selected folder from URL parameter
   useEffect(() => {
-    if (initialFolderId) {
+    if (initialFolderId && localFolders && localFolders.length > 0) {
       const folderObject = localFolders.find(f => f.id === initialFolderId);
       if (folderObject) {
         setSelectedFolder(folderObject);
@@ -449,13 +449,13 @@ export default function Index() {
         setNoteTags(noteToSelect.tags || []);
         
         // Set folder if provided
-        if (initialFolderId) {
+        if (initialFolderId && localFolders && localFolders.length > 0) {
           setFolderId(initialFolderId);
           const folderObject = localFolders.find(f => f.id === initialFolderId);
           if (folderObject) {
             setSelectedFolder(folderObject);
           }
-        } else if (noteToSelect.folderId) {
+        } else if (noteToSelect.folderId && localFolders && localFolders.length > 0) {
           setFolderId(noteToSelect.folderId);
           const folderObject = localFolders.find(f => f.id === noteToSelect.folderId);
           if (folderObject) {
@@ -1726,9 +1726,11 @@ export default function Index() {
         setTitle(noteToSelect.title || "");
         setBody(noteToSelect.content || "");
         setFolderId(savedFolderId);
-        const folderObject = localFolders.find(f => f.id === savedFolderId);
-        if (folderObject) {
-          setSelectedFolder(folderObject);
+        if (localFolders && localFolders.length > 0) {
+          const folderObject = localFolders.find(f => f.id === savedFolderId);
+          if (folderObject) {
+            setSelectedFolder(folderObject);
+          }
         }
       }
       // Clear localStorage after restoring state
@@ -1784,7 +1786,7 @@ export default function Index() {
     setWasJustSaved(false); // Reset when opening existing note
     setIsNewlyCreated(false); // Reset when opening existing note
     // Automatically select the folder associated with this note
-    if (note.folderId) {
+    if (note.folderId && localFolders && localFolders.length > 0) {
       const folderObject = localFolders.find(f => f.id === note.folderId);
       if (folderObject) {
         setSelectedFolder(folderObject);
