@@ -65,10 +65,10 @@ export async function action({ request }) {
     });
     
     return json({ success: true, message: "Folder renamed successfully" });
-  } catch (error) {
-    console.error("Error renaming folder:", error);
-    return json({ error: "Failed to rename folder" });
-  }
+    } catch (error) {
+      console.error("Error renaming folder:", error);
+      return json({ error: "Failed to rename folder" });
+    }
   } catch (authError) {
     console.error('❌ Rename Folder API - Authentication error:', authError);
     return json({ error: "Authentication failed" }, { status: 401 });

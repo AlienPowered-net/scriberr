@@ -72,13 +72,13 @@ export async function action({ request }) {
       folder: updatedFolder 
     });
 
-  } catch (error) {
-    console.error("Folder icon update error:", error);
-    return json({ 
-      error: "Failed to update folder icon",
-      details: error.message 
-    }, { status: 500 });
-  }
+    } catch (error) {
+      console.error("Folder icon update error:", error);
+      return json({ 
+        error: "Failed to update folder icon",
+        details: error.message 
+      }, { status: 500 });
+    }
   } catch (authError) {
     console.error('❌ Update Folder Icon API - Authentication error:', authError);
     return json({ error: "Authentication failed" }, { status: 401 });
