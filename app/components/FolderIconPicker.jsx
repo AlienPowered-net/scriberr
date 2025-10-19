@@ -13,8 +13,8 @@ const FolderIconPicker = ({
   selectedColor = "rgba(255, 184, 0, 1)",
   onColorChange
 }) => {
-  const [selectedIcon, setSelectedIcon] = useState(selectedIcon);
-  const [selectedColor, setSelectedColor] = useState(selectedColor);
+  const [currentIcon, setCurrentIcon] = useState(selectedIcon);
+  const [currentColor, setCurrentColor] = useState(selectedColor);
 
   const folderIcons = [
     { icon: "folder", name: "Folder" },
@@ -52,13 +52,13 @@ const FolderIconPicker = ({
 
   const handleSave = () => {
     if (onSelectIcon) {
-      onSelectIcon({ icon: selectedIcon, color: selectedColor });
+      onSelectIcon({ icon: currentIcon, color: currentColor });
       onClose();
     }
   };
 
   const handleColorClick = (color) => {
-    setSelectedColor(color);
+    setCurrentColor(color);
     if (onColorChange) {
       onColorChange(color);
     }
@@ -90,7 +90,7 @@ const FolderIconPicker = ({
         
         <div style={{ marginBottom: '16px' }}>
           <Text variant="bodyMd" as="p">
-            Selected icon: <i className={`far fa-${selectedIcon}`} style={{ fontSize: '24px', marginLeft: '8px', color: selectedColor }}></i>
+            Selected icon: <i className={`far fa-${currentIcon}`} style={{ fontSize: '24px', marginLeft: '8px', color: currentColor }}></i>
           </Text>
         </div>
 
@@ -111,13 +111,13 @@ const FolderIconPicker = ({
           {folderIcons.map((iconData, index) => (
             <button
               key={index}
-              onClick={() => setSelectedIcon(iconData.icon)}
+              onClick={() => setCurrentIcon(iconData.icon)}
               style={{
                 width: '50px',
                 height: '50px',
-                border: selectedIcon === iconData.icon ? '2px solid #2e7d32' : '1px solid #e1e3e5',
+                border: currentIcon === iconData.icon ? '2px solid #2e7d32' : '1px solid #e1e3e5',
                 borderRadius: '8px',
-                backgroundColor: selectedIcon === iconData.icon ? '#e8f5e8' : 'white',
+                backgroundColor: currentIcon === iconData.icon ? '#e8f5e8' : 'white',
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
@@ -129,7 +129,7 @@ const FolderIconPicker = ({
               }}
               title={iconData.name}
             >
-              <i className={`far fa-${iconData.icon}`} style={{ color: selectedColor }}></i>
+              <i className={`far fa-${iconData.icon}`} style={{ color: currentColor }}></i>
             </button>
           ))}
         </div>
@@ -150,11 +150,11 @@ const FolderIconPicker = ({
           {iconColors.map((colorData, index) => (
             <button
               key={index}
-              onClick={() => setSelectedColor(colorData.color)}
+              onClick={() => setCurrentColor(colorData.color)}
               style={{
                 width: '40px',
                 height: '40px',
-                border: selectedColor === colorData.color ? '3px solid #2e7d32' : '2px solid #e1e3e5',
+                border: currentColor === colorData.color ? '3px solid #2e7d32' : '2px solid #e1e3e5',
                 borderRadius: '50%',
                 backgroundColor: colorData.color,
                 cursor: 'pointer',
@@ -166,7 +166,7 @@ const FolderIconPicker = ({
               }}
               title={colorData.name}
             >
-              {selectedColor === colorData.color && (
+              {currentColor === colorData.color && (
                 <i className="fas fa-check" style={{ 
                   color: colorData.color === 'rgba(255, 230, 0, 1)' || colorData.color === 'rgba(227, 227, 227, 1)' ? 'rgba(48, 48, 48, 1)' : 'white',
                   fontSize: '14px' 
