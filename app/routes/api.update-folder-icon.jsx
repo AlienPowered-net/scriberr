@@ -1,7 +1,8 @@
 import { json } from "@remix-run/node";
-import { shopify } from "../shopify.server";
-import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
+import { authenticate } from "../shopify.server";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export async function action({ request }) {
   if (request.method !== "POST") {
@@ -9,8 +10,27 @@ export async function action({ request }) {
   }
 
   try {
-    const { session } = await shopify.authenticate.admin(request);
-    const shopId = await getOrCreateShopId(session.shop);
+    const { session } = await authenticate.admin(request);
+    
+    // Ensure we have a valid shop
+    if (!session?.shop) {
+      return json({ error: "Invalid session or shop not found" }, { status: 401 });
+    }
+    
+    // Ensure the shop exists in the database
+    let shop = await prisma.shop.findUnique({
+      where: { domain: session.shop }
+    });
+
+    if (!shop) {
+      // Create the shop if it doesn't exist
+      shop = await prisma.shop.create({
+        data: {
+          domain: session.shop,
+          installedAt: new Date()
+        }
+      });
+    }
 
     const { folderId, icon, color } = await request.json();
 
@@ -22,7 +42,7 @@ export async function action({ request }) {
     let updatedFolder;
     try {
       updatedFolder = await prisma.folder.update({
-        where: { id: folderId, shopId },
+        where: { id: folderId, shopId: shop.id },
         data: { 
           icon: icon,
           iconColor: color || "#f57c00"
@@ -58,5 +78,9 @@ export async function action({ request }) {
       error: "Failed to update folder icon",
       details: error.message 
     }, { status: 500 });
+  }
+  } catch (authError) {
+    console.error('❌ Update Folder Icon API - Authentication error:', authError);
+    return json({ error: "Authentication failed" }, { status: 401 });
   }
 }

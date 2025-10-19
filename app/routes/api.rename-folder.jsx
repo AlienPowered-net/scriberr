@@ -1,34 +1,54 @@
 import { json } from "@remix-run/node";
-import { shopify } from "../shopify.server";
-import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
+import { authenticate } from "../shopify.server";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export async function action({ request }) {
-  const { session } = await shopify.authenticate.admin(request);
-  const shopId = await getOrCreateShopId(session.shop);
-
-  const form = await request.formData();
-  const folderId = form.get("folderId");
-  const newName = form.get("newName");
-
-  if (!folderId || !newName) {
-    return json({ error: "Missing folderId or newName" });
+  const { session } = await authenticate.admin(request);
+  
+  // Ensure we have a valid shop
+  if (!session?.shop) {
+    return json({ error: "Invalid session or shop not found" }, { status: 401 });
   }
-
-  const trimmedName = newName.toString().trim();
-  if (!trimmedName) {
-    return json({ error: "Folder name cannot be empty" });
-  }
-
-  if (trimmedName.length > 35) {
-    return json({ error: "Folder name cannot exceed 35 characters" });
-  }
-
+  
   try {
+    // Ensure the shop exists in the database
+    let shop = await prisma.shop.findUnique({
+      where: { domain: session.shop }
+    });
+
+    if (!shop) {
+      // Create the shop if it doesn't exist
+      shop = await prisma.shop.create({
+        data: {
+          domain: session.shop,
+          installedAt: new Date()
+        }
+      });
+    }
+
+    const form = await request.formData();
+    const folderId = form.get("folderId");
+    const newName = form.get("newName");
+
+    if (!folderId || !newName) {
+      return json({ error: "Missing folderId or newName" });
+    }
+
+    const trimmedName = newName.toString().trim();
+    if (!trimmedName) {
+      return json({ error: "Folder name cannot be empty" });
+    }
+
+    if (trimmedName.length > 35) {
+      return json({ error: "Folder name cannot exceed 35 characters" });
+    }
+
     // Check if a folder with this name already exists
     const existingFolder = await prisma.folder.findFirst({
       where: { 
-        shopId,
+        shopId: shop.id,
         name: trimmedName,
         id: { not: folderId } // Exclude the current folder
       },
@@ -48,5 +68,9 @@ export async function action({ request }) {
   } catch (error) {
     console.error("Error renaming folder:", error);
     return json({ error: "Failed to rename folder" });
+  }
+  } catch (authError) {
+    console.error('❌ Rename Folder API - Authentication error:', authError);
+    return json({ error: "Authentication failed" }, { status: 401 });
   }
 }

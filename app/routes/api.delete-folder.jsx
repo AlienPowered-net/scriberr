@@ -1,25 +1,45 @@
 import { json } from "@remix-run/node";
-import { shopify } from "../shopify.server";
-import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
+import { authenticate } from "../shopify.server";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export async function action({ request }) {
-  const { session } = await shopify.authenticate.admin(request);
-  const shopId = await getOrCreateShopId(session.shop);
-
-  const form = await request.formData();
-  const folderId = form.get("folderId");
-
-  if (!folderId) {
-    return json({ error: "Missing folderId" });
+  const { session } = await authenticate.admin(request);
+  
+  // Ensure we have a valid shop
+  if (!session?.shop) {
+    return json({ error: "Invalid session or shop not found" }, { status: 401 });
   }
-
+  
   try {
+    // Ensure the shop exists in the database
+    let shop = await prisma.shop.findUnique({
+      where: { domain: session.shop }
+    });
+
+    if (!shop) {
+      // Create the shop if it doesn't exist
+      shop = await prisma.shop.create({
+        data: {
+          domain: session.shop,
+          installedAt: new Date()
+        }
+      });
+    }
+
+    const form = await request.formData();
+    const folderId = form.get("folderId");
+
+    if (!folderId) {
+      return json({ error: "Missing folderId" });
+    }
+
     // Verify the folder belongs to this shop
     const folder = await prisma.folder.findFirst({
       where: { 
         id: folderId,
-        shopId 
+        shopId: shop.id 
       },
     });
 
@@ -41,5 +61,9 @@ export async function action({ request }) {
   } catch (error) {
     console.error("Error deleting folder:", error);
     return json({ error: "Failed to delete folder" });
+  }
+  } catch (authError) {
+    console.error('❌ Delete Folder API - Authentication error:', authError);
+    return json({ error: "Authentication failed" }, { status: 401 });
   }
 }
