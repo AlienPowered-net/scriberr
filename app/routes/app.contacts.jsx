@@ -560,6 +560,10 @@ export default function ContactsPage() {
   // Manage menu state
   const [manageMenuContact, setManageMenuContact] = useState(null);
   const [manageMenuPosition, setManageMenuPosition] = useState({ x: 0, y: 0 });
+  
+  // Bulk actions state
+  const [showBulkMoveModal, setShowBulkMoveModal] = useState(false);
+  const [showContactDeleteModal, setShowContactDeleteModal] = useState(null);
 
   // Mobile detection
   useEffect(() => {
@@ -887,8 +891,10 @@ export default function ContactsPage() {
 
   // Handle contact delete
   const handleContactDelete = async (contactId) => {
-    if (!confirm('Are you sure you want to delete this contact?')) return;
+    setShowContactDeleteModal(contactId);
+  };
 
+  const confirmContactDelete = async (contactId) => {
     setIsLoading(true);
     
     try {
@@ -978,6 +984,105 @@ export default function ContactsPage() {
 
   const closeManageMenu = () => {
     setManageMenuContact(null);
+  };
+
+  // Handle contact duplication
+  const handleContactDuplicate = async (contactId, targetFolderId) => {
+    setIsLoading(true);
+    try {
+      const contactToDuplicate = contacts.find(c => c.id === contactId);
+      if (!contactToDuplicate) return;
+
+      const formData = new FormData();
+      formData.append('_action', 'create');
+      formData.append('type', contactToDuplicate.type);
+      formData.append('folderId', targetFolderId);
+      
+      // Copy all contact data
+      if (contactToDuplicate.firstName) formData.append('firstName', contactToDuplicate.firstName);
+      if (contactToDuplicate.lastName) formData.append('lastName', contactToDuplicate.lastName);
+      if (contactToDuplicate.businessName) formData.append('businessName', contactToDuplicate.businessName);
+      if (contactToDuplicate.company) formData.append('company', contactToDuplicate.company);
+      if (contactToDuplicate.phone) formData.append('phone', contactToDuplicate.phone);
+      if (contactToDuplicate.mobile) formData.append('mobile', contactToDuplicate.mobile);
+      if (contactToDuplicate.email) formData.append('email', contactToDuplicate.email);
+      if (contactToDuplicate.role) formData.append('role', contactToDuplicate.role);
+      if (contactToDuplicate.memo) formData.append('memo', contactToDuplicate.memo);
+      if (contactToDuplicate.pointsOfContact) formData.append('pointsOfContact', JSON.stringify(contactToDuplicate.pointsOfContact));
+      if (contactToDuplicate.tags) formData.append('tags', JSON.stringify(contactToDuplicate.tags));
+      if (contactToDuplicate.avatarColor) formData.append('avatarColor', contactToDuplicate.avatarColor);
+
+      const response = await fetch('/api/contacts', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setContacts(prev => [result.contact, ...prev]);
+        setAlertMessage("Contact duplicated successfully");
+        setAlertType("success");
+        setTimeout(() => setAlertMessage(''), 3000);
+      } else {
+        setAlertMessage(result.error || "Failed to duplicate contact");
+        setAlertType("error");
+        setTimeout(() => setAlertMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error duplicating contact:', error);
+      setAlertMessage("Failed to duplicate contact");
+      setAlertType("error");
+      setTimeout(() => setAlertMessage(''), 3000);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle bulk move contacts
+  const handleBulkMoveContacts = async (targetFolderId) => {
+    if (selectedContacts.length === 0) return;
+
+    setIsLoading(true);
+    try {
+      const form = new FormData();
+      form.append('_action', 'bulk-move');
+      form.append('contactIds', JSON.stringify(selectedContacts));
+      form.append('folderId', targetFolderId);
+
+      const response = await fetch('/api/contacts', {
+        method: 'POST',
+        body: form
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Update contacts state
+        setContacts(prev => prev.map(contact => 
+          selectedContacts.includes(contact.id) 
+            ? { ...contact, folderId: targetFolderId }
+            : contact
+        ));
+        
+        setSelectedContacts([]);
+        setShowBulkMoveModal(false);
+        setAlertMessage(`Successfully moved ${selectedContacts.length} contact(s)`);
+        setAlertType("success");
+        setTimeout(() => setAlertMessage(''), 3000);
+      } else {
+        setAlertMessage(result.error || "Failed to move contacts");
+        setAlertType("error");
+        setTimeout(() => setAlertMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error moving contacts:', error);
+      setAlertMessage("Failed to move contacts");
+      setAlertType("error");
+      setTimeout(() => setAlertMessage(''), 3000);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // DnD handlers
@@ -1698,7 +1803,7 @@ export default function ContactsPage() {
                             <Button
                               variant="secondary"
                               onClick={() => {
-                                // TODO: Implement bulk move
+                                setShowBulkMoveModal(true);
                               }}
                             >
                               Move Selected ({selectedContacts.length})
@@ -1971,7 +2076,9 @@ export default function ContactsPage() {
             >
               <button
                 onClick={() => {
-                  handleContactPin(manageMenuContact.id);
+                  if (manageMenuContact) {
+                    handleContactPin(manageMenuContact.id);
+                  }
                   closeManageMenu();
                 }}
                 style={{
@@ -1999,7 +2106,10 @@ export default function ContactsPage() {
               
               <button
                 onClick={() => {
-                  // TODO: Implement move to different folder
+                  if (manageMenuContact) {
+                    setShowBulkMoveModal(true);
+                    setSelectedContacts([manageMenuContact.id]);
+                  }
                   closeManageMenu();
                 }}
                 style={{
@@ -2027,7 +2137,9 @@ export default function ContactsPage() {
               
               <button
                 onClick={() => {
-                  // TODO: Implement duplicate to current folder
+                  if (manageMenuContact) {
+                    handleContactDuplicate(manageMenuContact.id, selectedFolder?.id || null);
+                  }
                   closeManageMenu();
                 }}
                 style={{
@@ -2055,7 +2167,11 @@ export default function ContactsPage() {
               
               <button
                 onClick={() => {
-                  // TODO: Implement duplicate to different folder
+                  if (manageMenuContact) {
+                    setShowBulkMoveModal(true);
+                    setSelectedContacts([manageMenuContact.id]);
+                    // We'll handle the duplicate logic in the bulk move modal
+                  }
                   closeManageMenu();
                 }}
                 style={{
@@ -2988,7 +3104,7 @@ export default function ContactsPage() {
                     variant="secondary"
                     size="slim"
                     onClick={() => {
-                      // TODO: Implement bulk move
+                      setShowBulkMoveModal(true);
                     }}
                   >
                     Move ({selectedContacts.length})
@@ -3373,6 +3489,99 @@ export default function ContactsPage() {
                   <Modal.Section>
                     <Text as="p">
                       Are you sure you want to delete this folder? All contacts in this folder will be moved to "All Contacts".
+                    </Text>
+                  </Modal.Section>
+                </Modal>
+              )}
+
+              {/* Bulk Move Modal */}
+              {showBulkMoveModal && (
+                <Modal
+                  open={showBulkMoveModal}
+                  onClose={() => {
+                    setShowBulkMoveModal(false);
+                    setSelectedContacts([]);
+                  }}
+                  title="Move Contacts"
+                  primaryAction={{
+                    content: 'Move',
+                    onAction: () => {
+                      // This will be handled by folder selection
+                    }
+                  }}
+                  secondaryActions={[{
+                    content: 'Cancel',
+                    onAction: () => {
+                      setShowBulkMoveModal(false);
+                      setSelectedContacts([]);
+                    }
+                  }]}
+                >
+                  <Modal.Section>
+                    <Text as="p" style={{ marginBottom: '16px' }}>
+                      Select a folder to move {selectedContacts.length} contact{selectedContacts.length > 1 ? 's' : ''} to nested folders.
+                    </Text>
+                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                      {folders.map((folder) => (
+                        <div
+                          key={folder.id}
+                          onClick={() => handleBulkMoveContacts(folder.id)}
+                          style={{
+                            padding: '12px',
+                            border: '1px solid #e1e3e5',
+                            borderRadius: '8px',
+                            marginBottom: '8px',
+                            cursor: 'pointer',
+                            backgroundColor: '#fafbfb',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px'
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: '24px',
+                              height: '24px',
+                              borderRadius: '4px',
+                              backgroundColor: folder.iconColor || '#f57c00',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '14px'
+                            }}
+                          >
+                            {folder.icon === 'folder' ? '📁' : '📂'}
+                          </div>
+                          <span style={{ fontWeight: '500' }}>{folder.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </Modal.Section>
+                </Modal>
+              )}
+
+              {/* Contact Delete Confirmation Modal */}
+              {showContactDeleteModal && (
+                <Modal
+                  open={!!showContactDeleteModal}
+                  onClose={() => setShowContactDeleteModal(null)}
+                  title="Delete Contact"
+                  primaryAction={{
+                    content: 'Delete',
+                    destructive: true,
+                    onAction: async () => {
+                      await confirmContactDelete(showContactDeleteModal);
+                      setShowContactDeleteModal(null);
+                    }
+                  }}
+                  secondaryActions={[{
+                    content: 'Cancel',
+                    onAction: () => setShowContactDeleteModal(null)
+                  }]}
+                >
+                  <Modal.Section>
+                    <Text as="p">
+                      Are you sure you want to delete this contact? This action is permanent and cannot be undone.
                     </Text>
                   </Modal.Section>
                 </Modal>
