@@ -594,6 +594,13 @@ export default function ContactsPage() {
     };
   }, [openFolderMenu, manageMenuContact]);
 
+  // Close manage menu when bulk move modal opens
+  useEffect(() => {
+    if (showBulkMoveModal && manageMenuContact) {
+      closeManageMenu();
+    }
+  }, [showBulkMoveModal]);
+
   // Filter contacts based on selected folder, search, and tags
   const filteredContacts = contacts.filter(contact => {
     const matchesFolder = !selectedFolder || contact.folderId === selectedFolder.id;
@@ -3496,27 +3503,28 @@ export default function ContactsPage() {
 
               {/* Bulk Move Modal */}
               {showBulkMoveModal && (
-                <Modal
-                  open={showBulkMoveModal}
-                  onClose={() => {
-                    setShowBulkMoveModal(false);
-                    setSelectedContacts([]);
-                  }}
-                  title="Move Contacts"
-                  primaryAction={{
-                    content: 'Move',
-                    onAction: () => {
-                      // This will be handled by folder selection
-                    }
-                  }}
-                  secondaryActions={[{
-                    content: 'Cancel',
-                    onAction: () => {
+                <div style={{ zIndex: 10002 }}>
+                  <Modal
+                    open={showBulkMoveModal}
+                    onClose={() => {
                       setShowBulkMoveModal(false);
                       setSelectedContacts([]);
-                    }
-                  }]}
-                >
+                    }}
+                    title="Move Contacts"
+                    primaryAction={{
+                      content: 'Move',
+                      onAction: () => {
+                        // This will be handled by folder selection
+                      }
+                    }}
+                    secondaryActions={[{
+                      content: 'Cancel',
+                      onAction: () => {
+                        setShowBulkMoveModal(false);
+                        setSelectedContacts([]);
+                      }
+                    }]}
+                  >
                   <Modal.Section>
                     <Text as="p" style={{ marginBottom: '16px' }}>
                       Select a folder to move {selectedContacts.length} contact{selectedContacts.length > 1 ? 's' : ''} to nested folders.
@@ -3546,18 +3554,21 @@ export default function ContactsPage() {
                               backgroundColor: folder.iconColor || '#f57c00',
                               display: 'flex',
                               alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '14px'
+                              justifyContent: 'center'
                             }}
                           >
-                            {folder.icon === 'folder' ? '📁' : '📂'}
+                            <Icon 
+                              source={FolderIcon} 
+                              tone="base" 
+                            />
                           </div>
                           <span style={{ fontWeight: '500' }}>{folder.name}</span>
                         </div>
                       ))}
                     </div>
                   </Modal.Section>
-                </Modal>
+                  </Modal>
+                </div>
               )}
 
               {/* Contact Delete Confirmation Modal */}
@@ -3585,6 +3596,134 @@ export default function ContactsPage() {
                     </Text>
                   </Modal.Section>
                 </Modal>
+              )}
+
+              {/* Manage Menu Dropdown - Mobile */}
+              {manageMenuContact && (
+                <div
+                  className="manage-menu"
+                  style={{
+                    position: 'fixed',
+                    left: manageMenuPosition.x,
+                    top: manageMenuPosition.y,
+                    backgroundColor: 'white',
+                    border: '1px solid #e1e3e5',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    zIndex: 1001,
+                    minWidth: '200px'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div
+                    style={{
+                      padding: '8px 0'
+                    }}
+                  >
+                    <button
+                      onClick={() => {
+                        if (manageMenuContact) {
+                          handleContactPin(manageMenuContact.id);
+                        }
+                        closeManageMenu();
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '8px 16px',
+                        border: 'none',
+                        background: 'none',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                      <i className="fas fa-thumbtack" style={{ fontSize: '14px' }}></i>
+                      {manageMenuContact.pinnedAt ? 'Unpin' : 'Pin'}
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        if (manageMenuContact) {
+                          setShowBulkMoveModal(true);
+                          setSelectedContacts([manageMenuContact.id]);
+                        }
+                        closeManageMenu();
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '8px 16px',
+                        border: 'none',
+                        background: 'none',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                      <i className="fas fa-folder" style={{ fontSize: '14px' }}></i>
+                      Move to different folder
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        if (manageMenuContact) {
+                          handleContactDuplicate(manageMenuContact.id, selectedFolder?.id || null);
+                        }
+                        closeManageMenu();
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '8px 16px',
+                        border: 'none',
+                        background: 'none',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                      <i className="fas fa-copy" style={{ fontSize: '14px' }}></i>
+                      Duplicate to current folder
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        if (manageMenuContact) {
+                          setShowBulkMoveModal(true);
+                          setSelectedContacts([manageMenuContact.id]);
+                          // We'll handle the duplicate logic in the bulk move modal
+                        }
+                        closeManageMenu();
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '8px 16px',
+                        border: 'none',
+                        background: 'none',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                      <i className="fas fa-copy" style={{ fontSize: '14px' }}></i>
+                      Duplicate to different folder
+                    </button>
+                  </div>
+                </div>
               )}
             </>
           )}
