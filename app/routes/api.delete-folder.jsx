@@ -58,12 +58,8 @@ export async function action({ request }) {
     });
     
     return json({ success: true, message: "Folder deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting folder:", error);
-      return json({ error: "Failed to delete folder" });
-    }
-  } catch (authError) {
-    console.error('❌ Delete Folder API - Authentication error:', authError);
-    return json({ error: "Authentication failed" }, { status: 401 });
+  } catch (error) {
+    console.error("Error deleting folder:", error);
+    return json({ error: "Failed to delete folder" });
   }
 }
