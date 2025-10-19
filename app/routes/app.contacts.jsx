@@ -69,7 +69,8 @@ import {
   CollectionIcon,
   MenuVerticalIcon,
   DragHandleIcon,
-  XIcon
+  XIcon,
+  ExchangeIcon
 } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
 import FolderIconPicker from "../components/FolderIconPicker";
@@ -435,6 +436,10 @@ export default function ContactsPage() {
   
   // Folder menu state
   const [openFolderMenu, setOpenFolderMenu] = useState(null);
+  const [showRenameFolderModal, setShowRenameFolderModal] = useState(null);
+  const [editingFolderName, setEditingFolderName] = useState('');
+  const [showIconPicker, setShowIconPicker] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
   // Close folder menu when clicking outside
   useEffect(() => {
@@ -799,7 +804,7 @@ export default function ContactsPage() {
       submitData.append('_action', 'create');
       submitData.append('name', folderData.name);
       submitData.append('icon', folderData.icon || 'folder');
-      submitData.append('iconColor', folderData.iconColor || '#f57c00');
+      submitData.append('iconColor', folderData.color || folderData.iconColor || '#f57c00');
       
       const response = await fetch('/api/contact-folders', {
         method: 'POST',
@@ -1071,10 +1076,9 @@ export default function ContactsPage() {
                                         }}>
                                           <button
                                             onClick={() => {
-                                              const newName = prompt('Enter new folder name:', folder.name);
-                                              if (newName && newName.trim() && newName !== folder.name) {
-                                                handleFolderRename(folder.id, newName.trim());
-                                              }
+                                              setShowRenameFolderModal(folder.id);
+                                              setEditingFolderName(folder.name);
+                                              setOpenFolderMenu(null);
                                             }}
                                             style={{
                                               width: '100%',
@@ -1096,9 +1100,8 @@ export default function ContactsPage() {
                                           </button>
                                           <button
                                             onClick={() => {
-                                              // Open icon picker modal
+                                              setShowIconPicker(folder.id);
                                               setOpenFolderMenu(null);
-                                              // TODO: Implement icon picker modal
                                             }}
                                             style={{
                                               width: '100%',
@@ -1115,11 +1118,14 @@ export default function ContactsPage() {
                                             onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
                                             onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                                           >
-                                            <i className="far fa-palette" style={{ fontSize: '12px' }}></i>
+                                            <ExchangeIcon style={{ width: '15px', height: '15px' }} />
                                             Change Icon
                                           </button>
                                           <button
-                                            onClick={() => handleFolderDelete(folder.id)}
+                                            onClick={() => {
+                                              setShowDeleteConfirm(folder.id);
+                                              setOpenFolderMenu(null);
+                                            }}
                                             style={{
                                               width: '100%',
                                               padding: '8px 12px',
@@ -1405,6 +1411,83 @@ export default function ContactsPage() {
             onClose={() => setShowNewFolderModal(false)}
             onCreateFolder={handleCreateFolder}
           />
+        )}
+
+        {/* Rename Folder Modal */}
+        {showRenameFolderModal && (
+          <Modal
+            open={!!showRenameFolderModal}
+            onClose={() => setShowRenameFolderModal(null)}
+            title="Rename Folder"
+            primaryAction={{
+              content: 'Save',
+              onAction: async () => {
+                if (editingFolderName.trim() && editingFolderName !== folders.find(f => f.id === showRenameFolderModal)?.name) {
+                  await handleFolderRename(showRenameFolderModal, editingFolderName.trim());
+                }
+                setShowRenameFolderModal(null);
+                setEditingFolderName('');
+              }
+            }}
+            secondaryActions={[{
+              content: 'Cancel',
+              onAction: () => {
+                setShowRenameFolderModal(null);
+                setEditingFolderName('');
+              }
+            }]}
+          >
+            <Modal.Section>
+              <TextField
+                label="Folder Name"
+                value={editingFolderName}
+                onChange={setEditingFolderName}
+                autoComplete="off"
+              />
+            </Modal.Section>
+          </Modal>
+        )}
+
+        {/* Icon Picker Modal */}
+        {showIconPicker && (
+          <FolderIconPicker
+            isOpen={!!showIconPicker}
+            onClose={() => setShowIconPicker(null)}
+            onSelectIcon={async ({ icon, color }) => {
+              await handleFolderIconChange(showIconPicker, icon, color);
+              setShowIconPicker(null);
+            }}
+            currentIcon={folders.find(f => f.id === showIconPicker)?.icon || 'folder'}
+            currentColor={folders.find(f => f.id === showIconPicker)?.iconColor || '#f57c00'}
+            folderName={folders.find(f => f.id === showIconPicker)?.name || 'Folder'}
+          />
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <Modal
+            open={!!showDeleteConfirm}
+            onClose={() => setShowDeleteConfirm(null)}
+            title="Delete Folder"
+            primaryAction={{
+              content: 'Delete',
+              destructive: true,
+              onAction: async () => {
+                await handleFolderDelete(showDeleteConfirm);
+                setShowDeleteConfirm(null);
+              }
+            }}
+            secondaryActions={[{
+              content: 'Cancel',
+              onAction: () => setShowDeleteConfirm(null)
+            }]}
+          >
+            <Modal.Section>
+              <Text as="p">
+                Are you sure you want to delete this folder? All contacts in this folder will be moved to "All Contacts".
+              </Text>
+            </Modal.Section>
+          </Modal>
         )}
 
         {/* Contact Edit/Create Modal */}
