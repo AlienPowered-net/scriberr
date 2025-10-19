@@ -74,7 +74,7 @@ const DraggableFolder = ({
             alignItems: "center",
             cursor: "pointer"
           }}
-          onClick={() => onFolderClick(folder.id)}
+          onClick={() => onFolderClick(folder)}
           onMouseEnter={(e) => {
             if (selectedFolder !== folder.id) {
               e.currentTarget.parentElement.style.backgroundColor = "#f6fff8";

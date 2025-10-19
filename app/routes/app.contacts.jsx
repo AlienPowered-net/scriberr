@@ -441,6 +441,10 @@ export default function ContactsPage() {
   const [showIconPicker, setShowIconPicker] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
+  // Toast notification state
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState(""); // "error" or "success"
+
   // Close folder menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -532,23 +536,35 @@ export default function ContactsPage() {
       });
       
       if (response.ok) {
-        // Refresh folders
-        const updatedFolders = await fetch('/api/contact-folders').then(r => r.json());
-        setFolders(updatedFolders);
-        setOpenFolderMenu(null);
+        const result = await response.json();
+        if (result.success) {
+          // Refresh folders
+          const updatedFolders = await fetch('/api/contact-folders').then(r => r.json());
+          setFolders(updatedFolders);
+          setOpenFolderMenu(null);
+          setAlertMessage("Folder renamed successfully");
+          setAlertType("success");
+          setTimeout(() => setAlertMessage(''), 3000);
+        } else {
+          setAlertMessage(result.error || "Failed to rename folder");
+          setAlertType("error");
+          setTimeout(() => setAlertMessage(''), 3000);
+        }
       } else {
-        console.error('Failed to rename folder');
+        const result = await response.json();
+        setAlertMessage(result.error || "Failed to rename folder");
+        setAlertType("error");
+        setTimeout(() => setAlertMessage(''), 3000);
       }
     } catch (error) {
       console.error('Error renaming folder:', error);
+      setAlertMessage("Failed to rename folder");
+      setAlertType("error");
+      setTimeout(() => setAlertMessage(''), 3000);
     }
   };
 
   const handleFolderDelete = async (folderId) => {
-    if (!confirm('Are you sure you want to delete this folder? All contacts in this folder will be moved to "All Contacts".')) {
-      return;
-    }
-    
     try {
       const formData = new FormData();
       formData.append('_action', 'delete');
@@ -560,24 +576,41 @@ export default function ContactsPage() {
       });
       
       if (response.ok) {
-        // Refresh folders and contacts
-        const [updatedFolders, updatedContacts] = await Promise.all([
-          fetch('/api/contact-folders').then(r => r.json()),
-          fetch('/api/contacts').then(r => r.json())
-        ]);
-        setFolders(updatedFolders);
-        setContacts(updatedContacts);
-        setOpenFolderMenu(null);
-        
-        // Clear selection if deleted folder was selected
-        if (selectedFolder?.id === folderId) {
-          setSelectedFolder(null);
+        const result = await response.json();
+        if (result.success) {
+          // Refresh folders and contacts
+          const [updatedFolders, updatedContacts] = await Promise.all([
+            fetch('/api/contact-folders').then(r => r.json()),
+            fetch('/api/contacts').then(r => r.json())
+          ]);
+          setFolders(updatedFolders);
+          setContacts(updatedContacts);
+          setOpenFolderMenu(null);
+          
+          // Clear selection if deleted folder was selected
+          if (selectedFolder?.id === folderId) {
+            setSelectedFolder(null);
+          }
+          
+          setAlertMessage("Folder deleted successfully");
+          setAlertType("success");
+          setTimeout(() => setAlertMessage(''), 3000);
+        } else {
+          setAlertMessage(result.error || "Failed to delete folder");
+          setAlertType("error");
+          setTimeout(() => setAlertMessage(''), 3000);
         }
       } else {
-        console.error('Failed to delete folder');
+        const result = await response.json();
+        setAlertMessage(result.error || "Failed to delete folder");
+        setAlertType("error");
+        setTimeout(() => setAlertMessage(''), 3000);
       }
     } catch (error) {
       console.error('Error deleting folder:', error);
+      setAlertMessage("Failed to delete folder");
+      setAlertType("error");
+      setTimeout(() => setAlertMessage(''), 3000);
     }
   };
 
@@ -595,15 +628,31 @@ export default function ContactsPage() {
       });
       
       if (response.ok) {
-        // Refresh folders
-        const updatedFolders = await fetch('/api/contact-folders').then(r => r.json());
-        setFolders(updatedFolders);
-        setOpenFolderMenu(null);
+        const result = await response.json();
+        if (result.success) {
+          // Refresh folders
+          const updatedFolders = await fetch('/api/contact-folders').then(r => r.json());
+          setFolders(updatedFolders);
+          setOpenFolderMenu(null);
+          setAlertMessage("Folder icon updated successfully");
+          setAlertType("success");
+          setTimeout(() => setAlertMessage(''), 3000);
+        } else {
+          setAlertMessage(result.error || "Failed to update folder icon");
+          setAlertType("error");
+          setTimeout(() => setAlertMessage(''), 3000);
+        }
       } else {
-        console.error('Failed to update folder icon');
+        const result = await response.json();
+        setAlertMessage(result.error || "Failed to update folder icon");
+        setAlertType("error");
+        setTimeout(() => setAlertMessage(''), 3000);
       }
     } catch (error) {
       console.error('Error updating folder icon:', error);
+      setAlertMessage("Failed to update folder icon");
+      setAlertType("error");
+      setTimeout(() => setAlertMessage(''), 3000);
     }
   };
 
@@ -731,12 +780,16 @@ export default function ContactsPage() {
     // Validate required fields
     if (formData.type === 'PERSON') {
       if (!formData.firstName || !formData.lastName) {
-        console.log('❌ Missing required fields for PERSON');
+        setAlertMessage('Please provide both first name and last name for person contacts');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
         return;
       }
     } else if (formData.type === 'BUSINESS') {
       if (!formData.businessName) {
-        console.log('❌ Missing required fields for BUSINESS');
+        setAlertMessage('Please provide a business name for business contacts');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
         return;
       }
     }
@@ -769,20 +822,37 @@ export default function ContactsPage() {
       });
       
       if (response.ok) {
-        // Refresh contacts
-        const updatedContacts = await fetch('/api/contacts').then(r => r.json());
-        setContacts(updatedContacts);
-        
-        // Reset form
-        setEditingContact(null);
-        setShowNewContactForm(false);
-        setFormData(getInitialFormData());
+        const result = await response.json();
+        if (result.success) {
+          // Refresh contacts
+          const updatedContacts = await fetch('/api/contacts').then(r => r.json());
+          setContacts(updatedContacts);
+          
+          // Reset form
+          setEditingContact(null);
+          setShowNewContactForm(false);
+          setFormData(getInitialFormData());
+          
+          setAlertMessage(editingContact ? "Contact updated successfully" : "Contact created successfully");
+          setAlertType("success");
+          setTimeout(() => setAlertMessage(''), 3000);
+        } else {
+          setAlertMessage(result.error || "Failed to save contact");
+          setAlertType("error");
+          setTimeout(() => setAlertMessage(''), 3000);
+        }
       } else {
         const error = await response.json();
         console.error('Error saving contact:', error);
+        setAlertMessage(error.error || "Failed to save contact");
+        setAlertType("error");
+        setTimeout(() => setAlertMessage(''), 3000);
       }
     } catch (error) {
       console.error('Error saving contact:', error);
+      setAlertMessage("Failed to save contact");
+      setAlertType("error");
+      setTimeout(() => setAlertMessage(''), 3000);
     } finally {
       setIsLoading(false);
     }
@@ -793,7 +863,9 @@ export default function ContactsPage() {
     console.log('🚀 handleCreateFolder called', folderData);
     
     if (!folderData.name) {
-      console.log('❌ Folder name is required');
+      setAlertMessage('Please provide a folder name');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
       return;
     }
     
@@ -812,16 +884,32 @@ export default function ContactsPage() {
       });
       
       if (response.ok) {
-        // Refresh folders
-        const updatedFolders = await fetch('/api/contact-folders').then(r => r.json());
-        setFolders(updatedFolders);
-        setShowNewFolderModal(false);
+        const result = await response.json();
+        if (result.success) {
+          // Refresh folders
+          const updatedFolders = await fetch('/api/contact-folders').then(r => r.json());
+          setFolders(updatedFolders);
+          setShowNewFolderModal(false);
+          setAlertMessage("Folder created successfully");
+          setAlertType("success");
+          setTimeout(() => setAlertMessage(''), 3000);
+        } else {
+          setAlertMessage(result.error || "Failed to create folder");
+          setAlertType("error");
+          setTimeout(() => setAlertMessage(''), 3000);
+        }
       } else {
         const error = await response.json();
         console.error('Error creating folder:', error);
+        setAlertMessage(error.error || "Failed to create folder");
+        setAlertType("error");
+        setTimeout(() => setAlertMessage(''), 3000);
       }
     } catch (error) {
       console.error('Error creating folder:', error);
+      setAlertMessage("Failed to create folder");
+      setAlertType("error");
+      setTimeout(() => setAlertMessage(''), 3000);
     } finally {
       setIsLoading(false);
     }
@@ -829,6 +917,43 @@ export default function ContactsPage() {
 
   return (
     <Page title="Contacts">
+      {/* Toast Notifications */}
+      {alertMessage && (
+        <div 
+          style={{
+            position: "fixed",
+            top: "20px",
+            right: "20px",
+            padding: "12px 16px",
+            borderRadius: "6px",
+            color: "white",
+            fontSize: "14px",
+            fontWeight: "500",
+            zIndex: 10002,
+            maxWidth: "300px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            animation: "slideIn 0.3s ease-out",
+            backgroundColor: alertType === 'error' ? "#d82c0d" : "#008060",
+            textAlign: "left"
+          }}
+        >
+          {alertMessage}
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideIn {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
+
       <div style={{ paddingBottom: "80px" }}>
         <DndContext
           sensors={sensors}
