@@ -5,8 +5,6 @@ const FolderIconPicker = ({
   isOpen, 
   onClose, 
   onSelectIcon, 
-  currentIcon = "folder",
-  currentColor = "rgba(255, 184, 0, 1)",
   folderName = "Folder",
   showOnlyColor = false,
   selectedIcon = "folder",
