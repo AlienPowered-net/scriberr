@@ -740,53 +740,164 @@ export default function ContactsPage() {
                             <i className="far fa-folder-open"></i>
                             Folders
                           </Text>
-                          <Button
-                            onClick={() => setShowNewFolderModal(true)}
-                            icon={EditIcon}
-                            size="slim"
+                        </div>
+                        
+                        {/* Global Search */}
+                        <div style={{ marginBottom: "16px", position: "relative" }}>
+                          <input
+                            type="text"
+                            style={{
+                              border: "none",
+                              outline: "none",
+                              fontSize: "14px",
+                              color: "#1E1E1E",
+                              padding: "12px 16px",
+                              paddingRight: "44px",
+                              borderRadius: "24px",
+                              cursor: "text",
+                              width: "100%",
+                              backgroundColor: "#FAFAF8",
+                              fontFamily: "inherit",
+                              transition: "all 0.2s ease",
+                              boxShadow: "0 1px 2px rgba(0,0,0,0.05)"
+                            }}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search all contacts..."
+                            onFocus={(e) => {
+                              e.target.style.boxShadow = "0 0 0 2px #008060, 0 1px 2px rgba(0,0,0,0.05)";
+                              e.target.style.backgroundColor = "#FFFFFF";
+                            }}
+                            onBlur={(e) => {
+                              e.target.style.boxShadow = "0 1px 2px rgba(0,0,0,0.05)";
+                              e.target.style.backgroundColor = "#FAFAF8";
+                            }}
+                          />
+                          <span 
+                            style={{
+                              position: "absolute",
+                              right: "16px",
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              fontSize: "18px",
+                              color: "#6B7280",
+                              pointerEvents: "none"
+                            }}
                           >
-                            New Folder
-                          </Button>
+                            <i className="fas fa-search"></i>
+                          </span>
+                        </div>
+
+                        {/* All Contacts and All Tags Buttons - Under Search Box */}
+                        <div style={{ marginBottom: "16px" }}>
+                          <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+                            {/* All Contacts Button */}
+                            <div 
+                              style={{ 
+                                padding: "8px 12px", 
+                                flex: "1",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                cursor: "pointer",
+                                backgroundColor: selectedFolder === null ? "#f6fff8" : "#F8F9FA",
+                                border: selectedFolder === null ? "2px solid #008060" : "2px solid #E1E3E5",
+                                borderRadius: "8px",
+                                position: "relative",
+                                transition: "all 0.2s ease",
+                                boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                              }}
+                              onClick={() => setSelectedFolder(null)}
+                              onMouseEnter={(e) => {
+                                if (selectedFolder !== null) {
+                                  e.currentTarget.style.backgroundColor = "#f6fff8";
+                                  e.currentTarget.style.borderColor = "#008060";
+                                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (selectedFolder !== null) {
+                                  e.currentTarget.style.backgroundColor = "#F8F9FA";
+                                  e.currentTarget.style.borderColor = "#E1E3E5";
+                                  e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
+                                }
+                              }}
+                            >
+                              <Text as="span" variant="bodyMd" style={{ 
+                                fontWeight: "600", 
+                                display: "flex", 
+                                alignItems: "center", 
+                                gap: "6px",
+                                color: selectedFolder === null ? "#008060" : "rgba(48, 48, 48, 1)",
+                                fontSize: "14px"
+                              }}>
+                                <i className="far fa-address-book" style={{ fontSize: "16px" }}></i>
+                                All Contacts
+                              </Text>
+                            </div>
+
+                            {/* All Tags Button */}
+                            <div 
+                              style={{ 
+                                padding: "8px 12px", 
+                                flex: "1",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                cursor: "pointer",
+                                backgroundColor: "#F8F9FA",
+                                border: "2px solid #E1E3E5",
+                                borderRadius: "8px",
+                                position: "relative",
+                                transition: "all 0.2s ease",
+                                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)"
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = "#f6fff8";
+                                e.currentTarget.style.borderColor = "#008060";
+                                e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = "#F8F9FA";
+                                e.currentTarget.style.borderColor = "#E1E3E5";
+                                e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
+                              }}
+                            >
+                              <Text as="span" variant="bodyMd" style={{ 
+                                fontWeight: "600", 
+                                display: "flex", 
+                                alignItems: "center", 
+                                gap: "6px",
+                                color: "rgba(48, 48, 48, 1)",
+                                fontSize: "14px"
+                              }}>
+                                <i className="far fa-bookmark" style={{ fontSize: "16px" }}></i>
+                                All Tags
+                              </Text>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Scrollable Content */}
+                      {/* Scrollable Folders Section */}
                       <div style={{ 
-                          flex: "1", 
+                          flex: "1",
                           overflowY: folders.length > 9 ? "auto" : "visible",
                           overflowX: "hidden", 
-                          padding: "16px"
+                          padding: "16px 20px 16px 16px",
+                          maxHeight: folders.length > 9 ? "500px" : "none"
                         }}>
                           {folders.length === 0 ? (
                             <div style={{ 
-                              display: "flex", 
-                              flexDirection: "column", 
-                              alignItems: "center", 
-                              justifyContent: "center", 
-                              height: "200px",
-                              textAlign: "center"
+                              textAlign: "center", 
+                              padding: "40px 20px",
+                              color: "#6d7175",
+                              backgroundColor: "#f8f9fa",
+                              borderRadius: "8px",
+                              border: "1px solid #e1e3e5"
                             }}>
-                              <div style={{ 
-                                width: "80px", 
-                                height: "80px", 
-                                borderRadius: "50%", 
-                                backgroundColor: "#f6f6f7", 
-                                display: "flex", 
-                                alignItems: "center", 
-                                justifyContent: "center", 
-                                marginBottom: "16px" 
-                              }}>
-                                <i className="far fa-folder-open" style={{ fontSize: "32px", color: "#8c9196" }}></i>
-                              </div>
-                              <Text as="h3" variant="headingMd" style={{ marginBottom: "8px" }}>
-                                Create your first folder
-                              </Text>
-                              <Text as="p" variant="bodyMd" tone="subdued" style={{ marginBottom: "16px" }}>
-                                Get organized by creating folders to group your contacts by topic, project, or category.
-                              </Text>
-                              <Button variant="primary" onClick={() => setShowNewFolderModal(true)}>
-                                Create folder
-                              </Button>
+                              <i className="far fa-folder" style={{ fontSize: "24px", marginBottom: "8px", display: "block" }}></i>
+                              <p style={{ margin: 0, fontSize: "14px" }}>No folders created yet</p>
                             </div>
                           ) : (
                             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -797,38 +908,54 @@ export default function ContactsPage() {
                                     key={folder.id}
                                     onClick={() => handleFolderSelect(folder)}
                                     style={{
+                                      padding: "12px 16px",
+                                      backgroundColor: isSelected ? "#f6fff8" : "#f8f9fa",
+                                      border: isSelected ? "2px solid #008060" : "1px solid #e1e3e5",
+                                      borderRadius: "8px",
+                                      cursor: "pointer",
+                                      transition: "all 0.2s ease",
                                       display: "flex",
                                       alignItems: "center",
-                                      gap: "12px",
-                                      padding: "12px",
-                                      borderRadius: "6px",
-                                      cursor: "pointer",
-                                      backgroundColor: isSelected ? "#f0f9ff" : "transparent",
-                                      border: isSelected ? "1px solid #0ea5e9" : "1px solid transparent",
-                                      transition: "all 0.2s ease"
+                                      gap: "12px"
                                     }}
                                   >
-                                    <div style={{
-                                      width: '20px',
-                                      height: '20px',
-                                      backgroundColor: folder.iconColor,
-                                      borderRadius: '4px',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      fontSize: '12px'
-                                    }}>
-                                      {folder.icon === 'folder' ? '📁' : folder.icon}
+                                    <i 
+                                      className={`far fa-${folder.icon}`} 
+                                      style={{ 
+                                        fontSize: "18px", 
+                                        color: folder.iconColor || "#6B7280" 
+                                      }}
+                                    ></i>
+                                    <div style={{ flex: 1 }}>
+                                      <Text variant="bodyMd" fontWeight="medium">
+                                        {folder.name}
+                                      </Text>
+                                      <Text variant="bodySm" tone="subdued">
+                                        {folder._count.contacts} contacts
+                                      </Text>
                                     </div>
-                                    <Text as="span" variant="bodyMd" fontWeight={isSelected ? "semibold" : "regular"}>
-                                      {folder.name}
-                                    </Text>
-                                    <Badge tone="info">{folder._count.contacts}</Badge>
                                   </div>
                                 );
                               })}
                             </div>
                           )}
+                      </div>
+
+                      {/* Sticky Bottom - New Folder Button */}
+                      <div style={{ 
+                        padding: "20px", 
+                        borderTop: "1px solid #e1e3e5",
+                        backgroundColor: "white",
+                        flexShrink: 0
+                      }}>
+                        <Button
+                          onClick={() => setShowNewFolderModal(true)}
+                          variant="primary"
+                          size="large"
+                          fullWidth
+                        >
+                          New Folder
+                        </Button>
                       </div>
                     </Card>
                   )}
