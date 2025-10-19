@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { DragHandleIcon, MenuHorizontalIcon } from '@shopify/polaris-icons';
 
 const DraggableFolder = ({ 
   folder, 
@@ -61,7 +62,7 @@ const DraggableFolder = ({
           }}
           title="Drag to reorder"
         >
-          <i className="far fa-grip-vertical" style={{ fontSize: '16px' }}></i>
+          <DragHandleIcon style={{ width: '16px', height: '16px' }} />
         </div>
         
         {/* Clickable Folder Content */}
@@ -119,7 +120,7 @@ const DraggableFolder = ({
                 fontSize: "16px"
               }}
             >
-              <i className="far fa-ellipsis-v" style={{ fontSize: '16px', color: '#666' }}></i>
+              <MenuHorizontalIcon style={{ width: '16px', height: '16px' }} />
             </button>
             {children}
           </div>

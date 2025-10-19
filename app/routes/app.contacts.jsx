@@ -68,6 +68,7 @@ import {
   EmailIcon,
   CollectionIcon,
   MenuVerticalIcon,
+  MenuHorizontalIcon,
   DragHandleIcon,
   XIcon,
   ExchangeIcon
@@ -2191,7 +2192,7 @@ export default function ContactsPage() {
                             }}
                             onMouseDown={(e) => e.stopPropagation()}
                           >
-                            <i className="far fa-grip-vertical" style={{ fontSize: '16px' }}></i>
+                            <DragHandleIcon style={{ width: '16px', height: '16px' }} />
                           </div>
 
                           {/* Folder Icon */}
@@ -2247,7 +2248,7 @@ export default function ContactsPage() {
                               justifyContent: 'center'
                             }}
                           >
-                            <i className="far fa-ellipsis-v" style={{ fontSize: '16px', color: '#666' }}></i>
+                            <MenuHorizontalIcon style={{ width: '16px', height: '16px' }} />
                           </button>
 
                           {/* Folder Menu */}
