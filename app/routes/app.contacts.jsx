@@ -722,12 +722,11 @@ export default function ContactsPage() {
         const result = await response.json();
         if (result.success) {
           // Refresh folders and contacts
-          const [updatedFolders, updatedContacts] = await Promise.all([
-            fetch('/api/contact-folders').then(r => r.json()),
-            fetch('/api/contacts').then(r => r.json())
-          ]);
+          const updatedFolders = await fetch('/api/contact-folders').then(r => r.json());
           setFolders(updatedFolders);
-          setContacts(updatedContacts);
+          
+          // Update contacts by removing any that were in the deleted folder
+          setContacts(prev => prev.filter(contact => contact.folderId !== folderId));
           setOpenFolderMenu(null);
           
           // Clear selection if deleted folder was selected
@@ -1078,9 +1077,12 @@ export default function ContactsPage() {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          // Refresh contacts
-          const updatedContacts = await fetch('/api/contacts').then(r => r.json());
-          setContacts(updatedContacts);
+          // Update contacts list with the new/updated contact
+          if (editingContact) {
+            setContacts(prev => prev.map(c => c.id === editingContact.id ? result.contact : c));
+          } else {
+            setContacts(prev => [result.contact, ...prev]);
+          }
           
           // Reset form
           setEditingContact(null);
