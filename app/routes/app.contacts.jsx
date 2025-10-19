@@ -1160,8 +1160,8 @@ export default function ContactsPage() {
                                 // TODO: Implement tags functionality
                               }}
                             >
-                              <i className="far fa-tags" style={{ fontSize: "16px", marginRight: "8px" }}></i>
-                              All Tags
+                  <i className="far fa-bookmark" style={{ fontSize: "16px", marginRight: "8px" }}></i>
+                  All Tags
                             </button>
                           </div>
                         </div>
@@ -2059,15 +2059,17 @@ export default function ContactsPage() {
                 <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Folders</h2>
               </div>
 
-              {/* Search Bar */}
-              <div style={{ marginBottom: '16px' }}>
-                <TextField
-                  placeholder="Search folders..."
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                  prefix={<i className="far fa-search" style={{ color: '#666' }}></i>}
-                />
-              </div>
+              {/* Search Bar - Desktop Only */}
+              {!isMobile && (
+                <div style={{ marginBottom: '16px' }}>
+                  <TextField
+                    placeholder="Search folders..."
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                    prefix={<i className="far fa-search" style={{ color: '#666' }}></i>}
+                  />
+                </div>
+              )}
 
               {/* All Contacts and All Tags buttons */}
               <div style={{ 
@@ -2120,7 +2122,7 @@ export default function ContactsPage() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  <i className="far fa-tags" style={{ fontSize: '16px' }}></i>
+                  <i className="far fa-bookmark" style={{ fontSize: '16px' }}></i>
                   All Tags
                 </button>
               </div>
@@ -2181,14 +2183,15 @@ export default function ContactsPage() {
                           <div
                             style={{
                               cursor: 'grab',
-                              color: '#9ca3af',
+                              color: '#666',
                               fontSize: '16px',
                               display: 'flex',
-                              alignItems: 'center'
+                              alignItems: 'center',
+                              padding: '4px'
                             }}
                             onMouseDown={(e) => e.stopPropagation()}
                           >
-                            <i className="far fa-grip-vertical" style={{ fontSize: '14px' }}></i>
+                            <i className="far fa-grip-vertical" style={{ fontSize: '16px' }}></i>
                           </div>
 
                           {/* Folder Icon */}
@@ -2244,7 +2247,7 @@ export default function ContactsPage() {
                               justifyContent: 'center'
                             }}
                           >
-                            <i className="far fa-ellipsis-v" style={{ fontSize: '14px' }}></i>
+                            <i className="far fa-ellipsis-v" style={{ fontSize: '16px', color: '#666' }}></i>
                           </button>
 
                           {/* Folder Menu */}
