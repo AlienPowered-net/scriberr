@@ -506,10 +506,7 @@ export default function ContactsPage() {
     setShowNewContactForm(false);
     setEditingContact(null);
     
-    // Navigate to contacts section on mobile
-    if (isMobile) {
-      setMobileActiveSection('contacts');
-    }
+    // Don't automatically navigate on mobile - let user click "View Contacts" button
   };
 
   // Handle folder drag and drop
@@ -1120,89 +1117,52 @@ export default function ContactsPage() {
                         <div style={{ marginBottom: "16px" }}>
                           <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
                             {/* All Contacts Button */}
-                            <div 
+                            <button
                               style={{ 
-                                padding: "8px 12px", 
+                                padding: "12px 16px", 
                                 flex: "1",
                                 display: "flex",
                                 justifyContent: "center",
                                 alignItems: "center",
                                 cursor: "pointer",
-                                backgroundColor: selectedFolder === null ? "#f6fff8" : "#F8F9FA",
-                                border: selectedFolder === null ? "2px solid #008060" : "2px solid #E1E3E5",
+                                backgroundColor: selectedFolder === null ? "#f6fff8" : "white",
+                                border: selectedFolder === null ? "2px solid #008060" : "1px solid #e1e3e5",
                                 borderRadius: "8px",
-                                position: "relative",
                                 transition: "all 0.2s ease",
-                                boxShadow: selectedFolder === null ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                                fontSize: "14px",
+                                fontWeight: "600",
+                                color: selectedFolder === null ? "#008060" : "#374151"
                               }}
                               onClick={() => setSelectedFolder(null)}
-                              onMouseEnter={(e) => {
-                                if (selectedFolder !== null) {
-                                  e.currentTarget.style.backgroundColor = "#f6fff8";
-                                  e.currentTarget.style.borderColor = "#008060";
-                                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
-                                }
-                              }}
-                              onMouseLeave={(e) => {
-                                if (selectedFolder !== null) {
-                                  e.currentTarget.style.backgroundColor = "#F8F9FA";
-                                  e.currentTarget.style.borderColor = "#E1E3E5";
-                                  e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
-                                }
-                              }}
                             >
-                              <Text as="span" variant="bodyMd" style={{ 
-                                fontWeight: "600", 
-                                display: "flex", 
-                                alignItems: "center", 
-                                gap: "6px",
-                                color: selectedFolder === null ? "#008060" : "rgba(48, 48, 48, 1)",
-                                fontSize: "14px"
-                              }}>
-                                <i className="far fa-address-book" style={{ fontSize: "16px" }}></i>
-                                All Contacts
-                              </Text>
-                            </div>
+                              <i className="far fa-address-book" style={{ fontSize: "16px", marginRight: "8px" }}></i>
+                              All Contacts
+                            </button>
 
                             {/* All Tags Button */}
-                            <div 
+                            <button
                               style={{ 
-                                padding: "8px 12px", 
+                                padding: "12px 16px", 
                                 flex: "1",
                                 display: "flex",
                                 justifyContent: "center",
                                 alignItems: "center",
                                 cursor: "pointer",
-                                backgroundColor: "#F8F9FA",
-                                border: "2px solid #E1E3E5",
+                                backgroundColor: "white",
+                                border: "1px solid #e1e3e5",
                                 borderRadius: "8px",
-                                position: "relative",
                                 transition: "all 0.2s ease",
-                                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)"
+                                fontSize: "14px",
+                                fontWeight: "600",
+                                color: "#374151"
                               }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = "#f6fff8";
-                                e.currentTarget.style.borderColor = "#008060";
-                                e.currentTarget.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = "#F8F9FA";
-                                e.currentTarget.style.borderColor = "#E1E3E5";
-                                e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
+                              onClick={() => {
+                                // TODO: Implement tags functionality
                               }}
                             >
-                              <Text as="span" variant="bodyMd" style={{ 
-                                fontWeight: "600", 
-                                display: "flex", 
-                                alignItems: "center", 
-                                gap: "6px",
-                                color: "rgba(48, 48, 48, 1)",
-                                fontSize: "14px"
-                              }}>
-                                <i className="far fa-bookmark" style={{ fontSize: "16px" }}></i>
-                                All Tags
-                              </Text>
-                            </div>
+                              <i className="far fa-tags" style={{ fontSize: "16px", marginRight: "8px" }}></i>
+                              All Tags
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -2009,7 +1969,11 @@ export default function ContactsPage() {
                 <Button
                   variant="primary"
                   size="slim"
-                  onClick={() => setMobileActiveSection('contacts')}
+                  onClick={() => {
+                    if (selectedFolder || !selectedFolder) {
+                      setMobileActiveSection('contacts');
+                    }
+                  }}
                   style={{ fontSize: '14px', fontWeight: '500' }}
                 >
                   View Contacts
@@ -2114,24 +2078,25 @@ export default function ContactsPage() {
                 <button
                   onClick={() => {
                     setSelectedFolder(null);
-                    if (isMobile) setMobileActiveSection('contacts');
                   }}
                   style={{
+                    flex: 1,
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '8px',
-                    padding: '8px 16px',
+                    padding: '12px 16px',
                     border: !selectedFolder ? '2px solid #008060' : '1px solid #e1e3e5',
                     borderRadius: '8px',
                     backgroundColor: !selectedFolder ? '#f6fff8' : 'white',
                     color: !selectedFolder ? '#008060' : '#374151',
                     fontSize: '14px',
-                    fontWeight: '500',
+                    fontWeight: '600',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  <i className="far fa-address-book" style={{ fontSize: '14px' }}></i>
+                  <i className="far fa-address-book" style={{ fontSize: '16px' }}></i>
                   All Contacts
                 </button>
                 <button
@@ -2139,21 +2104,23 @@ export default function ContactsPage() {
                     // TODO: Implement tags functionality
                   }}
                   style={{
+                    flex: 1,
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '8px',
-                    padding: '8px 16px',
+                    padding: '12px 16px',
                     border: '1px solid #e1e3e5',
                     borderRadius: '8px',
                     backgroundColor: 'white',
                     color: '#374151',
                     fontSize: '14px',
-                    fontWeight: '500',
+                    fontWeight: '600',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  <i className="far fa-tags" style={{ fontSize: '14px' }}></i>
+                  <i className="far fa-tags" style={{ fontSize: '16px' }}></i>
                   All Tags
                 </button>
               </div>
