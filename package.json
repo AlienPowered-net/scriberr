@@ -3,7 +3,7 @@
   "version": "v.a297",
   "private": true,
   "scripts": {
-    "vercel-build": "prisma generate && npm run migrate-deploy && node scripts/init-database.js && node scripts/create-contacts-tables.js && npm run build",
+    "vercel-build": "prisma generate && npm run migrate-deploy && node scripts/init-database.js && node scripts/create-contacts-tables.js && node scripts/add-contact-fields-migration.js && npm run build",
     "migrate-deploy": "bash scripts/migrate-deploy-fixed.sh",
     "build": "remix vite:build",
     "increment-version": "node scripts/increment-version.js",
@@ -16,7 +16,7 @@
     "env": "shopify app env",
     "start": "remix-serve ./build/server/index.js",
     "docker-start": "npm run setup && npm run start",
-    "setup": "prisma generate && prisma migrate deploy && node scripts/init-database.js",
+    "setup": "prisma generate && prisma migrate deploy && node scripts/init-database.js && node scripts/add-contact-fields-migration.js",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
     "shopify": "shopify",
     "prisma": "prisma",
