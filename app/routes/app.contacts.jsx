@@ -71,7 +71,8 @@ import {
   MenuHorizontalIcon,
   DragHandleIcon,
   XIcon,
-  ExchangeIcon
+  ExchangeIcon,
+  SearchIcon
 } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
 import FolderIconPicker from "../components/FolderIconPicker";
@@ -1949,7 +1950,7 @@ export default function ContactsPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {mobileActiveSection === 'folders' && (
                 <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
-                  Folders
+                  Contacts
                 </h1>
               )}
               {mobileActiveSection === 'contacts' && (
@@ -2171,7 +2172,7 @@ export default function ContactsPage() {
                             padding: '12px 16px',
                             border: selectedFolder?.id === folder.id ? '2px solid #008060' : '1px solid #e1e3e5',
                             borderRadius: '8px',
-                            backgroundColor: selectedFolder?.id === folder.id ? '#f6fff8' : 'white',
+                            backgroundColor: selectedFolder?.id === folder.id ? '#f6fff8' : '#F8F9FA',
                             cursor: 'pointer',
                             transition: 'all 0.2s ease',
                             display: 'flex',
@@ -2196,19 +2197,10 @@ export default function ContactsPage() {
                           </div>
 
                           {/* Folder Icon */}
-                          <div style={{
-                            width: '24px',
-                            height: '24px',
-                            borderRadius: '4px',
-                            backgroundColor: folder.iconColor || '#f57c00',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white',
-                            fontSize: '12px'
-                          }}>
-                            <i className={`far fa-${folder.icon || 'folder'}`} style={{ fontSize: '12px' }}></i>
-                          </div>
+                          <i className={`far fa-${folder.icon || 'folder'}`} style={{ 
+                            fontSize: '18px', 
+                            color: folder.iconColor || '#f57c00' 
+                          }}></i>
 
                           {/* Folder Name */}
                           <div style={{ flex: 1, fontSize: '14px', fontWeight: '500', color: '#374151' }}>
@@ -2346,26 +2338,19 @@ export default function ContactsPage() {
               </DndContext>
 
               {/* Create New Folder Button */}
-              <button
+              <Button
                 onClick={() => setShowNewFolderModal(true)}
+                variant="primary"
+                size="large"
                 style={{
                   width: '100%',
-                  padding: '12px 16px',
-                  backgroundColor: '#374151',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  marginTop: '16px'
+                  marginTop: '16px',
+                  backgroundColor: '#000000',
+                  borderColor: '#000000'
                 }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#1f2937'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#374151'}
               >
                 Create New Folder
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -2409,7 +2394,7 @@ export default function ContactsPage() {
                   placeholder="Search contacts..."
                   value={searchQuery}
                   onChange={setSearchQuery}
-                  prefix={<i className="far fa-search" style={{ color: '#666' }}></i>}
+                  prefix={<SearchIcon />}
                 />
               </div>
 
