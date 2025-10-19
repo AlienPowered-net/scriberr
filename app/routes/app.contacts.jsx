@@ -2093,14 +2093,6 @@ export default function ContactsPage() {
                 marginBottom: '16px' 
               }}>
                 <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Folders</h2>
-                <Button
-                  variant="primary"
-                  size="slim"
-                  onClick={() => setShowNewFolderModal(true)}
-                  style={{ fontSize: '14px', fontWeight: '500' }}
-                >
-                  New Folder
-                </Button>
               </div>
 
               {/* Search Bar */}
@@ -2119,27 +2111,60 @@ export default function ContactsPage() {
                 gap: '8px', 
                 marginBottom: '16px' 
               }}>
-                <Button
-                  variant={!selectedFolder ? 'primary' : 'secondary'}
-                  size="slim"
+                <button
                   onClick={() => {
                     setSelectedFolder(null);
                     if (isMobile) setMobileActiveSection('contacts');
                   }}
-                  style={{ fontSize: '14px', fontWeight: '500' }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 16px',
+                    border: !selectedFolder ? '2px solid #008060' : '1px solid #e1e3e5',
+                    borderRadius: '8px',
+                    backgroundColor: !selectedFolder ? '#f6fff8' : 'white',
+                    color: !selectedFolder ? '#008060' : '#374151',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
                 >
+                  <i className="far fa-address-book" style={{ fontSize: '14px' }}></i>
                   All Contacts
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="slim"
+                </button>
+                <button
                   onClick={() => {
                     // TODO: Implement tags functionality
                   }}
-                  style={{ fontSize: '14px', fontWeight: '500' }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 16px',
+                    border: '1px solid #e1e3e5',
+                    borderRadius: '8px',
+                    backgroundColor: 'white',
+                    color: '#374151',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
                 >
+                  <i className="far fa-tags" style={{ fontSize: '14px' }}></i>
                   All Tags
-                </Button>
+                </button>
+              </div>
+
+              {/* Instructional Text */}
+              <div style={{ 
+                marginBottom: '16px',
+                color: '#6b7280',
+                fontSize: '14px'
+              }}>
+                Select a folder to view its contacts
               </div>
 
               {/* Folders List */}
@@ -2168,14 +2193,94 @@ export default function ContactsPage() {
                       </div>
                     ) : (
                       folders.map((folder) => (
-                        <DraggableFolder 
-                          key={folder.id} 
-                          folder={folder}
-                          selectedFolder={selectedFolder?.id}
-                          openFolderMenu={openFolderMenu}
-                          setOpenFolderMenu={setOpenFolderMenu}
-                          onFolderClick={handleFolderSelect}
+                        <div
+                          key={folder.id}
+                          style={{
+                            position: 'relative',
+                            marginBottom: '8px',
+                            padding: '12px 16px',
+                            border: selectedFolder?.id === folder.id ? '2px solid #008060' : '1px solid #e1e3e5',
+                            borderRadius: '8px',
+                            backgroundColor: selectedFolder?.id === folder.id ? '#f6fff8' : 'white',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px'
+                          }}
+                          onClick={() => handleFolderSelect(folder)}
                         >
+                          {/* Drag Handle */}
+                          <div
+                            style={{
+                              cursor: 'grab',
+                              color: '#9ca3af',
+                              fontSize: '16px',
+                              display: 'flex',
+                              alignItems: 'center'
+                            }}
+                            onMouseDown={(e) => e.stopPropagation()}
+                          >
+                            <i className="far fa-grip-vertical" style={{ fontSize: '14px' }}></i>
+                          </div>
+
+                          {/* Folder Icon */}
+                          <div style={{
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '4px',
+                            backgroundColor: folder.iconColor || '#f57c00',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontSize: '12px'
+                          }}>
+                            <i className={`far fa-${folder.icon || 'folder'}`} style={{ fontSize: '12px' }}></i>
+                          </div>
+
+                          {/* Folder Name */}
+                          <div style={{ flex: 1, fontSize: '14px', fontWeight: '500', color: '#374151' }}>
+                            {folder.name}
+                          </div>
+
+                          {/* Active Badge */}
+                          {selectedFolder?.id === folder.id && (
+                            <div style={{
+                              padding: '2px 8px',
+                              backgroundColor: '#f6fff8',
+                              color: '#008060',
+                              fontSize: '12px',
+                              fontWeight: '500',
+                              borderRadius: '12px',
+                              border: '1px solid #008060'
+                            }}>
+                              Active
+                            </div>
+                          )}
+
+                          {/* Menu Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenFolderMenu(openFolderMenu === folder.id ? null : folder.id);
+                            }}
+                            style={{
+                              padding: '4px',
+                              border: 'none',
+                              background: 'none',
+                              cursor: 'pointer',
+                              color: '#6b7280',
+                              fontSize: '16px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            <i className="far fa-ellipsis-v" style={{ fontSize: '14px' }}></i>
+                          </button>
+
+                          {/* Folder Menu */}
                           {openFolderMenu === folder.id && (
                             <div style={{
                               position: 'absolute',
@@ -2262,12 +2367,34 @@ export default function ContactsPage() {
                               </button>
                             </div>
                           )}
-                        </DraggableFolder>
+                        </div>
                       ))
                     )}
                   </div>
                 </SortableContext>
               </DndContext>
+
+              {/* Create New Folder Button */}
+              <button
+                onClick={() => setShowNewFolderModal(true)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  backgroundColor: '#374151',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  marginTop: '16px'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#1f2937'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#374151'}
+              >
+                Create New Folder
+              </button>
             </div>
           </div>
 
