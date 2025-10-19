@@ -87,6 +87,8 @@ export const action = async ({ request }) => {
         const memo = formData.get("memo");
         const folderId = formData.get("folderId");
         const pointsOfContact = formData.get("pointsOfContact");
+        const tags = formData.get("tags");
+        const avatarColor = formData.get("avatarColor");
 
         if (!type) {
           return json({ error: "Contact type is required" }, { status: 400 });
