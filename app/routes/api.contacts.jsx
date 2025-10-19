@@ -113,14 +113,16 @@ export const action = async ({ request }) => {
           ...(email && { email }),
           ...(role && { role }),
           ...(memo && { memo }),
-          ...(pointsOfContact && { pointsOfContact: JSON.parse(pointsOfContact) })
+          ...(pointsOfContact && { pointsOfContact: JSON.parse(pointsOfContact) }),
+          ...(tags && { tags: JSON.parse(tags) }),
+          ...(avatarColor && { avatarColor })
         };
 
         const contact = await prisma.contact.create({
           data: contactData
         });
 
-        return json(contact);
+        return json({ success: true, contact });
       }
 
       case "update": {
@@ -137,6 +139,8 @@ export const action = async ({ request }) => {
         const memo = formData.get("memo");
         const folderId = formData.get("folderId");
         const pointsOfContact = formData.get("pointsOfContact");
+        const tags = formData.get("tags");
+        const avatarColor = formData.get("avatarColor");
 
         if (!id) {
           return json({ error: "Contact ID is required" }, { status: 400 });
@@ -154,7 +158,9 @@ export const action = async ({ request }) => {
           ...(role !== null && { role }),
           ...(memo !== null && { memo }),
           ...(folderId !== null && { folderId: folderId || null }),
-          ...(pointsOfContact && { pointsOfContact: JSON.parse(pointsOfContact) })
+          ...(pointsOfContact && { pointsOfContact: JSON.parse(pointsOfContact) }),
+          ...(tags && { tags: JSON.parse(tags) }),
+          ...(avatarColor && { avatarColor })
         };
 
         const contact = await prisma.contact.update({
@@ -162,7 +168,7 @@ export const action = async ({ request }) => {
           data: updateData
         });
 
-        return json(contact);
+        return json({ success: true, contact });
       }
 
       case "delete": {
@@ -177,6 +183,77 @@ export const action = async ({ request }) => {
         });
 
         return json({ success: true });
+      }
+
+      case "bulk-delete": {
+        const contactIds = formData.get("contactIds");
+
+        if (!contactIds) {
+          return json({ error: "Contact IDs are required" }, { status: 400 });
+        }
+
+        const ids = JSON.parse(contactIds);
+        
+        await prisma.contact.deleteMany({
+          where: {
+            id: { in: ids },
+            shopId: shop.id
+          }
+        });
+
+        return json({ success: true, deletedCount: ids.length });
+      }
+
+      case "bulk-move": {
+        const contactIds = formData.get("contactIds");
+        const folderId = formData.get("folderId");
+
+        if (!contactIds || !folderId) {
+          return json({ error: "Contact IDs and folder ID are required" }, { status: 400 });
+        }
+
+        const ids = JSON.parse(contactIds);
+        
+        await prisma.contact.updateMany({
+          where: {
+            id: { in: ids },
+            shopId: shop.id
+          },
+          data: {
+            folderId: folderId
+          }
+        });
+
+        return json({ success: true, movedCount: ids.length });
+      }
+
+      case "delete-tag": {
+        const tag = formData.get("tag");
+
+        if (!tag) {
+          return json({ error: "Tag is required" }, { status: 400 });
+        }
+
+        // Get all contacts with this tag
+        const contactsWithTag = await prisma.contact.findMany({
+          where: {
+            shopId: shop.id,
+            tags: {
+              has: tag
+            }
+          }
+        });
+
+        // Remove the tag from all contacts
+        for (const contact of contactsWithTag) {
+          const updatedTags = contact.tags.filter(t => t !== tag);
+          await prisma.contact.update({
+            where: { id: contact.id },
+            data: { tags: updatedTags }
+          });
+        }
+
+        return json({ success: true, affectedCount: contactsWithTag.length });
       }
 
       default:

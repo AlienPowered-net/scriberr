@@ -13,7 +13,7 @@ import {
 } from '@shopify/polaris';
 import {
   PersonIcon,
-  ProductIcon,
+  OrganizationIcon,
   PhoneIcon,
   EmailIcon,
   CollectionIcon,
@@ -55,7 +55,7 @@ const ContactCard = ({
 
   // Get contact type icon
   const getTypeIcon = () => {
-    return contact.type === 'PERSON' ? PersonIcon : ProductIcon;
+    return contact.type === 'PERSON' ? PersonIcon : OrganizationIcon;
   };
 
   // Get contact type color
@@ -69,7 +69,19 @@ const ContactCard = ({
       {/* Header with name and type */}
       <InlineStack align="space-between" blockAlign="center">
         <InlineStack gap="200" blockAlign="center">
-          <Icon source={getTypeIcon()} tone="base" />
+          <div
+            style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              backgroundColor: contact.avatarColor || (contact.type === 'PERSON' ? '#10b981' : '#f97316'),
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+          >
+            <Icon source={getTypeIcon()} tone="base" />
+          </div>
           <Text as="h3" variant="headingMd" fontWeight="semibold">
             {getDisplayName()}
           </Text>

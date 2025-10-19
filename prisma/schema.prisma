@@ -150,6 +150,11 @@ model Contact {
   // Business-specific: points of contact (JSON array)
   pointsOfContact Json? @default("[]")
   
+  // New fields for enhanced functionality
+  tags        String[] @default([])
+  pinnedAt    DateTime?
+  avatarColor String   @default("#10b981")
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)

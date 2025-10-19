@@ -63,7 +63,7 @@ import {
   EditIcon,
   FolderIcon,
   PersonIcon,
-  ProductIcon,
+  OrganizationIcon,
   PhoneIcon,
   EmailIcon,
   CollectionIcon,
@@ -237,19 +237,60 @@ function ContactForm({
               onChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
             />
 
-            {/* Folder */}
-            <Select
-              label="Folder"
-              options={[
-                { label: 'No folder', value: '' },
-                ...folders.map(folder => ({
-                  label: folder.name,
-                  value: folder.id
-                }))
-              ]}
-              value={formData.folderId}
-              onChange={(value) => setFormData(prev => ({ ...prev, folderId: value }))}
-            />
+            {/* Folder is automatically set based on selected folder */}
+
+            {/* Avatar Color Picker */}
+            <div>
+              <Text as="label" variant="bodyMd" fontWeight="medium">
+                Avatar Color
+              </Text>
+              <div style={{ 
+                marginTop: "8px",
+                display: "grid",
+                gridTemplateColumns: "repeat(8, 1fr)",
+                gap: "8px",
+                padding: "8px",
+                border: "1px solid #e1e3e5",
+                borderRadius: "8px",
+                backgroundColor: "#fafbfb"
+              }}>
+                {[
+                  { color: "#10b981", name: "Green" },
+                  { color: "#f97316", name: "Orange" },
+                  { color: "#ef4444", name: "Red" },
+                  { color: "#eab308", name: "Yellow" },
+                  { color: "#3b82f6", name: "Blue" },
+                  { color: "#8b5cf6", name: "Purple" },
+                  { color: "#6b7280", name: "Gray" },
+                  { color: "#f59e0b", name: "Amber" }
+                ].map((colorData, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setFormData(prev => ({ ...prev, avatarColor: colorData.color }))}
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      border: formData.avatarColor === colorData.color ? "3px solid #2e7d32" : "2px solid #e1e3e5",
+                      borderRadius: "50%",
+                      backgroundColor: colorData.color,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "all 0.2s ease"
+                    }}
+                    title={colorData.name}
+                  >
+                    {formData.avatarColor === colorData.color && (
+                      <i className="fas fa-check" style={{ 
+                        color: "white",
+                        fontSize: "14px" 
+                      }}></i>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Person fields */}
             {formData.type === 'PERSON' && (
@@ -372,6 +413,62 @@ function ContactForm({
               multiline={3}
             />
 
+            {/* Tags Field */}
+            <div>
+              <Text as="label" variant="bodyMd" fontWeight="medium">
+                Tags
+              </Text>
+              <div style={{ marginTop: "8px" }}>
+                <TextField
+                  label="Add tags (comma separated)"
+                  labelHidden
+                  placeholder="e.g., client, vip, important"
+                  value={formData.tags.join(', ')}
+                  onChange={(value) => {
+                    const tags = value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+                    setFormData(prev => ({ ...prev, tags }));
+                  }}
+                />
+                {formData.tags.length > 0 && (
+                  <div style={{ marginTop: "8px", display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                    {formData.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        style={{
+                          padding: "4px 8px",
+                          backgroundColor: "#e8f5e8",
+                          color: "#008060",
+                          border: "1px solid #b8e6b8",
+                          borderRadius: "12px",
+                          fontSize: "12px",
+                          fontWeight: "500"
+                        }}
+                      >
+                        {tag}
+                        <button
+                          onClick={() => {
+                            const newTags = formData.tags.filter((_, i) => i !== index);
+                            setFormData(prev => ({ ...prev, tags: newTags }));
+                          }}
+                          style={{
+                            marginLeft: "4px",
+                            background: "none",
+                            border: "none",
+                            color: "#008060",
+                            cursor: "pointer",
+                            padding: "0",
+                            fontSize: "12px"
+                          }}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
             <ButtonGroup>
               <Button
                 submit
@@ -422,8 +519,10 @@ export default function ContactsPage() {
       email: '',
       role: '',
       memo: '',
-      folderId: null,
-      pointsOfContact: [{ name: '', phone: '', email: '' }]
+      folderId: selectedFolder?.id || null,
+      pointsOfContact: [{ name: '', phone: '', email: '' }],
+      tags: [],
+      avatarColor: '#10b981'
     };
   }
 
@@ -451,6 +550,15 @@ export default function ContactsPage() {
   // Mobile detection and layout state
   const [isMobile, setIsMobile] = useState(false);
   const [mobileActiveSection, setMobileActiveSection] = useState('folders'); // 'folders', 'contacts', 'editor'
+  
+  // Selection and bulk actions state
+  const [selectedContacts, setSelectedContacts] = useState([]);
+  const [showTagsSection, setShowTagsSection] = useState(false);
+  const [selectedTags, setSelectedTags] = useState([]);
+  
+  // Manage menu state
+  const [manageMenuContact, setManageMenuContact] = useState(null);
+  const [manageMenuPosition, setManageMenuPosition] = useState({ x: 0, y: 0 });
 
   // Mobile detection
   useEffect(() => {
@@ -470,15 +578,18 @@ export default function ContactsPage() {
       if (openFolderMenu && !event.target.closest('.folder-menu-container')) {
         setOpenFolderMenu(null);
       }
+      if (manageMenuContact && !event.target.closest('.manage-menu')) {
+        closeManageMenu();
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [openFolderMenu]);
+  }, [openFolderMenu, manageMenuContact]);
 
-  // Filter contacts based on selected folder and search
+  // Filter contacts based on selected folder, search, and tags
   const filteredContacts = contacts.filter(contact => {
     const matchesFolder = !selectedFolder || contact.folderId === selectedFolder.id;
     const matchesSearch = !searchQuery || 
@@ -488,7 +599,18 @@ export default function ContactsPage() {
       (contact.company && contact.company.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (contact.email && contact.email.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    return matchesFolder && matchesSearch;
+    const matchesTags = selectedTags.length === 0 || 
+      (contact.tags && selectedTags.every(tag => contact.tags.includes(tag)));
+    
+    return matchesFolder && matchesSearch && matchesTags;
+  }).sort((a, b) => {
+    // Sort pinned first, then by creation date
+    if (a.pinnedAt && !b.pinnedAt) return -1;
+    if (!a.pinnedAt && b.pinnedAt) return 1;
+    if (a.pinnedAt && b.pinnedAt) {
+      return new Date(b.pinnedAt) - new Date(a.pinnedAt);
+    }
+    return new Date(b.createdAt) - new Date(a.createdAt);
   });
 
   // DnD sensors
@@ -700,6 +822,13 @@ export default function ContactsPage() {
 
   // Handle new contact on mobile
   const handleNewContact = () => {
+    if (!selectedFolder) {
+      setAlertMessage("Please select a folder to create a contact");
+      setAlertType("error");
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+    
     setShowNewContactForm(true);
     setEditingContact(null);
     setFormData(getInitialFormData());
@@ -776,6 +905,8 @@ export default function ContactsPage() {
 
       if (result.success) {
         setContacts(prev => prev.filter(c => c.id !== contactId));
+        // Remove from selection if it was selected
+        setSelectedContacts(prev => prev.filter(id => id !== contactId));
       } else {
         console.error('Error deleting contact:', result.error);
       }
@@ -784,6 +915,69 @@ export default function ContactsPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Handle contact selection
+  const handleContactSelect = (contactId) => {
+    setSelectedContacts(prev => {
+      if (prev.includes(contactId)) {
+        return prev.filter(id => id !== contactId);
+      } else {
+        return [...prev, contactId];
+      }
+    });
+  };
+
+  // Handle contact pin/unpin
+  const handleContactPin = async (contactId) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/pin-contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ contactId })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Update the contact in the list
+        setContacts(prev => prev.map(contact => 
+          contact.id === contactId 
+            ? { ...contact, pinnedAt: result.pinnedAt }
+            : contact
+        ));
+        
+        setAlertMessage(result.isPinned ? 'Contact pinned' : 'Contact unpinned');
+        setAlertType("success");
+        setTimeout(() => setAlertMessage(''), 3000);
+      } else {
+        setAlertMessage(result.error || "Failed to toggle pin");
+        setAlertType("error");
+        setTimeout(() => setAlertMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error toggling contact pin:', error);
+      setAlertMessage("Failed to toggle pin");
+      setAlertType("error");
+      setTimeout(() => setAlertMessage(''), 3000);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle manage menu
+  const handleManageMenu = (contact, event) => {
+    event.stopPropagation();
+    const rect = event.target.getBoundingClientRect();
+    setManageMenuContact(contact);
+    setManageMenuPosition({ x: rect.left, y: rect.bottom + 4 });
+  };
+
+  const closeManageMenu = () => {
+    setManageMenuContact(null);
   };
 
   // DnD handlers
@@ -831,6 +1025,13 @@ export default function ContactsPage() {
     console.log('🚀 handleSubmit called', { editingContact: !!editingContact, showNewContactForm, formData });
     
     // Validate required fields
+    if (!selectedFolder) {
+      setAlertMessage('Please select a folder to create a contact');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+    
     if (formData.type === 'PERSON') {
       if (!formData.firstName || !formData.lastName) {
         setAlertMessage('Please provide both first name and last name for person contacts');
@@ -862,7 +1063,7 @@ export default function ContactsPage() {
       
       // Add all form fields
       Object.keys(formData).forEach(key => {
-        if (key === 'pointsOfContact') {
+        if (key === 'pointsOfContact' || key === 'tags') {
           submitData.append(key, JSON.stringify(formData[key]));
         } else if (formData[key] !== null && formData[key] !== undefined) {
           submitData.append(key, formData[key]);
@@ -1151,23 +1352,101 @@ export default function ContactsPage() {
                                 justifyContent: "center",
                                 alignItems: "center",
                                 cursor: "pointer",
-                                backgroundColor: "white",
-                                border: "1px solid #e1e3e5",
+                                backgroundColor: showTagsSection ? "#f6fff8" : "white",
+                                border: showTagsSection ? "2px solid #008060" : "1px solid #e1e3e5",
                                 borderRadius: "8px",
                                 transition: "all 0.2s ease",
                                 fontSize: "14px",
                                 fontWeight: "600",
-                                color: "#374151"
+                                color: showTagsSection ? "#008060" : "#374151"
                               }}
                               onClick={() => {
-                                // TODO: Implement tags functionality
+                                setShowTagsSection(!showTagsSection);
                               }}
                             >
-                  <i className="far fa-bookmark" style={{ fontSize: "16px", marginRight: "8px" }}></i>
-                  All Tags
+                              <i className="far fa-bookmark" style={{ fontSize: "16px", marginRight: "8px" }}></i>
+                              All Tags
                             </button>
                           </div>
                         </div>
+
+                        {/* Tags Section */}
+                        {(showTagsSection || selectedTags.length > 0) && (
+                          <div style={{ 
+                            marginBottom: "12px",
+                            padding: "12px",
+                            backgroundColor: "#f8f9fa",
+                            border: "1px solid #e1e3e5",
+                            borderRadius: "8px"
+                          }}>
+                            <div style={{ marginBottom: "8px", fontSize: "12px", fontWeight: "600", color: "#374151" }}>
+                              {selectedTags.length > 0 ? "Selected Tags:" : "All Tags:"}
+                            </div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                              {(() => {
+                                const allTags = contacts.reduce((acc, contact) => {
+                                  if (contact.tags) {
+                                    contact.tags.forEach(tag => {
+                                      acc[tag] = (acc[tag] || 0) + 1;
+                                    });
+                                  }
+                                  return acc;
+                                }, {});
+                                
+                                const tagsToShow = selectedTags.length > 0 
+                                  ? selectedTags.map(tag => ({ name: tag, count: allTags[tag] || 0 }))
+                                  : Object.entries(allTags).map(([tag, count]) => ({ name: tag, count }));
+                                
+                                return tagsToShow.map((tagData, index) => (
+                                  <span
+                                    key={index}
+                                    onClick={() => {
+                                      if (selectedTags.includes(tagData.name)) {
+                                        setSelectedTags(prev => prev.filter(t => t !== tagData.name));
+                                      } else {
+                                        setSelectedTags(prev => [...prev, tagData.name]);
+                                      }
+                                    }}
+                                    style={{
+                                      padding: "6px 10px",
+                                      backgroundColor: selectedTags.includes(tagData.name) ? "#e8f5e8" : "#f1f3f4",
+                                      color: selectedTags.includes(tagData.name) ? "#008060" : "#374151",
+                                      border: selectedTags.includes(tagData.name) ? "1px solid #b8e6b8" : "1px solid #e1e3e5",
+                                      borderRadius: "16px",
+                                      fontSize: "12px",
+                                      fontWeight: "500",
+                                      cursor: "pointer",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "4px"
+                                    }}
+                                  >
+                                    {tagData.name} ({tagData.count})
+                                    {selectedTags.includes(tagData.name) && (
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setSelectedTags(prev => prev.filter(t => t !== tagData.name));
+                                        }}
+                                        style={{
+                                          background: "none",
+                                          border: "none",
+                                          color: "#008060",
+                                          cursor: "pointer",
+                                          padding: "0",
+                                          fontSize: "12px",
+                                          marginLeft: "2px"
+                                        }}
+                                      >
+                                        ×
+                                      </button>
+                                    )}
+                                  </span>
+                                ));
+                              })()}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Scrollable Folders Section */}
@@ -1352,12 +1631,77 @@ export default function ContactsPage() {
                             </Text>
                           </div>
                           <Button
-                            onClick={() => setShowNewContactForm(true)}
+                            onClick={handleNewContact}
                             variant="primary"
+                            disabled={!selectedFolder}
                           >
                             Add new contact
                           </Button>
                         </div>
+
+                        {/* Bulk Action Buttons */}
+                        {selectedContacts.length > 0 && (
+                          <div style={{ 
+                            display: "flex", 
+                            gap: "8px", 
+                            marginBottom: "16px",
+                            padding: "12px",
+                            backgroundColor: "#fffbf8",
+                            border: "1px solid #FF8C00",
+                            borderRadius: "8px"
+                          }}>
+                            <Button
+                              variant="primary"
+                              tone="critical"
+                              onClick={async () => {
+                                if (confirm(`Are you sure you want to delete ${selectedContacts.length} selected contact(s)?`)) {
+                                  setIsLoading(true);
+                                  try {
+                                    const form = new FormData();
+                                    form.append('_action', 'bulk-delete');
+                                    form.append('contactIds', JSON.stringify(selectedContacts));
+
+                                    const response = await fetch('/api/contacts', {
+                                      method: 'POST',
+                                      body: form
+                                    });
+
+                                    const result = await response.json();
+
+                                    if (result.success) {
+                                      setContacts(prev => prev.filter(c => !selectedContacts.includes(c.id)));
+                                      setSelectedContacts([]);
+                                      setAlertMessage(`Successfully deleted ${result.deletedCount} contact(s)`);
+                                      setAlertType("success");
+                                      setTimeout(() => setAlertMessage(''), 3000);
+                                    } else {
+                                      setAlertMessage(result.error || "Failed to delete contacts");
+                                      setAlertType("error");
+                                      setTimeout(() => setAlertMessage(''), 3000);
+                                    }
+                                  } catch (error) {
+                                    console.error('Error deleting contacts:', error);
+                                    setAlertMessage("Failed to delete contacts");
+                                    setAlertType("error");
+                                    setTimeout(() => setAlertMessage(''), 3000);
+                                  } finally {
+                                    setIsLoading(false);
+                                  }
+                                }
+                              }}
+                            >
+                              Delete Selected ({selectedContacts.length})
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              onClick={() => {
+                                // TODO: Implement bulk move
+                              }}
+                            >
+                              Move Selected ({selectedContacts.length})
+                            </Button>
+                          </div>
+                        )}
 
                         <TextField
                           label="Search contact"
@@ -1375,7 +1719,7 @@ export default function ContactsPage() {
                           borderBottom: "1px solid #e1e3e5",
                           backgroundColor: "#f6f6f7",
                           display: "grid",
-                          gridTemplateColumns: "60px 1fr 1fr 1fr 120px 100px",
+                          gridTemplateColumns: "60px 1fr 1fr 1fr 120px 100px 120px",
                           gap: "16px",
                           fontSize: "12px",
                           fontWeight: "600",
@@ -1388,6 +1732,7 @@ export default function ContactsPage() {
                           <div>Contact Info</div>
                           <div>Creation Date</div>
                           <div>Tag</div>
+                          <div>Actions</div>
                         </div>
                       )}
 
@@ -1408,39 +1753,53 @@ export default function ContactsPage() {
                                 }}
                                 style={{
                                   display: "grid",
-                                  gridTemplateColumns: "60px 1fr 1fr 1fr 120px 100px",
+                                  gridTemplateColumns: "60px 1fr 1fr 1fr 120px 100px 120px",
                                   gap: "16px",
                                   padding: "12px 16px",
                                   borderBottom: "1px solid #f1f3f4",
                                   cursor: "pointer",
-                                  backgroundColor: "transparent",
+                                  backgroundColor: selectedContacts.includes(contact.id) ? "#fffbf8" : "transparent",
+                                  borderLeft: selectedContacts.includes(contact.id) ? "3px solid #FF8C00" : "3px solid transparent",
                                   transition: "all 0.2s ease",
                                   alignItems: "center"
                                 }}
                                 onMouseEnter={(e) => {
-                                  e.target.style.backgroundColor = "#f6f6f7";
+                                  if (!selectedContacts.includes(contact.id)) {
+                                    e.target.style.backgroundColor = "#f6f6f7";
+                                  }
                                 }}
                                 onMouseLeave={(e) => {
-                                  e.target.style.backgroundColor = "transparent";
+                                  if (!selectedContacts.includes(contact.id)) {
+                                    e.target.style.backgroundColor = "transparent";
+                                  }
                                 }}
                               >
                                 {/* Profile Avatar */}
                                 <div style={{ display: "flex", alignItems: "center" }}>
-                                  <Avatar
-                                    size="small"
-                                    source={contact.type === 'PERSON' 
-                                      ? `${contact.firstName?.[0] || ''}${contact.lastName?.[0] || ''}`.toUpperCase()
-                                      : contact.businessName?.[0] || 'B'
-                                    }
-                                    name={contact.type === 'PERSON' 
-                                      ? `${contact.firstName || ''} ${contact.lastName || ''}`.trim()
-                                      : contact.businessName
-                                    }
-                                  />
+                                  <div
+                                    style={{
+                                      width: "40px",
+                                      height: "40px",
+                                      borderRadius: "50%",
+                                      backgroundColor: contact.avatarColor || (contact.type === 'PERSON' ? '#10b981' : '#f97316'),
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      color: "white"
+                                    }}
+                                  >
+                                    <Icon 
+                                      source={contact.type === 'PERSON' ? PersonIcon : OrganizationIcon} 
+                                      tone="base" 
+                                    />
+                                  </div>
                                 </div>
                                 
                                 {/* First Name */}
-                                <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  {contact.pinnedAt && (
+                                    <i className="fas fa-thumbtack" style={{ color: '#FF8C00', fontSize: '12px' }}></i>
+                                  )}
                                   <Text as="span" variant="bodyMd">
                                     {contact.firstName || '-'}
                                   </Text>
@@ -1481,6 +1840,38 @@ export default function ContactsPage() {
                                   <Badge tone={contact.type === 'PERSON' ? 'info' : 'success'}>
                                     {contact.type === 'PERSON' ? 'Person' : 'Business'}
                                   </Badge>
+                                </div>
+                                
+                                {/* Action Buttons */}
+                                <div style={{ display: "flex", gap: "4px" }}>
+                                  <Button
+                                    size="micro"
+                                    variant={selectedContacts.includes(contact.id) ? "primary" : "secondary"}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleContactSelect(contact.id);
+                                    }}
+                                  >
+                                    Select
+                                  </Button>
+                                  <Button
+                                    size="micro"
+                                    variant="secondary"
+                                    onClick={(e) => handleManageMenu(contact, e)}
+                                  >
+                                    Manage
+                                  </Button>
+                                  <Button
+                                    size="micro"
+                                    variant="secondary"
+                                    tone="critical"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleContactDelete(contact.id);
+                                    }}
+                                  >
+                                    Delete
+                                  </Button>
                                 </div>
                               </div>
                             ))}
@@ -1551,6 +1942,143 @@ export default function ContactsPage() {
             onClose={handleContactCardClose}
             position={contactCardPosition}
           />
+        )}
+
+        {/* Manage Menu Dropdown */}
+        {manageMenuContact && (
+          <div
+            className="manage-menu"
+            style={{
+              position: 'fixed',
+              left: manageMenuPosition.x,
+              top: manageMenuPosition.y,
+              backgroundColor: 'white',
+              border: '1px solid #e1e3e5',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              zIndex: 1000,
+              minWidth: '200px'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                padding: '8px 0'
+              }}
+            >
+              <button
+                onClick={() => {
+                  handleContactPin(manageMenuContact.id);
+                  closeManageMenu();
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 16px',
+                  border: 'none',
+                  background: 'none',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '14px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#f6f6f7';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                }}
+              >
+                <i className="fas fa-thumbtack" style={{ fontSize: '14px' }}></i>
+                {manageMenuContact.pinnedAt ? 'Unpin' : 'Pin'}
+              </button>
+              
+              <button
+                onClick={() => {
+                  // TODO: Implement move to different folder
+                  closeManageMenu();
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 16px',
+                  border: 'none',
+                  background: 'none',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '14px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#f6f6f7';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                }}
+              >
+                <i className="fas fa-folder" style={{ fontSize: '14px' }}></i>
+                Move to different folder
+              </button>
+              
+              <button
+                onClick={() => {
+                  // TODO: Implement duplicate to current folder
+                  closeManageMenu();
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 16px',
+                  border: 'none',
+                  background: 'none',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '14px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#f6f6f7';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                }}
+              >
+                <i className="fas fa-copy" style={{ fontSize: '14px' }}></i>
+                Duplicate to current folder
+              </button>
+              
+              <button
+                onClick={() => {
+                  // TODO: Implement duplicate to different folder
+                  closeManageMenu();
+                }}
+                style={{
+                  width: '100%',
+                  padding: '8px 16px',
+                  border: 'none',
+                  background: 'none',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '14px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#f6f6f7';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                }}
+              >
+                <i className="fas fa-copy" style={{ fontSize: '14px' }}></i>
+                Duplicate to different folder
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Desktop Modals */}
@@ -2399,6 +2927,72 @@ export default function ContactsPage() {
                 />
               </div>
 
+              {/* Bulk Action Buttons - Mobile */}
+              {selectedContacts.length > 0 && (
+                <div style={{ 
+                  display: "flex", 
+                  gap: "8px", 
+                  marginBottom: "16px",
+                  padding: "12px",
+                  backgroundColor: "#fffbf8",
+                  border: "1px solid #FF8C00",
+                  borderRadius: "8px"
+                }}>
+                  <Button
+                    variant="primary"
+                    tone="critical"
+                    size="slim"
+                    onClick={async () => {
+                      if (confirm(`Are you sure you want to delete ${selectedContacts.length} selected contact(s)?`)) {
+                        setIsLoading(true);
+                        try {
+                          const form = new FormData();
+                          form.append('_action', 'bulk-delete');
+                          form.append('contactIds', JSON.stringify(selectedContacts));
+
+                          const response = await fetch('/api/contacts', {
+                            method: 'POST',
+                            body: form
+                          });
+
+                          const result = await response.json();
+
+                          if (result.success) {
+                            setContacts(prev => prev.filter(c => !selectedContacts.includes(c.id)));
+                            setSelectedContacts([]);
+                            setAlertMessage(`Successfully deleted ${result.deletedCount} contact(s)`);
+                            setAlertType("success");
+                            setTimeout(() => setAlertMessage(''), 3000);
+                          } else {
+                            setAlertMessage(result.error || "Failed to delete contacts");
+                            setAlertType("error");
+                            setTimeout(() => setAlertMessage(''), 3000);
+                          }
+                        } catch (error) {
+                          console.error('Error deleting contacts:', error);
+                          setAlertMessage("Failed to delete contacts");
+                          setAlertType("error");
+                          setTimeout(() => setAlertMessage(''), 3000);
+                        } finally {
+                          setIsLoading(false);
+                        }
+                      }
+                    }}
+                  >
+                    Delete ({selectedContacts.length})
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="slim"
+                    onClick={() => {
+                      // TODO: Implement bulk move
+                    }}
+                  >
+                    Move ({selectedContacts.length})
+                  </Button>
+                </div>
+              )}
+
               {/* Contacts List */}
               <div>
                 {filteredContacts.length === 0 ? (
@@ -2417,23 +3011,13 @@ export default function ContactsPage() {
                   filteredContacts.map((contact) => (
                     <div
                       key={contact.id}
-                      onClick={() => handleContactEdit(contact)}
                       style={{
                         padding: '16px',
-                        border: '1px solid #e1e3e5',
+                        border: selectedContacts.includes(contact.id) ? '2px solid #FF8C00' : '1px solid #e1e3e5',
                         borderRadius: '8px',
                         marginBottom: '8px',
-                        cursor: 'pointer',
                         transition: 'all 0.2s ease',
-                        backgroundColor: 'white'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#f6fff8';
-                        e.currentTarget.style.borderColor = '#008060';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'white';
-                        e.currentTarget.style.borderColor = '#e1e3e5';
+                        backgroundColor: selectedContacts.includes(contact.id) ? '#fffbf8' : 'white'
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -2441,7 +3025,7 @@ export default function ContactsPage() {
                           width: '40px',
                           height: '40px',
                           borderRadius: '50%',
-                          backgroundColor: contact.type === 'PERSON' ? '#008060' : '#f57c00',
+                          backgroundColor: contact.avatarColor || (contact.type === 'PERSON' ? '#008060' : '#f57c00'),
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -2449,19 +3033,24 @@ export default function ContactsPage() {
                           fontSize: '18px',
                           fontWeight: '600'
                         }}>
-                          {contact.type === 'PERSON' ? (
-                            <PersonIcon style={{ width: '20px', height: '20px' }} />
-                          ) : (
-                            <ProductIcon style={{ width: '20px', height: '20px' }} />
-                          )}
+                          <Icon 
+                            source={contact.type === 'PERSON' ? PersonIcon : OrganizationIcon} 
+                            tone="base" 
+                          />
                         </div>
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => handleContactEdit(contact)}>
                           <h3 style={{ 
                             margin: 0, 
                             fontSize: '16px', 
                             fontWeight: '600',
-                            color: '#374151'
+                            color: '#374151',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
                           }}>
+                            {contact.pinnedAt && (
+                              <i className="fas fa-thumbtack" style={{ color: '#FF8C00', fontSize: '12px' }}></i>
+                            )}
                             {contact.type === 'PERSON' 
                               ? `${contact.firstName} ${contact.lastName}`.trim()
                               : contact.businessName
@@ -2486,7 +3075,36 @@ export default function ContactsPage() {
                             </p>
                           )}
                         </div>
-                        <ChevronRightIcon style={{ color: '#999', width: '14px', height: '14px' }} />
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <Button
+                            size="micro"
+                            variant={selectedContacts.includes(contact.id) ? "primary" : "secondary"}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleContactSelect(contact.id);
+                            }}
+                          >
+                            Select
+                          </Button>
+                          <Button
+                            size="micro"
+                            variant="secondary"
+                            onClick={(e) => handleManageMenu(contact, e)}
+                          >
+                            Manage
+                          </Button>
+                          <Button
+                            size="micro"
+                            variant="secondary"
+                            tone="critical"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleContactDelete(contact.id);
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))

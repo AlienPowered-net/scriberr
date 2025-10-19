@@ -7,10 +7,14 @@ const FolderIconPicker = ({
   onSelectIcon, 
   currentIcon = "folder",
   currentColor = "rgba(255, 184, 0, 1)",
-  folderName = "Folder"
+  folderName = "Folder",
+  showOnlyColor = false,
+  selectedIcon = "folder",
+  selectedColor = "rgba(255, 184, 0, 1)",
+  onColorChange
 }) => {
-  const [selectedIcon, setSelectedIcon] = useState(currentIcon);
-  const [selectedColor, setSelectedColor] = useState(currentColor);
+  const [selectedIcon, setSelectedIcon] = useState(selectedIcon);
+  const [selectedColor, setSelectedColor] = useState(selectedColor);
 
   const folderIcons = [
     { icon: "folder", name: "Folder" },
@@ -47,8 +51,17 @@ const FolderIconPicker = ({
   ];
 
   const handleSave = () => {
-    onSelectIcon({ icon: selectedIcon, color: selectedColor });
-    onClose();
+    if (onSelectIcon) {
+      onSelectIcon({ icon: selectedIcon, color: selectedColor });
+      onClose();
+    }
+  };
+
+  const handleColorClick = (color) => {
+    setSelectedColor(color);
+    if (onColorChange) {
+      onColorChange(color);
+    }
   };
 
   return (

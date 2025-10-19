@@ -133,3 +133,4 @@ async function migrateCustomMentionsToContacts() {
 
 // Run the migration
 migrateCustomMentionsToContacts();
+
