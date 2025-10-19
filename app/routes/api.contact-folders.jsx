@@ -1,8 +1,7 @@
 import { json } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "../utils/db.server";
+import { getOrCreateShopId } from "../utils/tenant.server";
 
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
@@ -13,23 +12,10 @@ export const loader = async ({ request }) => {
   }
   
   try {
-    // Ensure the shop exists in the database
-    let shop = await prisma.shop.findUnique({
-      where: { domain: session.shop }
-    });
-
-    if (!shop) {
-      // Create the shop if it doesn't exist
-      shop = await prisma.shop.create({
-        data: {
-          domain: session.shop,
-          installedAt: new Date()
-        }
-      });
-    }
+    const shopId = await getOrCreateShopId(session.shop);
 
     const folders = await prisma.contactFolder.findMany({
-      where: { shopId: shop.id },
+      where: { shopId },
       include: {
         _count: {
           select: { contacts: true }
@@ -60,20 +46,7 @@ export const action = async ({ request }) => {
   const action = formData.get("_action");
 
   try {
-    // Ensure the shop exists in the database
-    let shop = await prisma.shop.findUnique({
-      where: { domain: session.shop }
-    });
-
-    if (!shop) {
-      // Create the shop if it doesn't exist
-      shop = await prisma.shop.create({
-        data: {
-          domain: session.shop,
-          installedAt: new Date()
-        }
-      });
-    }
+    const shopId = await getOrCreateShopId(session.shop);
 
     switch (action) {
       case "create": {
@@ -97,7 +70,7 @@ export const action = async ({ request }) => {
         // Check if a folder with this name already exists
         const existingFolder = await prisma.contactFolder.findFirst({
           where: { 
-            shopId: shop.id,
+            shopId: shopId,
             name: trimmedName
           },
         });
@@ -108,7 +81,7 @@ export const action = async ({ request }) => {
 
         // Get the highest position
         const lastFolder = await prisma.contactFolder.findFirst({
-          where: { shopId: shop.id },
+          where: { shopId: shopId },
           orderBy: { position: 'desc' }
         });
 
@@ -116,7 +89,7 @@ export const action = async ({ request }) => {
 
         const folder = await prisma.contactFolder.create({
           data: {
-            shopId: shop.id,
+            shopId: shopId,
             name: trimmedName,
             icon,
             iconColor,
@@ -147,7 +120,7 @@ export const action = async ({ request }) => {
         // Check if a folder with this name already exists
         const existingFolder = await prisma.contactFolder.findFirst({
           where: { 
-            shopId: shop.id,
+            shopId: shopId,
             name: trimmedName,
             id: { not: id } // Exclude the current folder
           },
