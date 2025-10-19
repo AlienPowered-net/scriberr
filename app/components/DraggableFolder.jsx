@@ -13,14 +13,6 @@ const DraggableFolder = ({
   setOpenFolderMenu,
   ...props 
 }) => {
-  // Debug logging
-  console.log('DraggableFolder render:', {
-    folderId: folder.id,
-    folderIdType: typeof folder.id,
-    selectedFolder,
-    selectedFolderType: typeof selectedFolder,
-    isSelected: selectedFolder === folder.id
-  });
   const {
     attributes,
     listeners,
@@ -49,12 +41,12 @@ const DraggableFolder = ({
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        backgroundColor: selectedFolder === folder.id ? "#f6fff8" : "#F8F9FA",
-        border: selectedFolder === folder.id ? "2px solid #008060" : "2px solid #E1E3E5",
+        backgroundColor: String(selectedFolder) === String(folder.id) ? "#f6fff8" : "#F8F9FA",
+        border: String(selectedFolder) === String(folder.id) ? "2px solid #008060" : "2px solid #E1E3E5",
         borderRadius: "8px",
         position: "relative",
         transition: "all 0.2s ease",
-        boxShadow: selectedFolder === folder.id ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+        boxShadow: String(selectedFolder) === String(folder.id) ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
       }}>
         {/* Drag Handle */}
         <div
@@ -84,14 +76,14 @@ const DraggableFolder = ({
           }}
           onClick={() => onFolderClick(folder)}
           onMouseEnter={(e) => {
-            if (selectedFolder !== folder.id) {
+            if (String(selectedFolder) !== String(folder.id)) {
               e.currentTarget.parentElement.style.backgroundColor = "#f6fff8";
               e.currentTarget.parentElement.style.borderColor = "#008060";
               e.currentTarget.parentElement.style.boxShadow = "0 2px 8px rgba(10, 0, 0, 0.1)";
             }
           }}
           onMouseLeave={(e) => {
-            if (selectedFolder !== folder.id) {
+            if (String(selectedFolder) !== String(folder.id)) {
               e.currentTarget.parentElement.style.backgroundColor = "#F8F9FA";
               e.currentTarget.parentElement.style.borderColor = "#E1E3E5";
               e.currentTarget.parentElement.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.05)";
@@ -104,18 +96,18 @@ const DraggableFolder = ({
               display: "flex", 
               alignItems: "center", 
               gap: "8px",
-              color: selectedFolder === folder.id ? "#008060" : "#374151",
+              color: String(selectedFolder) === String(folder.id) ? "#008060" : "#374151",
               fontSize: "14px"
             }}>
               <i className={`far fa-${folder.icon || 'folder'}`} style={{ 
                 fontSize: "18px", 
-                color: selectedFolder === folder.id ? "#008060" : (folder.iconColor || "#f57c00") 
+                color: String(selectedFolder) === String(folder.id) ? "#008060" : (folder.iconColor || "#f57c00") 
               }}></i>
               {folder.name}
             </span>
             
             {/* Active Badge */}
-            {selectedFolder === folder.id && (
+            {String(selectedFolder) === String(folder.id) && (
               <div style={{
                 padding: '2px 8px',
                 backgroundColor: '#f6fff8',
