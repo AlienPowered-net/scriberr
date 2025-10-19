@@ -72,7 +72,8 @@ import {
   DragHandleIcon,
   XIcon,
   ExchangeIcon,
-  SearchIcon
+  SearchIcon,
+  ChevronRightIcon
 } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
 import FolderIconPicker from "../components/FolderIconPicker";
@@ -2485,7 +2486,7 @@ export default function ContactsPage() {
                             </p>
                           )}
                         </div>
-                        <i className="far fa-chevron-right" style={{ color: '#999', fontSize: '14px' }}></i>
+                        <ChevronRightIcon style={{ color: '#999', width: '14px', height: '14px' }} />
                       </div>
                     </div>
                   ))
