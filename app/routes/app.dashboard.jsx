@@ -426,9 +426,12 @@ export default function Index() {
   // Set selected folder from URL parameter
   useEffect(() => {
     if (initialFolderId) {
-      setSelectedFolder(initialFolderId);
+      const folderObject = localFolders.find(f => f.id === initialFolderId);
+      if (folderObject) {
+        setSelectedFolder(folderObject);
+      }
     }
-  }, [initialFolderId]);
+  }, [initialFolderId, localFolders]);
 
   // Handle note selection from URL parameters - runs immediately on mount
   useEffect(() => {
@@ -448,10 +451,16 @@ export default function Index() {
         // Set folder if provided
         if (initialFolderId) {
           setFolderId(initialFolderId);
-          setSelectedFolder(initialFolderId);
+          const folderObject = localFolders.find(f => f.id === initialFolderId);
+          if (folderObject) {
+            setSelectedFolder(folderObject);
+          }
         } else if (noteToSelect.folderId) {
           setFolderId(noteToSelect.folderId);
-          setSelectedFolder(noteToSelect.folderId);
+          const folderObject = localFolders.find(f => f.id === noteToSelect.folderId);
+          if (folderObject) {
+            setSelectedFolder(folderObject);
+          }
         }
         
         // If mobile parameter is set, switch to editor view
@@ -481,7 +490,7 @@ export default function Index() {
   // Update folderId when selectedFolder changes
   useEffect(() => {
     if (selectedFolder) {
-      setFolderId(selectedFolder);
+      setFolderId(selectedFolder.id);
     } else {
       setFolderId("");
     }
@@ -841,7 +850,7 @@ export default function Index() {
                   <DraggableFolder 
                     key={folder.id} 
                     folder={folder}
-                    selectedFolder={selectedFolder}
+                    selectedFolder={selectedFolder?.id}
                     onFolderClick={() => {}}
                     openFolderMenu={null}
                     setOpenFolderMenu={() => {}}
@@ -1587,9 +1596,9 @@ export default function Index() {
   };
 
   // Handle folder selection - clear note editor when switching folders
-  const handleFolderClick = (folderId) => {
-    // If clicking on "All Notes" (null), or clicking the same folder to deselect
-    const newSelectedFolder = folderId === null ? null : (selectedFolder === folderId ? null : folderId);
+  const handleFolderClick = (folder) => {
+    // Handle null case (All Notes) or folder object
+    const newSelectedFolder = folder === null ? null : folder;
     setSelectedFolder(newSelectedFolder);
     
     // Clear note editor when switching folders to prevent cross-folder saves
@@ -1717,7 +1726,10 @@ export default function Index() {
         setTitle(noteToSelect.title || "");
         setBody(noteToSelect.content || "");
         setFolderId(savedFolderId);
-        setSelectedFolder(savedFolderId);
+        const folderObject = localFolders.find(f => f.id === savedFolderId);
+        if (folderObject) {
+          setSelectedFolder(folderObject);
+        }
       }
       // Clear localStorage after restoring state
       localStorage.removeItem('selectedNoteId');
@@ -1735,7 +1747,7 @@ export default function Index() {
   // Filter notes based on selected folder and search queries
   const filteredNotes = localNotes.filter(note => {
     // First filter by selected folder
-    const folderMatch = selectedFolder ? note.folderId === selectedFolder : true;
+    const folderMatch = selectedFolder ? note.folderId === selectedFolder.id : true;
     
     // Handle tag filtering
     let globalSearchMatch = true;
@@ -1773,7 +1785,10 @@ export default function Index() {
     setIsNewlyCreated(false); // Reset when opening existing note
     // Automatically select the folder associated with this note
     if (note.folderId) {
-      setSelectedFolder(note.folderId);
+      const folderObject = localFolders.find(f => f.id === note.folderId);
+      if (folderObject) {
+        setSelectedFolder(folderObject);
+      }
     }
   };
 
@@ -1990,7 +2005,7 @@ export default function Index() {
 
   // Handle creating a new note
   const handleNewNote = async () => {
-    const currentFolderId = selectedFolder || "";
+    const currentFolderId = selectedFolder?.id || "";
     
     if (!currentFolderId) {
       setAlertMessage('Please select a folder first to create a new note');
@@ -4137,7 +4152,7 @@ export default function Index() {
                       <DraggableFolder 
                         key={folder.id} 
                         folder={folder}
-                        selectedFolder={selectedFolder}
+                        selectedFolder={selectedFolder?.id}
                         openFolderMenu={openFolderMenu}
                         setOpenFolderMenu={setOpenFolderMenu}
                         onFolderClick={handleFolderClick}
@@ -4201,7 +4216,7 @@ export default function Index() {
                   </Text>
                   {selectedFolder && (
                     <Text as="h1" style={{ fontSize: "32px", fontWeight: "900", color: "#202223", marginTop: "8px" }}>
-                      {localFolders.find(f => f.id === selectedFolder)?.name}
+                      {selectedFolder?.name}
                     </Text>
                   )}
                 </div>
@@ -4801,7 +4816,7 @@ export default function Index() {
                         if (result.success) {
                           // Remove folder from local state and clear selected folder if it was deleted
                           setLocalFolders(prevFolders => prevFolders.filter(folder => folder.id !== showDeleteConfirm));
-                          if (selectedFolder === showDeleteConfirm) {
+                          if (selectedFolder?.id === showDeleteConfirm) {
                             setSelectedFolder(null);
                           }
                         } else {
@@ -6022,7 +6037,7 @@ export default function Index() {
                             <DraggableFolder 
                               key={folder.id} 
                               folder={folder}
-                              selectedFolder={selectedFolder}
+                              selectedFolder={selectedFolder?.id}
                               openFolderMenu={mobileOpenFolderMenu}
                               setOpenFolderMenu={setMobileOpenFolderMenu}
                               onFolderClick={handleFolderClick}
@@ -6247,7 +6262,7 @@ export default function Index() {
                     borderRadius: '16px',
                     fontSize: '13px'
                   }}>
-                    {selectedFolder ? localFolders.find(f => f.id === selectedFolder)?.name : 'Viewing all notes'}
+                    {selectedFolder ? selectedFolder.name : 'Viewing all notes'}
                     {selectedFolder && (
                       <button
                         style={{
@@ -6706,7 +6721,7 @@ export default function Index() {
                     border: "1px solid #e1e3e5"
                   }}>
                     <FolderIcon style={{ width: '14px', height: '14px' }} />
-                    {localFolders.find(f => f.id === selectedFolder)?.name}
+                    {selectedFolder?.name}
                   </div>
                 )}
 
@@ -6907,7 +6922,7 @@ export default function Index() {
                               if (result.success) {
                                 // Remove folder from local state and clear selected folder if it was deleted
                                 setLocalFolders(prevFolders => prevFolders.filter(folder => folder.id !== showDeleteConfirm));
-                                if (selectedFolder === showDeleteConfirm) {
+                                if (selectedFolder?.id === showDeleteConfirm) {
                                   setSelectedFolder(null);
                                 }
                                 setShowDeleteConfirm(null);
