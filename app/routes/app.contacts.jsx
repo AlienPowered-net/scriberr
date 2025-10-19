@@ -432,6 +432,23 @@ export default function ContactsPage() {
   // DnD state
   const [activeId, setActiveId] = useState(null);
   const [columnOrder, setColumnOrder] = useState(['folders', 'contacts']);
+  
+  // Folder menu state
+  const [openFolderMenu, setOpenFolderMenu] = useState(null);
+
+  // Close folder menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openFolderMenu && !event.target.closest('.folder-menu-container')) {
+        setOpenFolderMenu(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openFolderMenu]);
 
   // Filter contacts based on selected folder and search
   const filteredContacts = contacts.filter(contact => {
@@ -463,6 +480,126 @@ export default function ContactsPage() {
     setSelectedFolder(folder);
     setShowNewContactForm(false);
     setEditingContact(null);
+  };
+
+  // Handle folder drag and drop
+  const handleFolderDragEnd = async (event) => {
+    const { active, over } = event;
+    
+    if (active.id !== over?.id) {
+      const oldIndex = folders.findIndex(folder => folder.id === active.id);
+      const newIndex = folders.findIndex(folder => folder.id === over.id);
+      
+      const reorderedFolders = arrayMove(folders, oldIndex, newIndex);
+      setFolders(reorderedFolders);
+      
+      // Update positions in database
+      try {
+        const formData = new FormData();
+        formData.append('_action', 'reorder');
+        formData.append('folderIds', JSON.stringify(reorderedFolders.map(f => f.id)));
+        
+        const response = await fetch('/api/contact-folders', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          console.error('Failed to update folder order');
+        }
+      } catch (error) {
+        console.error('Error updating folder order:', error);
+      }
+    }
+  };
+
+  // Handle folder menu actions
+  const handleFolderRename = async (folderId, newName) => {
+    try {
+      const formData = new FormData();
+      formData.append('_action', 'rename');
+      formData.append('id', folderId);
+      formData.append('name', newName);
+      
+      const response = await fetch('/api/contact-folders', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        // Refresh folders
+        const updatedFolders = await fetch('/api/contact-folders').then(r => r.json());
+        setFolders(updatedFolders);
+        setOpenFolderMenu(null);
+      } else {
+        console.error('Failed to rename folder');
+      }
+    } catch (error) {
+      console.error('Error renaming folder:', error);
+    }
+  };
+
+  const handleFolderDelete = async (folderId) => {
+    if (!confirm('Are you sure you want to delete this folder? All contacts in this folder will be moved to "All Contacts".')) {
+      return;
+    }
+    
+    try {
+      const formData = new FormData();
+      formData.append('_action', 'delete');
+      formData.append('id', folderId);
+      
+      const response = await fetch('/api/contact-folders', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        // Refresh folders and contacts
+        const [updatedFolders, updatedContacts] = await Promise.all([
+          fetch('/api/contact-folders').then(r => r.json()),
+          fetch('/api/contacts').then(r => r.json())
+        ]);
+        setFolders(updatedFolders);
+        setContacts(updatedContacts);
+        setOpenFolderMenu(null);
+        
+        // Clear selection if deleted folder was selected
+        if (selectedFolder?.id === folderId) {
+          setSelectedFolder(null);
+        }
+      } else {
+        console.error('Failed to delete folder');
+      }
+    } catch (error) {
+      console.error('Error deleting folder:', error);
+    }
+  };
+
+  const handleFolderIconChange = async (folderId, icon, iconColor) => {
+    try {
+      const formData = new FormData();
+      formData.append('_action', 'update-icon');
+      formData.append('id', folderId);
+      formData.append('icon', icon);
+      formData.append('iconColor', iconColor);
+      
+      const response = await fetch('/api/contact-folders', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        // Refresh folders
+        const updatedFolders = await fetch('/api/contact-folders').then(r => r.json());
+        setFolders(updatedFolders);
+        setOpenFolderMenu(null);
+      } else {
+        console.error('Failed to update folder icon');
+      }
+    } catch (error) {
+      console.error('Error updating folder icon:', error);
+    }
   };
 
   // Handle contact save
@@ -900,44 +1037,115 @@ export default function ContactsPage() {
                               <p style={{ margin: 0, fontSize: "14px" }}>No folders created yet</p>
                             </div>
                           ) : (
-                            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                              {folders.map((folder) => {
-                                const isSelected = selectedFolder?.id === folder.id;
-                                return (
-                                  <div
-                                    key={folder.id}
-                                    onClick={() => handleFolderSelect(folder)}
-                                    style={{
-                                      padding: "12px 16px",
-                                      backgroundColor: isSelected ? "#f6fff8" : "#f8f9fa",
-                                      border: isSelected ? "2px solid #008060" : "1px solid #e1e3e5",
-                                      borderRadius: "8px",
-                                      cursor: "pointer",
-                                      transition: "all 0.2s ease",
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: "12px"
-                                    }}
-                                  >
-                                    <i 
-                                      className={`far fa-${folder.icon}`} 
-                                      style={{ 
-                                        fontSize: "18px", 
-                                        color: folder.iconColor || "#6B7280" 
-                                      }}
-                                    ></i>
-                                    <div style={{ flex: 1 }}>
-                                      <Text variant="bodyMd" fontWeight="medium">
-                                        {folder.name}
-                                      </Text>
-                                      <Text variant="bodySm" tone="subdued">
-                                        {folder._count.contacts} contacts
-                                      </Text>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
+                            <DndContext
+                              sensors={sensors}
+                              collisionDetection={closestCenter}
+                              onDragEnd={handleFolderDragEnd}
+                            >
+                              <SortableContext
+                                items={folders.map(f => f.id)}
+                                strategy={verticalListSortingStrategy}
+                              >
+                                <div>
+                                  {folders.map((folder) => (
+                                    <DraggableFolder 
+                                      key={folder.id} 
+                                      folder={folder}
+                                      selectedFolder={selectedFolder?.id}
+                                      openFolderMenu={openFolderMenu}
+                                      setOpenFolderMenu={setOpenFolderMenu}
+                                      onFolderClick={handleFolderSelect}
+                                    >
+                                      {openFolderMenu === folder.id && (
+                                        <div style={{
+                                          position: 'absolute',
+                                          top: '100%',
+                                          right: '8px',
+                                          backgroundColor: 'white',
+                                          border: '1px solid #e1e3e5',
+                                          borderRadius: '8px',
+                                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                                          zIndex: 1000,
+                                          minWidth: '120px',
+                                          padding: '4px 0'
+                                        }}>
+                                          <button
+                                            onClick={() => {
+                                              const newName = prompt('Enter new folder name:', folder.name);
+                                              if (newName && newName.trim() && newName !== folder.name) {
+                                                handleFolderRename(folder.id, newName.trim());
+                                              }
+                                            }}
+                                            style={{
+                                              width: '100%',
+                                              padding: '8px 12px',
+                                              border: 'none',
+                                              background: 'none',
+                                              textAlign: 'left',
+                                              cursor: 'pointer',
+                                              fontSize: '14px',
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              gap: '8px'
+                                            }}
+                                            onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                                            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                          >
+                                            <i className="far fa-edit" style={{ fontSize: '12px' }}></i>
+                                            Rename
+                                          </button>
+                                          <button
+                                            onClick={() => {
+                                              // Open icon picker modal
+                                              setOpenFolderMenu(null);
+                                              // TODO: Implement icon picker modal
+                                            }}
+                                            style={{
+                                              width: '100%',
+                                              padding: '8px 12px',
+                                              border: 'none',
+                                              background: 'none',
+                                              textAlign: 'left',
+                                              cursor: 'pointer',
+                                              fontSize: '14px',
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              gap: '8px'
+                                            }}
+                                            onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                                            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                          >
+                                            <i className="far fa-palette" style={{ fontSize: '12px' }}></i>
+                                            Change Icon
+                                          </button>
+                                          <button
+                                            onClick={() => handleFolderDelete(folder.id)}
+                                            style={{
+                                              width: '100%',
+                                              padding: '8px 12px',
+                                              border: 'none',
+                                              background: 'none',
+                                              textAlign: 'left',
+                                              cursor: 'pointer',
+                                              fontSize: '14px',
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              gap: '8px',
+                                              color: '#dc2626'
+                                            }}
+                                            onMouseEnter={(e) => e.target.style.backgroundColor = '#fef2f2'}
+                                            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                          >
+                                            <i className="far fa-trash-alt" style={{ fontSize: '12px' }}></i>
+                                            Delete
+                                          </button>
+                                        </div>
+                                      )}
+                                    </DraggableFolder>
+                                  ))}
+                                </div>
+                              </SortableContext>
+                            </DndContext>
                           )}
                       </div>
 
