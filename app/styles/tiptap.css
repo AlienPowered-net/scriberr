@@ -525,11 +525,12 @@
     pointer-events: none;
   }
   
-  /* Fix: Backdrop should not block clicks to modal content and should be invisible on mobile */
+  /* Fix: Backdrop should not block clicks but be visible behind modal */
   .Polaris-Backdrop {
     pointer-events: none !important; /* Let clicks pass through to modal */
     z-index: 99999989 !important; /* Below modal dialog */
-    opacity: 0 !important; /* Make backdrop invisible on mobile to prevent visual blocking */
+    opacity: 0.5 !important; /* Semi-transparent backdrop for focus */
+    background-color: rgba(0, 0, 0, 0.7) !important; /* Dark backdrop */
   }
   
   /* Modal Dialog container - allow clicks to reach content */
@@ -541,7 +542,9 @@
   /* Modal content and all interactive elements should catch clicks */
   .Polaris-Modal-Dialog__Modal {
     pointer-events: auto !important; /* Modal content catches all clicks */
-    z-index: 99999991 !important; /* Same level as dialog */
+    z-index: 99999991 !important; /* Above backdrop */
+    background-color: white !important; /* Ensure modal has opaque background */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important; /* Add shadow for depth */
   }
   
   /* Ensure all interactive elements in modal are clickable */
@@ -695,9 +698,12 @@ body > .Polaris-Portal .Polaris-Modal-Dialog {
   pointer-events: none !important; /* Let clicks pass through to modal content */
 }
 
-/* Ensure modal content is clickable */
+/* Ensure modal content is clickable and visible above backdrop */
 body > .Polaris-Portal .Polaris-Modal-Dialog__Modal {
   pointer-events: auto !important;
+  z-index: 99999991 !important; /* Above backdrop */
+  background-color: white !important; /* Opaque background */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important; /* Depth shadow */
 }
 
 body > .Polaris-Portal .Polaris-Popover__Pane {
@@ -705,11 +711,12 @@ body > .Polaris-Portal .Polaris-Popover__Pane {
   pointer-events: auto !important;
 }
 
-/* Backdrop should not block modal content and should be invisible */
+/* Backdrop should not block modal content but be visible behind it */
 body > .Polaris-Portal .Polaris-Backdrop {
   z-index: 99999989 !important;
   pointer-events: none !important; /* Don't block clicks to modal */
-  opacity: 0 !important; /* Make invisible to prevent visual blocking */
+  opacity: 0.5 !important; /* Semi-transparent for focus */
+  background-color: rgba(0, 0, 0, 0.7) !important; /* Dark backdrop */
 }
 
 /* Force Polaris components to render at body level, not inside the mobile modal */
