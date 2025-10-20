@@ -3708,22 +3708,13 @@ export default function ContactsPage() {
                       gap: '12px'
                     }}
                   >
-                    <div
-                      style={{
-                        width: '24px',
-                        height: '24px',
-                        borderRadius: '4px',
-                        backgroundColor: folder.iconColor || '#f57c00',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
+                    <i 
+                      className={`far fa-${folder.icon || 'folder'}`} 
+                      style={{ 
+                        fontSize: '18px', 
+                        color: folder.iconColor || '#f57c00' 
                       }}
-                    >
-                      <Icon 
-                        source={FolderIcon} 
-                        tone="base" 
-                      />
-                    </div>
+                    ></i>
                     <span style={{ fontWeight: '500' }}>{folder.name}</span>
                   </div>
                 ))}
