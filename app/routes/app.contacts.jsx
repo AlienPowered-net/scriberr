@@ -697,21 +697,31 @@ export default function ContactsPage() {
         const centerY = window.innerHeight / 2;
         const elementAtCenter = document.elementFromPoint(centerX, centerY);
         if (elementAtCenter) {
+          const styles = window.getComputedStyle(elementAtCenter);
           info.elementAtCenter = {
             tagName: elementAtCenter.tagName,
             className: elementAtCenter.className,
-            id: elementAtCenter.id
+            id: elementAtCenter.id,
+            pointerEvents: styles.pointerEvents,
+            zIndex: styles.zIndex,
+            position: styles.position,
+            inlineStyle: elementAtCenter.getAttribute('style'),
+            parentClassName: elementAtCenter.parentElement?.className || 'no parent'
           };
         }
         
-        // Check modal wrapper
+        // Check modal wrapper (the one we added)
         const modalWrapper = document.querySelector('[style*="zIndex: 100000000"]');
         if (modalWrapper) {
           const styles = window.getComputedStyle(modalWrapper);
+          const rect = modalWrapper.getBoundingClientRect();
           info.modalWrapper = {
             zIndex: styles.zIndex,
             position: styles.position,
-            pointerEvents: styles.pointerEvents
+            pointerEvents: styles.pointerEvents,
+            width: rect.width,
+            height: rect.height,
+            isFullScreen: (rect.width >= window.innerWidth - 10 && rect.height >= window.innerHeight - 10)
           };
         }
         
@@ -3861,10 +3871,14 @@ export default function ContactsPage() {
                   
                   {debugInfo.modalWrapper && (
                     <div style={{ marginBottom: '8px' }}>
-                      <strong style={{ color: '#4ecdc4' }}>Modal Wrapper:</strong><br/>
+                      <strong style={{ color: '#4ecdc4' }}>Modal Wrapper (Our DIV):</strong><br/>
                       z-index: {debugInfo.modalWrapper.zIndex}<br/>
                       position: {debugInfo.modalWrapper.position}<br/>
-                      pointerEvents: {debugInfo.modalWrapper.pointerEvents}
+                      pointerEvents: {debugInfo.modalWrapper.pointerEvents}<br/>
+                      size: {debugInfo.modalWrapper.width}x{debugInfo.modalWrapper.height}<br/>
+                      {debugInfo.modalWrapper.isFullScreen && (
+                        <span style={{ color: '#ff0000', fontWeight: 'bold' }}>⚠️ COVERS FULL SCREEN!</span>
+                      )}
                     </div>
                   )}
                   
@@ -3911,8 +3925,19 @@ export default function ContactsPage() {
                       <strong style={{ color: '#ffd60a' }}>Element at Screen Center:</strong><br/>
                       Tag: {debugInfo.elementAtCenter.tagName}<br/>
                       Class: {debugInfo.elementAtCenter.className || 'none'}<br/>
+                      ID: {debugInfo.elementAtCenter.id || 'none'}<br/>
+                      pointerEvents: {debugInfo.elementAtCenter.pointerEvents}<br/>
+                      z-index: {debugInfo.elementAtCenter.zIndex}<br/>
+                      position: {debugInfo.elementAtCenter.position}<br/>
+                      Parent: {debugInfo.elementAtCenter.parentClassName}<br/>
+                      {debugInfo.elementAtCenter.inlineStyle && (
+                        <>Inline: {debugInfo.elementAtCenter.inlineStyle.substring(0, 50)}...<br/></>
+                      )}
                       {debugInfo.elementAtCenter.className && debugInfo.elementAtCenter.className.includes('Backdrop') && (
                         <span style={{ color: '#ff0000', fontWeight: 'bold' }}>⚠️ BACKDROP BLOCKING!</span>
+                      )}
+                      {debugInfo.elementAtCenter.pointerEvents === 'auto' && !debugInfo.elementAtCenter.className.includes('Modal') && (
+                        <span style={{ color: '#ff0000', fontWeight: 'bold' }}>⚠️ THIS ELEMENT BLOCKING!</span>
                       )}
                     </div>
                   )}
