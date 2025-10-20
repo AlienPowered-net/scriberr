@@ -32,7 +32,17 @@ export async function action({ request }) {
       console.log('📋 Folder columns do not exist, will add them...');
     }
     
-    if (pinnedAtExists && folderColumnsExist) {
+    // Check if Contact address and notes columns exist
+    let contactColumnsExist = false;
+    try {
+      await prisma.$queryRaw`SELECT address, notes FROM "Contact" LIMIT 1`;
+      contactColumnsExist = true;
+      console.log('✅ Contact address and notes columns already exist');
+    } catch (error) {
+      console.log('📋 Contact address and notes columns do not exist, will add them...');
+    }
+    
+    if (pinnedAtExists && folderColumnsExist && contactColumnsExist) {
       return json({ 
         success: true, 
         message: "All migrations already applied - all columns exist",
@@ -75,6 +85,15 @@ export async function action({ request }) {
         console.log('✅ Existing folders updated with positions');
       }
       
+      // Add address and notes columns to Contact table
+      if (!contactColumnsExist) {
+        await prisma.$executeRaw`ALTER TABLE "Contact" ADD COLUMN IF NOT EXISTS "address" TEXT`;
+        console.log('✅ address column added to Contact table');
+        
+        await prisma.$executeRaw`ALTER TABLE "Contact" ADD COLUMN IF NOT EXISTS "notes" TEXT`;
+        console.log('✅ notes column added to Contact table');
+      }
+      
     } catch (migrationError) {
       console.error('Migration step failed:', migrationError);
       return json({ 
@@ -93,6 +112,10 @@ export async function action({ request }) {
         await prisma.$queryRaw`SELECT icon, "iconColor", position FROM "Folder" LIMIT 1`;
         console.log('✅ Folder columns verification successful');
       }
+      if (!contactColumnsExist) {
+        await prisma.$queryRaw`SELECT address, notes FROM "Contact" LIMIT 1`;
+        console.log('✅ Contact columns verification successful');
+      }
       console.log('✅ All migrations verified successfully');
     } catch (verifyError) {
       console.log('⚠️ Migration verification failed, but columns may have been added');
@@ -101,10 +124,11 @@ export async function action({ request }) {
     const appliedMigrations = [];
     if (!pinnedAtExists) appliedMigrations.push('pinnedAt column');
     if (!folderColumnsExist) appliedMigrations.push('folder columns (icon, iconColor, position)');
+    if (!contactColumnsExist) appliedMigrations.push('contact columns (address, notes)');
     
     return json({ 
       success: true, 
-      message: `Migration applied successfully! Applied: ${appliedMigrations.join(', ')}. Pin functionality and folder features are now enabled.`,
+      message: `Migration applied successfully! Applied: ${appliedMigrations.join(', ')}. All features are now enabled.`,
       applied: true,
       appliedMigrations
     });
