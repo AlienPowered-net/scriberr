@@ -565,6 +565,10 @@ export default function ContactsPage() {
   const [showBulkMoveModal, setShowBulkMoveModal] = useState(false);
   const [showContactDeleteModal, setShowContactDeleteModal] = useState(null);
 
+  // Debug mode state
+  const [debugMode, setDebugMode] = useState(false);
+  const [debugInfo, setDebugInfo] = useState({});
+
   // Mobile detection
   useEffect(() => {
     const checkMobile = () => {
@@ -600,6 +604,91 @@ export default function ContactsPage() {
       closeManageMenu();
     }
   }, [showBulkMoveModal]);
+
+  // Debug information collector
+  useEffect(() => {
+    if (debugMode && (showBulkMoveModal || showContactDeleteModal)) {
+      setTimeout(() => {
+        const info = {};
+        
+        // Check mobile layout
+        const mobileLayout = document.querySelector('.mobile-layout');
+        if (mobileLayout) {
+          const styles = window.getComputedStyle(mobileLayout);
+          info.mobileLayout = {
+            zIndex: styles.zIndex,
+            position: styles.position,
+            isolation: styles.isolation,
+            transform: styles.transform
+          };
+        }
+        
+        // Check manage menu
+        const manageMenu = document.querySelector('.manage-menu');
+        if (manageMenu) {
+          const styles = window.getComputedStyle(manageMenu);
+          info.manageMenu = {
+            zIndex: styles.zIndex,
+            position: styles.position,
+            display: styles.display
+          };
+        }
+        
+        // Check Polaris Portal
+        const portal = document.querySelector('.Polaris-Portal');
+        if (portal) {
+          const styles = window.getComputedStyle(portal);
+          info.polarisPortal = {
+            zIndex: styles.zIndex,
+            position: styles.position,
+            pointerEvents: styles.pointerEvents
+          };
+        }
+        
+        // Check Polaris Backdrop
+        const backdrop = document.querySelector('.Polaris-Backdrop');
+        if (backdrop) {
+          const styles = window.getComputedStyle(backdrop);
+          info.polarisBackdrop = {
+            zIndex: styles.zIndex,
+            position: styles.position,
+            pointerEvents: styles.pointerEvents,
+            display: styles.display
+          };
+        }
+        
+        // Check Polaris Modal Dialog
+        const modalDialog = document.querySelector('.Polaris-Modal-Dialog');
+        if (modalDialog) {
+          const styles = window.getComputedStyle(modalDialog);
+          info.polarisModalDialog = {
+            zIndex: styles.zIndex,
+            position: styles.position,
+            pointerEvents: styles.pointerEvents,
+            display: styles.display
+          };
+        }
+        
+        // Check modal wrapper
+        const modalWrapper = document.querySelector('[style*="zIndex: 100000000"]');
+        if (modalWrapper) {
+          const styles = window.getComputedStyle(modalWrapper);
+          info.modalWrapper = {
+            zIndex: styles.zIndex,
+            position: styles.position,
+            pointerEvents: styles.pointerEvents
+          };
+        }
+        
+        info.timestamp = new Date().toISOString();
+        info.showBulkMoveModal = showBulkMoveModal;
+        info.showContactDeleteModal = !!showContactDeleteModal;
+        
+        setDebugInfo(info);
+        console.log('🔍 Z-Index Debug Info:', info);
+      }, 300);
+    }
+  }, [debugMode, showBulkMoveModal, showContactDeleteModal]);
 
   // Filter contacts based on selected folder, search, and tags
   const filteredContacts = contacts.filter(contact => {
@@ -2639,6 +2728,23 @@ export default function ContactsPage() {
             
             {/* Right Navigation */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* Debug Toggle Button */}
+              <button
+                onClick={() => setDebugMode(!debugMode)}
+                style={{
+                  padding: '6px 12px',
+                  border: debugMode ? '2px solid #00a0ff' : '1px solid #e1e3e5',
+                  borderRadius: '6px',
+                  background: debugMode ? '#e6f7ff' : 'white',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: debugMode ? '#00a0ff' : '#666'
+                }}
+              >
+                🐛 {debugMode ? 'ON' : 'OFF'}
+              </button>
+              
               {mobileActiveSection === 'folders' && (
                 <Button
                   variant="primary"
@@ -3654,6 +3760,117 @@ export default function ContactsPage() {
                 </div>
               )}
             </>
+          )}
+
+          {/* Debug Panel */}
+          {debugMode && isMobile && (
+            <div style={{
+              position: 'fixed',
+              bottom: 60,
+              left: 10,
+              right: 10,
+              backgroundColor: 'rgba(0, 0, 0, 0.95)',
+              color: '#00ff00',
+              padding: '12px',
+              borderRadius: '8px',
+              fontSize: '11px',
+              fontFamily: 'monospace',
+              maxHeight: '300px',
+              overflowY: 'auto',
+              zIndex: 999999999,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+            }}>
+              <div style={{ 
+                fontWeight: 'bold', 
+                marginBottom: '8px',
+                color: '#00a0ff',
+                borderBottom: '1px solid #00a0ff',
+                paddingBottom: '4px'
+              }}>
+                🐛 Z-Index Debug Info
+              </div>
+              
+              {Object.keys(debugInfo).length === 0 ? (
+                <div style={{ color: '#ffaa00' }}>
+                  Open a modal to collect debug info...
+                </div>
+              ) : (
+                <div>
+                  <div style={{ marginBottom: '8px' }}>
+                    <strong style={{ color: '#00a0ff' }}>Modal States:</strong><br/>
+                    Move Modal: {debugInfo.showBulkMoveModal ? '✅ OPEN' : '❌ CLOSED'}<br/>
+                    Delete Modal: {debugInfo.showContactDeleteModal ? '✅ OPEN' : '❌ CLOSED'}
+                  </div>
+                  
+                  {debugInfo.mobileLayout && (
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong style={{ color: '#ff6b6b' }}>Mobile Layout:</strong><br/>
+                      z-index: {debugInfo.mobileLayout.zIndex}<br/>
+                      position: {debugInfo.mobileLayout.position}<br/>
+                      isolation: {debugInfo.mobileLayout.isolation}<br/>
+                      transform: {debugInfo.mobileLayout.transform !== 'none' ? '⚠️ ' + debugInfo.mobileLayout.transform : 'none'}
+                    </div>
+                  )}
+                  
+                  {debugInfo.manageMenu && (
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong style={{ color: '#ff6b6b' }}>Manage Menu:</strong><br/>
+                      z-index: {debugInfo.manageMenu.zIndex}<br/>
+                      position: {debugInfo.manageMenu.position}<br/>
+                      display: {debugInfo.manageMenu.display}
+                    </div>
+                  )}
+                  
+                  {debugInfo.modalWrapper && (
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong style={{ color: '#4ecdc4' }}>Modal Wrapper:</strong><br/>
+                      z-index: {debugInfo.modalWrapper.zIndex}<br/>
+                      position: {debugInfo.modalWrapper.position}<br/>
+                      pointerEvents: {debugInfo.modalWrapper.pointerEvents}
+                    </div>
+                  )}
+                  
+                  {debugInfo.polarisPortal && (
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong style={{ color: '#95e1d3' }}>Polaris Portal:</strong><br/>
+                      z-index: {debugInfo.polarisPortal.zIndex}<br/>
+                      position: {debugInfo.polarisPortal.position}<br/>
+                      pointerEvents: {debugInfo.polarisPortal.pointerEvents}
+                    </div>
+                  )}
+                  
+                  {debugInfo.polarisBackdrop && (
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong style={{ color: '#f38181' }}>Polaris Backdrop:</strong><br/>
+                      z-index: {debugInfo.polarisBackdrop.zIndex}<br/>
+                      position: {debugInfo.polarisBackdrop.position}<br/>
+                      pointerEvents: {debugInfo.polarisBackdrop.pointerEvents}<br/>
+                      display: {debugInfo.polarisBackdrop.display}
+                    </div>
+                  )}
+                  
+                  {debugInfo.polarisModalDialog && (
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong style={{ color: '#aa96da' }}>Polaris Modal Dialog:</strong><br/>
+                      z-index: {debugInfo.polarisModalDialog.zIndex}<br/>
+                      position: {debugInfo.polarisModalDialog.position}<br/>
+                      pointerEvents: {debugInfo.polarisModalDialog.pointerEvents}<br/>
+                      display: {debugInfo.polarisModalDialog.display}
+                    </div>
+                  )}
+                  
+                  <div style={{ 
+                    marginTop: '8px', 
+                    paddingTop: '8px', 
+                    borderTop: '1px solid #666',
+                    fontSize: '10px',
+                    color: '#888'
+                  }}>
+                    Updated: {debugInfo.timestamp ? new Date(debugInfo.timestamp).toLocaleTimeString() : 'N/A'}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}
