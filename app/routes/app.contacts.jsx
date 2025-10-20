@@ -2648,7 +2648,7 @@ export default function ContactsPage() {
             display: 'flex',
             flexDirection: 'column',
             backgroundColor: '#f6f6f7',
-            zIndex: 1
+            zIndex: 'auto'
           }}
         >
           {/* Mobile Toast Notifications */}
@@ -3799,7 +3799,8 @@ export default function ContactsPage() {
                   <div style={{ marginBottom: '8px' }}>
                     <strong style={{ color: '#00a0ff' }}>Modal States:</strong><br/>
                     Move Modal: {debugInfo.showBulkMoveModal ? '✅ OPEN' : '❌ CLOSED'}<br/>
-                    Delete Modal: {debugInfo.showContactDeleteModal ? '✅ OPEN' : '❌ CLOSED'}
+                    Delete Modal: {debugInfo.showContactDeleteModal ? '✅ OPEN' : '❌ CLOSED'}<br/>
+                    Manage Menu: {manageMenuContact ? '⚠️ STILL OPEN' : '✅ CLOSED'}
                   </div>
                   
                   {debugInfo.mobileLayout && (
