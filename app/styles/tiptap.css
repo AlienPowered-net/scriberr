@@ -528,21 +528,24 @@
   /* Fix: Backdrop should not block clicks but be visible behind modal */
   .Polaris-Backdrop {
     pointer-events: none !important; /* Let clicks pass through to modal */
-    z-index: 99999989 !important; /* Below modal dialog */
+    z-index: 100000000 !important; /* Below modal dialog */
     opacity: 0.5 !important; /* Semi-transparent backdrop for focus */
     background-color: rgba(0, 0, 0, 0.7) !important; /* Dark backdrop */
+    position: fixed !important;
   }
   
   /* Modal Dialog container - allow clicks to reach content */
   .Polaris-Modal-Dialog {
     pointer-events: none !important; /* Container doesn't catch clicks, passes through */
-    z-index: 99999991 !important; /* Above backdrop */
+    z-index: 100000002 !important; /* Well above backdrop */
+    position: fixed !important;
   }
   
   /* Modal content and all interactive elements should catch clicks */
   .Polaris-Modal-Dialog__Modal {
     pointer-events: auto !important; /* Modal content catches all clicks */
-    z-index: 99999991 !important; /* Above backdrop */
+    z-index: 100000003 !important; /* Highest - above everything */
+    position: relative !important;
     background-color: white !important; /* Ensure modal has opaque background */
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important; /* Add shadow for depth */
   }
@@ -562,7 +565,7 @@
   /* Specific override for modals within mobile editor */
   .mobile-fullscreen-modal .Polaris-Modal-Dialog,
   .mobile-fullscreen-modal .Polaris-Modal-Dialog__Modal {
-    z-index: 99999991 !important;
+    z-index: 100000003 !important;
   }
   
   /* Ensure popover content is clickable and visible above mobile editor */
@@ -570,13 +573,13 @@
   .Polaris-Popover__Content {
     pointer-events: auto !important;
     -webkit-overflow-scrolling: touch;
-    z-index: 99999992 !important; /* Highest - popovers should be on top */
+    z-index: 100000004 !important; /* Above modals */
   }
   
   /* Specific override for popovers within mobile editor */
   .mobile-fullscreen-modal .Polaris-Popover__Pane,
   .mobile-fullscreen-modal .Polaris-Popover__Content {
-    z-index: 99999992 !important;
+    z-index: 100000004 !important;
   }
   
   /* Fix for iOS Safari modal issues */
@@ -586,7 +589,7 @@
   
   /* Ensure modal header (with close button) stays on top */
   .Polaris-Modal-Header {
-    z-index: 99999993 !important;
+    z-index: 100000005 !important;
   }
   
   /* Ensure mobile editor doesn't clip child modals/popovers */
@@ -670,7 +673,7 @@
   /* Fix popover positioning - ensure it stays within viewport */
   .Polaris-PositionedOverlay {
     position: fixed !important;
-    z-index: 99999992 !important;
+    z-index: 100000004 !important;
   }
   
   /* Ensure popover wrapper doesn't interfere */
@@ -681,7 +684,7 @@
 
 /* Global styles for modals and popovers (outside media query to apply everywhere) */
 .Polaris-Portal {
-  z-index: 99999990 !important;
+  z-index: 100000001 !important;
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
@@ -692,37 +695,40 @@
   pointer-events: none !important;
 }
 
-/* Ensure Polaris modals always render above custom mobile modal */
+/* Backdrop should not block modal content but be visible behind it */
+body > .Polaris-Portal .Polaris-Backdrop {
+  z-index: 100000000 !important;
+  pointer-events: none !important; /* Don't block clicks to modal */
+  opacity: 0.5 !important; /* Semi-transparent for focus */
+  background-color: rgba(0, 0, 0, 0.7) !important; /* Dark backdrop */
+  position: fixed !important;
+}
+
+/* Ensure Polaris modals always render above backdrop */
 body > .Polaris-Portal .Polaris-Modal-Dialog {
-  z-index: 99999991 !important;
+  z-index: 100000002 !important;
   pointer-events: none !important; /* Let clicks pass through to modal content */
+  position: fixed !important;
 }
 
 /* Ensure modal content is clickable and visible above backdrop */
 body > .Polaris-Portal .Polaris-Modal-Dialog__Modal {
   pointer-events: auto !important;
-  z-index: 99999991 !important; /* Above backdrop */
+  z-index: 100000003 !important; /* Above backdrop */
+  position: relative !important;
   background-color: white !important; /* Opaque background */
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important; /* Depth shadow */
 }
 
 body > .Polaris-Portal .Polaris-Popover__Pane {
-  z-index: 99999992 !important;
+  z-index: 100000004 !important; /* Popovers above modals */
   pointer-events: auto !important;
-}
-
-/* Backdrop should not block modal content but be visible behind it */
-body > .Polaris-Portal .Polaris-Backdrop {
-  z-index: 99999989 !important;
-  pointer-events: none !important; /* Don't block clicks to modal */
-  opacity: 0.5 !important; /* Semi-transparent for focus */
-  background-color: rgba(0, 0, 0, 0.7) !important; /* Dark backdrop */
 }
 
 /* Force Polaris components to render at body level, not inside the mobile modal */
 body > .Polaris-Portal {
   position: fixed !important;
-  z-index: 99999990 !important;
+  z-index: 100000001 !important; /* Between backdrop and modal */
 }
 
 /* Ensure mobile modal doesn't create a stacking context that traps Polaris components */
@@ -749,7 +755,7 @@ body > .Polaris-Portal {
   left: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
-  z-index: 99999995 !important;
+  z-index: 100000001 !important;
   pointer-events: none !important;
 }
 
