@@ -3036,9 +3036,10 @@ export default function ContactsPage() {
           }}>
             {/* Contacts Section - Mobile */}
             <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px'
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '20px',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
             }}>
               {/* Delete and Move Buttons - Stacked */}
               {selectedContacts.length > 0 && (
@@ -3090,7 +3091,8 @@ export default function ContactsPage() {
                       fontSize: '16px',
                       fontWeight: '600',
                       cursor: 'pointer',
-                      transition: 'background-color 0.2s'
+                      transition: 'background-color 0.2s',
+                      marginBottom: '12px'
                     }}
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#b91c1c'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = '#d72c0d'}
@@ -3110,7 +3112,8 @@ export default function ContactsPage() {
                       fontSize: '16px',
                       fontWeight: '600',
                       cursor: 'pointer',
-                      transition: 'background-color 0.2s'
+                      transition: 'background-color 0.2s',
+                      marginBottom: '16px'
                     }}
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#1f1f1f'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = '#303030'}
@@ -3126,7 +3129,8 @@ export default function ContactsPage() {
                   display: 'flex', 
                   gap: '8px', 
                   alignItems: 'center',
-                  flexWrap: 'wrap'
+                  flexWrap: 'wrap',
+                  marginBottom: '16px'
                 }}>
                   <div style={{
                     display: 'flex',
@@ -3174,49 +3178,24 @@ export default function ContactsPage() {
                     </span>
                   </div>
                   
-                  <button
+                  <Button
                     onClick={() => setMobileActiveSection('folders')}
-                    style={{
-                      padding: '8px 16px',
-                      backgroundColor: 'white',
-                      color: '#0078d4',
-                      border: '1px solid #e1e3e5',
-                      borderRadius: '6px',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = '#f6f6f7';
-                      e.target.style.borderColor = '#0078d4';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = 'white';
-                      e.target.style.borderColor = '#e1e3e5';
-                    }}
+                    size="slim"
                   >
-                    Change Folder
-                  </button>
+                    <span style={{ color: 'black' }}>Change Folder</span>
+                  </Button>
                 </div>
               )}
 
-              {/* Search Bar and Contacts List Container */}
-              <div style={{
-                backgroundColor: 'white',
-                borderRadius: '8px',
-                padding: '20px',
-                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-              }}>
-                {/* Search Bar */}
-                <div style={{ marginBottom: '16px' }}>
-                  <TextField
-                    placeholder="Search contacts..."
-                    value={searchQuery}
-                    onChange={setSearchQuery}
-                    prefix={<SearchIcon />}
-                  />
-                </div>
+              {/* Search Bar */}
+              <div style={{ marginBottom: '16px' }}>
+                <TextField
+                  placeholder="Search contacts..."
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  prefix={<SearchIcon />}
+                />
+              </div>
 
                 {/* Contacts List */}
                 <div>
@@ -3336,7 +3315,6 @@ export default function ContactsPage() {
                   ))
                 )}
                 </div>
-              </div>
             </div>
           </div>
 
