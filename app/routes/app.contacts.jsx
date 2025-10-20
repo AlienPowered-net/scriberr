@@ -3036,56 +3036,14 @@ export default function ContactsPage() {
           }}>
             {/* Contacts Section - Mobile */}
             <div style={{
-              backgroundColor: 'white',
-              borderRadius: '8px',
-              padding: '20px',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-              marginBottom: '16px'
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px'
             }}>
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center', 
-                marginBottom: '16px' 
-              }}>
-                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>
-                  {selectedFolder ? selectedFolder.name : 'All Contacts'}
-                </h2>
-                <Button
-                  variant="primary"
-                  size="slim"
-                  onClick={handleNewContact}
-                  style={{ fontSize: '14px', fontWeight: '500' }}
-                >
-                  Add Contact
-                </Button>
-              </div>
-
-              {/* Search Bar */}
-              <div style={{ marginBottom: '16px' }}>
-                <TextField
-                  placeholder="Search contacts..."
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                  prefix={<SearchIcon />}
-                />
-              </div>
-
-              {/* Bulk Action Buttons - Mobile */}
+              {/* Delete and Move Buttons - Stacked */}
               {selectedContacts.length > 0 && (
-                <div style={{ 
-                  display: "flex", 
-                  gap: "8px", 
-                  marginBottom: "16px",
-                  padding: "12px",
-                  backgroundColor: "#fffbf8",
-                  border: "1px solid #FF8C00",
-                  borderRadius: "8px"
-                }}>
-                  <Button
-                    variant="primary"
-                    tone="critical"
-                    size="slim"
+                <>
+                  <button
                     onClick={async () => {
                       if (confirm(`Are you sure you want to delete ${selectedContacts.length} selected contact(s)?`)) {
                         setIsLoading(true);
@@ -3122,23 +3080,146 @@ export default function ContactsPage() {
                         }
                       }
                     }}
+                    style={{
+                      width: '100%',
+                      padding: '16px',
+                      backgroundColor: '#d72c0d',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#b91c1c'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#d72c0d'}
                   >
-                    Delete ({selectedContacts.length})
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="slim"
-                    onClick={() => {
-                      setShowBulkMoveModal(true);
+                    Delete {selectedContacts.length} Selected Contact{selectedContacts.length > 1 ? 's' : ''}
+                  </button>
+                  
+                  <button
+                    onClick={() => setShowBulkMoveModal(true)}
+                    style={{
+                      width: '100%',
+                      padding: '16px',
+                      backgroundColor: '#303030',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#1f1f1f'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#303030'}
+                  >
+                    Move {selectedContacts.length} Selected Contact{selectedContacts.length > 1 ? 's' : ''}
+                  </button>
+                </>
+              )}
+
+              {/* Current Folder Pill and Change Folder Button */}
+              {selectedFolder && (
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '8px', 
+                  alignItems: 'center',
+                  flexWrap: 'wrap'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 12px',
+                    backgroundColor: '#e6f2ff',
+                    border: '1px solid #0078d4',
+                    borderRadius: '20px',
+                    fontSize: '14px'
+                  }}>
+                    <span style={{ color: '#374151', fontWeight: '500' }}>
+                      Current Folder:
+                    </span>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '4px 12px',
+                      backgroundColor: '#0078d4',
+                      color: 'white',
+                      borderRadius: '16px',
+                      fontWeight: '600'
+                    }}>
+                      {selectedFolder.name}
+                      <button
+                        onClick={() => {
+                          setSelectedFolder(null);
+                          setSelectedContacts([]);
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'white',
+                          cursor: 'pointer',
+                          padding: '0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          fontSize: '16px'
+                        }}
+                        aria-label="Clear folder"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  </div>
+                  
+                  <button
+                    onClick={() => setMobileActiveSection('folders')}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: 'white',
+                      color: '#0078d4',
+                      border: '1px solid #e1e3e5',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = '#f6f6f7';
+                      e.target.style.borderColor = '#0078d4';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = 'white';
+                      e.target.style.borderColor = '#e1e3e5';
                     }}
                   >
-                    Move ({selectedContacts.length})
-                  </Button>
+                    Change Folder
+                  </button>
                 </div>
               )}
 
-              {/* Contacts List */}
-              <div>
+              {/* Search Bar and Contacts List Container */}
+              <div style={{
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                padding: '20px',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+              }}>
+                {/* Search Bar */}
+                <div style={{ marginBottom: '16px' }}>
+                  <TextField
+                    placeholder="Search contacts..."
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                    prefix={<SearchIcon />}
+                  />
+                </div>
+
+                {/* Contacts List */}
+                <div>
                 {filteredContacts.length === 0 ? (
                   <div style={{ 
                     textAlign: 'center', 
@@ -3254,6 +3335,7 @@ export default function ContactsPage() {
                     </div>
                   ))
                 )}
+                </div>
               </div>
             </div>
           </div>
