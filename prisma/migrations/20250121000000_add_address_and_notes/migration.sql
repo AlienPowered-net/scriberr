@@ -1,4 +1,3 @@
 -- AlterTable
-ALTER TABLE "Contact" ADD COLUMN "address" TEXT,
-ADD COLUMN "notes" TEXT;
+ALTER TABLE "Contact" ADD COLUMN IF NOT EXISTS "address" TEXT;
 

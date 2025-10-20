@@ -422,14 +422,6 @@ function ContactForm({
               placeholder="Enter full address"
             />
 
-            <TextField
-              label="Notes"
-              value={formData.notes}
-              onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
-              multiline={4}
-              placeholder="Add notes about this contact"
-            />
-
             {/* Tags Field */}
             <div>
               <Text as="label" variant="bodyMd" fontWeight="medium">
@@ -566,7 +558,6 @@ export default function ContactsPage() {
       role: '',
       memo: '',
       address: '',
-      notes: '',
       folderId: selectedFolder?.id || null,
       pointsOfContact: [{ name: '', phone: '', email: '' }],
       tags: [],
@@ -874,7 +865,6 @@ export default function ContactsPage() {
       role: contact.role || '',
       memo: contact.memo || '',
       address: contact.address || '',
-      notes: contact.notes || '',
       folderId: contact.folderId || null,
       pointsOfContact: contact.pointsOfContact || [],
       tags: contactTags,
@@ -3597,13 +3587,13 @@ export default function ContactsPage() {
 
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
-                    Notes
+                    Memo
                   </label>
                   <TextField
                     multiline={4}
-                    value={formData.notes}
-                    onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
-                    placeholder="Add notes about this contact"
+                    value={formData.memo}
+                    onChange={(value) => setFormData(prev => ({ ...prev, memo: value }))}
+                    placeholder="Add a memo about this contact"
                   />
                 </div>
 

@@ -32,17 +32,17 @@ export async function action({ request }) {
       console.log('📋 Folder columns do not exist, will add them...');
     }
     
-    // Check if Contact address and notes columns exist
-    let contactColumnsExist = false;
+    // Check if Contact address column exists
+    let contactAddressExists = false;
     try {
-      await prisma.$queryRaw`SELECT address, notes FROM "Contact" LIMIT 1`;
-      contactColumnsExist = true;
-      console.log('✅ Contact address and notes columns already exist');
+      await prisma.$queryRaw`SELECT address FROM "Contact" LIMIT 1`;
+      contactAddressExists = true;
+      console.log('✅ Contact address column already exists');
     } catch (error) {
-      console.log('📋 Contact address and notes columns do not exist, will add them...');
+      console.log('📋 Contact address column does not exist, will add it...');
     }
     
-    if (pinnedAtExists && folderColumnsExist && contactColumnsExist) {
+    if (pinnedAtExists && folderColumnsExist && contactAddressExists) {
       return json({ 
         success: true, 
         message: "All migrations already applied - all columns exist",
@@ -85,13 +85,10 @@ export async function action({ request }) {
         console.log('✅ Existing folders updated with positions');
       }
       
-      // Add address and notes columns to Contact table
-      if (!contactColumnsExist) {
+      // Add address column to Contact table
+      if (!contactAddressExists) {
         await prisma.$executeRaw`ALTER TABLE "Contact" ADD COLUMN IF NOT EXISTS "address" TEXT`;
         console.log('✅ address column added to Contact table');
-        
-        await prisma.$executeRaw`ALTER TABLE "Contact" ADD COLUMN IF NOT EXISTS "notes" TEXT`;
-        console.log('✅ notes column added to Contact table');
       }
       
     } catch (migrationError) {
@@ -112,9 +109,9 @@ export async function action({ request }) {
         await prisma.$queryRaw`SELECT icon, "iconColor", position FROM "Folder" LIMIT 1`;
         console.log('✅ Folder columns verification successful');
       }
-      if (!contactColumnsExist) {
-        await prisma.$queryRaw`SELECT address, notes FROM "Contact" LIMIT 1`;
-        console.log('✅ Contact columns verification successful');
+      if (!contactAddressExists) {
+        await prisma.$queryRaw`SELECT address FROM "Contact" LIMIT 1`;
+        console.log('✅ Contact address column verification successful');
       }
       console.log('✅ All migrations verified successfully');
     } catch (verifyError) {
@@ -124,7 +121,7 @@ export async function action({ request }) {
     const appliedMigrations = [];
     if (!pinnedAtExists) appliedMigrations.push('pinnedAt column');
     if (!folderColumnsExist) appliedMigrations.push('folder columns (icon, iconColor, position)');
-    if (!contactColumnsExist) appliedMigrations.push('contact columns (address, notes)');
+    if (!contactAddressExists) appliedMigrations.push('contact address column');
     
     return json({ 
       success: true, 
