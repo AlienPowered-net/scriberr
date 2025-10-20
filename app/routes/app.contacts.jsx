@@ -618,6 +618,7 @@ export default function ContactsPage() {
           info.mobileLayout = {
             zIndex: styles.zIndex,
             position: styles.position,
+            pointerEvents: styles.pointerEvents,
             isolation: styles.isolation,
             transform: styles.transform
           };
@@ -2682,7 +2683,8 @@ export default function ContactsPage() {
             display: 'flex',
             flexDirection: 'column',
             backgroundColor: '#f6f6f7',
-            zIndex: 'auto'
+            zIndex: 'auto',
+            pointerEvents: (showBulkMoveModal || showContactDeleteModal) ? 'none' : 'auto'
           }}
         >
           {/* Mobile Toast Notifications */}
@@ -3842,6 +3844,7 @@ export default function ContactsPage() {
                       <strong style={{ color: '#ff6b6b' }}>Mobile Layout:</strong><br/>
                       z-index: {debugInfo.mobileLayout.zIndex}<br/>
                       position: {debugInfo.mobileLayout.position}<br/>
+                      pointerEvents: {debugInfo.mobileLayout.pointerEvents} {debugInfo.mobileLayout.pointerEvents === 'none' ? '✅' : '⚠️ BLOCKING'}<br/>
                       isolation: {debugInfo.mobileLayout.isolation}<br/>
                       transform: {debugInfo.mobileLayout.transform !== 'none' ? '⚠️ ' + debugInfo.mobileLayout.transform : 'none'}
                     </div>
