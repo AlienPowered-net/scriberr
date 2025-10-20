@@ -669,6 +669,40 @@ export default function ContactsPage() {
           };
         }
         
+        // Check Polaris Modal Dialog Inner Modal
+        const modalInner = document.querySelector('.Polaris-Modal-Dialog__Modal');
+        if (modalInner) {
+          const styles = window.getComputedStyle(modalInner);
+          info.polarisModalInner = {
+            zIndex: styles.zIndex,
+            position: styles.position,
+            pointerEvents: styles.pointerEvents
+          };
+        }
+        
+        // Check if backdrop is in front of modal (check actual rendered position)
+        if (backdrop && modalDialog) {
+          const backdropRect = backdrop.getBoundingClientRect();
+          const modalRect = modalDialog.getBoundingClientRect();
+          info.elementPositions = {
+            backdropTop: backdropRect.top,
+            modalTop: modalRect.top,
+            backdropCoveringModal: (backdropRect.top <= modalRect.top && backdropRect.bottom >= modalRect.bottom)
+          };
+        }
+        
+        // Check what element is actually at the center of the screen (where modal should be)
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        const elementAtCenter = document.elementFromPoint(centerX, centerY);
+        if (elementAtCenter) {
+          info.elementAtCenter = {
+            tagName: elementAtCenter.tagName,
+            className: elementAtCenter.className,
+            id: elementAtCenter.id
+          };
+        }
+        
         // Check modal wrapper
         const modalWrapper = document.querySelector('[style*="zIndex: 100000000"]');
         if (modalWrapper) {
@@ -3857,6 +3891,37 @@ export default function ContactsPage() {
                       position: {debugInfo.polarisModalDialog.position}<br/>
                       pointerEvents: {debugInfo.polarisModalDialog.pointerEvents}<br/>
                       display: {debugInfo.polarisModalDialog.display}
+                    </div>
+                  )}
+                  
+                  {debugInfo.polarisModalInner && (
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong style={{ color: '#c77dff' }}>Polaris Modal Inner:</strong><br/>
+                      z-index: {debugInfo.polarisModalInner.zIndex}<br/>
+                      position: {debugInfo.polarisModalInner.position}<br/>
+                      pointerEvents: {debugInfo.polarisModalInner.pointerEvents}
+                    </div>
+                  )}
+                  
+                  {debugInfo.elementAtCenter && (
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong style={{ color: '#ffd60a' }}>Element at Screen Center:</strong><br/>
+                      Tag: {debugInfo.elementAtCenter.tagName}<br/>
+                      Class: {debugInfo.elementAtCenter.className || 'none'}<br/>
+                      {debugInfo.elementAtCenter.className && debugInfo.elementAtCenter.className.includes('Backdrop') && (
+                        <span style={{ color: '#ff0000', fontWeight: 'bold' }}>⚠️ BACKDROP BLOCKING!</span>
+                      )}
+                    </div>
+                  )}
+                  
+                  {debugInfo.elementPositions && (
+                    <div style={{ marginBottom: '8px' }}>
+                      <strong style={{ color: '#06ffa5' }}>Position Check:</strong><br/>
+                      Backdrop Top: {debugInfo.elementPositions.backdropTop}<br/>
+                      Modal Top: {debugInfo.elementPositions.modalTop}<br/>
+                      {debugInfo.elementPositions.backdropCoveringModal && (
+                        <span style={{ color: '#ff0000', fontWeight: 'bold' }}>⚠️ Backdrop may be covering modal!</span>
+                      )}
                     </div>
                   )}
                   
