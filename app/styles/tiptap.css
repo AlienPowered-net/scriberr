@@ -525,17 +525,34 @@
     pointer-events: none;
   }
   
-  /* Ensure modal backdrop is clickable */
+  /* Fix: Backdrop should not block clicks to modal content */
   .Polaris-Backdrop {
-    pointer-events: auto !important;
-    z-index: 99999990 !important; /* Higher than mobile editor modal (9999999) */
+    pointer-events: none !important; /* Let clicks pass through to modal */
+    z-index: 99999989 !important; /* Below modal dialog */
   }
   
-  /* Ensure modal content is properly positioned and clickable - MUST be above mobile editor */
-  .Polaris-Modal-Dialog,
+  /* Modal Dialog container - allow clicks to reach content */
+  .Polaris-Modal-Dialog {
+    pointer-events: none !important; /* Container doesn't catch clicks, passes through */
+    z-index: 99999991 !important; /* Above backdrop */
+  }
+  
+  /* Modal content and all interactive elements should catch clicks */
   .Polaris-Modal-Dialog__Modal {
+    pointer-events: auto !important; /* Modal content catches all clicks */
+    z-index: 99999991 !important; /* Same level as dialog */
+  }
+  
+  /* Ensure all interactive elements in modal are clickable */
+  .Polaris-Modal-Dialog .Polaris-Modal-Header,
+  .Polaris-Modal-Dialog .Polaris-Modal-Section,
+  .Polaris-Modal-Dialog .Polaris-Modal-Footer,
+  .Polaris-Modal-Dialog .Polaris-Button,
+  .Polaris-Modal-Dialog button,
+  .Polaris-Modal-Dialog input,
+  .Polaris-Modal-Dialog [role="button"],
+  .Polaris-Modal-Dialog [class*="clickable"] {
     pointer-events: auto !important;
-    z-index: 99999991 !important; /* Higher than backdrop */
   }
   
   /* Specific override for modals within mobile editor */
@@ -674,6 +691,11 @@
 /* Ensure Polaris modals always render above custom mobile modal */
 body > .Polaris-Portal .Polaris-Modal-Dialog {
   z-index: 99999991 !important;
+  pointer-events: none !important; /* Let clicks pass through to modal content */
+}
+
+/* Ensure modal content is clickable */
+body > .Polaris-Portal .Polaris-Modal-Dialog__Modal {
   pointer-events: auto !important;
 }
 
@@ -682,10 +704,10 @@ body > .Polaris-Portal .Polaris-Popover__Pane {
   pointer-events: auto !important;
 }
 
-/* Ensure Polaris backdrop is above everything */
+/* Backdrop should not block modal content */
 body > .Polaris-Portal .Polaris-Backdrop {
   z-index: 99999989 !important;
-  pointer-events: auto !important;
+  pointer-events: none !important; /* Don't block clicks to modal */
 }
 
 /* Force Polaris components to render at body level, not inside the mobile modal */
