@@ -440,10 +440,16 @@ function ContactForm({
                   label="Add tags (comma separated)"
                   labelHidden
                   placeholder="e.g., client, vip, important"
-                  value={formData.tags.join(', ')}
+                  value={tagsInputValue}
                   onChange={(value) => {
-                    const tags = value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-                    setFormData(prev => ({ ...prev, tags }));
+                    setTagsInputValue(value);
+                  }}
+                  onBlur={() => {
+                    // Process tags when user finishes typing
+                    if (tagsInputValue.trim()) {
+                      const tags = tagsInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+                      setFormData(prev => ({ ...prev, tags }));
+                    }
                   }}
                 />
                 {formData.tags.length > 0 && (
@@ -574,6 +580,7 @@ export default function ContactsPage() {
   const [selectedContacts, setSelectedContacts] = useState([]);
   const [showTagsSection, setShowTagsSection] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
+  const [tagsInputValue, setTagsInputValue] = useState('');
   
   // Manage menu state
   const [manageMenuContact, setManageMenuContact] = useState(null);
@@ -831,6 +838,7 @@ export default function ContactsPage() {
   // Handle contact edit on mobile
   const handleContactEdit = (contact) => {
     setEditingContact(contact);
+    const contactTags = contact.tags || [];
     setFormData({
       type: contact.type,
       firstName: contact.firstName || '',
@@ -846,9 +854,10 @@ export default function ContactsPage() {
       notes: contact.notes || '',
       folderId: contact.folderId || null,
       pointsOfContact: contact.pointsOfContact || [],
-      tags: contact.tags || [],
+      tags: contactTags,
       avatarColor: contact.avatarColor || '#10b981'
     });
+    setTagsInputValue(contactTags.join(', '));
     
     if (isMobile) {
       setMobileActiveSection('editor');
@@ -867,6 +876,7 @@ export default function ContactsPage() {
     setShowNewContactForm(true);
     setEditingContact(null);
     setFormData(getInitialFormData());
+    setTagsInputValue('');
     
     if (isMobile) {
       setMobileActiveSection('editor');
@@ -3278,15 +3288,16 @@ export default function ContactsPage() {
                     <div
                       key={contact.id}
                       style={{
-                        padding: '16px',
                         border: selectedContacts.includes(contact.id) ? '2px solid #FF8C00' : '1px solid #e1e3e5',
                         borderRadius: '8px',
                         marginBottom: '8px',
                         transition: 'all 0.2s ease',
-                        backgroundColor: selectedContacts.includes(contact.id) ? '#fffbf8' : 'white'
+                        backgroundColor: selectedContacts.includes(contact.id) ? '#fffbf8' : 'white',
+                        overflow: 'hidden'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      {/* Contact Info Section */}
+                      <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{
                           width: '40px',
                           height: '40px',
@@ -3342,36 +3353,87 @@ export default function ContactsPage() {
                             </p>
                           )}
                         </div>
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          <Button
-                            size="micro"
-                            variant={selectedContacts.includes(contact.id) ? "primary" : "secondary"}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleContactSelect(contact.id);
-                            }}
-                          >
-                            Select
-                          </Button>
-                          <Button
-                            size="micro"
-                            variant="secondary"
-                            onClick={(e) => handleManageMenu(contact, e)}
-                          >
-                            Manage
-                          </Button>
-                          <Button
-                            size="micro"
-                            variant="secondary"
-                            tone="critical"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleContactDelete(contact.id);
-                            }}
-                          >
-                            Delete
-                          </Button>
-                        </div>
+                      </div>
+                      
+                      {/* Buttons Row at Bottom */}
+                      <div style={{ 
+                        display: 'flex',
+                        borderTop: '1px solid #e1e3e5'
+                      }}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleContactSelect(contact.id);
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '12px',
+                            border: 'none',
+                            backgroundColor: selectedContacts.includes(contact.id) ? '#0078d4' : '#f6f6f7',
+                            color: selectedContacts.includes(contact.id) ? 'white' : '#374151',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            borderRight: '1px solid #e1e3e5',
+                            transition: 'background-color 0.2s'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!selectedContacts.includes(contact.id)) {
+                              e.target.style.backgroundColor = '#e8e8e9';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!selectedContacts.includes(contact.id)) {
+                              e.target.style.backgroundColor = '#f6f6f7';
+                            }
+                          }}
+                        >
+                          Select
+                        </button>
+                        <button
+                          onClick={(e) => handleManageMenu(contact, e)}
+                          style={{
+                            flex: 1,
+                            padding: '12px',
+                            border: 'none',
+                            backgroundColor: '#f6f6f7',
+                            color: '#374151',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            borderRight: '1px solid #e1e3e5',
+                            transition: 'background-color 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#e8e8e9'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                        >
+                          Manage
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleContactDelete(contact.id);
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '12px',
+                            border: 'none',
+                            backgroundColor: '#f6f6f7',
+                            color: '#d72c0d',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.2s'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#fee';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = '#f6f6f7';
+                          }}
+                        >
+                          Delete
+                        </button>
                       </div>
                     </div>
                   ))
@@ -3637,10 +3699,16 @@ export default function ContactsPage() {
                   </label>
                   <TextField
                     placeholder="e.g., client, vip, important (comma separated)"
-                    value={formData.tags.join(', ')}
+                    value={tagsInputValue}
                     onChange={(value) => {
-                      const tags = value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-                      setFormData(prev => ({ ...prev, tags }));
+                      setTagsInputValue(value);
+                    }}
+                    onBlur={() => {
+                      // Process tags when user finishes typing
+                      if (tagsInputValue.trim()) {
+                        const tags = tagsInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+                        setFormData(prev => ({ ...prev, tags }));
+                      }
                     }}
                   />
                   {formData.tags.length > 0 && (
