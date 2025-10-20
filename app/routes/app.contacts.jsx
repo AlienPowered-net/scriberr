@@ -517,9 +517,32 @@ export default function ContactsPage() {
   const { folders: initialFolders, contacts: initialContacts } = useLoaderData();
   
   // State management
-  const [folders, setFolders] = useState(initialFolders);
-  const [contacts, setContacts] = useState(initialContacts);
+  const [folders, setFolders] = useState(initialFolders || []);
+  const [contacts, setContacts] = useState(initialContacts || []);
   const [selectedFolder, setSelectedFolder] = useState(null);
+
+  // Fetch folders on mount to ensure they're loaded
+  useEffect(() => {
+    const fetchFolders = async () => {
+      try {
+        const response = await fetch('/api/contact-folders');
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data)) {
+            setFolders(data);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching folders:', error);
+      }
+    };
+
+    // Only fetch if folders are empty or undefined
+    if (!folders || folders.length === 0) {
+      fetchFolders();
+    }
+  }, []); // Empty dependency array - run once on mount
+
   const [editingContact, setEditingContact] = useState(null);
   const [showNewContactForm, setShowNewContactForm] = useState(false);
   const [showNewFolderModal, setShowNewFolderModal] = useState(false);
