@@ -525,10 +525,11 @@
     pointer-events: none;
   }
   
-  /* Fix: Backdrop should not block clicks to modal content */
+  /* Fix: Backdrop should not block clicks to modal content and should be invisible on mobile */
   .Polaris-Backdrop {
     pointer-events: none !important; /* Let clicks pass through to modal */
     z-index: 99999989 !important; /* Below modal dialog */
+    opacity: 0 !important; /* Make backdrop invisible on mobile to prevent visual blocking */
   }
   
   /* Modal Dialog container - allow clicks to reach content */
@@ -704,10 +705,11 @@ body > .Polaris-Portal .Polaris-Popover__Pane {
   pointer-events: auto !important;
 }
 
-/* Backdrop should not block modal content */
+/* Backdrop should not block modal content and should be invisible */
 body > .Polaris-Portal .Polaris-Backdrop {
   z-index: 99999989 !important;
   pointer-events: none !important; /* Don't block clicks to modal */
+  opacity: 0 !important; /* Make invisible to prevent visual blocking */
 }
 
 /* Force Polaris components to render at body level, not inside the mobile modal */
