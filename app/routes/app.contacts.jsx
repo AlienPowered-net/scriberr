@@ -414,6 +414,22 @@ function ContactForm({
               multiline={3}
             />
 
+            <TextField
+              label="Address"
+              value={formData.address}
+              onChange={(value) => setFormData(prev => ({ ...prev, address: value }))}
+              multiline={3}
+              placeholder="Enter full address"
+            />
+
+            <TextField
+              label="Notes"
+              value={formData.notes}
+              onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
+              multiline={4}
+              placeholder="Add notes about this contact"
+            />
+
             {/* Tags Field */}
             <div>
               <Text as="label" variant="bodyMd" fontWeight="medium">
@@ -520,6 +536,8 @@ export default function ContactsPage() {
       email: '',
       role: '',
       memo: '',
+      address: '',
+      notes: '',
       folderId: selectedFolder?.id || null,
       pointsOfContact: [{ name: '', phone: '', email: '' }],
       tags: [],
@@ -818,12 +836,18 @@ export default function ContactsPage() {
       firstName: contact.firstName || '',
       lastName: contact.lastName || '',
       businessName: contact.businessName || '',
+      company: contact.company || '',
       email: contact.email || '',
       phone: contact.phone || '',
+      mobile: contact.mobile || '',
+      role: contact.role || '',
+      memo: contact.memo || '',
       address: contact.address || '',
       notes: contact.notes || '',
       folderId: contact.folderId || null,
-      pointsOfContact: contact.pointsOfContact || []
+      pointsOfContact: contact.pointsOfContact || [],
+      tags: contact.tags || [],
+      avatarColor: contact.avatarColor || '#10b981'
     });
     
     if (isMobile) {
@@ -3496,6 +3520,178 @@ export default function ContactsPage() {
                     onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
                     placeholder="Add notes about this contact"
                   />
+                </div>
+
+                {/* Points of Contact - Business Only */}
+                {formData.type === 'BUSINESS' && (
+                  <div>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      marginBottom: '12px'
+                    }}>
+                      <label style={{ fontWeight: '600', fontSize: '15px' }}>
+                        Points of Contact
+                      </label>
+                      <Button
+                        size="slim"
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            pointsOfContact: [...prev.pointsOfContact, { name: '', phone: '', email: '' }]
+                          }));
+                        }}
+                      >
+                        Add Contact
+                      </Button>
+                    </div>
+                    
+                    {formData.pointsOfContact.map((point, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          padding: '16px',
+                          backgroundColor: '#f6f6f7',
+                          borderRadius: '8px',
+                          marginBottom: '12px'
+                        }}
+                      >
+                        <div style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center',
+                          marginBottom: '12px'
+                        }}>
+                          <span style={{ fontWeight: '500', fontSize: '14px' }}>
+                            Contact {index + 1}
+                          </span>
+                          <Button
+                            size="slim"
+                            tone="critical"
+                            onClick={() => {
+                              setFormData(prev => ({
+                                ...prev,
+                                pointsOfContact: prev.pointsOfContact.filter((_, i) => i !== index)
+                              }));
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          <TextField
+                            label="Name"
+                            value={point.name}
+                            onChange={(value) => {
+                              setFormData(prev => ({
+                                ...prev,
+                                pointsOfContact: prev.pointsOfContact.map((p, i) => 
+                                  i === index ? { ...p, name: value } : p
+                                )
+                              }));
+                            }}
+                            placeholder="Contact name"
+                          />
+                          
+                          <TextField
+                            label="Phone"
+                            type="tel"
+                            value={point.phone}
+                            onChange={(value) => {
+                              setFormData(prev => ({
+                                ...prev,
+                                pointsOfContact: prev.pointsOfContact.map((p, i) => 
+                                  i === index ? { ...p, phone: value } : p
+                                )
+                              }));
+                            }}
+                            placeholder="Contact phone"
+                          />
+                          
+                          <TextField
+                            label="Email"
+                            type="email"
+                            value={point.email}
+                            onChange={(value) => {
+                              setFormData(prev => ({
+                                ...prev,
+                                pointsOfContact: prev.pointsOfContact.map((p, i) => 
+                                  i === index ? { ...p, email: value } : p
+                                )
+                              }));
+                            }}
+                            placeholder="Contact email"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Tags Field */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                    Tags
+                  </label>
+                  <TextField
+                    placeholder="e.g., client, vip, important (comma separated)"
+                    value={formData.tags.join(', ')}
+                    onChange={(value) => {
+                      const tags = value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+                      setFormData(prev => ({ ...prev, tags }));
+                    }}
+                  />
+                  {formData.tags.length > 0 && (
+                    <div style={{ 
+                      marginTop: '8px', 
+                      display: 'flex', 
+                      flexWrap: 'wrap', 
+                      gap: '6px' 
+                    }}>
+                      {formData.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          style={{
+                            padding: '6px 12px',
+                            backgroundColor: '#e8f5e8',
+                            color: '#008060',
+                            border: '1px solid #b8e6b8',
+                            borderRadius: '16px',
+                            fontSize: '13px',
+                            fontWeight: '500',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          {tag}
+                          <button
+                            onClick={() => {
+                              setFormData(prev => ({
+                                ...prev,
+                                tags: prev.tags.filter((_, i) => i !== index)
+                              }));
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#008060',
+                              cursor: 'pointer',
+                              padding: '0',
+                              display: 'flex',
+                              alignItems: 'center',
+                              fontSize: '14px',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Folder Selection */}

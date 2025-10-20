@@ -85,6 +85,8 @@ export const action = async ({ request }) => {
         const email = formData.get("email");
         const role = formData.get("role");
         const memo = formData.get("memo");
+        const address = formData.get("address");
+        const notes = formData.get("notes");
         const folderId = formData.get("folderId");
         const pointsOfContact = formData.get("pointsOfContact");
         const tags = formData.get("tags");
@@ -115,6 +117,8 @@ export const action = async ({ request }) => {
           ...(email && { email }),
           ...(role && { role }),
           ...(memo && { memo }),
+          ...(address && { address }),
+          ...(notes && { notes }),
           ...(pointsOfContact && { pointsOfContact: JSON.parse(pointsOfContact) }),
           ...(tags && { tags: JSON.parse(tags) }),
           ...(avatarColor && { avatarColor })
@@ -139,6 +143,8 @@ export const action = async ({ request }) => {
         const email = formData.get("email");
         const role = formData.get("role");
         const memo = formData.get("memo");
+        const address = formData.get("address");
+        const notes = formData.get("notes");
         const folderId = formData.get("folderId");
         const pointsOfContact = formData.get("pointsOfContact");
         const tags = formData.get("tags");
@@ -159,6 +165,8 @@ export const action = async ({ request }) => {
           ...(email !== null && { email }),
           ...(role !== null && { role }),
           ...(memo !== null && { memo }),
+          ...(address !== null && { address }),
+          ...(notes !== null && { notes }),
           ...(folderId !== null && { folderId: folderId || null }),
           ...(pointsOfContact && { pointsOfContact: JSON.parse(pointsOfContact) }),
           ...(tags && { tags: JSON.parse(tags) }),
