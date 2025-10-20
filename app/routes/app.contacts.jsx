@@ -985,8 +985,46 @@ export default function ContactsPage() {
   const handleManageMenu = (contact, event) => {
     event.stopPropagation();
     const rect = event.target.getBoundingClientRect();
+    
+    // Menu dimensions (approximate)
+    const menuWidth = 250;
+    const menuHeight = 180;
+    const padding = 8;
+    
+    // Viewport dimensions
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Calculate initial position (below and to the left of button)
+    let x = rect.left;
+    let y = rect.bottom + 4;
+    
+    // Check if menu would overflow right edge
+    if (x + menuWidth > viewportWidth - padding) {
+      // Position menu to the left of the button instead
+      x = rect.right - menuWidth;
+      // If still overflowing, align to right edge with padding
+      if (x < padding) {
+        x = viewportWidth - menuWidth - padding;
+      }
+    }
+    
+    // Check if menu would overflow bottom edge
+    if (y + menuHeight > viewportHeight - padding) {
+      // Position menu above the button instead
+      y = rect.top - menuHeight - 4;
+      // If still overflowing, align to bottom with padding
+      if (y < padding) {
+        y = viewportHeight - menuHeight - padding;
+      }
+    }
+    
+    // Ensure minimum padding from edges
+    x = Math.max(padding, Math.min(x, viewportWidth - menuWidth - padding));
+    y = Math.max(padding, Math.min(y, viewportHeight - menuHeight - padding));
+    
     setManageMenuContact(contact);
-    setManageMenuPosition({ x: rect.left, y: rect.bottom + 4 });
+    setManageMenuPosition({ x, y });
   };
 
   const closeManageMenu = () => {
@@ -3594,7 +3632,9 @@ export default function ContactsPage() {
                     borderRadius: '8px',
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                     zIndex: 99998,
-                    minWidth: '200px'
+                    width: '250px',
+                    maxHeight: '300px',
+                    overflowY: 'auto'
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
