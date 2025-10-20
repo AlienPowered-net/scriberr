@@ -85,8 +85,8 @@ export const action = async ({ request }) => {
         const email = formData.get("email");
         const role = formData.get("role");
         const memo = formData.get("memo");
-        const address = formData.get("address");
-        const notes = formData.get("notes");
+        // const address = formData.get("address"); // TODO: Uncomment after migration
+        // const notes = formData.get("notes"); // TODO: Uncomment after migration
         const folderId = formData.get("folderId");
         const pointsOfContact = formData.get("pointsOfContact");
         const tags = formData.get("tags");
@@ -117,8 +117,8 @@ export const action = async ({ request }) => {
           ...(email && { email }),
           ...(role && { role }),
           ...(memo && { memo }),
-          ...(address && { address }),
-          ...(notes && { notes }),
+          // ...(address && { address }), // TODO: Uncomment after migration
+          // ...(notes && { notes }), // TODO: Uncomment after migration
           ...(pointsOfContact && { pointsOfContact: JSON.parse(pointsOfContact) }),
           ...(tags && { tags: JSON.parse(tags) }),
           ...(avatarColor && { avatarColor })
@@ -143,8 +143,8 @@ export const action = async ({ request }) => {
         const email = formData.get("email");
         const role = formData.get("role");
         const memo = formData.get("memo");
-        const address = formData.get("address");
-        const notes = formData.get("notes");
+        // const address = formData.get("address"); // TODO: Uncomment after migration
+        // const notes = formData.get("notes"); // TODO: Uncomment after migration
         const folderId = formData.get("folderId");
         const pointsOfContact = formData.get("pointsOfContact");
         const tags = formData.get("tags");
@@ -165,8 +165,8 @@ export const action = async ({ request }) => {
           ...(email !== null && { email }),
           ...(role !== null && { role }),
           ...(memo !== null && { memo }),
-          ...(address !== null && { address }),
-          ...(notes !== null && { notes }),
+          // ...(address !== null && { address }), // TODO: Uncomment after migration
+          // ...(notes !== null && { notes }), // TODO: Uncomment after migration
           ...(folderId !== null && { folderId: folderId || null }),
           ...(pointsOfContact && { pointsOfContact: JSON.parse(pointsOfContact) }),
           ...(tags && { tags: JSON.parse(tags) }),

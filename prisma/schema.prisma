@@ -146,8 +146,9 @@ model Contact {
   email     String?
   role      String?
   memo      String? @db.Text
-  address   String? @db.Text
-  notes     String? @db.Text
+  // TODO: Uncomment after running migration
+  // address   String? @db.Text
+  // notes     String? @db.Text
   
   // Business-specific: points of contact (JSON array)
   pointsOfContact Json? @default("[]")
