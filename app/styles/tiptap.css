@@ -525,13 +525,10 @@
     pointer-events: none;
   }
   
-  /* Fix: Backdrop should not block clicks but be visible behind modal */
+  /* Hide backdrop completely - use modal shadow for depth instead */
   .Polaris-Backdrop {
-    pointer-events: none !important; /* Let clicks pass through to modal */
-    z-index: 100000000 !important; /* Below modal dialog */
-    opacity: 0.5 !important; /* Semi-transparent backdrop for focus */
-    background-color: rgba(0, 0, 0, 0.7) !important; /* Dark backdrop */
-    position: fixed !important;
+    display: none !important; /* Backdrop hidden */
+    pointer-events: none !important;
   }
   
   /* Modal Dialog container - allow clicks to reach content */
@@ -547,7 +544,8 @@
     z-index: 100000003 !important; /* Highest - above everything */
     position: relative !important;
     background-color: white !important; /* Ensure modal has opaque background */
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important; /* Add shadow for depth */
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.1) !important; /* Strong shadow for depth */
+    border-radius: 12px !important; /* Rounded corners for modern look */
   }
   
   /* Ensure all interactive elements in modal are clickable */
@@ -695,13 +693,10 @@
   pointer-events: none !important;
 }
 
-/* Backdrop should not block modal content but be visible behind it */
+/* Hide backdrop completely - modal shadow provides depth */
 body > .Polaris-Portal .Polaris-Backdrop {
-  z-index: 100000000 !important;
-  pointer-events: none !important; /* Don't block clicks to modal */
-  opacity: 0.5 !important; /* Semi-transparent for focus */
-  background-color: rgba(0, 0, 0, 0.7) !important; /* Dark backdrop */
-  position: fixed !important;
+  display: none !important; /* Backdrop hidden */
+  pointer-events: none !important;
 }
 
 /* Ensure Polaris modals always render above backdrop */
@@ -711,13 +706,14 @@ body > .Polaris-Portal .Polaris-Modal-Dialog {
   position: fixed !important;
 }
 
-/* Ensure modal content is clickable and visible above backdrop */
+/* Ensure modal content is clickable with strong shadow for depth */
 body > .Polaris-Portal .Polaris-Modal-Dialog__Modal {
   pointer-events: auto !important;
-  z-index: 100000003 !important; /* Above backdrop */
+  z-index: 100000003 !important;
   position: relative !important;
   background-color: white !important; /* Opaque background */
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important; /* Depth shadow */
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.1) !important; /* Strong shadow for depth */
+  border-radius: 12px !important; /* Rounded corners */
 }
 
 body > .Polaris-Portal .Polaris-Popover__Pane {
