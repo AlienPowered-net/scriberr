@@ -4024,65 +4024,48 @@ export default function Index() {
                           style={{
                             display: "inline-flex",
                             alignItems: "center",
-                            gap: showTagsSection ? "6px" : "6px",
-                            padding: showTagsSection ? "6px 10px" : "4px 8px",
-                            backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "#008060" : "#f6fff8") : (selectedTags.includes(tag) ? "#f6fff8" : "transparent"),
+                            gap: "4px",
+                            padding: "6px 10px",
+                            backgroundColor: selectedTags.includes(tag) ? "#e8f5e8" : "#f1f3f4",
                             borderRadius: "16px",
-                            border: showTagsSection ? (selectedTags.includes(tag) ? "none" : "1px solid #008060") : (selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060"),
+                            border: selectedTags.includes(tag) ? "1px solid #b8e6b8" : "1px solid #e1e3e5",
                             cursor: "pointer",
                             transition: "all 0.15s ease",
                             position: "relative",
-                            fontSize: showTagsSection ? "12px" : "12px",
-                            fontWeight: showTagsSection ? "500" : "400",
-                            color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "#008060" : "#008060"),
-                            minHeight: showTagsSection ? "28px" : "24px",
+                            fontSize: "12px",
+                            fontWeight: "500",
+                            color: selectedTags.includes(tag) ? "#008060" : "#374151",
+                            minHeight: "28px",
                             justifyContent: "center",
-                            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                            boxShadow: showTagsSection ? (selectedTags.includes(tag) ? "0 2px 4px rgba(0, 128, 96, 0.2)" : "none") : "none"
+                            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
                           }}
                           onClick={() => handleTagClick(tag)}
                           onMouseEnter={(e) => {
-                            if (showTagsSection) {
-                              if (selectedTags.includes(tag)) {
-                                e.currentTarget.style.backgroundColor = "#006b52";
-                                e.currentTarget.style.transform = "translateY(-1px)";
-                                e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 128, 96, 0.3)";
-                              } else {
-                                e.currentTarget.style.backgroundColor = "#e8f5f0";
-                                e.currentTarget.style.borderColor = "#008060";
-                              }
-                            } else if (!selectedTags.includes(tag)) {
-                              e.currentTarget.style.backgroundColor = "#e1e3e5";
-                              e.currentTarget.style.borderColor = "#aeb4b9";
+                            if (selectedTags.includes(tag)) {
+                              e.currentTarget.style.backgroundColor = "#d4f0e0";
+                            } else {
+                              e.currentTarget.style.backgroundColor = "#e8e8e9";
                             }
                           }}
                           onMouseLeave={(e) => {
-                            if (showTagsSection) {
-                              if (selectedTags.includes(tag)) {
-                                e.currentTarget.style.backgroundColor = "#008060";
-                                e.currentTarget.style.transform = "translateY(0)";
-                                e.currentTarget.style.boxShadow = "0 2px 4px rgba(0, 128, 96, 0.2)";
-                              } else {
-                                e.currentTarget.style.backgroundColor = "#f6fff8";
-                                e.currentTarget.style.borderColor = "#008060";
-                              }
-                            } else if (!selectedTags.includes(tag)) {
-                              e.currentTarget.style.backgroundColor = "#f6f6f7";
-                              e.currentTarget.style.borderColor = "#d1d3d4";
+                            if (selectedTags.includes(tag)) {
+                              e.currentTarget.style.backgroundColor = "#e8f5e8";
+                            } else {
+                              e.currentTarget.style.backgroundColor = "#f1f3f4";
                             }
                           }}
                         >
-                          {(showTagsSection || selectedTags.includes(tag)) && (
-                            <ProductFilledIcon style={{ width: '14px', height: '14px', color: (showTagsSection && selectedTags.includes(tag)) ? 'white' : '#008060' }} />
+                          {selectedTags.includes(tag) && (
+                            <ProductFilledIcon style={{ width: '14px', height: '14px', color: '#008060' }} />
                           )}
                           <span>{tag}</span>
                           <span style={{ 
-                            fontSize: showTagsSection ? "11px" : "11px", 
-                            color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "#008060" : "#6d7175"), 
-                            backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 128, 96, 0.1)") : (selectedTags.includes(tag) ? "rgba(0, 128, 96, 0.1)" : "rgba(0, 0, 0, 0.1)"), 
-                            padding: showTagsSection ? "2px 5px" : "1px 4px", 
+                            fontSize: "11px", 
+                            color: selectedTags.includes(tag) ? "#008060" : "#6d7175", 
+                            backgroundColor: selectedTags.includes(tag) ? "rgba(0, 128, 96, 0.1)" : "rgba(0, 0, 0, 0.05)", 
+                            padding: "2px 5px", 
                             borderRadius: "10px",
-                            fontWeight: showTagsSection ? "600" : "500"
+                            fontWeight: "500"
                           }}>
                             {count}
                           </span>
@@ -5865,65 +5848,48 @@ export default function Index() {
                               style={{
                                 display: "inline-flex",
                                 alignItems: "center",
-                                gap: showTagsSection ? "6px" : "6px",
-                                padding: showTagsSection ? "6px 10px" : "4px 8px",
-                                backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "#008060" : "#f6fff8") : (selectedTags.includes(tag) ? "#f6fff8" : "transparent"),
+                                gap: "4px",
+                                padding: "6px 10px",
+                                backgroundColor: selectedTags.includes(tag) ? "#e8f5e8" : "#f1f3f4",
                                 borderRadius: "16px",
-                                border: showTagsSection ? (selectedTags.includes(tag) ? "none" : "1px solid #008060") : (selectedTags.includes(tag) ? "1px solid #008060" : "1px solid #008060"),
+                                border: selectedTags.includes(tag) ? "1px solid #b8e6b8" : "1px solid #e1e3e5",
                                 cursor: "pointer",
                                 transition: "all 0.15s ease",
                                 position: "relative",
-                                fontSize: showTagsSection ? "12px" : "12px",
-                                fontWeight: showTagsSection ? "500" : "400",
-                                color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "#008060" : "#008060"),
-                                minHeight: showTagsSection ? "28px" : "24px",
+                                fontSize: "12px",
+                                fontWeight: "500",
+                                color: selectedTags.includes(tag) ? "#008060" : "#374151",
+                                minHeight: "28px",
                                 justifyContent: "center",
-                                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                                boxShadow: showTagsSection ? (selectedTags.includes(tag) ? "0 2px 4px rgba(0, 128, 96, 0.2)" : "none") : "none"
+                                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
                               }}
                               onClick={() => handleTagClick(tag)}
                               onMouseEnter={(e) => {
-                                if (showTagsSection) {
-                                  if (selectedTags.includes(tag)) {
-                                    e.currentTarget.style.backgroundColor = "#006b52";
-                                    e.currentTarget.style.transform = "translateY(-1px)";
-                                    e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 128, 96, 0.3)";
-                                  } else {
-                                    e.currentTarget.style.backgroundColor = "#e8f5f0";
-                                    e.currentTarget.style.borderColor = "#008060";
-                                  }
-                                } else if (!selectedTags.includes(tag)) {
-                                  e.currentTarget.style.backgroundColor = "#e1e3e5";
-                                  e.currentTarget.style.borderColor = "#aeb4b9";
+                                if (selectedTags.includes(tag)) {
+                                  e.currentTarget.style.backgroundColor = "#d4f0e0";
+                                } else {
+                                  e.currentTarget.style.backgroundColor = "#e8e8e9";
                                 }
                               }}
                               onMouseLeave={(e) => {
-                                if (showTagsSection) {
-                                  if (selectedTags.includes(tag)) {
-                                    e.currentTarget.style.backgroundColor = "#008060";
-                                    e.currentTarget.style.transform = "translateY(0)";
-                                    e.currentTarget.style.boxShadow = "0 2px 4px rgba(0, 128, 96, 0.2)";
-                                  } else {
-                                    e.currentTarget.style.backgroundColor = "#f6fff8";
-                                    e.currentTarget.style.borderColor = "#008060";
-                                  }
-                                } else if (!selectedTags.includes(tag)) {
-                                  e.currentTarget.style.backgroundColor = "#f6f6f7";
-                                  e.currentTarget.style.borderColor = "#d1d3d4";
+                                if (selectedTags.includes(tag)) {
+                                  e.currentTarget.style.backgroundColor = "#e8f5e8";
+                                } else {
+                                  e.currentTarget.style.backgroundColor = "#f1f3f4";
                                 }
                               }}
                             >
-                              {(showTagsSection || selectedTags.includes(tag)) && (
-                                <ProductFilledIcon style={{ width: '14px', height: '14px', color: (showTagsSection && selectedTags.includes(tag)) ? 'white' : '#008060' }} />
+                              {selectedTags.includes(tag) && (
+                                <ProductFilledIcon style={{ width: '14px', height: '14px', color: '#008060' }} />
                               )}
                               <span>{tag}</span>
                               <span style={{ 
-                                fontSize: showTagsSection ? "11px" : "11px", 
-                                color: showTagsSection ? (selectedTags.includes(tag) ? "white" : "#008060") : (selectedTags.includes(tag) ? "#008060" : "#6d7175"), 
-                                backgroundColor: showTagsSection ? (selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 128, 96, 0.1)") : (selectedTags.includes(tag) ? "rgba(0, 128, 96, 0.1)" : "rgba(0, 0, 0, 0.1)"), 
-                                padding: showTagsSection ? "2px 5px" : "1px 4px", 
+                                fontSize: "11px", 
+                                color: selectedTags.includes(tag) ? "#008060" : "#6d7175", 
+                                backgroundColor: selectedTags.includes(tag) ? "rgba(0, 128, 96, 0.1)" : "rgba(0, 0, 0, 0.05)", 
+                                padding: "2px 5px", 
                                 borderRadius: "10px",
-                                fontWeight: showTagsSection ? "600" : "500"
+                                fontWeight: "500"
                               }}>
                                 {count}
                               </span>

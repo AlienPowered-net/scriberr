@@ -9,7 +9,8 @@ import {
   Icon,
   Badge,
   Tooltip,
-  ButtonGroup
+  ButtonGroup,
+  Avatar
 } from '@shopify/polaris';
 import {
   PersonIcon,
@@ -30,6 +31,30 @@ const ContactCard = ({
 }) => {
   const [copiedField, setCopiedField] = useState(null);
   const cardRef = useRef(null);
+
+  // Get contact initials for avatar
+  const getInitials = () => {
+    if (contact.type === 'PERSON') {
+      const first = (contact.firstName || '').trim();
+      const last = (contact.lastName || '').trim();
+      if (first && last) {
+        return (first[0] + last[0]).toUpperCase();
+      } else if (first) {
+        return first.substring(0, 2).toUpperCase();
+      } else if (last) {
+        return last.substring(0, 2).toUpperCase();
+      }
+      return 'UN';
+    } else {
+      const business = (contact.businessName || '').trim();
+      if (business.length >= 2) {
+        return business.substring(0, 2).toUpperCase();
+      } else if (business.length === 1) {
+        return business[0].toUpperCase();
+      }
+      return 'BU';
+    }
+  };
 
   // Handle copy to clipboard
   const handleCopy = async (text, fieldName) => {
@@ -69,19 +94,7 @@ const ContactCard = ({
       {/* Header with name and type */}
       <InlineStack align="space-between" blockAlign="center">
         <InlineStack gap="200" blockAlign="center">
-          <div
-            style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "50%",
-              backgroundColor: contact.avatarColor || (contact.type === 'PERSON' ? '#10b981' : '#f97316'),
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
-            <Icon source={getTypeIcon()} tone="base" />
-          </div>
+          <Avatar initials={getInitials()} size="medium" />
           <Text as="h3" variant="headingMd" fontWeight="semibold">
             {getDisplayName()}
           </Text>

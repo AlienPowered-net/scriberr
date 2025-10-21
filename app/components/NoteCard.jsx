@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { Card, Text, Badge, Button, Group, Stack } from "@mantine/core";
-import { IconCopy, IconFolder, IconPin } from "@tabler/icons-react";
-import { Tooltip, Popover, ActionList } from "@shopify/polaris";
+import { IconCopy, IconFolder } from "@tabler/icons-react";
+import { Tooltip, Popover, ActionList, Icon } from "@shopify/polaris";
+import { PinFilledIcon } from "@shopify/polaris-icons";
 
 const NoteCard = ({
   title,
@@ -74,7 +75,9 @@ const NoteCard = ({
           onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
           onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
         >
-          <IconPin size={14} />
+          <div style={{ color: '#008060' }}>
+            <Icon source={PinFilledIcon} />
+          </div>
           {isPinned ? "Unpin" : "Pin"}
         </div>
         <div
@@ -150,12 +153,12 @@ const NoteCard = ({
     switch (state) {
       case "pinned":
         return {
-          bg: "#f0f7fd",
+          bg: "#f6fff9",
           style: {
-            border: "1px solid #4FC3F7",
+            border: "1px solid #008060",
             cursor: "pointer",
             transition: "all 0.2s ease",
-            boxShadow: "0 2px 6px rgba(79, 195, 247, 0.2)"
+            boxShadow: "0 2px 6px rgba(0, 128, 96, 0.2)"
           }
         };
       case "default":

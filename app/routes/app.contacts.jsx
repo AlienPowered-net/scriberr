@@ -74,7 +74,8 @@ import {
   XIcon,
   ExchangeIcon,
   SearchIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  PinFilledIcon
 } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
 import FolderIconPicker from "../components/FolderIconPicker";
@@ -618,6 +619,7 @@ export default function ContactsPage() {
   const [showTagsSection, setShowTagsSection] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
   const [tagsInputValue, setTagsInputValue] = useState('');
+  const [tagToDelete, setTagToDelete] = useState(null);
   
   // Manage menu state
   const [manageMenuContact, setManageMenuContact] = useState(null);
@@ -1048,6 +1050,58 @@ export default function ContactsPage() {
       setTimeout(() => setAlertMessage(''), 3000);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Handle tag deletion from all contacts
+  const handleDeleteTag = async (tagName) => {
+    setIsLoading(true);
+    try {
+      // Get all contacts that have this tag
+      const contactsWithTag = contacts.filter(contact => 
+        contact.tags && contact.tags.includes(tagName)
+      );
+
+      // Update each contact to remove the tag
+      for (const contact of contactsWithTag) {
+        const updatedTags = contact.tags.filter(tag => tag !== tagName);
+        
+        const form = new FormData();
+        form.append('_action', 'update');
+        form.append('id', contact.id);
+        form.append('tags', JSON.stringify(updatedTags));
+
+        await fetch('/api/contacts', {
+          method: 'POST',
+          body: form
+        });
+      }
+
+      // Update local state
+      setContacts(prev => prev.map(contact => {
+        if (contact.tags && contact.tags.includes(tagName)) {
+          return {
+            ...contact,
+            tags: contact.tags.filter(tag => tag !== tagName)
+          };
+        }
+        return contact;
+      }));
+
+      // Remove from selected tags if it was selected
+      setSelectedTags(prev => prev.filter(tag => tag !== tagName));
+
+      setAlertMessage(`Tag "${tagName}" deleted from all contacts`);
+      setAlertType("success");
+      setTimeout(() => setAlertMessage(''), 3000);
+    } catch (error) {
+      console.error('Error deleting tag:', error);
+      setAlertMessage("Failed to delete tag");
+      setAlertType("error");
+      setTimeout(() => setAlertMessage(''), 3000);
+    } finally {
+      setIsLoading(false);
+      setTagToDelete(null);
     }
   };
 
@@ -1655,21 +1709,25 @@ export default function ContactsPage() {
                                     }}
                                   >
                                     {tagData.name} ({tagData.count})
-                                    {selectedTags.includes(tagData.name) && (
+                                    {showTagsSection && (
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          setSelectedTags(prev => prev.filter(t => t !== tagData.name));
+                                          setTagToDelete(tagData.name);
                                         }}
                                         style={{
                                           background: "none",
                                           border: "none",
-                                          color: "#008060",
+                                          color: "#dc2626",
                                           cursor: "pointer",
-                                          padding: "0",
-                                          fontSize: "12px",
-                                          marginLeft: "2px"
+                                          padding: "0 2px",
+                                          fontSize: "14px",
+                                          marginLeft: "4px",
+                                          fontWeight: "bold",
+                                          display: "flex",
+                                          alignItems: "center"
                                         }}
+                                        title="Delete tag from all contacts"
                                       >
                                         ×
                                       </button>
@@ -1993,6 +2051,7 @@ export default function ContactsPage() {
                                   cursor: "pointer",
                                   backgroundColor: selectedContacts.includes(contact.id) ? "#fffbf8" : "transparent",
                                   borderLeft: selectedContacts.includes(contact.id) ? "3px solid #FF8C00" : "3px solid transparent",
+                                  boxShadow: selectedContacts.includes(contact.id) ? "0 4px 12px rgba(255, 140, 0, 0.3)" : "none",
                                   transition: "all 0.2s ease",
                                   alignItems: "center"
                                 }}
@@ -2009,30 +2068,32 @@ export default function ContactsPage() {
                               >
                                 {/* Profile Avatar */}
                                 <div style={{ display: "flex", alignItems: "center" }}>
-                                  <div
-                                    style={{
-                                      width: "40px",
-                                      height: "40px",
-                                      borderRadius: "50%",
-                                      backgroundColor: contact.avatarColor || (contact.type === 'PERSON' ? '#10b981' : '#f97316'),
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                      color: "white"
-                                    }}
-                                  >
-                                    <Icon 
-                                      source={contact.type === 'PERSON' ? PersonIcon : OrganizationIcon} 
-                                      tone="base"
-                                      style={{ color: 'white' }}
-                                    />
-                                  </div>
+                                  <Avatar 
+                                    initials={(() => {
+                                      if (contact.type === 'PERSON') {
+                                        const first = (contact.firstName || '').trim();
+                                        const last = (contact.lastName || '').trim();
+                                        if (first && last) return (first[0] + last[0]).toUpperCase();
+                                        else if (first) return first.substring(0, 2).toUpperCase();
+                                        else if (last) return last.substring(0, 2).toUpperCase();
+                                        return 'UN';
+                                      } else {
+                                        const business = (contact.businessName || '').trim();
+                                        if (business.length >= 2) return business.substring(0, 2).toUpperCase();
+                                        else if (business.length === 1) return business[0].toUpperCase();
+                                        return 'BU';
+                                      }
+                                    })()}
+                                    size="small"
+                                  />
                                 </div>
                                 
                                 {/* First Name */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                   {contact.pinnedAt && (
-                                    <i className="fas fa-thumbtack" style={{ color: '#FF8C00', fontSize: '12px' }}></i>
+                                    <div style={{ color: '#008060', display: 'flex', alignItems: 'center' }}>
+                                      <Icon source={PinFilledIcon} />
+                                    </div>
                                   )}
                                   <Text as="span" variant="bodyMd">
                                     {contact.firstName || '-'}
@@ -2078,16 +2139,40 @@ export default function ContactsPage() {
                                 
                                 {/* Action Buttons */}
                                 <div style={{ display: "flex", gap: "4px" }}>
-                                  <Button
-                                    size="micro"
-                                    variant={selectedContacts.includes(contact.id) ? "primary" : "secondary"}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleContactSelect(contact.id);
-                                    }}
-                                  >
-                                    Select
-                                  </Button>
+                                  {selectedContacts.includes(contact.id) ? (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleContactSelect(contact.id);
+                                      }}
+                                      style={{
+                                        padding: '4px 12px',
+                                        backgroundColor: '#FF8C00',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        fontSize: '12px',
+                                        fontWeight: '500',
+                                        cursor: 'pointer',
+                                        transition: 'background-color 0.2s'
+                                      }}
+                                      onMouseEnter={(e) => e.target.style.backgroundColor = '#E67E00'}
+                                      onMouseLeave={(e) => e.target.style.backgroundColor = '#FF8C00'}
+                                    >
+                                      Select
+                                    </button>
+                                  ) : (
+                                    <Button
+                                      size="micro"
+                                      variant="secondary"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleContactSelect(contact.id);
+                                      }}
+                                    >
+                                      Select
+                                    </Button>
+                                  )}
                                   <Button
                                     size="micro"
                                     variant="secondary"
@@ -2963,21 +3048,25 @@ export default function ContactsPage() {
                             }}
                           >
                             {tagData.name} ({tagData.count})
-                            {selectedTags.includes(tagData.name) && (
+                            {showTagsSection && (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setSelectedTags(prev => prev.filter(t => t !== tagData.name));
+                                  setTagToDelete(tagData.name);
                                 }}
                                 style={{
                                   background: 'none',
                                   border: 'none',
-                                  color: '#008060',
+                                  color: '#dc2626',
                                   cursor: 'pointer',
-                                  padding: '0',
-                                  fontSize: '12px',
-                                  marginLeft: '2px'
+                                  padding: '0 2px',
+                                  fontSize: '14px',
+                                  marginLeft: '4px',
+                                  fontWeight: 'bold',
+                                  display: 'flex',
+                                  alignItems: 'center'
                                 }}
+                                title="Delete tag from all contacts"
                               >
                                 ×
                               </button>
@@ -3336,34 +3425,49 @@ export default function ContactsPage() {
                     <div
                       key={contact.id}
                       style={{
+                        position: 'relative',
                         border: selectedContacts.includes(contact.id) ? '2px solid #FF8C00' : '1px solid #e1e3e5',
                         borderRadius: '8px',
                         marginBottom: '8px',
                         transition: 'all 0.2s ease',
                         backgroundColor: selectedContacts.includes(contact.id) ? '#fffbf8' : 'white',
-                        overflow: 'hidden'
+                        overflow: 'hidden',
+                        boxShadow: selectedContacts.includes(contact.id) ? '0 4px 12px rgba(255, 140, 0, 0.3)' : 'none'
                       }}
                     >
+                      {/* Pin Icon - Top Right */}
+                      {contact.pinnedAt && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '8px',
+                          right: '8px',
+                          zIndex: 1,
+                          color: '#008060'
+                        }}>
+                          <Icon source={PinFilledIcon} />
+                        </div>
+                      )}
+                      
                       {/* Contact Info Section */}
                       <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '50%',
-                          backgroundColor: contact.avatarColor || (contact.type === 'PERSON' ? '#008060' : '#f57c00'),
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontSize: '18px',
-                          fontWeight: '600'
-                        }}>
-                          <Icon 
-                            source={contact.type === 'PERSON' ? PersonIcon : OrganizationIcon} 
-                            tone="base"
-                            style={{ color: 'white' }}
-                          />
-                        </div>
+                        <Avatar 
+                          initials={(() => {
+                            if (contact.type === 'PERSON') {
+                              const first = (contact.firstName || '').trim();
+                              const last = (contact.lastName || '').trim();
+                              if (first && last) return (first[0] + last[0]).toUpperCase();
+                              else if (first) return first.substring(0, 2).toUpperCase();
+                              else if (last) return last.substring(0, 2).toUpperCase();
+                              return 'UN';
+                            } else {
+                              const business = (contact.businessName || '').trim();
+                              if (business.length >= 2) return business.substring(0, 2).toUpperCase();
+                              else if (business.length === 1) return business[0].toUpperCase();
+                              return 'BU';
+                            }
+                          })()}
+                          size="medium"
+                        />
                         <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => handleContactEdit(contact)}>
                           <h3 style={{ 
                             margin: 0, 
@@ -3374,9 +3478,6 @@ export default function ContactsPage() {
                             alignItems: 'center',
                             gap: '8px'
                           }}>
-                            {contact.pinnedAt && (
-                              <i className="fas fa-thumbtack" style={{ color: '#FF8C00', fontSize: '12px' }}></i>
-                            )}
                             {contact.type === 'PERSON' 
                               ? `${contact.firstName} ${contact.lastName}`.trim()
                               : contact.businessName
@@ -3417,7 +3518,7 @@ export default function ContactsPage() {
                             flex: 1,
                             padding: '12px',
                             border: 'none',
-                            backgroundColor: selectedContacts.includes(contact.id) ? '#0078d4' : '#f6f6f7',
+                            backgroundColor: selectedContacts.includes(contact.id) ? '#FF8C00' : '#f6f6f7',
                             color: selectedContacts.includes(contact.id) ? 'white' : '#374151',
                             fontSize: '14px',
                             fontWeight: '500',
@@ -4180,6 +4281,30 @@ export default function ContactsPage() {
             <Modal.Section>
               <Text as="p">
                 Are you sure you want to delete this contact? This action is permanent and cannot be undone.
+              </Text>
+            </Modal.Section>
+          </Modal>
+        )}
+
+        {/* Tag Deletion Confirmation Modal */}
+        {tagToDelete && (
+          <Modal
+            open={!!tagToDelete}
+            onClose={() => setTagToDelete(null)}
+            title="Delete Tag"
+            primaryAction={{
+              content: 'Delete',
+              onAction: () => handleDeleteTag(tagToDelete),
+              destructive: true
+            }}
+            secondaryActions={[{
+              content: 'Cancel',
+              onAction: () => setTagToDelete(null)
+            }]}
+          >
+            <Modal.Section>
+              <Text as="p">
+                Are you sure you want to delete the tag "{tagToDelete}" from all contacts? This action is permanent and cannot be undone.
               </Text>
             </Modal.Section>
           </Modal>
