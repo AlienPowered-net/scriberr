@@ -2886,7 +2886,7 @@ export default function ContactsPage() {
                 </button>
                 <button
                   onClick={() => {
-                    // TODO: Implement tags functionality
+                    setShowTagsSection(!showTagsSection);
                   }}
                   style={{
                     flex: 1,
@@ -2895,10 +2895,10 @@ export default function ContactsPage() {
                     justifyContent: 'center',
                     gap: '8px',
                     padding: '12px 16px',
-                    border: '1px solid #e1e3e5',
+                    border: showTagsSection ? '2px solid #008060' : '1px solid #e1e3e5',
                     borderRadius: '8px',
-                    backgroundColor: 'white',
-                    color: '#374151',
+                    backgroundColor: showTagsSection ? '#f6fff8' : 'white',
+                    color: showTagsSection ? '#008060' : '#374151',
                     fontSize: '14px',
                     fontWeight: '600',
                     cursor: 'pointer',
@@ -2909,6 +2909,90 @@ export default function ContactsPage() {
                   All Tags
                 </button>
               </div>
+
+              {/* Tags Section */}
+              {(showTagsSection || selectedTags.length > 0) && (
+                <div style={{ 
+                  marginBottom: '12px',
+                  padding: '12px',
+                  backgroundColor: '#f8f9fa',
+                  border: '1px solid #e1e3e5',
+                  borderRadius: '8px'
+                }}>
+                  <div style={{ marginBottom: '8px', fontSize: '12px', fontWeight: '600', color: '#374151' }}>
+                    {selectedTags.length > 0 ? 'Selected Tags:' : 'All Tags:'}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {(() => {
+                      const allTags = contacts.reduce((acc, contact) => {
+                        if (contact.tags) {
+                          contact.tags.forEach(tag => {
+                            acc[tag] = (acc[tag] || 0) + 1;
+                          });
+                        }
+                        return acc;
+                      }, {});
+                      
+                      const tagsToShow = selectedTags.length > 0 
+                        ? selectedTags.map(tag => ({ name: tag, count: allTags[tag] || 0 }))
+                        : Object.entries(allTags).map(([tag, count]) => ({ name: tag, count }));
+                      
+                      return tagsToShow.length > 0 ? (
+                        tagsToShow.map((tagData, index) => (
+                          <span
+                            key={index}
+                            onClick={() => {
+                              if (selectedTags.includes(tagData.name)) {
+                                setSelectedTags(prev => prev.filter(t => t !== tagData.name));
+                              } else {
+                                setSelectedTags(prev => [...prev, tagData.name]);
+                              }
+                            }}
+                            style={{
+                              padding: '6px 10px',
+                              backgroundColor: selectedTags.includes(tagData.name) ? '#e8f5e8' : '#f1f3f4',
+                              color: selectedTags.includes(tagData.name) ? '#008060' : '#374151',
+                              border: selectedTags.includes(tagData.name) ? '1px solid #b8e6b8' : '1px solid #e1e3e5',
+                              borderRadius: '16px',
+                              fontSize: '12px',
+                              fontWeight: '500',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            {tagData.name} ({tagData.count})
+                            {selectedTags.includes(tagData.name) && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedTags(prev => prev.filter(t => t !== tagData.name));
+                                }}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: '#008060',
+                                  cursor: 'pointer',
+                                  padding: '0',
+                                  fontSize: '12px',
+                                  marginLeft: '2px'
+                                }}
+                              >
+                                ×
+                              </button>
+                            )}
+                          </span>
+                        ))
+                      ) : (
+                        <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                          No tags found
+                        </span>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
 
               {/* Instructional Text */}
               <div style={{ 
