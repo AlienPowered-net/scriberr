@@ -2922,86 +2922,14 @@ export default function ContactsPage() {
                       </div>
                     ) : (
                       folders.map((folder) => (
-                        <div
-                          key={folder.id}
-                          style={{
-                            position: 'relative',
-                            marginBottom: '8px',
-                            padding: '12px 16px',
-                            border: selectedFolder?.id === folder.id ? '2px solid #008060' : '1px solid #e1e3e5',
-                            borderRadius: '8px',
-                            backgroundColor: selectedFolder?.id === folder.id ? '#f6fff8' : '#F8F9FA',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px'
-                          }}
-                          onClick={() => handleFolderSelect(folder)}
+                        <DraggableFolder 
+                          key={folder.id} 
+                          folder={folder}
+                          selectedFolder={selectedFolder?.id}
+                          openFolderMenu={openFolderMenu}
+                          setOpenFolderMenu={setOpenFolderMenu}
+                          onFolderClick={handleFolderSelect}
                         >
-                          {/* Drag Handle */}
-                          <div
-                            style={{
-                              cursor: 'grab',
-                              color: '#666',
-                              fontSize: '16px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              padding: '4px'
-                            }}
-                            onMouseDown={(e) => e.stopPropagation()}
-                          >
-                            <DragHandleIcon style={{ width: '16px', height: '16px' }} />
-                          </div>
-
-                          {/* Folder Icon */}
-                          <i className={`far fa-${folder.icon || 'folder'}`} style={{ 
-                            fontSize: '18px', 
-                            color: folder.iconColor || '#f57c00' 
-                          }}></i>
-
-                          {/* Folder Name */}
-                          <div style={{ flex: 1, fontSize: '14px', fontWeight: '500', color: '#374151' }}>
-                            {folder.name}
-                          </div>
-
-                          {/* Active Badge */}
-                          {selectedFolder?.id === folder.id && (
-                            <div style={{
-                              padding: '2px 8px',
-                              backgroundColor: '#f6fff8',
-                              color: '#008060',
-                              fontSize: '12px',
-                              fontWeight: '500',
-                              borderRadius: '12px',
-                              border: '1px solid #008060'
-                            }}>
-                              Active
-                            </div>
-                          )}
-
-                          {/* Menu Button */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenFolderMenu(openFolderMenu === folder.id ? null : folder.id);
-                            }}
-                            style={{
-                              padding: '4px',
-                              border: 'none',
-                              background: 'none',
-                              cursor: 'pointer',
-                              color: '#6b7280',
-                              fontSize: '16px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}
-                          >
-                            <MenuHorizontalIcon style={{ width: '16px', height: '16px' }} />
-                          </button>
-
-                          {/* Folder Menu */}
                           {openFolderMenu === folder.id && (
                             <div style={{
                               position: 'absolute',
@@ -3088,7 +3016,7 @@ export default function ContactsPage() {
                               </button>
                             </div>
                           )}
-                        </div>
+                        </DraggableFolder>
                       ))
                     )}
                   </div>
