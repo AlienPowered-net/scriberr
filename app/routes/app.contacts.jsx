@@ -627,6 +627,7 @@ export default function ContactsPage() {
   
   // Bulk actions state
   const [showBulkMoveModal, setShowBulkMoveModal] = useState(false);
+  const [selectedFolderForMove, setSelectedFolderForMove] = useState(null);
   const [showContactDeleteModal, setShowContactDeleteModal] = useState(null);
 
   // Mobile detection
@@ -1219,10 +1220,11 @@ export default function ContactsPage() {
   };
 
   // Handle bulk move contacts
-  const handleBulkMoveContacts = async (targetFolderId) => {
-    if (selectedContacts.length === 0) return;
+  const handleBulkMoveContacts = async () => {
+    if (selectedContacts.length === 0 || !selectedFolderForMove) return;
 
     setIsLoading(true);
+    const targetFolderId = selectedFolderForMove;
     try {
       const form = new FormData();
       form.append('_action', 'bulk-move');
@@ -1246,6 +1248,7 @@ export default function ContactsPage() {
         
         setSelectedContacts([]);
         setShowBulkMoveModal(false);
+        setSelectedFolderForMove(null);
         setAlertMessage(`Successfully moved ${selectedContacts.length} contact(s)`);
         setAlertType("success");
         setTimeout(() => setAlertMessage(''), 3000);
@@ -4207,12 +4210,14 @@ export default function ContactsPage() {
             onClose={() => {
               setShowBulkMoveModal(false);
               setSelectedContacts([]);
+              setSelectedFolderForMove(null);
             }}
             title="Move Contacts"
             primaryAction={{
               content: 'Move',
-              onAction: () => {
-                // This will be handled by folder selection
+              disabled: !selectedFolderForMove,
+              onAction: async () => {
+                await handleBulkMoveContacts();
               }
             }}
             secondaryActions={[{
@@ -4220,40 +4225,64 @@ export default function ContactsPage() {
               onAction: () => {
                 setShowBulkMoveModal(false);
                 setSelectedContacts([]);
+                setSelectedFolderForMove(null);
               }
             }]}
           >
             <Modal.Section>
               <Text as="p" style={{ marginBottom: '16px' }}>
-                Select a folder to move {selectedContacts.length} contact{selectedContacts.length > 1 ? 's' : ''} to nested folders.
+                Select a folder to move {selectedContacts.length} contact{selectedContacts.length > 1 ? 's' : ''} to.
               </Text>
               <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                {folders.map((folder) => (
-                  <div
-                    key={folder.id}
-                    onClick={() => handleBulkMoveContacts(folder.id)}
-                    style={{
-                      padding: '12px',
-                      border: '1px solid #e1e3e5',
-                      borderRadius: '8px',
-                      marginBottom: '8px',
-                      cursor: 'pointer',
-                      backgroundColor: '#fafbfb',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px'
-                    }}
-                  >
-                    <i 
-                      className={`far fa-${folder.icon || 'folder'}`} 
-                      style={{ 
-                        fontSize: '18px', 
-                        color: folder.iconColor || '#f57c00' 
+                {folders.map((folder) => {
+                  const isCurrentFolder = selectedContacts.length === 1 && contacts.find(c => c.id === selectedContacts[0])?.folderId === folder.id;
+                  const isSelected = selectedFolderForMove === folder.id;
+                  
+                  return (
+                    <div
+                      key={folder.id}
+                      onClick={() => {
+                        if (!isCurrentFolder) {
+                          setSelectedFolderForMove(folder.id);
+                        }
                       }}
-                    ></i>
-                    <span style={{ fontWeight: '500' }}>{folder.name}</span>
-                  </div>
-                ))}
+                      style={{
+                        padding: '12px',
+                        border: isSelected ? '2px solid #008060' : '1px solid #e1e3e5',
+                        borderRadius: '8px',
+                        marginBottom: '8px',
+                        cursor: isCurrentFolder ? 'not-allowed' : 'pointer',
+                        backgroundColor: isSelected ? '#e8f5e8' : (isCurrentFolder ? '#f1f3f4' : '#fafbfb'),
+                        opacity: isCurrentFolder ? 0.6 : 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <i 
+                        className={`far fa-${folder.icon || 'folder'}`} 
+                        style={{ 
+                          fontSize: '18px', 
+                          color: folder.iconColor || '#f57c00' 
+                        }}
+                      ></i>
+                      <span style={{ fontWeight: '500', flex: 1 }}>{folder.name}</span>
+                      {isCurrentFolder && (
+                        <span style={{ 
+                          fontSize: '12px', 
+                          color: '#6d7175',
+                          fontWeight: '600',
+                          backgroundColor: '#e1e3e5',
+                          padding: '2px 8px',
+                          borderRadius: '12px'
+                        }}>
+                          Current
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </Modal.Section>
           </Modal>

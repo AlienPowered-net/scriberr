@@ -4039,6 +4039,29 @@ export default function Index() {
                           }}
                         >
                           {tag} ({count})
+                          {showTagsSection && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowDeleteTagConfirm(tag);
+                              }}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                color: "#dc2626",
+                                cursor: "pointer",
+                                padding: "0 2px",
+                                fontSize: "14px",
+                                marginLeft: "4px",
+                                fontWeight: "bold",
+                                display: "flex",
+                                alignItems: "center"
+                              }}
+                              title="Delete tag from all notes"
+                            >
+                              ×
+                            </button>
+                          )}
                         </span>
                       ))}
                     </div>
@@ -5791,6 +5814,29 @@ export default function Index() {
                               }}
                             >
                               {tag} ({count})
+                              {showTagsSection && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowDeleteTagConfirm(tag);
+                                  }}
+                                  style={{
+                                    background: "none",
+                                    border: "none",
+                                    color: "#dc2626",
+                                    cursor: "pointer",
+                                    padding: "0 2px",
+                                    fontSize: "14px",
+                                    marginLeft: "4px",
+                                    fontWeight: "bold",
+                                    display: "flex",
+                                    alignItems: "center"
+                                  }}
+                                  title="Delete tag from all notes"
+                                >
+                                  ×
+                                </button>
+                              )}
                             </span>
                           ))}
                         </div>
