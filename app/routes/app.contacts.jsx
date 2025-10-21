@@ -1667,7 +1667,7 @@ export default function ContactsPage() {
                             borderRadius: "8px"
                           }}>
                             <div style={{ marginBottom: "8px", fontSize: "12px", fontWeight: "600", color: "#374151" }}>
-                              {selectedTags.length > 0 ? "Selected Tags:" : "All Tags:"}
+                              All Tags:
                             </div>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                               {(() => {
@@ -1680,9 +1680,7 @@ export default function ContactsPage() {
                                   return acc;
                                 }, {});
                                 
-                                const tagsToShow = selectedTags.length > 0 
-                                  ? selectedTags.map(tag => ({ name: tag, count: allTags[tag] || 0 }))
-                                  : Object.entries(allTags).map(([tag, count]) => ({ name: tag, count }));
+                                const tagsToShow = Object.entries(allTags).map(([tag, count]) => ({ name: tag, count }));
                                 
                                 return tagsToShow.map((tagData, index) => (
                                   <span
@@ -2068,24 +2066,26 @@ export default function ContactsPage() {
                               >
                                 {/* Profile Avatar */}
                                 <div style={{ display: "flex", alignItems: "center" }}>
-                                  <Avatar 
-                                    initials={(() => {
-                                      if (contact.type === 'PERSON') {
-                                        const first = (contact.firstName || '').trim();
-                                        const last = (contact.lastName || '').trim();
-                                        if (first && last) return (first[0] + last[0]).toUpperCase();
-                                        else if (first) return first.substring(0, 2).toUpperCase();
-                                        else if (last) return last.substring(0, 2).toUpperCase();
-                                        return 'UN';
-                                      } else {
-                                        const business = (contact.businessName || '').trim();
-                                        if (business.length >= 2) return business.substring(0, 2).toUpperCase();
-                                        else if (business.length === 1) return business[0].toUpperCase();
-                                        return 'BU';
-                                      }
-                                    })()}
-                                    size="small"
-                                  />
+                                  <div style={{ borderRadius: '10px', overflow: 'hidden', width: '40px', height: '40px' }}>
+                                    <Avatar 
+                                      initials={(() => {
+                                        if (contact.type === 'PERSON') {
+                                          const first = (contact.firstName || '').trim();
+                                          const last = (contact.lastName || '').trim();
+                                          if (first && last) return (first[0] + last[0]).toUpperCase();
+                                          else if (first) return first.substring(0, 2).toUpperCase();
+                                          else if (last) return last.substring(0, 2).toUpperCase();
+                                          return 'UN';
+                                        } else {
+                                          const business = (contact.businessName || '').trim();
+                                          if (business.length >= 2) return business.substring(0, 2).toUpperCase();
+                                          else if (business.length === 1) return business[0].toUpperCase();
+                                          return 'BU';
+                                        }
+                                      })()}
+                                      size="medium"
+                                    />
+                                  </div>
                                 </div>
                                 
                                 {/* First Name */}
@@ -3005,7 +3005,7 @@ export default function ContactsPage() {
                   borderRadius: '8px'
                 }}>
                   <div style={{ marginBottom: '8px', fontSize: '12px', fontWeight: '600', color: '#374151' }}>
-                    {selectedTags.length > 0 ? 'Selected Tags:' : 'All Tags:'}
+                    All Tags:
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {(() => {
@@ -3018,9 +3018,7 @@ export default function ContactsPage() {
                         return acc;
                       }, {});
                       
-                      const tagsToShow = selectedTags.length > 0 
-                        ? selectedTags.map(tag => ({ name: tag, count: allTags[tag] || 0 }))
-                        : Object.entries(allTags).map(([tag, count]) => ({ name: tag, count }));
+                      const tagsToShow = Object.entries(allTags).map(([tag, count]) => ({ name: tag, count }));
                       
                       return tagsToShow.length > 0 ? (
                         tagsToShow.map((tagData, index) => (
@@ -3450,24 +3448,26 @@ export default function ContactsPage() {
                       
                       {/* Contact Info Section */}
                       <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <Avatar 
-                          initials={(() => {
-                            if (contact.type === 'PERSON') {
-                              const first = (contact.firstName || '').trim();
-                              const last = (contact.lastName || '').trim();
-                              if (first && last) return (first[0] + last[0]).toUpperCase();
-                              else if (first) return first.substring(0, 2).toUpperCase();
-                              else if (last) return last.substring(0, 2).toUpperCase();
-                              return 'UN';
-                            } else {
-                              const business = (contact.businessName || '').trim();
-                              if (business.length >= 2) return business.substring(0, 2).toUpperCase();
-                              else if (business.length === 1) return business[0].toUpperCase();
-                              return 'BU';
-                            }
-                          })()}
-                          size="medium"
-                        />
+                        <div style={{ borderRadius: '10px', overflow: 'hidden', width: '48px', height: '48px' }}>
+                          <Avatar 
+                            initials={(() => {
+                              if (contact.type === 'PERSON') {
+                                const first = (contact.firstName || '').trim();
+                                const last = (contact.lastName || '').trim();
+                                if (first && last) return (first[0] + last[0]).toUpperCase();
+                                else if (first) return first.substring(0, 2).toUpperCase();
+                                else if (last) return last.substring(0, 2).toUpperCase();
+                                return 'UN';
+                              } else {
+                                const business = (contact.businessName || '').trim();
+                                if (business.length >= 2) return business.substring(0, 2).toUpperCase();
+                                else if (business.length === 1) return business[0].toUpperCase();
+                                return 'BU';
+                              }
+                            })()}
+                            size="large"
+                          />
+                        </div>
                         <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => handleContactEdit(contact)}>
                           <h3 style={{ 
                             margin: 0, 

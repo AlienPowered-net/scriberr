@@ -94,7 +94,9 @@ const ContactCard = ({
       {/* Header with name and type */}
       <InlineStack align="space-between" blockAlign="center">
         <InlineStack gap="200" blockAlign="center">
-          <Avatar initials={getInitials()} size="medium" />
+          <div style={{ borderRadius: '10px', overflow: 'hidden', width: '48px', height: '48px' }}>
+            <Avatar initials={getInitials()} size="large" />
+          </div>
           <Text as="h3" variant="headingMd" fontWeight="semibold">
             {getDisplayName()}
           </Text>

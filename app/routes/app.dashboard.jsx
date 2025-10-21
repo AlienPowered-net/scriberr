@@ -26,6 +26,7 @@ import {
   ActionList,
   TextContainer,
   Tag,
+  Icon,
 } from "@shopify/polaris";
 import { 
   SaveIcon, 
@@ -34,7 +35,8 @@ import {
   CollectionFilledIcon,
   ExchangeIcon,
   FolderIcon,
-  ProductFilledIcon
+  ProductFilledIcon,
+  PinFilledIcon
 } from "@shopify/polaris-icons";
 import { useState, useEffect, useRef, useCallback } from "react";
 import QuillEditor from "../components/LexicalEditor";
@@ -4019,97 +4021,25 @@ export default function Index() {
                       padding: "8px 0"
                     }}>
                       {(showTagsSection ? getAllTagsWithCounts() : getAllTagsWithCounts().filter(({ tag }) => selectedTags.includes(tag))).map(({ tag, count }) => (
-                        <div
+                        <span
                           key={tag}
+                          onClick={() => handleTagClick(tag)}
                           style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
                             padding: "6px 10px",
                             backgroundColor: selectedTags.includes(tag) ? "#e8f5e8" : "#f1f3f4",
-                            borderRadius: "16px",
+                            color: selectedTags.includes(tag) ? "#008060" : "#374151",
                             border: selectedTags.includes(tag) ? "1px solid #b8e6b8" : "1px solid #e1e3e5",
-                            cursor: "pointer",
-                            transition: "all 0.15s ease",
-                            position: "relative",
+                            borderRadius: "16px",
                             fontSize: "12px",
                             fontWeight: "500",
-                            color: selectedTags.includes(tag) ? "#008060" : "#374151",
-                            minHeight: "28px",
-                            justifyContent: "center",
-                            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                          }}
-                          onClick={() => handleTagClick(tag)}
-                          onMouseEnter={(e) => {
-                            if (selectedTags.includes(tag)) {
-                              e.currentTarget.style.backgroundColor = "#d4f0e0";
-                            } else {
-                              e.currentTarget.style.backgroundColor = "#e8e8e9";
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (selectedTags.includes(tag)) {
-                              e.currentTarget.style.backgroundColor = "#e8f5e8";
-                            } else {
-                              e.currentTarget.style.backgroundColor = "#f1f3f4";
-                            }
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px"
                           }}
                         >
-                          {selectedTags.includes(tag) && (
-                            <ProductFilledIcon style={{ width: '14px', height: '14px', color: '#008060' }} />
-                          )}
-                          <span>{tag}</span>
-                          <span style={{ 
-                            fontSize: "11px", 
-                            color: selectedTags.includes(tag) ? "#008060" : "#6d7175", 
-                            backgroundColor: selectedTags.includes(tag) ? "rgba(0, 128, 96, 0.1)" : "rgba(0, 0, 0, 0.05)", 
-                            padding: "2px 5px", 
-                            borderRadius: "10px",
-                            fontWeight: "500"
-                          }}>
-                            {count}
-                          </span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowDeleteTagConfirm(tag);
-                            }}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              cursor: "pointer",
-                              fontSize: showTagsSection ? "12px" : "12px",
-                              color: showTagsSection ? (selectedTags.includes(tag) ? "#dc2626" : "#dc2626") : (selectedTags.includes(tag) ? "#dc2626" : "#6d7175"),
-                              padding: "2px",
-                              borderRadius: "2px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              transition: "all 0.15s ease",
-                              marginLeft: "3px",
-                              width: showTagsSection ? "18px" : "16px",
-                              height: showTagsSection ? "18px" : "16px",
-                              opacity: "0.8",
-                              fontWeight: "bold"
-                            }}
-                            onMouseEnter={(e) => {
-                              if (showTagsSection) {
-                                e.target.style.backgroundColor = "rgba(220, 38, 38, 0.1)";
-                                e.target.style.color = "#b91c1c";
-                              } else {
-                                e.target.style.backgroundColor = selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)";
-                              }
-                              e.target.style.opacity = "1";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.backgroundColor = "transparent";
-                              e.target.style.color = showTagsSection ? "#dc2626" : (selectedTags.includes(tag) ? "#dc2626" : "#6d7175");
-                              e.target.style.opacity = "0.8";
-                            }}
-                          >
-                            ×
-                          </button>
-                        </div>
+                          {tag} ({count})
+                        </span>
                       ))}
                     </div>
                   )}
@@ -5843,97 +5773,25 @@ export default function Index() {
                           padding: "8px 0"
                         }}>
                           {(showTagsSection ? getAllTagsWithCounts() : getAllTagsWithCounts().filter(({ tag }) => selectedTags.includes(tag))).map(({ tag, count }) => (
-                            <div
+                            <span
                               key={tag}
+                              onClick={() => handleTagClick(tag)}
                               style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "4px",
                                 padding: "6px 10px",
                                 backgroundColor: selectedTags.includes(tag) ? "#e8f5e8" : "#f1f3f4",
-                                borderRadius: "16px",
+                                color: selectedTags.includes(tag) ? "#008060" : "#374151",
                                 border: selectedTags.includes(tag) ? "1px solid #b8e6b8" : "1px solid #e1e3e5",
-                                cursor: "pointer",
-                                transition: "all 0.15s ease",
-                                position: "relative",
+                                borderRadius: "16px",
                                 fontSize: "12px",
                                 fontWeight: "500",
-                                color: selectedTags.includes(tag) ? "#008060" : "#374151",
-                                minHeight: "28px",
-                                justifyContent: "center",
-                                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-                              }}
-                              onClick={() => handleTagClick(tag)}
-                              onMouseEnter={(e) => {
-                                if (selectedTags.includes(tag)) {
-                                  e.currentTarget.style.backgroundColor = "#d4f0e0";
-                                } else {
-                                  e.currentTarget.style.backgroundColor = "#e8e8e9";
-                                }
-                              }}
-                              onMouseLeave={(e) => {
-                                if (selectedTags.includes(tag)) {
-                                  e.currentTarget.style.backgroundColor = "#e8f5e8";
-                                } else {
-                                  e.currentTarget.style.backgroundColor = "#f1f3f4";
-                                }
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "4px"
                               }}
                             >
-                              {selectedTags.includes(tag) && (
-                                <ProductFilledIcon style={{ width: '14px', height: '14px', color: '#008060' }} />
-                              )}
-                              <span>{tag}</span>
-                              <span style={{ 
-                                fontSize: "11px", 
-                                color: selectedTags.includes(tag) ? "#008060" : "#6d7175", 
-                                backgroundColor: selectedTags.includes(tag) ? "rgba(0, 128, 96, 0.1)" : "rgba(0, 0, 0, 0.05)", 
-                                padding: "2px 5px", 
-                                borderRadius: "10px",
-                                fontWeight: "500"
-                              }}>
-                                {count}
-                              </span>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setShowDeleteTagConfirm(tag);
-                                }}
-                                style={{
-                                  background: "none",
-                                  border: "none",
-                                  cursor: "pointer",
-                                  fontSize: showTagsSection ? "12px" : "12px",
-                                  color: showTagsSection ? (selectedTags.includes(tag) ? "#dc2626" : "#dc2626") : (selectedTags.includes(tag) ? "#dc2626" : "#6d7175"),
-                                  padding: "2px",
-                                  borderRadius: "2px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  transition: "all 0.15s ease",
-                                  marginLeft: "3px",
-                                  width: showTagsSection ? "18px" : "16px",
-                                  height: showTagsSection ? "18px" : "16px",
-                                  opacity: "0.8",
-                                  fontWeight: "bold"
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (showTagsSection) {
-                                    e.target.style.backgroundColor = "rgba(220, 38, 38, 0.1)";
-                                    e.target.style.color = "#b91c1c";
-                                  } else {
-                                    e.target.style.backgroundColor = selectedTags.includes(tag) ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)";
-                                  }
-                                  e.target.style.opacity = "1";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.target.style.backgroundColor = "transparent";
-                                  e.target.style.color = showTagsSection ? "#dc2626" : (selectedTags.includes(tag) ? "#dc2626" : "#6d7175");
-                                  e.target.style.opacity = "0.8";
-                                }}
-                              >
-                                ×
-                              </button>
-                            </div>
+                              {tag} ({count})
+                            </span>
                           ))}
                         </div>
                       )}
@@ -6444,12 +6302,8 @@ export default function Index() {
                           </div>
                           {/* Pin Icon */}
                           {note.pinnedAt && (
-                            <div style={{ marginLeft: '8px' }}>
-                              <i className="fas fa-thumbtack" style={{ 
-                                color: '#008060', 
-                                fontSize: '14px',
-                                transform: 'rotate(45deg)'
-                              }}></i>
+                            <div style={{ marginLeft: '8px', color: '#008060' }}>
+                              <Icon source={PinFilledIcon} />
                             </div>
                           )}
                         </div>
