@@ -36,6 +36,16 @@ async function addContactFields() {
       console.log('✅ avatarColor column added');
     }
 
+    // Check if address column exists
+    try {
+      await prisma.$queryRaw`SELECT "address" FROM "Contact" LIMIT 1`;
+      console.log('✅ address column already exists');
+    } catch (error) {
+      console.log('➕ Adding address column...');
+      await prisma.$executeRaw`ALTER TABLE "Contact" ADD COLUMN IF NOT EXISTS "address" TEXT`;
+      console.log('✅ address column added');
+    }
+
     console.log('✅ Migration completed successfully!');
   } catch (error) {
     console.error('❌ Migration failed:', error);
