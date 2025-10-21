@@ -429,18 +429,40 @@ function ContactForm({
               </Text>
               <div style={{ marginTop: "8px" }}>
                 <TextField
-                  label="Add tags (comma separated)"
+                  label="Add tags (press Enter or comma to add)"
                   labelHidden
-                  placeholder="e.g., client, vip, important"
+                  placeholder="e.g., client, vip, important (press Enter or comma)"
                   value={tagsInputValue}
                   onChange={(value) => {
-                    setTagsInputValue(value);
+                    // Check if user typed a comma
+                    if (value.includes(',')) {
+                      // Process all complete tags (before commas)
+                      const parts = value.split(',');
+                      const completeTags = parts.slice(0, -1).map(tag => tag.trim()).filter(tag => tag.length > 0);
+                      
+                      if (completeTags.length > 0) {
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          tags: [...(prev.tags || []), ...completeTags]
+                        }));
+                      }
+                      
+                      // Keep the text after the last comma
+                      setTagsInputValue(parts[parts.length - 1]);
+                    } else {
+                      setTagsInputValue(value);
+                    }
                   }}
-                  onBlur={() => {
-                    // Process tags when user finishes typing
-                    if (tagsInputValue.trim()) {
-                      const tags = tagsInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-                      setFormData(prev => ({ ...prev, tags }));
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && tagsInputValue.trim()) {
+                      e.preventDefault();
+                      // Add the current tag
+                      const newTag = tagsInputValue.trim();
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        tags: [...(prev.tags || []), newTag]
+                      }));
+                      setTagsInputValue('');
                     }
                   }}
                 />
@@ -870,7 +892,7 @@ export default function ContactsPage() {
       tags: contactTags,
       avatarColor: contact.avatarColor || '#10b981'
     });
-    setTagsInputValue(contactTags.join(', '));
+    setTagsInputValue(''); // Clear input field, existing tags shown as pills
     
     if (isMobile) {
       setMobileActiveSection('editor');
@@ -3639,16 +3661,38 @@ export default function ContactsPage() {
                     Tags
                   </label>
                   <TextField
-                    placeholder="e.g., client, vip, important (comma separated)"
+                    placeholder="e.g., client, vip, important (press Enter or comma)"
                     value={tagsInputValue}
                     onChange={(value) => {
-                      setTagsInputValue(value);
+                      // Check if user typed a comma
+                      if (value.includes(',')) {
+                        // Process all complete tags (before commas)
+                        const parts = value.split(',');
+                        const completeTags = parts.slice(0, -1).map(tag => tag.trim()).filter(tag => tag.length > 0);
+                        
+                        if (completeTags.length > 0) {
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            tags: [...(prev.tags || []), ...completeTags]
+                          }));
+                        }
+                        
+                        // Keep the text after the last comma
+                        setTagsInputValue(parts[parts.length - 1]);
+                      } else {
+                        setTagsInputValue(value);
+                      }
                     }}
-                    onBlur={() => {
-                      // Process tags when user finishes typing
-                      if (tagsInputValue.trim()) {
-                        const tags = tagsInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-                        setFormData(prev => ({ ...prev, tags }));
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && tagsInputValue.trim()) {
+                        e.preventDefault();
+                        // Add the current tag
+                        const newTag = tagsInputValue.trim();
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          tags: [...(prev.tags || []), newTag]
+                        }));
+                        setTagsInputValue('');
                       }
                     }}
                   />
