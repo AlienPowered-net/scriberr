@@ -850,6 +850,18 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           return false;
         },
         beforeinput: (view, event) => {
+          // Check if the event is coming from a modal input field
+          const target = event.target;
+          const isModalInput = target && (
+            target.closest('[data-modal-input]') || 
+            target.matches('input[type="text"]') && target.closest('div[style*="position: fixed"]')
+          );
+          
+          if (isModalInput) {
+            console.log('[AdvancedRTE beforeinput] Ignoring event from modal input');
+            return false; // Let modal handle its own input
+          }
+          
           const nodeAt = view.state.doc.nodeAt(view.state.selection.from);
           const nodeBefore = view.state.doc.nodeAt(view.state.selection.from - 1);
           
@@ -860,7 +872,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             nodeAtCursor: nodeAt?.type.name,
             nodeBefore: nodeBefore?.type.name,
             parentNode: view.state.selection.$from.parent.type.name,
-            editable: view.editable
+            editable: view.editable,
+            target: event.target.tagName
           });
           
           // If inserting text and cursor is at end boundary (nodeAtCursor is undefined)
@@ -6236,7 +6249,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
       {/* Insert Image Modal - MOBILE ONLY */}
       {typeof document !== 'undefined' && showImageModal && isMobile && (() => {
-        console.log('RENDERING IMAGE MODAL VIA PORTAL [AdvancedRTE], showImageModal:', showImageModal);
+        console.log('RENDERING IMAGE MODAL VIA PORTAL [AdvancedRTE], showImageModal:', showImageModal, 'isMobile:', isMobile);
         return createPortal(
           <>
             {/* Backdrop */}
@@ -6250,8 +6263,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 backgroundColor: 'rgba(0, 0, 0, 0.5)',
                 zIndex: 99999998
               }}
-              onClick={() => {
+              onClick={(e) => {
                 console.log('Image modal backdrop clicked - closing [AdvancedRTE]');
+                e.stopPropagation();
                 setShowImageModal(false);
               }}
             />
@@ -6305,19 +6319,40 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Image URL</label>
                 <input
                   type="text"
+                  data-modal-input="true"
                   value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
+                  onChange={(e) => {
+                    console.log('[AdvancedRTE Image Modal] Input onChange fired:', e.target.value);
+                    setImageUrl(e.target.value);
+                  }}
+                  onInput={(e) => {
+                    console.log('[AdvancedRTE Image Modal] Input onInput fired:', e.target.value);
+                  }}
+                  onClick={(e) => {
+                    console.log('[AdvancedRTE Image Modal] Input clicked');
+                    e.stopPropagation();
+                  }}
+                  onFocus={(e) => {
+                    console.log('[AdvancedRTE Image Modal] Input focused');
+                  }}
+                  onKeyDown={(e) => {
+                    console.log('[AdvancedRTE Image Modal] Key pressed:', e.key);
+                  }}
                   placeholder="https://example.com/image.jpg"
                   autoFocus
+                  autoComplete="off"
+                  inputMode="text"
                   style={{
                     width: '100%',
                     padding: '10px',
                     border: '1px solid #d1d5db',
                     borderRadius: '6px',
-                    fontSize: '14px',
+                    fontSize: '16px',
                     boxSizing: 'border-box',
                     pointerEvents: 'auto',
-                    zIndex: 100000000
+                    zIndex: 100000000,
+                    WebkitAppearance: 'none',
+                    touchAction: 'manipulation'
                   }}
                 />
                 <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
@@ -6436,19 +6471,40 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>YouTube URL</label>
                 <input
                   type="text"
+                  data-modal-input="true"
                   value={videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
+                  onChange={(e) => {
+                    console.log('[AdvancedRTE Video Modal] Input onChange fired:', e.target.value);
+                    setVideoUrl(e.target.value);
+                  }}
+                  onInput={(e) => {
+                    console.log('[AdvancedRTE Video Modal] Input onInput fired:', e.target.value);
+                  }}
+                  onClick={(e) => {
+                    console.log('[AdvancedRTE Video Modal] Input clicked');
+                    e.stopPropagation();
+                  }}
+                  onFocus={(e) => {
+                    console.log('[AdvancedRTE Video Modal] Input focused');
+                  }}
+                  onKeyDown={(e) => {
+                    console.log('[AdvancedRTE Video Modal] Key pressed:', e.key);
+                  }}
                   placeholder="https://www.youtube.com/watch?v=..."
                   autoFocus
+                  autoComplete="off"
+                  inputMode="text"
                   style={{
                     width: '100%',
                     padding: '10px',
                     border: '1px solid #d1d5db',
                     borderRadius: '6px',
-                    fontSize: '14px',
+                    fontSize: '16px',
                     boxSizing: 'border-box',
                     pointerEvents: 'auto',
-                    zIndex: 100000000
+                    zIndex: 100000000,
+                    WebkitAppearance: 'none',
+                    touchAction: 'manipulation'
                   }}
                 />
                 <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
@@ -6567,37 +6623,79 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Link URL</label>
                 <input
                   type="text"
+                  data-modal-input="true"
                   value={linkUrl}
-                  onChange={(e) => setLinkUrl(e.target.value)}
+                  onChange={(e) => {
+                    console.log('[AdvancedRTE Link Modal] URL Input onChange fired:', e.target.value);
+                    setLinkUrl(e.target.value);
+                  }}
+                  onInput={(e) => {
+                    console.log('[AdvancedRTE Link Modal] URL Input onInput fired:', e.target.value);
+                  }}
+                  onClick={(e) => {
+                    console.log('[AdvancedRTE Link Modal] URL Input clicked');
+                    e.stopPropagation();
+                  }}
+                  onFocus={(e) => {
+                    console.log('[AdvancedRTE Link Modal] URL Input focused');
+                  }}
+                  onKeyDown={(e) => {
+                    console.log('[AdvancedRTE Link Modal] URL Key pressed:', e.key);
+                  }}
                   placeholder="https://example.com"
                   autoFocus
+                  autoComplete="off"
+                  inputMode="text"
                   style={{
                     width: '100%',
                     padding: '10px',
                     border: '1px solid #d1d5db',
                     borderRadius: '6px',
-                    fontSize: '14px',
+                    fontSize: '16px',
                     boxSizing: 'border-box',
                     pointerEvents: 'auto',
                     zIndex: 100000000,
-                    marginBottom: '16px'
+                    marginBottom: '16px',
+                    WebkitAppearance: 'none',
+                    touchAction: 'manipulation'
                   }}
                 />
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Link Text (optional)</label>
                 <input
                   type="text"
+                  data-modal-input="true"
                   value={linkText}
-                  onChange={(e) => setLinkText(e.target.value)}
+                  onChange={(e) => {
+                    console.log('[AdvancedRTE Link Modal] Text Input onChange fired:', e.target.value);
+                    setLinkText(e.target.value);
+                  }}
+                  onInput={(e) => {
+                    console.log('[AdvancedRTE Link Modal] Text Input onInput fired:', e.target.value);
+                  }}
+                  onClick={(e) => {
+                    console.log('[AdvancedRTE Link Modal] Text Input clicked');
+                    e.stopPropagation();
+                  }}
+                  onFocus={(e) => {
+                    console.log('[AdvancedRTE Link Modal] Text Input focused');
+                  }}
+                  onKeyDown={(e) => {
+                    console.log('[AdvancedRTE Link Modal] Text Key pressed:', e.key);
+                  }}
                   placeholder="Click here"
+                  autoComplete="off"
+                  inputMode="text"
                   style={{
                     width: '100%',
                     padding: '10px',
                     border: '1px solid #d1d5db',
                     borderRadius: '6px',
-                    fontSize: '14px',
+                    fontSize: '16px',
                     boxSizing: 'border-box',
                     pointerEvents: 'auto',
-                    zIndex: 100000000
+                    zIndex: 100000000,
+                    WebkitAppearance: 'none',
+                    touchAction: 'manipulation'
                   }}
                 />
                 <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
