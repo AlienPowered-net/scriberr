@@ -2046,7 +2046,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <i className="fas fa-table"></i>
           </button>
           <button
-            onClick={createMobileFriendlyHandler(() => setShowLinkModal(true))}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Insert Link button clicked [AdvancedRTE], current state:', showLinkModal);
+              setShowLinkModal(true);
+              console.log('Link modal state set to true [AdvancedRTE]');
+            }}
             style={{
               padding: "6px 8px",
               border: "1px solid #dee2e6",
@@ -3392,7 +3398,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             <i className="fas fa-table"></i>
           </button>
           <button
-            onClick={createMobileFriendlyHandler(() => setShowLinkModal(true))}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Insert Link button clicked [AdvancedRTE], current state:', showLinkModal);
+              setShowLinkModal(true);
+              console.log('Link modal state set to true [AdvancedRTE]');
+            }}
             style={{
               padding: "6px 8px",
               border: "1px solid #dee2e6",
@@ -3783,7 +3795,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               <i className="fas fa-underline"></i>
             </button>
             <button
-              onClick={createMobileFriendlyHandler(() => setShowLinkModal(true))}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Insert Link button clicked [AdvancedRTE Bubble Menu], current state:', showLinkModal);
+                setShowLinkModal(true);
+                console.log('Link modal state set to true [AdvancedRTE Bubble Menu]');
+              }}
               style={{
                 padding: "6px 8px",
                 border: "none",
@@ -5336,7 +5354,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           width: '90vw'
         }}>
           <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600' }}>Line Height</h3>
-          <div style={{ display: 'grid', gap: '8px' }}>
+          <div style={{ display: 'grid', gap: '8px', maxHeight: '50vh', overflowY: 'auto' }}>
             {[
               { name: 'Normal', value: 'normal' },
               { name: '1.0', value: '1.0' },
