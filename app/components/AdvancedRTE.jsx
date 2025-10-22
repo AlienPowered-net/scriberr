@@ -6597,7 +6597,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 right: 0,
                 bottom: 0,
                 backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                zIndex: 99999998
+                zIndex: 99999998,
+                pointerEvents: 'none'
               }}
               onClick={() => {
                 console.log('Link modal backdrop clicked - closing [AdvancedRTE]');
@@ -6622,7 +6623,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               }}
               onClick={(e) => {
                 console.log('Link modal content clicked - keeping open [AdvancedRTE]');
-                e.stopPropagation();
+                // Don't stop propagation - let events bubble naturally
+                // e.stopPropagation();
               }}
             >
               <div style={{
@@ -6699,7 +6701,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   }}
                   onClick={(e) => {
                     console.log('[AdvancedRTE Link Modal] URL Input clicked');
-                    e.stopPropagation();
+                    // Don't stop propagation or prevent default - let browser handle naturally
                   }}
                   onFocus={(e) => {
                     console.log('[AdvancedRTE Link Modal] URL Input focused');
@@ -6739,7 +6741,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   }}
                   onClick={(e) => {
                     console.log('[AdvancedRTE Link Modal] Text Input clicked');
-                    e.stopPropagation();
+                    // Don't stop propagation or prevent default - let browser handle naturally
                   }}
                   onFocus={(e) => {
                     console.log('[AdvancedRTE Link Modal] Text Input focused');
