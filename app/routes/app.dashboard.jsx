@@ -1254,6 +1254,7 @@ export default function Index() {
   const [folderSelectorAction, setFolderSelectorAction] = useState(null); // 'duplicate' or 'move'
   const [folderSelectorNoteId, setFolderSelectorNoteId] = useState(null);
   const [folderSelectorSearchQuery, setFolderSelectorSearchQuery] = useState("");
+  const [selectedFolderInSelector, setSelectedFolderInSelector] = useState(null);
 
   // Mobile layout state
   const [mobileActiveSection, setMobileActiveSection] = useState('folders'); // 'folders', 'notes'
@@ -2936,6 +2937,7 @@ export default function Index() {
       setFolderSelectorAction(null);
       setFolderSelectorNoteId(null);
       setFolderSelectorSearchQuery("");
+      setSelectedFolderInSelector(null);
     }
   };
 
@@ -7636,6 +7638,7 @@ export default function Index() {
                           setFolderSelectorAction(null);
                           setFolderSelectorNoteId(null);
                           setFolderSelectorSearchQuery("");
+                          setSelectedFolderInSelector(null);
                         }}
                         style={{
                           background: 'none',
@@ -7681,22 +7684,23 @@ export default function Index() {
                         .map(folder => {
                           const currentNote = localNotes.find(n => n.id === folderSelectorNoteId);
                           const isCurrentFolder = currentNote && folder.id === currentNote.folderId;
+                          const isSelected = selectedFolderInSelector === folder.id;
                           
                           return (
                             <div
                               key={folder.id}
                               onClick={() => {
                                 if (!isCurrentFolder) {
-                                  handleFolderSelection(folder.id);
+                                  setSelectedFolderInSelector(folder.id);
                                 }
                               }}
                               style={{
                                 padding: '12px',
-                                border: '1px solid #e1e3e5',
+                                border: isSelected ? '2px solid #008060' : '1px solid #e1e3e5',
                                 borderRadius: '8px',
                                 marginBottom: '8px',
                                 cursor: isCurrentFolder ? 'not-allowed' : 'pointer',
-                                backgroundColor: isCurrentFolder ? '#f1f3f4' : '#fafbfb',
+                                backgroundColor: isSelected ? '#e8f5e8' : (isCurrentFolder ? '#f1f3f4' : '#fafbfb'),
                                 opacity: isCurrentFolder ? 0.6 : 1,
                                 display: 'flex',
                                 alignItems: 'center',
@@ -7727,6 +7731,58 @@ export default function Index() {
                             </div>
                           );
                         })}
+                    </div>
+                    
+                    <div style={{
+                      display: 'flex',
+                      gap: '12px',
+                      paddingTop: '16px',
+                      borderTop: '1px solid #e1e3e5'
+                    }}>
+                      <button
+                        onClick={() => {
+                          setShowFolderSelector(false);
+                          setFolderSelectorAction(null);
+                          setFolderSelectorNoteId(null);
+                          setFolderSelectorSearchQuery("");
+                          setSelectedFolderInSelector(null);
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '12px 16px',
+                          border: '1px solid #d1d3d4',
+                          borderRadius: '8px',
+                          backgroundColor: 'white',
+                          color: '#374151',
+                          fontSize: '16px',
+                          fontWeight: '500',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (selectedFolderInSelector) {
+                            handleFolderSelection(selectedFolderInSelector);
+                          }
+                        }}
+                        disabled={!selectedFolderInSelector}
+                        style={{
+                          flex: 1,
+                          padding: '12px 16px',
+                          border: 'none',
+                          borderRadius: '8px',
+                          backgroundColor: selectedFolderInSelector ? '#008060' : '#d1d3d4',
+                          color: 'white',
+                          fontSize: '16px',
+                          fontWeight: '500',
+                          cursor: selectedFolderInSelector ? 'pointer' : 'not-allowed',
+                          opacity: selectedFolderInSelector ? 1 : 0.6
+                        }}
+                      >
+                        {folderSelectorAction === 'duplicate' ? 'Duplicate' : 'Move'}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -7766,10 +7822,16 @@ export default function Index() {
                     </Text>
                     <div style={{ marginBottom: "24px", maxHeight: "300px", overflowY: "auto" }}>
                       {localFolders.map((folder) => {
-                        const isCurrentFolder = showMoveModal !== 'bulk' && (() => {
-                          const currentNote = localNotes.find(n => n.id === showMoveModal);
-                          return currentNote && folder.id === currentNote.folderId;
-                        })();
+                        // For bulk moves, check if any selected note is in this folder
+                        const isCurrentFolder = showMoveModal === 'bulk' 
+                          ? selectedNotes.some(noteId => {
+                              const note = localNotes.find(n => n.id === noteId);
+                              return note && note.folderId === folder.id;
+                            })
+                          : (() => {
+                              const currentNote = localNotes.find(n => n.id === showMoveModal);
+                              return currentNote && folder.id === currentNote.folderId;
+                            })();
                         const isSelected = duplicateFolderId === folder.id;
                         
                         return (
