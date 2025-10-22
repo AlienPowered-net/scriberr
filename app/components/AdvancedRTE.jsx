@@ -2322,7 +2322,12 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           }
         }}
       >
-        <div style={{ position: 'relative', flex: 1 }}>
+        <div style={{ 
+          position: 'relative', 
+          flex: 1,
+          pointerEvents: (showImageModal || showVideoModal || showLinkModal) ? 'none' : 'auto',
+          opacity: (showImageModal || showVideoModal || showLinkModal) ? '0.3' : '1'
+        }}>
           <EditorContent 
             editor={editor} 
             style={{
@@ -2339,7 +2344,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               color: "#212529",
               cursor: "text",
               width: "100%",
-              backgroundColor: "#ffffff"
+              backgroundColor: "#ffffff",
+              pointerEvents: (showImageModal || showVideoModal || showLinkModal) ? 'none' : 'auto'
             }}
           />
           {editor && <TiptapDragHandle editor={editor} />}
