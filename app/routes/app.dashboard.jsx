@@ -2289,28 +2289,39 @@ export default function Index() {
       );
 
       // Update each note to remove the tag
-      const updatePromises = notesWithTag.map(note => {
+      for (const note of notesWithTag) {
         const updatedTags = note.tags.filter(tag => tag !== tagToDelete);
+        
+        // Use Remix submit for proper authentication
         const formData = new FormData();
+        formData.append('_action', 'update');
         formData.append('noteId', note.id);
         formData.append('title', note.title || '');
         formData.append('body', note.content || '');
         formData.append('folderId', note.folderId || '');
         formData.append('tags', JSON.stringify(updatedTags));
         
-        return fetch('/api/update-note', {
+        await fetch('/app/dashboard', {
           method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Accept-Charset': 'utf-8'
-          },
           body: formData
         });
-      });
+      }
 
-      await Promise.all(updatePromises);
+      // Update local state to remove the tag from all notes
+      setLocalNotes(prevNotes => prevNotes.map(note => {
+        if (note.tags && note.tags.includes(tagToDelete)) {
+          return {
+            ...note,
+            tags: note.tags.filter(tag => tag !== tagToDelete)
+          };
+        }
+        return note;
+      }));
+
       setShowDeleteTagConfirm(null);
-      window.location.reload();
+      setAlertMessage(`Tag "${tagToDelete}" deleted from all notes`);
+      setAlertType('success');
+      setTimeout(() => setAlertMessage(''), 3000);
     } catch (error) {
       console.error('Error deleting tag:', error);
       setAlertMessage('Failed to delete tag');
@@ -5001,34 +5012,71 @@ export default function Index() {
               padding: "24px",
               borderRadius: "8px",
               maxWidth: "400px",
-              width: "90%"
+              width: "90%",
+              maxHeight: "90vh",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column"
             }}>
               <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
                 {showMoveModal === 'bulk' ? 'Move Selected Notes' : 'Move Note'}
               </Text>
-              <div style={{ marginBottom: "24px" }}>
-                <label htmlFor="moveFolderSelect" style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
-                  Select a folder to move the note{showMoveModal === 'bulk' ? 's' : ''} to:
-                </label>
-                <select
-                  id="moveFolderSelect"
-                  value={duplicateFolderId}
-                  onChange={(e) => setDuplicateFolderId(e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "8px 12px",
-                    border: "1px solid #c9cccf",
-                    borderRadius: "4px",
-                    fontSize: "14px",
-                  }}
-                >
-                  <option value="">Select a folder...</option>
-                  {moveFolderOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+              <Text as="p" style={{ marginBottom: "16px", fontSize: "14px", color: "#6d7175" }}>
+                Select a folder to move the note{showMoveModal === 'bulk' ? 's' : ''} to.
+              </Text>
+              <div style={{ marginBottom: "24px", maxHeight: "300px", overflowY: "auto" }}>
+                {localFolders.map((folder) => {
+                  const isCurrentFolder = showMoveModal !== 'bulk' && (() => {
+                    const currentNote = localNotes.find(n => n.id === showMoveModal);
+                    return currentNote && folder.id === currentNote.folderId;
+                  })();
+                  const isSelected = duplicateFolderId === folder.id;
+                  
+                  return (
+                    <div
+                      key={folder.id}
+                      onClick={() => {
+                        if (!isCurrentFolder) {
+                          setDuplicateFolderId(folder.id);
+                        }
+                      }}
+                      style={{
+                        padding: '12px',
+                        border: isSelected ? '2px solid #008060' : '1px solid #e1e3e5',
+                        borderRadius: '8px',
+                        marginBottom: '8px',
+                        cursor: isCurrentFolder ? 'not-allowed' : 'pointer',
+                        backgroundColor: isSelected ? '#e8f5e8' : (isCurrentFolder ? '#f1f3f4' : '#fafbfb'),
+                        opacity: isCurrentFolder ? 0.6 : 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <i 
+                        className={`far fa-${folder.icon || 'folder'}`} 
+                        style={{ 
+                          fontSize: '18px', 
+                          color: folder.iconColor || '#f57c00' 
+                        }}
+                      ></i>
+                      <span style={{ fontWeight: '500', flex: 1 }}>{folder.name}</span>
+                      {isCurrentFolder && (
+                        <span style={{ 
+                          fontSize: '12px', 
+                          color: '#6d7175',
+                          fontWeight: '600',
+                          backgroundColor: '#e1e3e5',
+                          padding: '2px 8px',
+                          borderRadius: '12px'
+                        }}>
+                          Current
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
               <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
                 <Button
@@ -7656,45 +7704,69 @@ export default function Index() {
                     maxWidth: "400px",
                     width: "100%",
                     maxHeight: "90vh",
-                    overflow: "auto"
+                    overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column"
                   }}>
                     <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
                       {showMoveModal === 'bulk' ? 'Move Selected Notes' : 'Move Note'}
                     </Text>
-                    <div style={{ marginBottom: "24px" }}>
-                      <label htmlFor="mobileMoveFolderSelect" style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
-                        Select a folder to move the note{showMoveModal === 'bulk' ? 's' : ''} to:
-                      </label>
-                      <select
-                        id="mobileMoveFolderSelect"
-                        value={duplicateFolderId}
-                        onChange={(e) => setDuplicateFolderId(e.target.value)}
-                        style={{
-                          width: "100%",
-                          padding: "12px 16px",
-                          border: "1px solid #c9cccf",
-                          borderRadius: "8px",
-                          fontSize: "16px",
-                          backgroundColor: "white"
-                        }}
-                      >
-                        <option value="">Select a folder...</option>
-                        {localFolders
-                          .filter(folder => {
-                            // Filter out current folder if moving single note
-                            if (showMoveModal !== 'bulk') {
-                              const currentNote = localNotes.find(n => n.id === showMoveModal);
-                              const isCurrentFolder = currentNote && folder.id === currentNote.folderId;
-                              return !isCurrentFolder;
-                            }
-                            return true;
-                          })
-                          .map(folder => (
-                            <option key={folder.id} value={folder.id}>
-                              {folder.name}
-                            </option>
-                          ))}
-                      </select>
+                    <Text as="p" style={{ marginBottom: "16px", fontSize: "14px", color: "#6d7175" }}>
+                      Select a folder to move the note{showMoveModal === 'bulk' ? 's' : ''} to.
+                    </Text>
+                    <div style={{ marginBottom: "24px", maxHeight: "300px", overflowY: "auto" }}>
+                      {localFolders.map((folder) => {
+                        const isCurrentFolder = showMoveModal !== 'bulk' && (() => {
+                          const currentNote = localNotes.find(n => n.id === showMoveModal);
+                          return currentNote && folder.id === currentNote.folderId;
+                        })();
+                        const isSelected = duplicateFolderId === folder.id;
+                        
+                        return (
+                          <div
+                            key={folder.id}
+                            onClick={() => {
+                              if (!isCurrentFolder) {
+                                setDuplicateFolderId(folder.id);
+                              }
+                            }}
+                            style={{
+                              padding: '12px',
+                              border: isSelected ? '2px solid #008060' : '1px solid #e1e3e5',
+                              borderRadius: '8px',
+                              marginBottom: '8px',
+                              cursor: isCurrentFolder ? 'not-allowed' : 'pointer',
+                              backgroundColor: isSelected ? '#e8f5e8' : (isCurrentFolder ? '#f1f3f4' : '#fafbfb'),
+                              opacity: isCurrentFolder ? 0.6 : 1,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            <i 
+                              className={`far fa-${folder.icon || 'folder'}`} 
+                              style={{ 
+                                fontSize: '18px', 
+                                color: folder.iconColor || '#f57c00' 
+                              }}
+                            ></i>
+                            <span style={{ fontWeight: '500', flex: 1 }}>{folder.name}</span>
+                            {isCurrentFolder && (
+                              <span style={{ 
+                                fontSize: '12px', 
+                                color: '#6d7175',
+                                fontWeight: '600',
+                                backgroundColor: '#e1e3e5',
+                                padding: '2px 8px',
+                                borderRadius: '12px'
+                              }}>
+                                Current
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                     <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
                       <Button
