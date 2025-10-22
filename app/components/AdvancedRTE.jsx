@@ -830,12 +830,25 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         return false;
       },
       handleKeyDown: (view, event) => {
+        // Check if the event is coming from a modal input field
+        const target = event.target;
+        const isModalInput = target && (
+          target.closest('[data-modal-input]') || 
+          (target.matches('input[type="text"]') && target.closest('div[style*="position: fixed"]'))
+        );
+        
+        if (isModalInput) {
+          console.log('[AdvancedRTE handleKeyDown] Ignoring key event from modal input:', event.key);
+          return false; // Let modal handle its own keyboard input
+        }
+        
         // Debug keyboard events
         console.log('[AdvancedRTE handleKeyDown] Key pressed:', event.key, {
           selectionFrom: view.state.selection.from,
           selectionTo: view.state.selection.to,
           isEmpty: view.state.selection.empty,
-          nodeAtCursor: view.state.selection.$from.parent.type.name
+          nodeAtCursor: view.state.selection.$from.parent.type.name,
+          target: event.target.tagName
         });
         
         // Allow normal keyboard navigation and editing
