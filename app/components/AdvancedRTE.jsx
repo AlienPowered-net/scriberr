@@ -5342,8 +5342,17 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               { name: '1.0', value: '1.0' },
               { name: '1.15', value: '1.15' },
               { name: '1.5', value: '1.5' },
+              { name: '1.75', value: '1.75' },
               { name: '2.0', value: '2.0' },
+              { name: '2.15', value: '2.15' },
+              { name: '2.5', value: '2.5' },
+              { name: '2.75', value: '2.75' },
+              { name: '3.0', value: '3.0' },
+              { name: '3.15', value: '3.15' },
+              { name: '3.5', value: '3.5' },
+              { name: '3.75', value: '3.75' },
               { name: '4.0', value: '4.0' },
+              { name: '4.15', value: '4.15' },
               { name: '4.5', value: '4.5' }
             ].map((item) => (
               <button
@@ -6281,6 +6290,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
                   placeholder="https://example.com/image.jpg"
+                  autoFocus
                   style={{
                     width: '100%',
                     padding: '10px',
@@ -6411,6 +6421,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   value={videoUrl}
                   onChange={(e) => setVideoUrl(e.target.value)}
                   placeholder="https://www.youtube.com/watch?v=..."
+                  autoFocus
                   style={{
                     width: '100%',
                     padding: '10px',
@@ -6445,6 +6456,155 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     onClick={() => {
                       insertVideo();
                       setShowVideoModal(false);
+                    }}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#3b82f6',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: 500
+                    }}
+                  >
+                    Insert
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>,
+          document.body
+        );
+      })()}
+
+      {/* Insert Link Modal - MOBILE ONLY */}
+      {typeof document !== 'undefined' && showLinkModal && isMobile && (() => {
+        console.log('RENDERING LINK MODAL VIA PORTAL [AdvancedRTE], showLinkModal:', showLinkModal);
+        return createPortal(
+          <>
+            {/* Backdrop */}
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 99999998
+              }}
+              onClick={() => {
+                console.log('Link modal backdrop clicked - closing [AdvancedRTE]');
+                setShowLinkModal(false);
+              }}
+            />
+            {/* Modal Content */}
+            <div
+              style={{
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                maxWidth: '500px',
+                width: '90%',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                zIndex: 99999999,
+                pointerEvents: 'auto'
+              }}
+              onClick={(e) => {
+                console.log('Link modal content clicked - keeping open [AdvancedRTE]');
+                e.stopPropagation();
+              }}
+            >
+              <div style={{
+                padding: '20px',
+                borderBottom: '1px solid #e1e3e5',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Insert Link</h2>
+                <button
+                  onClick={() => setShowLinkModal(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    padding: '0',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              <div style={{ padding: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Link URL</label>
+                <input
+                  type="text"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  placeholder="https://example.com"
+                  autoFocus
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box',
+                    pointerEvents: 'auto',
+                    zIndex: 100000000,
+                    marginBottom: '16px'
+                  }}
+                />
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Link Text (optional)</label>
+                <input
+                  type="text"
+                  value={linkText}
+                  onChange={(e) => setLinkText(e.target.value)}
+                  placeholder="Click here"
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box',
+                    pointerEvents: 'auto',
+                    zIndex: 100000000
+                  }}
+                />
+                <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
+                  Leave empty to use selected text
+                </div>
+                <div style={{ marginTop: '16px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                  <button
+                    onClick={() => setShowLinkModal(false)}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#f3f4f6',
+                      color: '#374151',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: 500
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      insertLink();
+                      setShowLinkModal(false);
                     }}
                     style={{
                       padding: '10px 20px',
