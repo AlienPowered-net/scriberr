@@ -6616,8 +6616,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 maxWidth: '500px',
                 width: '90%',
                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                zIndex: 99999999,
-                pointerEvents: 'auto'
+                zIndex: 999999999,
+                pointerEvents: 'auto',
+                isolation: 'isolate'
               }}
               onClick={(e) => {
                 console.log('Link modal content clicked - keeping open [AdvancedRTE]');
@@ -6659,15 +6660,30 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     placeholder="Type anything..."
                     onChange={(e) => console.log('[DEBUG] Test input value:', e.target.value)}
                     onKeyDown={(e) => console.log('[DEBUG] Test input key:', e.key)}
+                    onKeyUp={(e) => console.log('[DEBUG] Test input keyup:', e.key)}
                     onInput={(e) => console.log('[DEBUG] Test input onInput:', e.target.value)}
+                    onTouchStart={(e) => console.log('[DEBUG] Test input touchstart')}
+                    onTouchEnd={(e) => console.log('[DEBUG] Test input touchend')}
+                    readOnly={false}
+                    disabled={false}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck="false"
                     style={{
                       width: '100%',
                       padding: '8px',
-                      border: '1px solid #fcd34d',
+                      border: '2px solid #fcd34d',
                       borderRadius: '4px',
-                      fontSize: '14px'
+                      fontSize: '16px',
+                      touchAction: 'manipulation',
+                      WebkitUserSelect: 'text',
+                      userSelect: 'text'
                     }}
                   />
+                  <div style={{ marginTop: '4px', fontSize: '11px', color: '#92400e' }}>
+                    ⚠️ If keyboard doesn't appear when you tap, there's a rendering/z-index issue
+                  </div>
                 </div>
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Link URL</label>
                 <input
