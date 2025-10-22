@@ -917,6 +917,24 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     }
   }, [value, editor]);
 
+  // Disable editor when any modal is open to prevent it from capturing input
+  useEffect(() => {
+    if (editor) {
+      const isAnyModalOpen = showImageModal || showVideoModal || showLinkModal;
+      if (isAnyModalOpen) {
+        console.log('[AdvancedRTE] Modal opened - making editor non-editable');
+        editor.setEditable(false);
+        // Blur the editor to ensure it doesn't have focus
+        if (editor.view.hasFocus()) {
+          editor.view.dom.blur();
+        }
+      } else {
+        console.log('[AdvancedRTE] Modal closed - making editor editable');
+        editor.setEditable(true);
+      }
+    }
+  }, [editor, showImageModal, showVideoModal, showLinkModal]);
+
   // Handle contact card display
   const handleContactCardShow = async (contactId, variant, event) => {
     try {
@@ -6633,6 +6651,24 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 </button>
               </div>
               <div style={{ padding: '20px' }}>
+                {/* Debug test input */}
+                <div style={{ marginBottom: '16px', padding: '8px', background: '#fffbea', border: '1px solid #fcd34d', borderRadius: '4px' }}>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#92400e' }}>Debug Test Input (try typing here):</label>
+                  <input
+                    type="text"
+                    placeholder="Type anything..."
+                    onChange={(e) => console.log('[DEBUG] Test input value:', e.target.value)}
+                    onKeyDown={(e) => console.log('[DEBUG] Test input key:', e.key)}
+                    onInput={(e) => console.log('[DEBUG] Test input onInput:', e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: '1px solid #fcd34d',
+                      borderRadius: '4px',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Link URL</label>
                 <input
                   type="text"
