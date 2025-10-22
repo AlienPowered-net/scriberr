@@ -4942,34 +4942,69 @@ export default function Index() {
               padding: "24px",
               borderRadius: "8px",
               maxWidth: "400px",
-              width: "90%"
+              width: "90%",
+              maxHeight: "90vh",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column"
             }}>
               <Text as="h3" variant="headingMd" style={{ marginBottom: "16px" }}>
                 Duplicate Note
               </Text>
-              <div style={{ marginBottom: "24px" }}>
-                <label htmlFor="duplicateFolderSelect" style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
-                  Select a folder to duplicate the note to:
-                </label>
-                <select
-                  id="duplicateFolderSelect"
-                  value={duplicateFolderId}
-                  onChange={(e) => setDuplicateFolderId(e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "8px 12px",
-                    border: "1px solid #c9cccf",
-                    borderRadius: "4px",
-                    fontSize: "14px",
-                  }}
-                >
-                  <option value="">Select a folder...</option>
-                  {moveFolderOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+              <Text as="p" style={{ marginBottom: "16px", fontSize: "14px", color: "#6d7175" }}>
+                Select a folder to duplicate the note to.
+              </Text>
+              <div style={{ marginBottom: "24px", maxHeight: "300px", overflowY: "auto" }}>
+                {localFolders.map((folder) => {
+                  const currentNote = localNotes.find(n => n.id === showDuplicateModal);
+                  const isCurrentFolder = currentNote && folder.id === currentNote.folderId;
+                  const isSelected = duplicateFolderId === folder.id;
+                  
+                  return (
+                    <div
+                      key={folder.id}
+                      onClick={() => {
+                        if (!isCurrentFolder) {
+                          setDuplicateFolderId(folder.id);
+                        }
+                      }}
+                      style={{
+                        padding: '12px',
+                        border: isSelected ? '2px solid #008060' : '1px solid #e1e3e5',
+                        borderRadius: '8px',
+                        marginBottom: '8px',
+                        cursor: isCurrentFolder ? 'not-allowed' : 'pointer',
+                        backgroundColor: isSelected ? '#e8f5e8' : (isCurrentFolder ? '#f1f3f4' : '#fafbfb'),
+                        opacity: isCurrentFolder ? 0.6 : 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <i 
+                        className={`far fa-${folder.icon || 'folder'}`} 
+                        style={{ 
+                          fontSize: '18px', 
+                          color: folder.iconColor || '#f57c00' 
+                        }}
+                      ></i>
+                      <span style={{ fontWeight: '500', flex: 1 }}>{folder.name}</span>
+                      {isCurrentFolder && (
+                        <span style={{ 
+                          fontSize: '12px', 
+                          color: '#6d7175',
+                          fontWeight: '600',
+                          backgroundColor: '#e1e3e5',
+                          padding: '2px 8px',
+                          borderRadius: '12px'
+                        }}>
+                          Current
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
               <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
                 <Button
@@ -7636,47 +7671,62 @@ export default function Index() {
                     <div style={{
                       flex: 1,
                       overflowY: 'auto',
-                      border: '1px solid #e1e3e5',
-                      borderRadius: '8px'
+                      padding: '8px'
                     }}>
                       {localFolders
                         .filter(folder => {
-                          // Filter out current folder and match search query
+                          // Match search query only
+                          return folder.name.toLowerCase().includes(folderSelectorSearchQuery.toLowerCase());
+                        })
+                        .map(folder => {
                           const currentNote = localNotes.find(n => n.id === folderSelectorNoteId);
                           const isCurrentFolder = currentNote && folder.id === currentNote.folderId;
-                          return !isCurrentFolder && folder.name.toLowerCase().includes(folderSelectorSearchQuery.toLowerCase());
-                        })
-                        .map(folder => (
-                          <div
-                            key={folder.id}
-                            onClick={() => handleFolderSelection(folder.id)}
-                            style={{
-                              padding: '16px',
-                              borderBottom: '1px solid #f1f3f4',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '12px',
-                              transition: 'background-color 0.2s ease'
-                            }}
-                            onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
-                            onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                            onTouchStart={(e) => e.target.style.backgroundColor = '#f6f6f7'}
-                            onTouchEnd={(e) => e.target.style.backgroundColor = 'white'}
-                          >
-                            <i className="fas fa-folder" style={{
-                              fontSize: '16px',
-                              color: '#6d7175'
-                            }}></i>
-                            <span style={{
-                              fontSize: '16px',
-                              color: '#202223',
-                              fontWeight: '500'
-                            }}>
-                              {folder.name}
-                            </span>
-                          </div>
-                        ))}
+                          
+                          return (
+                            <div
+                              key={folder.id}
+                              onClick={() => {
+                                if (!isCurrentFolder) {
+                                  handleFolderSelection(folder.id);
+                                }
+                              }}
+                              style={{
+                                padding: '12px',
+                                border: '1px solid #e1e3e5',
+                                borderRadius: '8px',
+                                marginBottom: '8px',
+                                cursor: isCurrentFolder ? 'not-allowed' : 'pointer',
+                                backgroundColor: isCurrentFolder ? '#f1f3f4' : '#fafbfb',
+                                opacity: isCurrentFolder ? 0.6 : 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              <i 
+                                className={`far fa-${folder.icon || 'folder'}`} 
+                                style={{ 
+                                  fontSize: '18px', 
+                                  color: folder.iconColor || '#f57c00' 
+                                }}
+                              ></i>
+                              <span style={{ fontWeight: '500', flex: 1 }}>{folder.name}</span>
+                              {isCurrentFolder && (
+                                <span style={{ 
+                                  fontSize: '12px', 
+                                  color: '#6d7175',
+                                  fontWeight: '600',
+                                  backgroundColor: '#e1e3e5',
+                                  padding: '2px 8px',
+                                  borderRadius: '12px'
+                                }}>
+                                  Current
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
                     </div>
                   </div>
                 </div>
