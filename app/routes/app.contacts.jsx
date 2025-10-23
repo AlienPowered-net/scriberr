@@ -2065,24 +2065,23 @@ export default function ContactsPage() {
 
                       {/* Table Header */}
                       {filteredContacts.length > 0 && (
-                        <div style={{ 
-                          padding: "12px 16px", 
+                        <div style={{
+                          padding: "12px 16px",
                           borderBottom: "1px solid #e1e3e5",
                           backgroundColor: "#f6f6f7",
                           display: "grid",
-                          gridTemplateColumns: "60px 1fr 1fr 1fr 120px 100px 120px",
+                          gridTemplateColumns: "60px 200px 180px 120px 150px 150px",
                           gap: "16px",
                           fontSize: "12px",
                           fontWeight: "600",
                           color: "#6d7175",
-                          textTransform: "uppercase"
+                          textTransform: "capitalize"
                         }}>
                           <div>Profile</div>
-                          <div>First name</div>
-                          <div>Last name</div>
-                          <div>Contact Info</div>
-                          <div>Creation Date</div>
-                          <div>Tag</div>
+                          <div>Name</div>
+                          <div>Contact info</div>
+                          <div>Creation date</div>
+                          <div>Tags</div>
                           <div>Actions</div>
                         </div>
                       )}
@@ -2150,36 +2149,32 @@ export default function ContactsPage() {
                                     setShowContactDetails(true);
                                   }}
                                 >
-                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 120px 100px', gap: '16px', alignItems: 'center' }}>
-                                    {/* First Name */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <div style={{ display: 'grid', gridTemplateColumns: '200px 180px 120px 150px', gap: '16px', alignItems: 'center' }}>
+                                    {/* Name */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                       {pinnedAt && (
                                         <div style={{ color: '#007bff', display: 'flex', alignItems: 'center' }}>
                                           <Icon source={PinFilledIcon} />
                                         </div>
                                       )}
-                                      <Text as="span" variant="bodyMd">
-                                        {firstName || '-'}
-                                      </Text>
-                                    </div>
-                                    
-                                    {/* Last Name / Business Name */}
-                                    <div>
-                                      <Text as="span" variant="bodyMd">
-                                        {lastName || businessName || '-'}
+                                      <Text as="span" variant="bodyMd" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {type === 'PERSON' 
+                                          ? `${firstName || ''} ${lastName || ''}`.trim() || '-'
+                                          : businessName || '-'
+                                        }
                                       </Text>
                                     </div>
                                     
                                     {/* Contact Info */}
-                                    <div>
+                                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                       <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                                         {email && (
-                                          <Text as="span" variant="bodySm" tone="subdued">
+                                          <Text as="span" variant="bodySm" tone="subdued" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             {email}
                                           </Text>
                                         )}
                                         {phone && (
-                                          <Text as="span" variant="bodySm" tone="subdued">
+                                          <Text as="span" variant="bodySm" tone="subdued" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             {phone}
                                           </Text>
                                         )}
@@ -2187,17 +2182,22 @@ export default function ContactsPage() {
                                     </div>
                                     
                                     {/* Creation Date */}
-                                    <div>
+                                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                       <Text as="span" variant="bodySm" tone="subdued">
                                         {new Date(createdAt).toLocaleDateString()}
                                       </Text>
                                     </div>
                                     
                                     {/* Tags */}
-                                    <div>
+                                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', overflow: 'hidden' }}>
                                       <Badge tone={type === 'PERSON' ? 'info' : 'success'}>
                                         {type === 'PERSON' ? 'Person' : 'Business'}
                                       </Badge>
+                                      {(contact.tags || []).slice(0, 2).map((tag, index) => (
+                                        <Badge key={index} tone="default">
+                                          {tag}
+                                        </Badge>
+                                      ))}
                                     </div>
                                   </div>
                                 </ResourceItem>
