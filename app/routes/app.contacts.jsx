@@ -1559,7 +1559,7 @@ export default function ContactsPage() {
             }
           `}</style>
 
-          <div style={{ paddingBottom: "120px", padding: "0", margin: "0" }}>
+          <div style={{ paddingBottom: "160px", padding: "0", margin: "0" }}>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -1569,10 +1569,10 @@ export default function ContactsPage() {
           <div className="app-layout" style={{ 
             display: "flex", 
             gap: "16px", 
-            minHeight: "calc(100vh - 120px)",
-            paddingBottom: "120px",
-            marginLeft: "-44px",
-            paddingLeft: "16px"
+            minHeight: "calc(100vh - 160px)",
+            paddingBottom: "160px",
+            marginLeft: "-20px",
+            paddingLeft: "20px"
           }}>
             {columnOrder.map((columnId, index) => (
               <div key={`slot-${index}`} style={{ 
