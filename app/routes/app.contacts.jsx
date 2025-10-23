@@ -1588,7 +1588,7 @@ export default function ContactsPage() {
                   overflow: "hidden"
                 } : {
                   flex: "1",
-                  minWidth: "1000px"
+                  minWidth: "1400px"
                 })
               }}>
                 <SortableColumn id={columnId}>
