@@ -1468,7 +1468,18 @@ export default function ContactsPage() {
     <>
       {/* Desktop Layout */}
       {!isMobile && (
-        <Page title="Contacts" style={{ padding: '0', margin: '0' }}>
+        <>
+          <style>{`
+            .Polaris-Page__Content {
+              padding: 0 !important;
+              margin: 0 !important;
+            }
+            .Polaris-Page {
+              padding: 0 !important;
+              margin: 0 !important;
+            }
+          `}</style>
+          <Page title="Contacts" style={{ padding: '0', margin: '0', paddingLeft: '0', marginLeft: '0' }}>
           {/* Toast Notifications */}
           {alertMessage && (
             <div 
@@ -1518,8 +1529,8 @@ export default function ContactsPage() {
             gap: "16px", 
             minHeight: "calc(100vh - 80px)",
             paddingBottom: "80px",
-            marginLeft: "-20px",
-            paddingLeft: "20px"
+            marginLeft: "-60px",
+            paddingLeft: "60px"
           }}>
             {columnOrder.map((columnId, index) => (
               <div key={`slot-${index}`} style={{ 
@@ -2742,6 +2753,7 @@ export default function ContactsPage() {
         )}
       </div>
     </Page>
+        </>
       )}
 
       {/* Mobile Layout */}
