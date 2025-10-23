@@ -1478,6 +1478,26 @@ export default function ContactsPage() {
               padding: 0 !important;
               margin: 0 !important;
             }
+            .Polaris-Layout {
+              padding: 0 !important;
+              margin: 0 !important;
+            }
+            .Polaris-Layout__Section {
+              padding: 0 !important;
+              margin: 0 !important;
+            }
+            .Polaris-Layout__AnnotatedSection {
+              padding: 0 !important;
+              margin: 0 !important;
+            }
+            .app-layout {
+              padding: 0 !important;
+              margin: 0 !important;
+            }
+            .app-layout > * {
+              padding-left: 0 !important;
+              margin-left: 0 !important;
+            }
           `}</style>
           <Page title="Contacts" style={{ padding: '0', margin: '0', paddingLeft: '0', marginLeft: '0' }}>
           {/* Toast Notifications */}
@@ -1517,7 +1537,7 @@ export default function ContactsPage() {
             }
           `}</style>
 
-          <div style={{ paddingBottom: "80px" }}>
+          <div style={{ paddingBottom: "80px", padding: "0", margin: "0" }}>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -1530,7 +1550,7 @@ export default function ContactsPage() {
             minHeight: "calc(100vh - 80px)",
             paddingBottom: "80px",
             marginLeft: "-60px",
-            paddingLeft: "60px"
+            paddingLeft: "0"
           }}>
             {columnOrder.map((columnId, index) => (
               <div key={`slot-${index}`} style={{ 
