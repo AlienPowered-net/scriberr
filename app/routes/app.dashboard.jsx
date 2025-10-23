@@ -2563,7 +2563,7 @@ export default function Index() {
           onTouchStart={(e) => e.target.style.backgroundColor = '#f6f6f7'}
           onTouchEnd={(e) => e.target.style.backgroundColor = 'white'}
         >
-          <i className="fas fa-thumbtack" style={{ fontSize: '12px' }}></i>
+          <i className="fas fa-thumbtack" style={{ fontSize: '12px', color: note.pinnedAt ? '#007bff' : '#000000' }}></i>
           {note.pinnedAt ? "Unpin" : "Pin"}
         </div>
         <div

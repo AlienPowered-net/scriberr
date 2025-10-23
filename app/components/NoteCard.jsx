@@ -75,7 +75,7 @@ const NoteCard = ({
           onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
           onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
         >
-          <div style={{ color: '#007bff' }}>
+          <div style={{ color: isPinned ? '#007bff' : '#000000' }}>
             <Icon source={PinFilledIcon} />
           </div>
           {isPinned ? "Unpin" : "Pin"}
