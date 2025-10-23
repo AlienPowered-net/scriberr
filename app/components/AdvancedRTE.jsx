@@ -539,7 +539,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   );
                   
                   component.appendChild(loadingDiv);
-                  document.body.appendChild(component);
+                  document.documentElement.appendChild(component);
                   
                   if (props.clientRect) {
                     const rect = props.clientRect();
@@ -630,7 +630,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   component.appendChild(button);
                 });
 
-                document.body.appendChild(component);
+                document.documentElement.appendChild(component);
 
                 if (props.clientRect) {
                   const rect = props.clientRect();
@@ -6177,7 +6177,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               </div>
             </div>
           </>,
-          document.body
+          document.documentElement
         );
       })()}
 
@@ -6280,7 +6280,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               </div>
             </div>
           </>,
-          document.body
+          document.documentElement
         );
       })()}
 
@@ -6435,7 +6435,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               </div>
             </div>
           </>,
-          document.body
+          document.documentElement
         );
       })()}
 
@@ -6589,7 +6589,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               </div>
             </div>
           </>,
-          document.body
+          document.documentElement
         );
       })()}
 
@@ -6692,23 +6692,22 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   </div>
                 </div>
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Link URL</label>
-                <input
-                  type="text"
+                <textarea
                   data-modal-input="true"
                   value={linkUrl}
                   onChange={(e) => {
-                    console.log('[AdvancedRTE Link Modal] URL Input onChange fired:', e.target.value);
+                    console.log('[AdvancedRTE Link Modal] URL Textarea onChange fired:', e.target.value);
                     setLinkUrl(e.target.value);
                   }}
                   onInput={(e) => {
-                    console.log('[AdvancedRTE Link Modal] URL Input onInput fired:', e.target.value);
+                    console.log('[AdvancedRTE Link Modal] URL Textarea onInput fired:', e.target.value);
                   }}
                   onClick={(e) => {
-                    console.log('[AdvancedRTE Link Modal] URL Input clicked');
+                    console.log('[AdvancedRTE Link Modal] URL Textarea clicked');
                     // Don't stop propagation or prevent default - let browser handle naturally
                   }}
                   onFocus={(e) => {
-                    console.log('[AdvancedRTE Link Modal] URL Input focused');
+                    console.log('[AdvancedRTE Link Modal] URL Textarea focused');
                   }}
                   onKeyDown={(e) => {
                     console.log('[AdvancedRTE Link Modal] URL Key pressed:', e.key);
@@ -6731,12 +6730,19 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   onMouseUp={(e) => {
                     console.log('[AdvancedRTE Link Modal] URL Mouse up');
                   }}
+                  onCompositionStart={(e) => {
+                    console.log('[AdvancedRTE Link Modal] URL Composition start');
+                  }}
+                  onCompositionEnd={(e) => {
+                    console.log('[AdvancedRTE Link Modal] URL Composition end');
+                  }}
                   placeholder="https://example.com"
                   autoFocus
                   autoComplete="off"
-                  inputMode="text"
                   readOnly={false}
                   disabled={false}
+                  tabIndex={0}
+                  rows={1}
                   style={{
                     width: '100%',
                     padding: '10px',
@@ -6842,7 +6848,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               </div>
             </div>
           </>,
-          document.body
+          document.documentElement
         );
       })()}
 
