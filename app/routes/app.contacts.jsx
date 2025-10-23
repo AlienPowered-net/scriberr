@@ -616,6 +616,8 @@ export default function ContactsPage() {
   
   // Selection and bulk actions state
   const [selectedContacts, setSelectedContacts] = useState([]);
+  const [selectedTagFilter, setSelectedTagFilter] = useState(null);
+  const [tagPopoverActive, setTagPopoverActive] = useState({});
   const [showTagsSection, setShowTagsSection] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
   const [tagsInputValue, setTagsInputValue] = useState('');
@@ -679,7 +681,13 @@ export default function ContactsPage() {
     const matchesTags = selectedTags.length === 0 || 
       (contact.tags && selectedTags.every(tag => contact.tags.includes(tag)));
     
-    return matchesFolder && matchesSearch && matchesTags;
+    // Tag filter from clicking tags
+    const matchesTagFilter = !selectedTagFilter || 
+      (selectedTagFilter === 'Person' && contact.type === 'PERSON') ||
+      (selectedTagFilter === 'Business' && contact.type === 'BUSINESS') ||
+      (contact.tags && contact.tags.includes(selectedTagFilter));
+    
+    return matchesFolder && matchesSearch && matchesTags && matchesTagFilter;
   }).sort((a, b) => {
     // Sort pinned first, then by creation date
     if (a.pinnedAt && !b.pinnedAt) return -1;
@@ -2063,6 +2071,22 @@ export default function ContactsPage() {
                         />
                       </div>
 
+                      {/* Tag Filter Badge */}
+                      {selectedTagFilter && (
+                        <div style={{ padding: '8px 16px', backgroundColor: '#f6f6f7', borderBottom: '1px solid #e1e3e5' }}>
+                          <InlineStack gap="200" align="start">
+                            <Text variant="bodySm" as="span">Filtering by tag:</Text>
+                            <Badge tone="info">{selectedTagFilter}</Badge>
+                            <Button
+                              size="slim"
+                              onClick={() => setSelectedTagFilter(null)}
+                            >
+                              Clear filter
+                            </Button>
+                          </InlineStack>
+                        </div>
+                      )}
+
                       {/* Table Header */}
                       {filteredContacts.length > 0 && (
                         <div style={{
@@ -2070,13 +2094,14 @@ export default function ContactsPage() {
                           borderBottom: "1px solid #e1e3e5",
                           backgroundColor: "#f6f6f7",
                           display: "grid",
-                          gridTemplateColumns: "60px 200px 180px 120px 150px 150px",
+                          gridTemplateColumns: "20px 60px 200px 180px 120px 150px 150px",
                           gap: "16px",
                           fontSize: "12px",
                           fontWeight: "600",
                           color: "#6d7175",
                           textTransform: "capitalize"
                         }}>
+                          <div></div>
                           <div>Profile</div>
                           <div>Name</div>
                           <div>Contact info</div>
@@ -2137,33 +2162,48 @@ export default function ContactsPage() {
                                 },
                               ];
 
+                              const isContactSelected = selectedContacts.includes(id);
+                              const rowBackgroundColor = isContactSelected ? '#fffbf8' : (pinnedAt ? '#f0f8ff' : 'transparent');
+                              const rowBorderColor = isContactSelected ? '#FF8C00' : (pinnedAt ? '#007bff' : 'transparent');
+
                               return (
-                                <ResourceItem
-                                  id={id}
-                                  url="#"
-                                  media={media}
-                                  shortcutActions={shortcutActions}
-                                  persistActions
-                                  onClick={() => {
-                                    setSelectedContact(contact);
-                                    setShowContactDetails(true);
-                                  }}
-                                >
-                                  <div style={{ display: 'grid', gridTemplateColumns: '200px 180px 120px 150px', gap: '16px', alignItems: 'center' }}>
-                                    {/* Name */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                      {pinnedAt && (
-                                        <div style={{ color: '#007bff', display: 'flex', alignItems: 'center' }}>
-                                          <Icon source={PinFilledIcon} />
-                                        </div>
-                                      )}
-                                      <Text as="span" variant="bodyMd" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        {type === 'PERSON' 
-                                          ? `${firstName || ''} ${lastName || ''}`.trim() || '-'
-                                          : businessName || '-'
-                                        }
-                                      </Text>
-                                    </div>
+                                <div style={{ 
+                                  backgroundColor: rowBackgroundColor,
+                                  border: `1px solid ${rowBorderColor}`,
+                                  borderRadius: '8px',
+                                  marginBottom: '4px',
+                                  transition: 'all 0.2s ease'
+                                }}>
+                                  <ResourceItem
+                                    id={id}
+                                    url="#"
+                                    media={media}
+                                    shortcutActions={shortcutActions}
+                                    persistActions
+                                    onClick={() => {
+                                      setSelectedContact(contact);
+                                      setShowContactDetails(true);
+                                    }}
+                                  >
+                                    <div style={{ display: 'grid', gridTemplateColumns: '20px 200px 180px 120px 150px', gap: '16px', alignItems: 'center' }}>
+                                      {/* Pin Icon Column */}
+                                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        {pinnedAt && (
+                                          <div style={{ color: '#008060', display: 'flex', alignItems: 'center' }}>
+                                            <Icon source={PinFilledIcon} />
+                                          </div>
+                                        )}
+                                      </div>
+                                      
+                                      {/* Name */}
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        <Text as="span" variant="bodyMd" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                          {type === 'PERSON' 
+                                            ? `${firstName || ''} ${lastName || ''}`.trim() || '-'
+                                            : businessName || '-'
+                                          }
+                                        </Text>
+                                      </div>
                                     
                                     {/* Contact Info */}
                                     <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -2189,18 +2229,76 @@ export default function ContactsPage() {
                                     </div>
                                     
                                     {/* Tags */}
-                                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', overflow: 'hidden' }}>
-                                      <Badge tone={type === 'PERSON' ? 'info' : 'success'}>
-                                        {type === 'PERSON' ? 'Person' : 'Business'}
-                                      </Badge>
-                                      {(contact.tags || []).slice(0, 2).map((tag, index) => (
-                                        <Badge key={index} tone="default">
-                                          {tag}
+                                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', overflow: 'hidden', alignItems: 'center' }}>
+                                      <div 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setSelectedTagFilter(type === 'PERSON' ? 'Person' : 'Business');
+                                        }}
+                                        style={{ cursor: 'pointer' }}
+                                      >
+                                        <Badge tone={type === 'PERSON' ? 'info' : 'success'}>
+                                          {type === 'PERSON' ? 'Person' : 'Business'}
                                         </Badge>
+                                      </div>
+                                      {(contact.tags || []).slice(0, 2).map((tag, index) => (
+                                        <div 
+                                          key={index}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedTagFilter(tag);
+                                          }}
+                                          style={{ cursor: 'pointer' }}
+                                        >
+                                          <Badge tone="default">
+                                            {tag}
+                                          </Badge>
+                                        </div>
                                       ))}
+                                      {(contact.tags || []).length > 2 && (
+                                        <Popover
+                                          active={tagPopoverActive[id] || false}
+                                          activator={
+                                            <div 
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setTagPopoverActive(prev => ({ ...prev, [id]: !prev[id] }));
+                                              }}
+                                              style={{ cursor: 'pointer' }}
+                                            >
+                                              <Badge tone="default">
+                                                +{(contact.tags || []).length - 2}
+                                              </Badge>
+                                            </div>
+                                          }
+                                          onClose={() => setTagPopoverActive(prev => ({ ...prev, [id]: false }))}
+                                          preferredAlignment="left"
+                                        >
+                                          <div style={{ padding: '12px', maxWidth: '200px' }}>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                              {(contact.tags || []).slice(2).map((tag, index) => (
+                                                <div 
+                                                  key={index}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedTagFilter(tag);
+                                                    setTagPopoverActive(prev => ({ ...prev, [id]: false }));
+                                                  }}
+                                                  style={{ cursor: 'pointer' }}
+                                                >
+                                                  <Badge tone="default">
+                                                    {tag}
+                                                  </Badge>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        </Popover>
+                                      )}
                                     </div>
                                   </div>
                                 </ResourceItem>
+                                </div>
                               );
                             }}
                           />
