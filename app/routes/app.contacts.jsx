@@ -1515,6 +1515,10 @@ export default function ContactsPage() {
             .app-layout {
               padding: 0 !important;
               margin: 0 !important;
+              padding-left: 20px !important;
+            }
+            .Polaris-Box {
+              padding-left: 20px !important;
             }
             .app-layout > * {
               padding-left: 0 !important;
