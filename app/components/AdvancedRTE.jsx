@@ -4858,131 +4858,283 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         </Modal.Section>
       </Modal>
 
-      <Modal
-        open={showLinkModal}
-        onClose={() => setShowLinkModal(false)}
-        title="Insert Link"
-        primaryAction={{
-          content: 'Insert',
-          onAction: insertLink,
-        }}
-        secondaryActions={[
-          {
-            content: 'Cancel',
-            onAction: () => setShowLinkModal(false),
-          },
-        ]}
-      >
-        <Modal.Section>
-          <TextField
-            label="Link URL"
-            value={linkUrl}
-            onChange={setLinkUrl}
-            placeholder="https://example.com"
-            autoComplete="off"
-          />
-          <div style={{ marginTop: '12px' }}>
-            <TextField
-              label="Link Text (optional)"
-              value={linkText}
-              onChange={setLinkText}
-              placeholder="Click here"
-              autoComplete="off"
-              helpText="Leave empty to use selected text"
-            />
+      {/* Mobile Link Modal */}
+      {showLinkModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 999999999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            padding: '20px',
+            width: '100%',
+            maxWidth: '400px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+          }}>
+            <h2 style={{ margin: '0 0 20px 0', fontSize: '18px', fontWeight: '600' }}>Insert Link</h2>
+            
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Link URL</label>
+              <input
+                type="text"
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                placeholder="https://example.com"
+                autoComplete="off"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  fontSize: '16px',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Link Text (optional)</label>
+              <input
+                type="text"
+                value={linkText}
+                onChange={(e) => setLinkText(e.target.value)}
+                placeholder="Click here"
+                autoComplete="off"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  fontSize: '16px',
+                  boxSizing: 'border-box'
+                }}
+              />
+              <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
+                Leave empty to use selected text
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setShowLinkModal(false)}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#f3f4f6',
+                  color: '#374151',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 500
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  insertLink();
+                  setShowLinkModal(false);
+                }}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 500
+                }}
+              >
+                Insert
+              </button>
+            </div>
           </div>
-        </Modal.Section>
-      </Modal>
+        </div>
+      )}
 
-
-      {/* Modals */}
-      <Modal
-        open={showImageModal}
-        onClose={() => setShowImageModal(false)}
-        title="Insert Image"
-        primaryAction={{
-          content: 'Insert',
-          onAction: insertImage,
-        }}
-        secondaryActions={[
-          {
-            content: 'Cancel',
-            onAction: () => setShowImageModal(false),
-          },
-        ]}
-      >
-        <Modal.Section>
-          <TextField
-            label="Image URL"
-            value={imageUrl}
-            onChange={setImageUrl}
-            placeholder="https://example.com/image.jpg"
-            autoComplete="off"
-          />
-        </Modal.Section>
-      </Modal>
-
-      <Modal
-        open={showVideoModal}
-        onClose={() => setShowVideoModal(false)}
-        title="Insert Video"
-        primaryAction={{
-          content: 'Insert',
-          onAction: insertVideo,
-        }}
-        secondaryActions={[
-          {
-            content: 'Cancel',
-            onAction: () => setShowVideoModal(false),
-          },
-        ]}
-      >
-        <Modal.Section>
-          <TextField
-            label="YouTube URL"
-            value={videoUrl}
-            onChange={setVideoUrl}
-            placeholder="https://www.youtube.com/watch?v=..."
-            autoComplete="off"
-          />
-        </Modal.Section>
-      </Modal>
-
-      <Modal
-        open={showLinkModal}
-        onClose={() => setShowLinkModal(false)}
-        title="Insert Link"
-        primaryAction={{
-          content: 'Insert',
-          onAction: insertLink,
-        }}
-        secondaryActions={[
-          {
-            content: 'Cancel',
-            onAction: () => setShowLinkModal(false),
-          },
-        ]}
-      >
-        <Modal.Section>
-          <TextField
-            label="Link URL"
-            value={linkUrl}
-            onChange={setLinkUrl}
-            placeholder="https://example.com"
-            autoComplete="off"
-          />
-          <div style={{ marginTop: '12px' }}>
-            <TextField
-              label="Link Text (optional)"
-              value={linkText}
-              onChange={setLinkText}
-              placeholder="Click here"
-              autoComplete="off"
-              helpText="Leave empty to use selected text"
-            />
+      {/* Mobile Image Modal */}
+      {showImageModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 999999999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            padding: '20px',
+            width: '100%',
+            maxWidth: '400px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+          }}>
+            <h2 style={{ margin: '0 0 20px 0', fontSize: '18px', fontWeight: '600' }}>Insert Image</h2>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Image URL</label>
+              <input
+                type="text"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                autoComplete="off"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  fontSize: '16px',
+                  boxSizing: 'border-box'
+                }}
+              />
+              <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
+                Enter the URL of the image you want to embed
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setShowImageModal(false)}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#f3f4f6',
+                  color: '#374151',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 500
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  insertImage();
+                  setShowImageModal(false);
+                }}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 500
+                }}
+              >
+                Insert
+              </button>
+            </div>
           </div>
-        </Modal.Section>
-      </Modal>
+        </div>
+      )}
+
+      {/* Mobile Video Modal */}
+      {showVideoModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 999999999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            padding: '20px',
+            width: '100%',
+            maxWidth: '400px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+          }}>
+            <h2 style={{ margin: '0 0 20px 0', fontSize: '18px', fontWeight: '600' }}>Insert YouTube Video</h2>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>YouTube URL</label>
+              <input
+                type="text"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=..."
+                autoComplete="off"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  fontSize: '16px',
+                  boxSizing: 'border-box'
+                }}
+              />
+              <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
+                Paste a YouTube video URL
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setShowVideoModal(false)}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#f3f4f6',
+                  color: '#374151',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 500
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  insertVideo();
+                  setShowVideoModal(false);
+                }}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 500
+                }}
+              >
+                Insert
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* Emoji Picker Popup with Pagination and Search */}
       {showEmojiPicker && (() => {
