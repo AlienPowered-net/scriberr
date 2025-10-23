@@ -6285,7 +6285,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       })()}
 
       {/* Insert Image Modal - MOBILE ONLY */}
-      {typeof document !== 'undefined' && showImageModal && isMobile && (() => {
+      {typeof document !== 'undefined' && showImageModal && (() => {
         console.log('RENDERING IMAGE MODAL VIA PORTAL [AdvancedRTE], showImageModal:', showImageModal, 'isMobile:', isMobile);
         return createPortal(
           <>
@@ -6440,7 +6440,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       })()}
 
       {/* Insert YouTube Video Modal - MOBILE ONLY */}
-      {typeof document !== 'undefined' && showVideoModal && isMobile && (() => {
+      {typeof document !== 'undefined' && showVideoModal && (() => {
         console.log('RENDERING YOUTUBE MODAL VIA PORTAL [AdvancedRTE], showVideoModal:', showVideoModal);
         return createPortal(
           <>
@@ -6594,7 +6594,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       })()}
 
       {/* Insert Link Modal - MOBILE ONLY */}
-      {typeof document !== 'undefined' && showLinkModal && isMobile && (() => {
+      {typeof document !== 'undefined' && showLinkModal && (() => {
         console.log('RENDERING LINK MODAL VIA PORTAL [AdvancedRTE], showLinkModal:', showLinkModal);
         return createPortal(
           <>
