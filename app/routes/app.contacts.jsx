@@ -1477,6 +1477,28 @@ export default function ContactsPage() {
             .Polaris-Page {
               padding: 0 !important;
               margin: 0 !important;
+              padding-left: 0 !important;
+              padding-right: 0 !important;
+              padding-top: 0 !important;
+              padding-bottom: 0 !important;
+            }
+            @media (min-width: 30.625em) {
+              .Polaris-Page {
+                padding: 0 !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+              }
+            }
+            @media (min-width: 48.75em) {
+              .Polaris-Page {
+                padding: 0 !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+              }
             }
             .Polaris-Layout {
               padding: 0 !important;
