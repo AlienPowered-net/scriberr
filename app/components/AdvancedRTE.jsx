@@ -6321,10 +6321,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 zIndex: 999999999,
                 pointerEvents: 'auto'
               }}
-              onClick={(e) => {
-                console.log('Image modal content clicked - keeping open [AdvancedRTE]');
-                e.stopPropagation();
-              }}
             >
               <div style={{
                 padding: '20px',
@@ -6478,10 +6474,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                 zIndex: 999999999,
                 pointerEvents: 'auto'
-              }}
-              onClick={(e) => {
-                console.log('Video modal content clicked - keeping open [AdvancedRTE]');
-                e.stopPropagation();
               }}
             >
               <div style={{
@@ -6638,10 +6630,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 zIndex: 9999999999,
                 pointerEvents: 'auto'
               }}
-              onClick={(e) => {
-                console.log('Link modal content clicked - keeping open [AdvancedRTE]');
-                e.stopPropagation();
-              }}
             >
               <div style={{
                 padding: '20px',
@@ -6737,10 +6725,18 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   onTouchEnd={(e) => {
                     console.log('[AdvancedRTE Link Modal] URL Touch end');
                   }}
+                  onMouseDown={(e) => {
+                    console.log('[AdvancedRTE Link Modal] URL Mouse down');
+                  }}
+                  onMouseUp={(e) => {
+                    console.log('[AdvancedRTE Link Modal] URL Mouse up');
+                  }}
                   placeholder="https://example.com"
                   autoFocus
                   autoComplete="off"
                   inputMode="text"
+                  readOnly={false}
+                  disabled={false}
                   style={{
                     width: '100%',
                     padding: '10px',
