@@ -1559,7 +1559,7 @@ export default function ContactsPage() {
             }
           `}</style>
 
-          <div style={{ paddingBottom: "80px", padding: "0", margin: "0" }}>
+          <div style={{ paddingBottom: "120px", padding: "0", margin: "0" }}>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -1569,9 +1569,9 @@ export default function ContactsPage() {
           <div className="app-layout" style={{ 
             display: "flex", 
             gap: "16px", 
-            minHeight: "calc(100vh - 80px)",
-            paddingBottom: "80px",
-            marginLeft: "-60px",
+            minHeight: "calc(100vh - 120px)",
+            paddingBottom: "120px",
+            marginLeft: "-44px",
             paddingLeft: "16px"
           }}>
             {columnOrder.map((columnId, index) => (
@@ -2794,6 +2794,23 @@ export default function ContactsPage() {
         </Modal>
         )}
       </div>
+      
+      {/* Copyright Footer */}
+      <footer style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: '#f8f9fa',
+        borderTop: '1px solid #e1e3e5',
+        padding: '12px 20px',
+        textAlign: 'center',
+        fontSize: '12px',
+        color: '#6d7175',
+        zIndex: 1000
+      }}>
+        © 2024 Scriberr Labs. All rights reserved.
+      </footer>
     </Page>
         </>
       )}
