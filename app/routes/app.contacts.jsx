@@ -2094,169 +2094,116 @@ export default function ContactsPage() {
                         overflowX: "hidden"
                       }}>
                         {filteredContacts.length > 0 ? (
-                          <div style={{ display: "flex", flexDirection: "column" }}>
-                            {filteredContacts.map((contact) => (
-                              <div
-                                key={contact.id}
-                                onClick={() => {
-                                  setSelectedContact(contact);
-                                  setShowContactDetails(true);
-                                }}
-                                style={{
-                                  display: "grid",
-                                  gridTemplateColumns: "60px 1fr 1fr 1fr 120px 100px 120px",
-                                  gap: "16px",
-                                  padding: "12px 16px",
-                                  borderBottom: "1px solid #f1f3f4",
-                                  cursor: "pointer",
-                                  backgroundColor: selectedContacts.includes(contact.id) ? "#fffbf8" : "transparent",
-                                  borderLeft: selectedContacts.includes(contact.id) ? "3px solid #FF8C00" : "3px solid transparent",
-                                  boxShadow: selectedContacts.includes(contact.id) ? "0 4px 12px rgba(255, 140, 0, 0.3)" : "none",
-                                  transition: "all 0.2s ease",
-                                  alignItems: "center"
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (!selectedContacts.includes(contact.id)) {
-                                    e.target.style.backgroundColor = "#f6f6f7";
-                                  }
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (!selectedContacts.includes(contact.id)) {
-                                    e.target.style.backgroundColor = "transparent";
-                                  }
-                                }}
-                              >
-                                {/* Profile Avatar */}
-                                <div style={{ display: "flex", alignItems: "center" }}>
-                                  <div style={{ borderRadius: '10px', overflow: 'hidden', width: '40px', height: '40px' }}>
-                                    <Avatar 
-                                      initials={(() => {
-                                        if (contact.type === 'PERSON') {
-                                          const first = (contact.firstName || '').trim();
-                                          const last = (contact.lastName || '').trim();
-                                          if (first && last) return (first[0] + last[0]).toUpperCase();
-                                          else if (first) return first.substring(0, 2).toUpperCase();
-                                          else if (last) return last.substring(0, 2).toUpperCase();
-                                          return 'UN';
-                                        } else {
-                                          const business = (contact.businessName || '').trim();
-                                          if (business.length >= 2) return business.substring(0, 2).toUpperCase();
-                                          else if (business.length === 1) return business[0].toUpperCase();
-                                          return 'BU';
-                                        }
-                                      })()}
-                                      size="medium"
-                                    />
-                                  </div>
+                          <ResourceList
+                            resourceName={{ singular: 'contact', plural: 'contacts' }}
+                            items={filteredContacts}
+                            renderItem={(contact) => {
+                              const { id, firstName, lastName, businessName, email, phone, type, createdAt, pinnedAt } = contact;
+                              const media = (
+                                <div style={{ borderRadius: '10px', overflow: 'hidden', width: '40px', height: '40px' }}>
+                                  <Avatar 
+                                    initials={(() => {
+                                      if (type === 'PERSON') {
+                                        const first = (firstName || '').trim();
+                                        const last = (lastName || '').trim();
+                                        if (first && last) return (first[0] + last[0]).toUpperCase();
+                                        else if (first) return first.substring(0, 2).toUpperCase();
+                                        else if (last) return last.substring(0, 2).toUpperCase();
+                                        return 'UN';
+                                      } else {
+                                        const business = (businessName || '').trim();
+                                        if (business.length >= 2) return business.substring(0, 2).toUpperCase();
+                                        else if (business.length === 1) return business[0].toUpperCase();
+                                        return 'BU';
+                                      }
+                                    })()}
+                                    size="medium"
+                                  />
                                 </div>
-                                
-                                {/* First Name */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  {contact.pinnedAt && (
-                                    <div style={{ color: '#008060', display: 'flex', alignItems: 'center' }}>
-                                      <Icon source={PinFilledIcon} />
+                              );
+
+                              const shortcutActions = [
+                                {
+                                  content: selectedContacts.includes(id) ? 'Deselect' : 'Select',
+                                  onAction: () => handleContactSelect(id),
+                                },
+                                {
+                                  content: 'Manage',
+                                  onAction: () => handleManageMenu(contact, { currentTarget: { getBoundingClientRect: () => ({ top: 0, left: 0 }) } }),
+                                },
+                                {
+                                  content: 'Delete',
+                                  destructive: true,
+                                  onAction: () => handleContactDelete(id),
+                                },
+                              ];
+
+                              return (
+                                <ResourceItem
+                                  id={id}
+                                  url="#"
+                                  media={media}
+                                  shortcutActions={shortcutActions}
+                                  persistActions
+                                  onClick={() => {
+                                    setSelectedContact(contact);
+                                    setShowContactDetails(true);
+                                  }}
+                                >
+                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 120px 100px', gap: '16px', alignItems: 'center' }}>
+                                    {/* First Name */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      {pinnedAt && (
+                                        <div style={{ color: '#007bff', display: 'flex', alignItems: 'center' }}>
+                                          <Icon source={PinFilledIcon} />
+                                        </div>
+                                      )}
+                                      <Text as="span" variant="bodyMd">
+                                        {firstName || '-'}
+                                      </Text>
                                     </div>
-                                  )}
-                                  <Text as="span" variant="bodyMd">
-                                    {contact.firstName || '-'}
-                                  </Text>
-                                </div>
-                                
-                                {/* Last Name */}
-                                <div>
-                                  <Text as="span" variant="bodyMd">
-                                    {contact.lastName || contact.businessName || '-'}
-                                  </Text>
-                                </div>
-                                
-                                {/* Contact Info */}
-                                <div>
-                                  <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                                    {contact.email && (
-                                      <Text as="span" variant="bodySm" tone="subdued">
-                                        {contact.email}
+                                    
+                                    {/* Last Name / Business Name */}
+                                    <div>
+                                      <Text as="span" variant="bodyMd">
+                                        {lastName || businessName || '-'}
                                       </Text>
-                                    )}
-                                    {contact.phone && (
+                                    </div>
+                                    
+                                    {/* Contact Info */}
+                                    <div>
+                                      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                                        {email && (
+                                          <Text as="span" variant="bodySm" tone="subdued">
+                                            {email}
+                                          </Text>
+                                        )}
+                                        {phone && (
+                                          <Text as="span" variant="bodySm" tone="subdued">
+                                            {phone}
+                                          </Text>
+                                        )}
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Creation Date */}
+                                    <div>
                                       <Text as="span" variant="bodySm" tone="subdued">
-                                        {contact.phone}
+                                        {new Date(createdAt).toLocaleDateString()}
                                       </Text>
-                                    )}
+                                    </div>
+                                    
+                                    {/* Tags */}
+                                    <div>
+                                      <Badge tone={type === 'PERSON' ? 'info' : 'success'}>
+                                        {type === 'PERSON' ? 'Person' : 'Business'}
+                                      </Badge>
+                                    </div>
                                   </div>
-                                </div>
-                                
-                                {/* Creation Date */}
-                                <div>
-                                  <Text as="span" variant="bodySm" tone="subdued">
-                                    {new Date(contact.createdAt).toLocaleDateString()}
-                                  </Text>
-                                </div>
-                                
-                                {/* Tags */}
-                                <div>
-                                  <Badge tone={contact.type === 'PERSON' ? 'info' : 'success'}>
-                                    {contact.type === 'PERSON' ? 'Person' : 'Business'}
-                                  </Badge>
-                                </div>
-                                
-                                {/* Action Buttons */}
-                                <div style={{ display: "flex", gap: "4px" }}>
-                                  {selectedContacts.includes(contact.id) ? (
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleContactSelect(contact.id);
-                                      }}
-                                      style={{
-                                        padding: '4px 12px',
-                                        backgroundColor: '#FF8C00',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        fontSize: '12px',
-                                        fontWeight: '500',
-                                        cursor: 'pointer',
-                                        transition: 'background-color 0.2s'
-                                      }}
-                                      onMouseEnter={(e) => e.target.style.backgroundColor = '#E67E00'}
-                                      onMouseLeave={(e) => e.target.style.backgroundColor = '#FF8C00'}
-                                    >
-                                      Select
-                                    </button>
-                                  ) : (
-                                    <Button
-                                      size="micro"
-                                      variant="secondary"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleContactSelect(contact.id);
-                                      }}
-                                    >
-                                      Select
-                                    </Button>
-                                  )}
-                                  <Button
-                                    size="micro"
-                                    variant="secondary"
-                                    onClick={(e) => handleManageMenu(contact, e)}
-                                  >
-                                    Manage
-                                  </Button>
-                                  <Button
-                                    size="micro"
-                                    variant="secondary"
-                                    tone="critical"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleContactDelete(contact.id);
-                                    }}
-                                  >
-                                    Delete
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                                </ResourceItem>
+                              );
+                            }}
+                          />
                         ) : (
                           <div style={{ 
                             display: "flex", 
