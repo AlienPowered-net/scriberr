@@ -75,7 +75,7 @@ const NoteCard = ({
           onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
           onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
         >
-          <div style={{ color: '#008060' }}>
+          <div style={{ color: '#007bff' }}>
             <Icon source={PinFilledIcon} />
           </div>
           {isPinned ? "Unpin" : "Pin"}
@@ -153,12 +153,12 @@ const NoteCard = ({
     switch (state) {
       case "pinned":
         return {
-          bg: "#f6fff9",
+          bg: "#f0f8ff",
           style: {
-            border: "1px solid #008060",
+            border: "1px solid #007bff",
             cursor: "pointer",
             transition: "all 0.2s ease",
-            boxShadow: "0 2px 6px rgba(0, 128, 96, 0.2)"
+            boxShadow: "0 2px 6px rgba(0, 123, 255, 0.2)"
           }
         };
       case "default":

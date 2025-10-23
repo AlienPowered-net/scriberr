@@ -6433,7 +6433,7 @@ export default function Index() {
                           </div>
                           {/* Pin Icon */}
                           {note.pinnedAt && (
-                            <div style={{ marginLeft: '8px', color: '#008060' }}>
+                            <div style={{ marginLeft: '8px', color: '#007bff' }}>
                               <Icon source={PinFilledIcon} />
                             </div>
                           )}
