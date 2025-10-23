@@ -6389,7 +6389,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     pointerEvents: 'auto',
                     zIndex: 10000000000,
                     WebkitAppearance: 'none',
-                    touchAction: 'manipulation'
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    backgroundColor: 'white',
+                    WebkitUserSelect: 'text',
+                    userSelect: 'text',
+                    WebkitTouchCallout: 'default',
+                    WebkitTapHighlightColor: 'transparent'
                   }}
                 />
                 <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
@@ -6541,7 +6547,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     pointerEvents: 'auto',
                     zIndex: 10000000000,
                     WebkitAppearance: 'none',
-                    touchAction: 'manipulation'
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    backgroundColor: 'white',
+                    WebkitUserSelect: 'text',
+                    userSelect: 'text',
+                    WebkitTouchCallout: 'default',
+                    WebkitTapHighlightColor: 'transparent'
                   }}
                 />
                 <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
@@ -6604,7 +6616,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 bottom: 0,
                 backgroundColor: 'rgba(0, 0, 0, 0.5)',
                 zIndex: 999999998,
-                pointerEvents: 'none'
+                pointerEvents: 'auto'
               }}
               onClick={() => {
                 console.log('Link modal backdrop clicked - closing [AdvancedRTE]');
@@ -6624,13 +6636,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 width: '90%',
                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                 zIndex: 9999999999,
-                pointerEvents: 'auto',
-                isolation: 'isolate'
+                pointerEvents: 'auto'
               }}
               onClick={(e) => {
                 console.log('Link modal content clicked - keeping open [AdvancedRTE]');
-                // Don't stop propagation - let events bubble naturally
-                // e.stopPropagation();
+                e.stopPropagation();
               }}
             >
               <div style={{
@@ -6715,6 +6725,18 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   onKeyDown={(e) => {
                     console.log('[AdvancedRTE Link Modal] URL Key pressed:', e.key);
                   }}
+                  onKeyUp={(e) => {
+                    console.log('[AdvancedRTE Link Modal] URL Key up:', e.key);
+                  }}
+                  onKeyPress={(e) => {
+                    console.log('[AdvancedRTE Link Modal] URL Key press:', e.key);
+                  }}
+                  onTouchStart={(e) => {
+                    console.log('[AdvancedRTE Link Modal] URL Touch start');
+                  }}
+                  onTouchEnd={(e) => {
+                    console.log('[AdvancedRTE Link Modal] URL Touch end');
+                  }}
                   placeholder="https://example.com"
                   autoFocus
                   autoComplete="off"
@@ -6727,10 +6749,16 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     fontSize: '16px',
                     boxSizing: 'border-box',
                     pointerEvents: 'auto',
-                    zIndex: 100000000,
+                    zIndex: 10000000000,
                     marginBottom: '16px',
                     WebkitAppearance: 'none',
-                    touchAction: 'manipulation'
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    backgroundColor: 'white',
+                    WebkitUserSelect: 'text',
+                    userSelect: 'text',
+                    WebkitTouchCallout: 'default',
+                    WebkitTapHighlightColor: 'transparent'
                   }}
                 />
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Link Text (optional)</label>
@@ -6768,7 +6796,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     pointerEvents: 'auto',
                     zIndex: 10000000000,
                     WebkitAppearance: 'none',
-                    touchAction: 'manipulation'
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    backgroundColor: 'white',
+                    WebkitUserSelect: 'text',
+                    userSelect: 'text',
+                    WebkitTouchCallout: 'default',
+                    WebkitTapHighlightColor: 'transparent'
                   }}
                 />
                 <div style={{ marginTop: '4px', fontSize: '12px', color: '#6b7280' }}>
