@@ -4805,58 +4805,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         )}
       </div>
 
-      {/* Modals */}
-      <Modal
-        open={showImageModal}
-        onClose={() => setShowImageModal(false)}
-        title="Insert Image"
-        primaryAction={{
-          content: 'Insert',
-          onAction: insertImage,
-        }}
-        secondaryActions={[
-          {
-            content: 'Cancel',
-            onAction: () => setShowImageModal(false),
-          },
-        ]}
-      >
-        <Modal.Section>
-          <TextField
-            label="Image URL"
-            value={imageUrl}
-            onChange={setImageUrl}
-            placeholder="https://example.com/image.jpg"
-            autoComplete="off"
-          />
-        </Modal.Section>
-      </Modal>
-
-      <Modal
-        open={showVideoModal}
-        onClose={() => setShowVideoModal(false)}
-        title="Insert Video"
-        primaryAction={{
-          content: 'Insert',
-          onAction: insertVideo,
-        }}
-        secondaryActions={[
-          {
-            content: 'Cancel',
-            onAction: () => setShowVideoModal(false),
-          },
-        ]}
-      >
-        <Modal.Section>
-          <TextField
-            label="YouTube URL"
-            value={videoUrl}
-            onChange={setVideoUrl}
-            placeholder="https://www.youtube.com/watch?v=..."
-            autoComplete="off"
-          />
-        </Modal.Section>
-      </Modal>
 
       {/* Mobile Link Modal */}
       {showLinkModal && (
@@ -4964,6 +4912,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       )}
 
       {/* Mobile Image Modal */}
+      {console.log('Rendering Mobile Image Modal, showImageModal:', showImageModal)}
       {showImageModal && (
         <div style={{
           position: 'fixed',
@@ -5050,6 +4999,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       )}
 
       {/* Mobile Video Modal */}
+      {console.log('Rendering Mobile Video Modal, showVideoModal:', showVideoModal)}
       {showVideoModal && (
         <div style={{
           position: 'fixed',
