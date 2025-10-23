@@ -1468,7 +1468,7 @@ export default function ContactsPage() {
     <>
       {/* Desktop Layout */}
       {!isMobile && (
-        <Page title="Contacts">
+        <Page title="Contacts" style={{ padding: '0', margin: '0' }}>
           {/* Toast Notifications */}
           {alertMessage && (
             <div 
@@ -1517,7 +1517,9 @@ export default function ContactsPage() {
             display: "flex", 
             gap: "16px", 
             minHeight: "calc(100vh - 80px)",
-            paddingBottom: "80px"
+            paddingBottom: "80px",
+            marginLeft: "-20px",
+            paddingLeft: "20px"
           }}>
             {columnOrder.map((columnId, index) => (
               <div key={`slot-${index}`} style={{ 
