@@ -1572,7 +1572,7 @@ export default function ContactsPage() {
             minHeight: "calc(100vh - 80px)",
             paddingBottom: "80px",
             marginLeft: "-60px",
-            paddingLeft: "0"
+            paddingLeft: "16px"
           }}>
             {columnOrder.map((columnId, index) => (
               <div key={`slot-${index}`} style={{ 
