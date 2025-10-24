@@ -2059,6 +2059,14 @@ export default function ContactsPage() {
                             >
                               Move Selected ({selectedContacts.length})
                             </Button>
+                            <Button
+                              variant="secondary"
+                              onClick={() => {
+                                setSelectedContacts([]);
+                              }}
+                            >
+                              Cancel
+                            </Button>
                           </div>
                         )}
 
@@ -2167,27 +2175,37 @@ export default function ContactsPage() {
                               const rowBorderColor = isContactSelected ? '#FF8C00' : (pinnedAt ? '#007bff' : 'transparent');
 
                               return (
-                                <div style={{ 
-                                  backgroundColor: rowBackgroundColor,
-                                  border: `1px solid ${rowBorderColor}`,
-                                  borderRadius: '8px',
-                                  marginBottom: '4px',
-                                  transition: 'all 0.2s ease'
-                                }}>
+                                <div 
+                                  style={{ 
+                                    backgroundColor: rowBackgroundColor,
+                                    border: `1px solid ${rowBorderColor}`,
+                                    borderRadius: '8px',
+                                    marginBottom: '4px',
+                                    transition: 'all 0.2s ease'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (pinnedAt || isContactSelected) {
+                                      e.currentTarget.style.backgroundColor = '#fcfeff';
+                                    } else {
+                                      e.currentTarget.style.backgroundColor = '#f6f6f7';
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = rowBackgroundColor;
+                                  }}
+                                >
                                   <ResourceItem
                                     id={id}
                                     url="#"
                                     media={media}
-                                    shortcutActions={shortcutActions}
-                                    persistActions
                                     onClick={() => {
                                       setSelectedContact(contact);
                                       setShowContactDetails(true);
                                     }}
                                   >
-                                    <div style={{ display: 'grid', gridTemplateColumns: '20px 200px 180px 120px 150px', gap: '16px', alignItems: 'center' }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '20px 200px 180px 120px 150px 150px', gap: '16px', alignItems: 'center' }}>
                                       {/* Pin Icon Column */}
-                                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
                                         {pinnedAt && (
                                           <div style={{ color: '#008060', display: 'flex', alignItems: 'center' }}>
                                             <Icon source={PinFilledIcon} />
@@ -2295,6 +2313,41 @@ export default function ContactsPage() {
                                           </div>
                                         </Popover>
                                       )}
+                                    </div>
+                                    
+                                    {/* Actions */}
+                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                      <Button
+                                        size="slim"
+                                        variant={selectedContacts.includes(id) ? "primary" : "secondary"}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleContactSelect(id);
+                                        }}
+                                      >
+                                        {selectedContacts.includes(id) ? 'Deselect' : 'Select'}
+                                      </Button>
+                                      <Button
+                                        size="slim"
+                                        variant="secondary"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleManageMenu(contact, { currentTarget: { getBoundingClientRect: () => ({ top: 0, left: 0 }) } });
+                                        }}
+                                      >
+                                        Manage
+                                      </Button>
+                                      <Button
+                                        size="slim"
+                                        variant="secondary"
+                                        tone="critical"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleContactDelete(id);
+                                        }}
+                                      >
+                                        Delete
+                                      </Button>
                                     </div>
                                   </div>
                                 </ResourceItem>
