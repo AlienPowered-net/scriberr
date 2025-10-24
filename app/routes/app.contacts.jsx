@@ -4620,7 +4620,7 @@ export default function ContactsPage() {
         backgroundColor: "#f8f9fa",
         borderTop: "1px solid #e1e3e5",
         padding: "16px 24px",
-        marginTop: "20px",
+        marginTop: "40px",
         fontSize: "14px",
         color: "#6d7175",
         zIndex: 100,
