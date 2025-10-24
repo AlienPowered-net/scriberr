@@ -3,6 +3,7 @@ import { useLoaderData, Form } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
 import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
+import packageJson from "../../package.json";
 
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
@@ -29,10 +30,10 @@ export const loader = async ({ request }) => {
       })
     ]);
 
-    return json({ folders, contacts });
+    return json({ folders, contacts, version: packageJson.version });
   } catch (error) {
     console.error('Error loading contacts data:', error);
-    return json({ folders: [], contacts: [] });
+    return json({ folders: [], contacts: [], version: packageJson.version });
   }
 };
 
@@ -530,7 +531,7 @@ function ContactForm({
 
 // Main Contacts Page Component
 export default function ContactsPage() {
-  const { folders: initialFolders, contacts: initialContacts } = useLoaderData();
+  const { folders: initialFolders, contacts: initialContacts, version } = useLoaderData();
   
   // State management
   const [folders, setFolders] = useState(initialFolders || []);
@@ -1581,8 +1582,8 @@ export default function ContactsPage() {
           <div className="app-layout" style={{ 
             display: "flex", 
             gap: "16px", 
-            minHeight: "calc(100vh - 160px)",
-            paddingBottom: "160px",
+            minHeight: "calc(100vh - 80px)", // Account for fixed footer height
+            paddingBottom: "80px", // Space for fixed footer
             marginLeft: "-20px",
             paddingLeft: "20px"
           }}>
@@ -4513,6 +4514,55 @@ export default function ContactsPage() {
             </Modal.Section>
           </Modal>
         )}
+      </div>
+
+      {/* Copyright Footer */}
+      <div style={{
+        position: "fixed",
+        bottom: "0",
+        left: "0",
+        right: "0",
+        backgroundColor: "#f8f9fa",
+        borderTop: "1px solid #e1e3e5",
+        padding: "12px 24px",
+        marginTop: "10px",
+        fontSize: "14px",
+        color: "#6d7175",
+        zIndex: 100,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center"
+      }}>
+        <div>
+          © 2025, Scriberr Powered by{" "}
+          <a 
+            href="https://www.alienpowered.net" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              color: "#008060",
+              textDecoration: "none",
+              fontWeight: "600",
+              transition: "color 0.2s ease"
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.color = "#008000";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.color = "#008060";
+            }}
+          >
+            Aliens
+          </a>
+        </div>
+        <div style={{ 
+          fontStyle: "italic", 
+          fontSize: "12px", 
+          color: "#9ca3af",
+          marginLeft: "24px"
+        }}>
+          {version}
+        </div>
       </div>
     </>
   );
