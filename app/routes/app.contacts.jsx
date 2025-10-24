@@ -632,6 +632,9 @@ export default function ContactsPage() {
   const [showBulkMoveModal, setShowBulkMoveModal] = useState(false);
   const [selectedFolderForMove, setSelectedFolderForMove] = useState(null);
   const [showContactDeleteModal, setShowContactDeleteModal] = useState(null);
+  
+  // Manage button popover state (desktop)
+  const [managePopoverActive, setManagePopoverActive] = useState({});
 
   // Mobile detection
   useEffect(() => {
@@ -1533,6 +1536,9 @@ export default function ContactsPage() {
               padding-left: 0 !important;
               margin-left: 0 !important;
             }
+            .Polaris-Button {
+              box-sizing: content-box !important;
+            }
           `}</style>
           <Page title="Contacts" style={{ padding: '0', margin: '0', paddingLeft: '0', marginLeft: '0' }}>
           {/* Toast Notifications */}
@@ -1583,7 +1589,7 @@ export default function ContactsPage() {
             display: "flex", 
             gap: "16px", 
             minHeight: "calc(100vh - 80px)", // Account for fixed footer height
-            paddingBottom: "80px", // Space for fixed footer
+            paddingBottom: "100px", // Space for fixed footer with breathing room
             marginLeft: "-20px",
             paddingLeft: "20px"
           }}>
@@ -2100,8 +2106,8 @@ export default function ContactsPage() {
                       {filteredContacts.length > 0 && (
                         <div style={{
                           padding: "12px 16px",
-                          borderBottom: "1px solid #e1e3e5",
-                          backgroundColor: "#f6f6f7",
+                          borderBottom: "1px solid transparent",
+                          backgroundColor: "#fff",
                           display: "grid",
                           gridTemplateColumns: "60px 200px 180px 120px 150px 150px",
                           gap: "16px",
@@ -2122,8 +2128,8 @@ export default function ContactsPage() {
 
                       {/* Scrollable Content */}
                       <div style={{ 
-                        flex: "1", 
-                        overflowY: filteredContacts.length > 1 ? "auto" : "visible",
+                        maxHeight: filteredContacts.length > 10 ? "600px" : "auto",
+                        overflowY: filteredContacts.length > 10 ? "auto" : "visible",
                         overflowX: "hidden"
                       }}>
                         {filteredContacts.length > 0 ? (
@@ -2192,13 +2198,17 @@ export default function ContactsPage() {
                                     transition: 'all 0.2s ease'
                                   }}
                                   onMouseEnter={(e) => {
-                                    if (pinnedAt || isContactSelected) {
-                                      e.currentTarget.style.backgroundColor = '#fcfeff';
+                                    if (pinnedAt) {
+                                      e.currentTarget.style.backgroundColor = '#d5ebff';
+                                      e.currentTarget.style.border = '1px solid #007bff';
+                                    } else if (isContactSelected) {
+                                      e.currentTarget.style.backgroundColor = '#ffe7d5';
+                                      e.currentTarget.style.border = '1px solid #ff8c00';
                                     } else {
-                                      e.currentTarget.style.backgroundColor = '#f6f6f7';
+                                      e.currentTarget.style.backgroundColor = '#f1f1f1';
+                                      e.currentTarget.style.border = '1px solid #dedede';
                                     }
                                     e.currentTarget.style.borderRadius = '8px';
-                                    e.currentTarget.style.border = '1px solid transparent';
                                   }}
                                   onMouseLeave={(e) => {
                                     e.currentTarget.style.backgroundColor = rowBackgroundColor;
@@ -2209,9 +2219,12 @@ export default function ContactsPage() {
                                     id={id}
                                     url="#"
                                     media={media}
-                                    onClick={() => {
-                                      setSelectedContact(contact);
-                                      setShowContactDetails(true);
+                                    onClick={(e) => {
+                                      // Only show modal if not clicking on buttons or badges
+                                      if (!e.target.closest('button') && !e.target.closest('.Polaris-Badge') && !e.target.closest('[class*="tag-"]')) {
+                                        setSelectedContact(contact);
+                                        setShowContactDetails(true);
+                                      }
                                     }}
                                   >
                                     <div style={{ display: 'grid', gridTemplateColumns: '200px 180px 120px 150px 150px', gap: '16px', alignItems: 'center' }}>
@@ -2320,37 +2333,84 @@ export default function ContactsPage() {
                                     
                                     {/* Actions */}
                                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                                      <Button
-                                        size="medium"
-                                        variant={selectedContacts.includes(id) ? "primary" : "secondary"}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleContactSelect(id);
-                                        }}
-                                      >
-                                        {selectedContacts.includes(id) ? 'Deselect' : 'Select'}
-                                      </Button>
-                                      <Button
-                                        size="medium"
-                                        variant="secondary"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleManageMenu(contact, { currentTarget: { getBoundingClientRect: () => ({ top: 0, left: 0 }) } });
-                                        }}
-                                      >
-                                        Manage
-                                      </Button>
-                                      <Button
-                                        size="medium"
-                                        variant="secondary"
-                                        tone="critical"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleContactDelete(id);
-                                        }}
-                                      >
-                                        Delete
-                                      </Button>
+                                      <div style={{ boxSizing: 'content-box' }}>
+                                        <Button
+                                          size="medium"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleContactSelect(id);
+                                          }}
+                                        >
+                                          {selectedContacts.includes(id) ? 'Deselect' : 'Select'}
+                                        </Button>
+                                      </div>
+                                      <div style={{ boxSizing: 'content-box' }}>
+                                        <Popover
+                                          active={managePopoverActive[id] || false}
+                                          activator={
+                                            <Button
+                                              size="medium"
+                                              disclosure="select"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setManagePopoverActive(prev => ({ ...prev, [id]: !prev[id] }));
+                                              }}
+                                            >
+                                              Manage
+                                            </Button>
+                                          }
+                                          onClose={() => setManagePopoverActive(prev => ({ ...prev, [id]: false }))}
+                                          preferredAlignment="left"
+                                        >
+                                          <ActionList
+                                            items={[
+                                              {
+                                                content: pinnedAt ? 'Unpin' : 'Pin',
+                                                onAction: () => {
+                                                  handleContactPin(id);
+                                                  setManagePopoverActive(prev => ({ ...prev, [id]: false }));
+                                                }
+                                              },
+                                              {
+                                                content: 'Move to different folder',
+                                                onAction: () => {
+                                                  setSelectedContacts([id]);
+                                                  setShowBulkMoveModal(true);
+                                                  setManagePopoverActive(prev => ({ ...prev, [id]: false }));
+                                                }
+                                              },
+                                              {
+                                                content: 'Duplicate to current folder',
+                                                onAction: () => {
+                                                  handleContactDuplicate(id, selectedFolder?.id || null);
+                                                  setManagePopoverActive(prev => ({ ...prev, [id]: false }));
+                                                }
+                                              },
+                                              {
+                                                content: 'Duplicate to different folder',
+                                                onAction: () => {
+                                                  setSelectedContacts([id]);
+                                                  setShowBulkMoveModal(true);
+                                                  setManagePopoverActive(prev => ({ ...prev, [id]: false }));
+                                                }
+                                              }
+                                            ]}
+                                          />
+                                        </Popover>
+                                      </div>
+                                      <div style={{ boxSizing: 'content-box' }}>
+                                        <Button
+                                          size="medium"
+                                          variant="primary"
+                                          tone="critical"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleContactDelete(id);
+                                          }}
+                                        >
+                                          Delete
+                                        </Button>
+                                      </div>
                                     </div>
                                   </div>
                                 </ResourceItem>
@@ -2898,24 +2958,111 @@ export default function ContactsPage() {
           </Modal.Section>
         </Modal>
         )}
+
+        {/* Contact Details Modal */}
+        {showContactDetails && selectedContact && (
+          <Modal
+            open={showContactDetails}
+            onClose={() => {
+              setShowContactDetails(false);
+              setSelectedContact(null);
+            }}
+            title={selectedContact.type === 'PERSON' 
+              ? `${selectedContact.firstName || ''} ${selectedContact.lastName || ''}`.trim() || 'Contact Details'
+              : selectedContact.businessName || 'Contact Details'
+            }
+            size="large"
+            primaryAction={{
+              content: 'Edit',
+              onAction: () => {
+                setShowContactDetails(false);
+                setShowContactForm(true);
+                setFormData({
+                  type: selectedContact.type,
+                  firstName: selectedContact.firstName || '',
+                  lastName: selectedContact.lastName || '',
+                  businessName: selectedContact.businessName || '',
+                  email: selectedContact.email || '',
+                  phone: selectedContact.phone || '',
+                  mobile: selectedContact.mobile || '',
+                  company: selectedContact.company || '',
+                  role: selectedContact.role || '',
+                  memo: selectedContact.memo || '',
+                  tags: selectedContact.tags || [],
+                  pointsOfContact: selectedContact.pointsOfContact || []
+                });
+                setEditingContactId(selectedContact.id);
+              }
+            }}
+            secondaryActions={[
+              {
+                content: 'Close',
+                onAction: () => {
+                  setShowContactDetails(false);
+                  setSelectedContact(null);
+                }
+              }
+            ]}
+          >
+            <Modal.Section>
+              <ContactCard 
+                contact={selectedContact}
+                variant="modal"
+                isVisible={true}
+              />
+            </Modal.Section>
+          </Modal>
+        )}
       </div>
       
       {/* Copyright Footer */}
-      <footer style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: '#f8f9fa',
-        borderTop: '1px solid #e1e3e5',
-        padding: '12px 20px',
-        textAlign: 'center',
-        fontSize: '12px',
-        color: '#6d7175',
-        zIndex: 1000
+      <div style={{
+        position: "fixed",
+        bottom: "0",
+        left: "0",
+        right: "0",
+        backgroundColor: "#f8f9fa",
+        borderTop: "1px solid #e1e3e5",
+        padding: "12px 24px",
+        marginTop: "10px",
+        fontSize: "14px",
+        color: "#6d7175",
+        zIndex: 100,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center"
       }}>
-        © 2024 Scriberr Labs. All rights reserved.
-      </footer>
+        <div>
+          © 2025, Scriberr Powered by{" "}
+          <a 
+            href="https://www.alienpowered.net" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              color: "#008060",
+              textDecoration: "none",
+              fontWeight: "600",
+              transition: "color 0.2s ease"
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.color = "#008000";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.color = "#008060";
+            }}
+          >
+            Aliens
+          </a>
+        </div>
+        <div style={{ 
+          fontStyle: "italic", 
+          fontSize: "12px", 
+          color: "#9ca3af",
+          marginLeft: "24px"
+        }}>
+          {version}
+        </div>
+      </div>
     </Page>
         </>
       )}
