@@ -2194,20 +2194,20 @@ export default function ContactsPage() {
                                   }}
                                   onMouseEnter={(e) => {
                                     if (pinnedAt) {
-                                      e.currentTarget.style.backgroundColor = '#d5ebff';
-                                      e.currentTarget.style.border = '1px solid #007bff';
+                                      e.currentTarget.style.setProperty('background-color', '#d5ebff', 'important');
+                                      e.currentTarget.style.setProperty('border', '1px solid #007bff', 'important');
                                     } else if (isContactSelected) {
-                                      e.currentTarget.style.backgroundColor = '#ffe7d5';
-                                      e.currentTarget.style.border = '1px solid #ff8c00';
+                                      e.currentTarget.style.setProperty('background-color', '#ffe7d5', 'important');
+                                      e.currentTarget.style.setProperty('border', '1px solid #ff8c00', 'important');
                                     } else {
-                                      e.currentTarget.style.backgroundColor = '#f1f1f1';
-                                      e.currentTarget.style.border = '1px solid #dedede';
+                                      e.currentTarget.style.setProperty('background-color', '#f1f1f1', 'important');
+                                      e.currentTarget.style.setProperty('border', '1px solid #dedede', 'important');
                                     }
-                                    e.currentTarget.style.borderRadius = '8px';
+                                    e.currentTarget.style.setProperty('border-radius', '8px', 'important');
                                   }}
                                   onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = rowBackgroundColor;
-                                    e.currentTarget.style.border = `1px solid ${rowBorderColor}`;
+                                    e.currentTarget.style.setProperty('background-color', rowBackgroundColor, 'important');
+                                    e.currentTarget.style.setProperty('border', `1px solid ${rowBorderColor}`, 'important');
                                   }}
                                 >
                                   <ResourceItem
