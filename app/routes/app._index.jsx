@@ -660,7 +660,7 @@ export default function HomePage() {
 
       {/* Copyright Footer */}
         <div style={{
-          position: "fixed",
+          position: "sticky",
           bottom: "0",
           left: "0",
           right: "0",
