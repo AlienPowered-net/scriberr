@@ -2103,14 +2103,13 @@ export default function ContactsPage() {
                           borderBottom: "1px solid #e1e3e5",
                           backgroundColor: "#f6f6f7",
                           display: "grid",
-                          gridTemplateColumns: "20px 60px 200px 180px 120px 150px 150px",
+                          gridTemplateColumns: "60px 200px 180px 120px 150px 150px",
                           gap: "16px",
                           fontSize: "12px",
                           fontWeight: "600",
                           color: "#6d7175",
                           textTransform: "capitalize"
                         }}>
-                          <div></div>
                           <div>Profile</div>
                           <div>Name</div>
                           <div>Contact info</div>
@@ -2133,25 +2132,32 @@ export default function ContactsPage() {
                             renderItem={(contact) => {
                               const { id, firstName, lastName, businessName, email, phone, type, createdAt, pinnedAt } = contact;
                               const media = (
-                                <div style={{ borderRadius: '10px', overflow: 'hidden', width: '40px', height: '40px' }}>
-                                  <Avatar 
-                                    initials={(() => {
-                                      if (type === 'PERSON') {
-                                        const first = (firstName || '').trim();
-                                        const last = (lastName || '').trim();
-                                        if (first && last) return (first[0] + last[0]).toUpperCase();
-                                        else if (first) return first.substring(0, 2).toUpperCase();
-                                        else if (last) return last.substring(0, 2).toUpperCase();
-                                        return 'UN';
-                                      } else {
-                                        const business = (businessName || '').trim();
-                                        if (business.length >= 2) return business.substring(0, 2).toUpperCase();
-                                        else if (business.length === 1) return business[0].toUpperCase();
-                                        return 'BU';
-                                      }
-                                    })()}
-                                    size="medium"
-                                  />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  {pinnedAt && (
+                                    <div style={{ color: '#008060', display: 'flex', alignItems: 'center' }}>
+                                      <Icon source={PinFilledIcon} />
+                                    </div>
+                                  )}
+                                  <div style={{ borderRadius: '10px', overflow: 'hidden', width: '40px', height: '40px' }}>
+                                    <Avatar 
+                                      initials={(() => {
+                                        if (type === 'PERSON') {
+                                          const first = (firstName || '').trim();
+                                          const last = (lastName || '').trim();
+                                          if (first && last) return (first[0] + last[0]).toUpperCase();
+                                          else if (first) return first.substring(0, 2).toUpperCase();
+                                          else if (last) return last.substring(0, 2).toUpperCase();
+                                          return 'UN';
+                                        } else {
+                                          const business = (businessName || '').trim();
+                                          if (business.length >= 2) return business.substring(0, 2).toUpperCase();
+                                          else if (business.length === 1) return business[0].toUpperCase();
+                                          return 'BU';
+                                        }
+                                      })()}
+                                      size="medium"
+                                    />
+                                  </div>
                                 </div>
                               );
 
@@ -2190,9 +2196,12 @@ export default function ContactsPage() {
                                     } else {
                                       e.currentTarget.style.backgroundColor = '#f6f6f7';
                                     }
+                                    e.currentTarget.style.borderRadius = '8px';
+                                    e.currentTarget.style.border = '1px solid transparent';
                                   }}
                                   onMouseLeave={(e) => {
                                     e.currentTarget.style.backgroundColor = rowBackgroundColor;
+                                    e.currentTarget.style.border = `1px solid ${rowBorderColor}`;
                                   }}
                                 >
                                   <ResourceItem
@@ -2204,15 +2213,7 @@ export default function ContactsPage() {
                                       setShowContactDetails(true);
                                     }}
                                   >
-                                    <div style={{ display: 'grid', gridTemplateColumns: '20px 200px 180px 120px 150px 150px', gap: '16px', alignItems: 'center' }}>
-                                      {/* Pin Icon Column */}
-                                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
-                                        {pinnedAt && (
-                                          <div style={{ color: '#008060', display: 'flex', alignItems: 'center' }}>
-                                            <Icon source={PinFilledIcon} />
-                                          </div>
-                                        )}
-                                      </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '200px 180px 120px 150px 150px', gap: '16px', alignItems: 'center' }}>
                                       
                                       {/* Name */}
                                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -2319,7 +2320,7 @@ export default function ContactsPage() {
                                     {/* Actions */}
                                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                                       <Button
-                                        size="slim"
+                                        size="medium"
                                         variant={selectedContacts.includes(id) ? "primary" : "secondary"}
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -2329,7 +2330,7 @@ export default function ContactsPage() {
                                         {selectedContacts.includes(id) ? 'Deselect' : 'Select'}
                                       </Button>
                                       <Button
-                                        size="slim"
+                                        size="medium"
                                         variant="secondary"
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -2339,7 +2340,7 @@ export default function ContactsPage() {
                                         Manage
                                       </Button>
                                       <Button
-                                        size="slim"
+                                        size="medium"
                                         variant="secondary"
                                         tone="critical"
                                         onClick={(e) => {
