@@ -2140,11 +2140,6 @@ export default function ContactsPage() {
                               const { id, firstName, lastName, businessName, email, phone, type, createdAt, pinnedAt } = contact;
                               const media = (
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%' }}>
-                                  {pinnedAt && (
-                                    <div style={{ color: '#008060', display: 'flex', alignItems: 'center' }}>
-                                      <Icon source={PinFilledIcon} />
-                                    </div>
-                                  )}
                                   <div style={{ borderRadius: '10px', overflow: 'hidden', width: '40px', height: '40px' }}>
                                     <Avatar 
                                       initials={(() => {
