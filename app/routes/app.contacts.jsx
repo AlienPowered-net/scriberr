@@ -2108,14 +2108,15 @@ export default function ContactsPage() {
                           fontSize: "12px",
                           fontWeight: "600",
                           color: "#6d7175",
-                          textTransform: "capitalize"
+                          textTransform: "capitalize",
+                          alignItems: "center"
                         }}>
-                          <div>Profile</div>
-                          <div>Name</div>
-                          <div>Contact info</div>
-                          <div>Creation date</div>
-                          <div>Tags</div>
-                          <div>Actions</div>
+                          <div style={{ display: 'flex', justifyContent: 'center' }}>Profile</div>
+                          <div style={{ display: 'flex', justifyContent: 'center' }}>Name</div>
+                          <div style={{ display: 'flex', justifyContent: 'center' }}>Contact info</div>
+                          <div style={{ display: 'flex', justifyContent: 'center' }}>Creation date</div>
+                          <div style={{ display: 'flex', justifyContent: 'center' }}>Tags</div>
+                          <div style={{ display: 'flex', justifyContent: 'center' }}>Actions</div>
                         </div>
                       )}
 
@@ -2132,7 +2133,7 @@ export default function ContactsPage() {
                             renderItem={(contact) => {
                               const { id, firstName, lastName, businessName, email, phone, type, createdAt, pinnedAt } = contact;
                               const media = (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%' }}>
                                   {pinnedAt && (
                                     <div style={{ color: '#008060', display: 'flex', alignItems: 'center' }}>
                                       <Icon source={PinFilledIcon} />
@@ -2216,7 +2217,7 @@ export default function ContactsPage() {
                                     <div style={{ display: 'grid', gridTemplateColumns: '200px 180px 120px 150px 150px', gap: '16px', alignItems: 'center' }}>
                                       
                                       {/* Name */}
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                         <Text as="span" variant="bodyMd" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                           {type === 'PERSON' 
                                             ? `${firstName || ''} ${lastName || ''}`.trim() || '-'
@@ -2226,8 +2227,8 @@ export default function ContactsPage() {
                                       </div>
                                     
                                     {/* Contact Info */}
-                                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                      <div style={{ display: "flex", flexDirection: "column", gap: "2px", alignItems: 'center' }}>
                                         {email && (
                                           <Text as="span" variant="bodySm" tone="subdued" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             {email}
@@ -2242,14 +2243,14 @@ export default function ContactsPage() {
                                     </div>
                                     
                                     {/* Creation Date */}
-                                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                       <Text as="span" variant="bodySm" tone="subdued">
                                         {new Date(createdAt).toLocaleDateString()}
                                       </Text>
                                     </div>
                                     
                                     {/* Tags */}
-                                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', overflow: 'hidden', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
                                       <div 
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -2318,7 +2319,7 @@ export default function ContactsPage() {
                                     </div>
                                     
                                     {/* Actions */}
-                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                                       <Button
                                         size="medium"
                                         variant={selectedContacts.includes(id) ? "primary" : "secondary"}
