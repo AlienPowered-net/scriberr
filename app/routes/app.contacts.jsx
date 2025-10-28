@@ -2195,6 +2195,7 @@ export default function ContactsPage() {
 
                               return (
                                 <div 
+                                  data-contact-row={id}
                                   style={{ 
                                     backgroundColor: rowBackgroundColor,
                                     border: `1px solid ${rowBorderColor}`,
@@ -2220,14 +2221,11 @@ export default function ContactsPage() {
                                         display: 'grid', 
                                         gridTemplateColumns: '200px 180px 120px 150px 150px', 
                                         gap: '16px', 
-                                        alignItems: 'center',
-                                        padding: '12px',
-                                        borderRadius: '8px',
-                                        transition: 'all 0.2s ease'
+                                        alignItems: 'center'
                                       }}
                                       onMouseEnter={(e) => {
                                         console.log('Hover triggered - pinnedAt:', pinnedAt, 'isContactSelected:', isContactSelected);
-                                        const parentDiv = e.currentTarget.closest('div[style*="backgroundColor"]');
+                                        const parentDiv = e.currentTarget.closest('[data-contact-row]');
                                         if (parentDiv) {
                                           if (pinnedAt) {
                                             console.log('Applying pinned hover styles');
@@ -2246,7 +2244,7 @@ export default function ContactsPage() {
                                         }
                                       }}
                                       onMouseLeave={(e) => {
-                                        const parentDiv = e.currentTarget.closest('div[style*="backgroundColor"]');
+                                        const parentDiv = e.currentTarget.closest('[data-contact-row]');
                                         if (parentDiv) {
                                           parentDiv.style.setProperty('background-color', rowBackgroundColor, 'important');
                                           parentDiv.style.setProperty('border', `1px solid ${rowBorderColor}`, 'important');
