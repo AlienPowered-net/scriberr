@@ -632,6 +632,7 @@ export default function ContactsPage() {
   const [showBulkMoveModal, setShowBulkMoveModal] = useState(false);
   const [selectedFolderForMove, setSelectedFolderForMove] = useState(null);
   const [showContactDeleteModal, setShowContactDeleteModal] = useState(null);
+  const [bulkActionType, setBulkActionType] = useState('move'); // 'move' or 'duplicate'
   
   // Manage button popover state (desktop)
   const [managePopoverActive, setManagePopoverActive] = useState({});
@@ -1231,15 +1232,16 @@ export default function ContactsPage() {
     }
   };
 
-  // Handle bulk move contacts
+  // Handle bulk move/duplicate contacts
   const handleBulkMoveContacts = async () => {
     if (selectedContacts.length === 0 || !selectedFolderForMove) return;
 
     setIsLoading(true);
     const targetFolderId = selectedFolderForMove;
+    const actionType = bulkActionType;
     try {
       const form = new FormData();
-      form.append('_action', 'bulk-move');
+      form.append('_action', actionType === 'duplicate' ? 'bulk-duplicate' : 'bulk-move');
       form.append('contactIds', JSON.stringify(selectedContacts));
       form.append('folderId', targetFolderId);
 
@@ -1251,27 +1253,35 @@ export default function ContactsPage() {
       const result = await response.json();
 
       if (result.success) {
-        // Update contacts state
-        setContacts(prev => prev.map(contact => 
-          selectedContacts.includes(contact.id) 
-            ? { ...contact, folderId: targetFolderId }
-            : contact
-        ));
+        if (actionType === 'move') {
+          // Update contacts state for move
+          setContacts(prev => prev.map(contact => 
+            selectedContacts.includes(contact.id) 
+              ? { ...contact, folderId: targetFolderId }
+              : contact
+          ));
+        } else {
+          // Add duplicated contacts to state
+          if (result.duplicatedContacts) {
+            setContacts(prev => [...result.duplicatedContacts, ...prev]);
+          }
+        }
         
         setSelectedContacts([]);
         setShowBulkMoveModal(false);
         setSelectedFolderForMove(null);
-        setAlertMessage(`Successfully moved ${selectedContacts.length} contact(s)`);
+        setBulkActionType('move');
+        setAlertMessage(`Successfully ${actionType === 'duplicate' ? 'duplicated' : 'moved'} ${selectedContacts.length} contact(s)`);
         setAlertType("success");
         setTimeout(() => setAlertMessage(''), 3000);
       } else {
-        setAlertMessage(result.error || "Failed to move contacts");
+        setAlertMessage(result.error || `Failed to ${actionType} contacts`);
         setAlertType("error");
         setTimeout(() => setAlertMessage(''), 3000);
       }
     } catch (error) {
-      console.error('Error moving contacts:', error);
-      setAlertMessage("Failed to move contacts");
+      console.error(`Error ${actionType}ing contacts:`, error);
+      setAlertMessage(`Failed to ${actionType} contacts`);
       setAlertType("error");
       setTimeout(() => setAlertMessage(''), 3000);
     } finally {
@@ -2386,6 +2396,7 @@ export default function ContactsPage() {
                                             <button
                                               onClick={() => {
                                                 setSelectedContacts([id]);
+                                                setBulkActionType('move');
                                                 setShowBulkMoveModal(true);
                                                 setManagePopoverActive(prev => ({ ...prev, [id]: false }));
                                               }}
@@ -2437,6 +2448,7 @@ export default function ContactsPage() {
                                             <button
                                               onClick={() => {
                                                 setSelectedContacts([id]);
+                                                setBulkActionType('duplicate');
                                                 setShowBulkMoveModal(true);
                                                 setManagePopoverActive(prev => ({ ...prev, [id]: false }));
                                               }}
@@ -3021,6 +3033,93 @@ export default function ContactsPage() {
             )}
           </Modal.Section>
         </Modal>
+        )}
+
+        {/* Desktop Bulk Move Modal */}
+        {!isMobile && showBulkMoveModal && (
+          <Modal
+            open={showBulkMoveModal}
+            onClose={() => {
+              setShowBulkMoveModal(false);
+              setSelectedContacts([]);
+              setSelectedFolderForMove(null);
+              setBulkActionType('move');
+            }}
+            title={bulkActionType === 'duplicate' ? 'Duplicate Contacts' : 'Move Contacts'}
+            primaryAction={{
+              content: bulkActionType === 'duplicate' ? 'Duplicate' : 'Move',
+              disabled: !selectedFolderForMove,
+              onAction: async () => {
+                await handleBulkMoveContacts();
+              }
+            }}
+            secondaryActions={[{
+              content: 'Cancel',
+              onAction: () => {
+                setShowBulkMoveModal(false);
+                setSelectedContacts([]);
+                setSelectedFolderForMove(null);
+                setBulkActionType('move');
+              }
+            }]}
+          >
+            <Modal.Section>
+              <Text as="p" style={{ marginBottom: '16px' }}>
+                Select a folder to {bulkActionType === 'duplicate' ? 'duplicate' : 'move'} {selectedContacts.length} contact{selectedContacts.length > 1 ? 's' : ''} to.
+              </Text>
+              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                {folders.map((folder) => {
+                  const isCurrentFolder = selectedContacts.length === 1 && contacts.find(c => c.id === selectedContacts[0])?.folderId === folder.id;
+                  const isSelected = selectedFolderForMove === folder.id;
+                  
+                  return (
+                    <div
+                      key={folder.id}
+                      onClick={() => {
+                        if (!isCurrentFolder) {
+                          setSelectedFolderForMove(folder.id);
+                        }
+                      }}
+                      style={{
+                        padding: '12px',
+                        border: isSelected ? '2px solid #008060' : '1px solid #e1e3e5',
+                        borderRadius: '8px',
+                        marginBottom: '8px',
+                        cursor: isCurrentFolder ? 'not-allowed' : 'pointer',
+                        backgroundColor: isSelected ? '#e8f5e8' : (isCurrentFolder ? '#f1f3f4' : '#fafbfb'),
+                        opacity: isCurrentFolder ? 0.6 : 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <i 
+                        className={`far fa-${folder.icon || 'folder'}`} 
+                        style={{ 
+                          fontSize: '18px', 
+                          color: folder.iconColor || '#f57c00' 
+                        }}
+                      ></i>
+                      <span style={{ fontWeight: '500', flex: 1 }}>{folder.name}</span>
+                      {isCurrentFolder && (
+                        <span style={{ 
+                          fontSize: '12px', 
+                          color: '#6d7175',
+                          fontWeight: '600',
+                          backgroundColor: '#e1e3f4',
+                          padding: '2px 8px',
+                          borderRadius: '12px'
+                        }}>
+                          Current
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </Modal.Section>
+          </Modal>
         )}
 
         {/* Contact Details Modal */}
