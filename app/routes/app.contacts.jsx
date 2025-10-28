@@ -537,17 +537,45 @@ export default function ContactsPage() {
   useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
-      .contact-row:hover {
+      /* Ultra-specific selectors to override Polaris styles */
+      .Polaris-ResourceList__ItemWrapper > div[data-contact-row].contact-row:hover,
+      .Polaris-ResourceList__ItemWrapper div[data-contact-row].contact-row:hover,
+      div[data-contact-row].contact-row:hover {
         background-color: #f1f1f1 !important;
         border: 1px solid #dedede !important;
         border-radius: 8px !important;
       }
-      .contact-row.pinned:hover {
+      
+      .Polaris-ResourceList__ItemWrapper > div[data-contact-row].contact-row.pinned:hover,
+      .Polaris-ResourceList__ItemWrapper div[data-contact-row].contact-row.pinned:hover,
+      div[data-contact-row].contact-row.pinned:hover {
         background-color: #d5ebff !important;
         border: 1px solid #007bff !important;
         border-radius: 8px !important;
       }
-      .contact-row.selected:hover {
+      
+      .Polaris-ResourceList__ItemWrapper > div[data-contact-row].contact-row.selected:hover,
+      .Polaris-ResourceList__ItemWrapper div[data-contact-row].contact-row.selected:hover,
+      div[data-contact-row].contact-row.selected:hover {
+        background-color: #ffe7d5 !important;
+        border: 1px solid #ff8c00 !important;
+        border-radius: 8px !important;
+      }
+      
+      /* Even more specific with all possible Polaris classes */
+      .Polaris-ResourceList .Polaris-ResourceList__ItemWrapper .Polaris-ResourceList__Item div[data-contact-row].contact-row:hover {
+        background-color: #f1f1f1 !important;
+        border: 1px solid #dedede !important;
+        border-radius: 8px !important;
+      }
+      
+      .Polaris-ResourceList .Polaris-ResourceList__ItemWrapper .Polaris-ResourceList__Item div[data-contact-row].contact-row.pinned:hover {
+        background-color: #d5ebff !important;
+        border: 1px solid #007bff !important;
+        border-radius: 8px !important;
+      }
+      
+      .Polaris-ResourceList .Polaris-ResourceList__ItemWrapper .Polaris-ResourceList__Item div[data-contact-row].contact-row.selected:hover {
         background-color: #ffe7d5 !important;
         border: 1px solid #ff8c00 !important;
         border-radius: 8px !important;
@@ -556,7 +584,9 @@ export default function ContactsPage() {
     document.head.appendChild(style);
     
     return () => {
-      document.head.removeChild(style);
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
     };
   }, []);
   
@@ -2219,6 +2249,9 @@ export default function ContactsPage() {
                               const isContactSelected = selectedContacts.includes(id);
                               const rowBackgroundColor = isContactSelected ? '#fffbf8' : (pinnedAt ? '#f0f8ff' : 'transparent');
                               const rowBorderColor = isContactSelected ? '#FF8C00' : (pinnedAt ? '#007bff' : 'transparent');
+                              
+                              // Debug logging
+                              console.log(`Contact ${id}: pinnedAt=${pinnedAt}, isContactSelected=${isContactSelected}`);
 
                               return (
                                 <div 
