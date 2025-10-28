@@ -533,6 +533,33 @@ function ContactForm({
 export default function ContactsPage() {
   const { folders: initialFolders, contacts: initialContacts, version } = useLoaderData();
   
+  // Add CSS for contact row hover states
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .contact-row:hover {
+        background-color: #f1f1f1 !important;
+        border: 1px solid #dedede !important;
+        border-radius: 8px !important;
+      }
+      .contact-row.pinned:hover {
+        background-color: #d5ebff !important;
+        border: 1px solid #007bff !important;
+        border-radius: 8px !important;
+      }
+      .contact-row.selected:hover {
+        background-color: #ffe7d5 !important;
+        border: 1px solid #ff8c00 !important;
+        border-radius: 8px !important;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+  
   // State management
   const [folders, setFolders] = useState(initialFolders || []);
   const [contacts, setContacts] = useState(initialContacts || []);
@@ -2196,6 +2223,7 @@ export default function ContactsPage() {
                               return (
                                 <div 
                                   data-contact-row={id}
+                                  className={`contact-row ${pinnedAt ? 'pinned' : ''} ${isContactSelected ? 'selected' : ''}`}
                                   style={{ 
                                     backgroundColor: rowBackgroundColor,
                                     border: `1px solid ${rowBorderColor}`,
@@ -2222,33 +2250,6 @@ export default function ContactsPage() {
                                         gridTemplateColumns: '200px 180px 120px 150px 150px', 
                                         gap: '16px', 
                                         alignItems: 'center'
-                                      }}
-                                      onMouseEnter={(e) => {
-                                        console.log('Hover triggered - pinnedAt:', pinnedAt, 'isContactSelected:', isContactSelected);
-                                        const parentDiv = e.currentTarget.closest('[data-contact-row]');
-                                        if (parentDiv) {
-                                          if (pinnedAt) {
-                                            console.log('Applying pinned hover styles');
-                                            parentDiv.style.setProperty('background-color', '#d5ebff', 'important');
-                                            parentDiv.style.setProperty('border', '1px solid #007bff', 'important');
-                                          } else if (isContactSelected) {
-                                            console.log('Applying selected hover styles');
-                                            parentDiv.style.setProperty('background-color', '#ffe7d5', 'important');
-                                            parentDiv.style.setProperty('border', '1px solid #ff8c00', 'important');
-                                          } else {
-                                            console.log('Applying default hover styles');
-                                            parentDiv.style.setProperty('background-color', '#f1f1f1', 'important');
-                                            parentDiv.style.setProperty('border', '1px solid #dedede', 'important');
-                                          }
-                                          parentDiv.style.setProperty('border-radius', '8px', 'important');
-                                        }
-                                      }}
-                                      onMouseLeave={(e) => {
-                                        const parentDiv = e.currentTarget.closest('[data-contact-row]');
-                                        if (parentDiv) {
-                                          parentDiv.style.setProperty('background-color', rowBackgroundColor, 'important');
-                                          parentDiv.style.setProperty('border', `1px solid ${rowBorderColor}`, 'important');
-                                        }
                                       }}
                                     >
                                       
