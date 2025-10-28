@@ -2203,13 +2203,17 @@ export default function ContactsPage() {
                                     transition: 'all 0.2s ease'
                                   }}
                                   onMouseEnter={(e) => {
+                                    console.log('Hover triggered - pinnedAt:', pinnedAt, 'isContactSelected:', isContactSelected);
                                     if (pinnedAt) {
+                                      console.log('Applying pinned hover styles');
                                       e.currentTarget.style.setProperty('background-color', '#d5ebff', 'important');
                                       e.currentTarget.style.setProperty('border', '1px solid #007bff', 'important');
                                     } else if (isContactSelected) {
+                                      console.log('Applying selected hover styles');
                                       e.currentTarget.style.setProperty('background-color', '#ffe7d5', 'important');
                                       e.currentTarget.style.setProperty('border', '1px solid #ff8c00', 'important');
                                     } else {
+                                      console.log('Applying default hover styles');
                                       e.currentTarget.style.setProperty('background-color', '#f1f1f1', 'important');
                                       e.currentTarget.style.setProperty('border', '1px solid #dedede', 'important');
                                     }
