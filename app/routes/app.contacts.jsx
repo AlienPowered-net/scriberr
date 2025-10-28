@@ -2337,7 +2337,7 @@ export default function ContactsPage() {
                                     </div>
                                     
                                     {/* Actions */}
-                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginLeft: 'auto', width: 'fit-content' }}>
                                       <div style={{ boxSizing: 'content-box' }}>
                                         <Button
                                           size="medium"
