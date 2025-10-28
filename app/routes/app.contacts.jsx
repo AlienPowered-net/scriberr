@@ -533,59 +533,46 @@ function ContactForm({
 export default function ContactsPage() {
   const { folders: initialFolders, contacts: initialContacts, version } = useLoaderData();
   
-  // Add JavaScript event handlers for contact row hover states
-  useEffect(() => {
-    const handleMouseEnter = (e) => {
-      const contactRow = e.target.closest('[data-contact-row]');
-      if (!contactRow) return;
-      
-      const isPinned = contactRow.classList.contains('pinned');
-      const isSelected = contactRow.classList.contains('selected');
-      
-      if (isPinned) {
-        contactRow.style.backgroundColor = '#d5ebff';
-        contactRow.style.border = '1px solid #007bff';
-        contactRow.style.borderRadius = '8px';
-      } else if (isSelected) {
-        contactRow.style.backgroundColor = '#ffe7d5';
-        contactRow.style.border = '1px solid #ff8c00';
-        contactRow.style.borderRadius = '8px';
-      } else {
-        contactRow.style.backgroundColor = '#f1f1f1';
-        contactRow.style.border = '1px solid #dedede';
-        contactRow.style.borderRadius = '8px';
-      }
-    };
-
-    const handleMouseLeave = (e) => {
-      const contactRow = e.target.closest('[data-contact-row]');
-      if (!contactRow) return;
-      
-      // Reset to original styles
-      const isPinned = contactRow.classList.contains('pinned');
-      const isSelected = contactRow.classList.contains('selected');
-      
-      if (isPinned) {
-        contactRow.style.backgroundColor = '#e3f2fd';
-        contactRow.style.border = '1px solid #2196f3';
-      } else if (isSelected) {
-        contactRow.style.backgroundColor = '#fff3e0';
-        contactRow.style.border = '1px solid #ff9800';
-      } else {
-        contactRow.style.backgroundColor = 'transparent';
-        contactRow.style.border = '1px solid transparent';
-      }
-    };
-
-    // Add event listeners to the document for event delegation
-    document.addEventListener('mouseenter', handleMouseEnter, true);
-    document.addEventListener('mouseleave', handleMouseLeave, true);
+  // Helper functions for hover states
+  const handleContactMouseEnter = (e, isPinned, isSelected) => {
+    e.preventDefault();
+    e.stopPropagation();
     
-    return () => {
-      document.removeEventListener('mouseenter', handleMouseEnter, true);
-      document.removeEventListener('mouseleave', handleMouseLeave, true);
-    };
-  }, []);
+    const contactRow = e.currentTarget;
+    
+    if (isPinned) {
+      contactRow.style.backgroundColor = '#d5ebff';
+      contactRow.style.border = '1px solid #007bff';
+      contactRow.style.borderRadius = '8px';
+    } else if (isSelected) {
+      contactRow.style.backgroundColor = '#ffe7d5';
+      contactRow.style.border = '1px solid #ff8c00';
+      contactRow.style.borderRadius = '8px';
+    } else {
+      contactRow.style.backgroundColor = '#f1f1f1';
+      contactRow.style.border = '1px solid #dedede';
+      contactRow.style.borderRadius = '8px';
+    }
+  };
+
+  const handleContactMouseLeave = (e, isPinned, isSelected) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const contactRow = e.currentTarget;
+    
+    // Reset to original styles
+    if (isPinned) {
+      contactRow.style.backgroundColor = '#f0f8ff';
+      contactRow.style.border = '1px solid #007bff';
+    } else if (isSelected) {
+      contactRow.style.backgroundColor = '#fffbf8';
+      contactRow.style.border = '1px solid #ff8c00';
+    } else {
+      contactRow.style.backgroundColor = 'transparent';
+      contactRow.style.border = '1px solid transparent';
+    }
+  };
   
   // State management
   const [folders, setFolders] = useState(initialFolders || []);
@@ -2259,6 +2246,8 @@ export default function ContactsPage() {
                                     transition: 'all 0.2s ease',
                                     cursor: 'pointer'
                                   }}
+                                  onMouseEnter={(e) => handleContactMouseEnter(e, !!pinnedAt, isContactSelected)}
+                                  onMouseLeave={(e) => handleContactMouseLeave(e, !!pinnedAt, isContactSelected)}
                                 >
                                   <ResourceItem
                                     id={id}
