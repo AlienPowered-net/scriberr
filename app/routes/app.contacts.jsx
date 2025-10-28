@@ -2202,27 +2202,6 @@ export default function ContactsPage() {
                                     marginBottom: '4px',
                                     transition: 'all 0.2s ease'
                                   }}
-                                  onMouseEnter={(e) => {
-                                    console.log('Hover triggered - pinnedAt:', pinnedAt, 'isContactSelected:', isContactSelected);
-                                    if (pinnedAt) {
-                                      console.log('Applying pinned hover styles');
-                                      e.currentTarget.style.setProperty('background-color', '#d5ebff', 'important');
-                                      e.currentTarget.style.setProperty('border', '1px solid #007bff', 'important');
-                                    } else if (isContactSelected) {
-                                      console.log('Applying selected hover styles');
-                                      e.currentTarget.style.setProperty('background-color', '#ffe7d5', 'important');
-                                      e.currentTarget.style.setProperty('border', '1px solid #ff8c00', 'important');
-                                    } else {
-                                      console.log('Applying default hover styles');
-                                      e.currentTarget.style.setProperty('background-color', '#f1f1f1', 'important');
-                                      e.currentTarget.style.setProperty('border', '1px solid #dedede', 'important');
-                                    }
-                                    e.currentTarget.style.setProperty('border-radius', '8px', 'important');
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.currentTarget.style.setProperty('background-color', rowBackgroundColor, 'important');
-                                    e.currentTarget.style.setProperty('border', `1px solid ${rowBorderColor}`, 'important');
-                                  }}
                                 >
                                   <ResourceItem
                                     id={id}
@@ -2230,13 +2209,50 @@ export default function ContactsPage() {
                                     media={media}
                                     onClick={(e) => {
                                       // Only show modal if not clicking on buttons or badges
-                                      if (!e.target.closest('button') && !e.target.closest('.Polaris-Badge') && !e.target.closest('[class*="tag-"]')) {
+                                      if (e.target && !e.target.closest('button') && !e.target.closest('.Polaris-Badge') && !e.target.closest('[class*="tag-"]')) {
                                         setSelectedContact(contact);
                                         setShowContactDetails(true);
                                       }
                                     }}
                                   >
-                                    <div style={{ display: 'grid', gridTemplateColumns: '200px 180px 120px 150px 150px', gap: '16px', alignItems: 'center' }}>
+                                    <div 
+                                      style={{ 
+                                        display: 'grid', 
+                                        gridTemplateColumns: '200px 180px 120px 150px 150px', 
+                                        gap: '16px', 
+                                        alignItems: 'center',
+                                        padding: '12px',
+                                        borderRadius: '8px',
+                                        transition: 'all 0.2s ease'
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        console.log('Hover triggered - pinnedAt:', pinnedAt, 'isContactSelected:', isContactSelected);
+                                        const parentDiv = e.currentTarget.closest('div[style*="backgroundColor"]');
+                                        if (parentDiv) {
+                                          if (pinnedAt) {
+                                            console.log('Applying pinned hover styles');
+                                            parentDiv.style.setProperty('background-color', '#d5ebff', 'important');
+                                            parentDiv.style.setProperty('border', '1px solid #007bff', 'important');
+                                          } else if (isContactSelected) {
+                                            console.log('Applying selected hover styles');
+                                            parentDiv.style.setProperty('background-color', '#ffe7d5', 'important');
+                                            parentDiv.style.setProperty('border', '1px solid #ff8c00', 'important');
+                                          } else {
+                                            console.log('Applying default hover styles');
+                                            parentDiv.style.setProperty('background-color', '#f1f1f1', 'important');
+                                            parentDiv.style.setProperty('border', '1px solid #dedede', 'important');
+                                          }
+                                          parentDiv.style.setProperty('border-radius', '8px', 'important');
+                                        }
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        const parentDiv = e.currentTarget.closest('div[style*="backgroundColor"]');
+                                        if (parentDiv) {
+                                          parentDiv.style.setProperty('background-color', rowBackgroundColor, 'important');
+                                          parentDiv.style.setProperty('border', `1px solid ${rowBorderColor}`, 'important');
+                                        }
+                                      }}
+                                    >
                                       
                                       {/* Name */}
                                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
