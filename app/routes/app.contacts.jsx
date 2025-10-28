@@ -2357,40 +2357,109 @@ export default function ContactsPage() {
                                           onClose={() => setManagePopoverActive(prev => ({ ...prev, [id]: false }))}
                                           preferredAlignment="left"
                                         >
-                                          <ActionList
-                                            items={[
-                                              {
-                                                content: pinnedAt ? 'Unpin' : 'Pin',
-                                                onAction: () => {
-                                                  handleContactPin(id);
-                                                  setManagePopoverActive(prev => ({ ...prev, [id]: false }));
-                                                }
-                                              },
-                                              {
-                                                content: 'Move to different folder',
-                                                onAction: () => {
-                                                  setSelectedContacts([id]);
-                                                  setShowBulkMoveModal(true);
-                                                  setManagePopoverActive(prev => ({ ...prev, [id]: false }));
-                                                }
-                                              },
-                                              {
-                                                content: 'Duplicate to current folder',
-                                                onAction: () => {
-                                                  handleContactDuplicate(id, selectedFolder?.id || null);
-                                                  setManagePopoverActive(prev => ({ ...prev, [id]: false }));
-                                                }
-                                              },
-                                              {
-                                                content: 'Duplicate to different folder',
-                                                onAction: () => {
-                                                  setSelectedContacts([id]);
-                                                  setShowBulkMoveModal(true);
-                                                  setManagePopoverActive(prev => ({ ...prev, [id]: false }));
-                                                }
-                                              }
-                                            ]}
-                                          />
+                                          <div style={{ padding: '8px 0', minWidth: '200px' }}>
+                                            <button
+                                              onClick={() => {
+                                                handleContactPin(id);
+                                                setManagePopoverActive(prev => ({ ...prev, [id]: false }));
+                                              }}
+                                              style={{
+                                                width: '100%',
+                                                padding: '8px 16px',
+                                                border: 'none',
+                                                background: 'none',
+                                                textAlign: 'left',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                fontSize: '14px',
+                                                color: '#374151'
+                                              }}
+                                              onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                                              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                            >
+                                              <i className="fas fa-thumbtack" style={{ fontSize: '14px', width: '16px' }}></i>
+                                              {pinnedAt ? 'Unpin' : 'Pin'}
+                                            </button>
+                                            
+                                            <button
+                                              onClick={() => {
+                                                setSelectedContacts([id]);
+                                                setShowBulkMoveModal(true);
+                                                setManagePopoverActive(prev => ({ ...prev, [id]: false }));
+                                              }}
+                                              style={{
+                                                width: '100%',
+                                                padding: '8px 16px',
+                                                border: 'none',
+                                                background: 'none',
+                                                textAlign: 'left',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                fontSize: '14px',
+                                                color: '#374151'
+                                              }}
+                                              onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                                              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                            >
+                                              <i className="fas fa-folder" style={{ fontSize: '14px', width: '16px' }}></i>
+                                              Move to different folder
+                                            </button>
+                                            
+                                            <button
+                                              onClick={() => {
+                                                handleContactDuplicate(id, selectedFolder?.id || null);
+                                                setManagePopoverActive(prev => ({ ...prev, [id]: false }));
+                                              }}
+                                              style={{
+                                                width: '100%',
+                                                padding: '8px 16px',
+                                                border: 'none',
+                                                background: 'none',
+                                                textAlign: 'left',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                fontSize: '14px',
+                                                color: '#374151'
+                                              }}
+                                              onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                                              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                            >
+                                              <i className="fas fa-copy" style={{ fontSize: '14px', width: '16px' }}></i>
+                                              Duplicate to current folder
+                                            </button>
+                                            
+                                            <button
+                                              onClick={() => {
+                                                setSelectedContacts([id]);
+                                                setShowBulkMoveModal(true);
+                                                setManagePopoverActive(prev => ({ ...prev, [id]: false }));
+                                              }}
+                                              style={{
+                                                width: '100%',
+                                                padding: '8px 16px',
+                                                border: 'none',
+                                                background: 'none',
+                                                textAlign: 'left',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                fontSize: '14px',
+                                                color: '#374151'
+                                              }}
+                                              onMouseEnter={(e) => e.target.style.backgroundColor = '#f6f6f7'}
+                                              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                            >
+                                              <i className="fas fa-copy" style={{ fontSize: '14px', width: '16px' }}></i>
+                                              Duplicate to different folder
+                                            </button>
+                                          </div>
                                         </Popover>
                                       </div>
                                       <div style={{ boxSizing: 'content-box' }}>
