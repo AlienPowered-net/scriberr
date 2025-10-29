@@ -20,7 +20,7 @@ import {
   CollectionIcon,
   EditIcon,
   XIcon,
-  CopyIcon
+  DuplicateIcon
 } from '@shopify/polaris-icons';
 
 const ContactCard = ({ 
@@ -76,7 +76,7 @@ const ContactCard = ({
     <Tooltip content={copiedField === fieldName ? "Copied!" : "Copy to clipboard"}>
       <Button
         size={size}
-        icon={CopyIcon}
+        icon={DuplicateIcon}
         onClick={() => handleCopy(text, fieldName)}
         disabled={copiedField === fieldName}
         tone={copiedField === fieldName ? "success" : "subdued"}
