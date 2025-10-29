@@ -277,7 +277,7 @@ const ContactCard = ({
       {contact.memo && (
         <div>
           <Text as="h3" variant="headingSm" fontWeight="semibold" style={{ color: '#202223', marginBottom: '12px' }}>
-            Summary
+            Memo
           </Text>
           <div style={{
             background: '#f6f6f7',

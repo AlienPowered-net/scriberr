@@ -2655,7 +2655,7 @@ export default function ContactsPage() {
             onEdit={() => {
               console.log('Edit button clicked in tooltip, contactCardContact:', contactCardContact);
               setShowContactCard(false);
-              setShowContactForm(true);
+              setShowNewContactForm(true);
               setFormData({
                 type: contactCardContact.type,
                 firstName: contactCardContact.firstName || '',
@@ -2671,7 +2671,7 @@ export default function ContactsPage() {
                 pointsOfContact: contactCardContact.pointsOfContact || []
               });
               setEditingContactId(contactCardContact.id);
-              console.log('Form should be shown now, showContactForm:', true);
+              console.log('Form should be shown now, showNewContactForm:', true);
             }}
             position={contactCardPosition}
           />
@@ -3212,7 +3212,7 @@ export default function ContactsPage() {
             onEdit={() => {
               console.log('Edit button clicked in main modal, selectedContact:', selectedContact);
               setShowContactDetails(false);
-              setShowContactForm(true);
+              setShowNewContactForm(true);
               setFormData({
                 type: selectedContact.type,
                 firstName: selectedContact.firstName || '',
@@ -3228,7 +3228,7 @@ export default function ContactsPage() {
                 pointsOfContact: selectedContact.pointsOfContact || []
               });
               setEditingContactId(selectedContact.id);
-              console.log('Form should be shown now, showContactForm:', true);
+              console.log('Form should be shown now, showNewContactForm:', true);
             }}
           />
         )}
