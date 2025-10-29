@@ -538,7 +538,26 @@ export default function ContactsPage() {
     console.log('Injecting contact row hover CSS...');
     const style = document.createElement('style');
     style.textContent = `
-      /* Contact row hover states with maximum specificity */
+      /* Override .Polaris-ResourceItem:hover for our contact rows */
+      .Polaris-ResourceList__ItemWrapper div[data-contact-row].contact-row .Polaris-ResourceItem:hover {
+        background-color: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+      }
+      
+      .Polaris-ResourceList__ItemWrapper div[data-contact-row].contact-row.pinned .Polaris-ResourceItem:hover {
+        background-color: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+      }
+      
+      .Polaris-ResourceList__ItemWrapper div[data-contact-row].contact-row.selected .Polaris-ResourceItem:hover {
+        background-color: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+      }
+      
+      /* Apply our custom hover styles to the contact row container */
       .Polaris-ResourceList__ItemWrapper div[data-contact-row].contact-row:hover {
         background-color: #f1f1f1 !important;
         border: 1px solid #dedede !important;
@@ -558,6 +577,24 @@ export default function ContactsPage() {
       }
       
       /* Additional selectors for different Polaris structures */
+      .Polaris-ResourceList .Polaris-ResourceList__ItemWrapper .Polaris-ResourceList__Item div[data-contact-row].contact-row .Polaris-ResourceItem:hover {
+        background-color: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+      }
+      
+      .Polaris-ResourceList .Polaris-ResourceList__ItemWrapper .Polaris-ResourceList__Item div[data-contact-row].contact-row.pinned .Polaris-ResourceItem:hover {
+        background-color: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+      }
+      
+      .Polaris-ResourceList .Polaris-ResourceList__ItemWrapper .Polaris-ResourceList__Item div[data-contact-row].contact-row.selected .Polaris-ResourceItem:hover {
+        background-color: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+      }
+      
       .Polaris-ResourceList .Polaris-ResourceList__ItemWrapper .Polaris-ResourceList__Item div[data-contact-row].contact-row:hover {
         background-color: #f1f1f1 !important;
         border: 1px solid #dedede !important;
@@ -571,25 +608,6 @@ export default function ContactsPage() {
       }
       
       .Polaris-ResourceList .Polaris-ResourceList__ItemWrapper .Polaris-ResourceList__Item div[data-contact-row].contact-row.selected:hover {
-        background-color: #ffe7d5 !important;
-        border: 1px solid #ff8c00 !important;
-        border-radius: 8px !important;
-      }
-      
-      /* Even more specific selectors */
-      div[data-contact-row].contact-row:hover {
-        background-color: #f1f1f1 !important;
-        border: 1px solid #dedede !important;
-        border-radius: 8px !important;
-      }
-      
-      div[data-contact-row].contact-row.pinned:hover {
-        background-color: #d5ebff !important;
-        border: 1px solid #007bff !important;
-        border-radius: 8px !important;
-      }
-      
-      div[data-contact-row].contact-row.selected:hover {
         background-color: #ffe7d5 !important;
         border: 1px solid #ff8c00 !important;
         border-radius: 8px !important;
