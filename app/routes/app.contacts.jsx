@@ -545,16 +545,17 @@ export default function ContactsPage() {
       }
       
       .custom-contact-row {
-        display: flex;
-        align-items: center;
-        padding: 8px 12px;
-        border-radius: 8px;
-        margin-bottom: 4px;
-        transition: all 0.2s ease;
-        cursor: pointer;
-        background-color: transparent;
-        border: 1px solid transparent;
-        min-height: 60px;
+        display: flex !important;
+        align-items: center !important;
+        padding: 8px 12px !important;
+        border-radius: 8px !important;
+        margin-bottom: 4px !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+        background-color: transparent !important;
+        border: 1px solid transparent !important;
+        min-height: 60px !important;
+        height: 60px !important;
       }
       
       .custom-contact-row.pinned {
@@ -586,15 +587,32 @@ export default function ContactsPage() {
       }
       
       .contact-avatar {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 16px;
-        flex-shrink: 0;
-        border-radius: 10px;
-        overflow: hidden;
-        width: 60px;
-        height: 60px;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin-right: 16px !important;
+        flex-shrink: 0 !important;
+        border-radius: 10px !important;
+        overflow: hidden !important;
+        width: 60px !important;
+        height: 60px !important;
+      }
+      
+      .contact-avatar .Polaris-Avatar {
+        width: 60px !important;
+        height: 60px !important;
+        border-radius: 10px !important;
+      }
+      
+      .custom-contact-row .contact-avatar .Polaris-Avatar__Image {
+        width: 60px !important;
+        height: 60px !important;
+        border-radius: 10px !important;
+      }
+      
+      .custom-contact-row .contact-avatar .Polaris-Avatar__Text {
+        font-size: 24px !important;
+        font-weight: 600 !important;
       }
       
       .contact-content {
