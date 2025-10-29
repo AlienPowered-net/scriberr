@@ -547,13 +547,14 @@ export default function ContactsPage() {
       .custom-contact-row {
         display: flex;
         align-items: center;
-        padding: 12px 16px;
+        padding: 8px 12px;
         border-radius: 8px;
         margin-bottom: 4px;
         transition: all 0.2s ease;
         cursor: pointer;
         background-color: transparent;
         border: 1px solid transparent;
+        min-height: 60px;
       }
       
       .custom-contact-row.pinned {
@@ -592,8 +593,8 @@ export default function ContactsPage() {
         flex-shrink: 0;
         border-radius: 10px;
         overflow: hidden;
-        width: 50px;
-        height: 50px;
+        width: 60px;
+        height: 60px;
       }
       
       .contact-content {
