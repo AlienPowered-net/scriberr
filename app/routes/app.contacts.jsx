@@ -533,27 +533,125 @@ function ContactForm({
 export default function ContactsPage() {
   const { folders: initialFolders, contacts: initialContacts, version } = useLoaderData();
   
-  // Add simple CSS for contact row hover states
+  // Add CSS for custom contact list
   useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
-      /* Simple hover states that work with Polaris */
-      [data-contact-row].contact-row:hover {
-        background-color: #f1f1f1 !important;
-        border: 1px solid #dedede !important;
-        border-radius: 8px !important;
+      /* Custom Contact List Styles */
+      .custom-contact-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
       }
       
-      [data-contact-row].contact-row.pinned:hover {
-        background-color: #d5ebff !important;
-        border: 1px solid #007bff !important;
-        border-radius: 8px !important;
+      .custom-contact-row {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 4px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        background-color: transparent;
+        border: 1px solid transparent;
       }
       
-      [data-contact-row].contact-row.selected:hover {
-        background-color: #ffe7d5 !important;
-        border: 1px solid #ff8c00 !important;
-        border-radius: 8px !important;
+      .custom-contact-row.pinned {
+        background-color: #f0f8ff;
+        border: 1px solid #007bff;
+      }
+      
+      .custom-contact-row.selected {
+        background-color: #fffbf8;
+        border: 1px solid #ff8c00;
+      }
+      
+      .custom-contact-row:hover {
+        background-color: #f1f1f1;
+        border: 1px solid #dedede;
+        border-radius: 8px;
+      }
+      
+      .custom-contact-row.pinned:hover {
+        background-color: #d5ebff;
+        border: 1px solid #007bff;
+        border-radius: 8px;
+      }
+      
+      .custom-contact-row.selected:hover {
+        background-color: #ffe7d5;
+        border: 1px solid #ff8c00;
+        border-radius: 8px;
+      }
+      
+      .contact-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 16px;
+        flex-shrink: 0;
+      }
+      
+      .contact-content {
+        display: grid;
+        grid-template-columns: 200px 180px 120px 150px 150px;
+        gap: 16px;
+        align-items: center;
+        flex: 1;
+      }
+      
+      .contact-name,
+      .contact-info,
+      .contact-date,
+      .contact-tags {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      
+      .contact-details {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        align-items: center;
+      }
+      
+      .contact-tags {
+        gap: 4px;
+        flex-wrap: wrap;
+      }
+      
+      .tag-clickable {
+        cursor: pointer;
+      }
+      
+      .contact-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-left: auto;
+        width: fit-content;
+      }
+      
+      .dropdown-item {
+        width: 100%;
+        padding: 8px 16px;
+        border: none;
+        background: none;
+        text-align: left;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #374151;
+      }
+      
+      .dropdown-item:hover {
+        background-color: #f6f6f7;
       }
     `;
     document.head.appendChild(style);
@@ -2175,14 +2273,25 @@ export default function ContactsPage() {
                         overflowX: "hidden"
                       }}>
                         {filteredContacts.length > 0 ? (
-                          <ResourceList
-                            resourceName={{ singular: 'contact', plural: 'contacts' }}
-                            items={filteredContacts}
-                            renderItem={(contact) => {
+                          <div className="custom-contact-list">
+                            {filteredContacts.map((contact) => {
                               const { id, firstName, lastName, businessName, email, phone, type, createdAt, pinnedAt } = contact;
-                              const media = (
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%' }}>
-                                  <div style={{ borderRadius: '10px', overflow: 'hidden', width: '40px', height: '40px' }}>
+                              const isContactSelected = selectedContacts.includes(id);
+                              
+                              return (
+                                <div 
+                                  key={id}
+                                  className={`custom-contact-row ${pinnedAt ? 'pinned' : ''} ${isContactSelected ? 'selected' : ''}`}
+                                  onClick={(e) => {
+                                    // Only show modal if not clicking on buttons or badges
+                                    if (e.target && !e.target.closest('button') && !e.target.closest('.Polaris-Badge') && !e.target.closest('[class*="tag-"]')) {
+                                      setSelectedContact(contact);
+                                      setShowContactDetails(true);
+                                    }
+                                  }}
+                                >
+                                  {/* Avatar */}
+                                  <div className="contact-avatar">
                                     <Avatar 
                                       initials={(() => {
                                         if (type === 'PERSON') {
@@ -2202,83 +2311,28 @@ export default function ContactsPage() {
                                       size="medium"
                                     />
                                   </div>
-                                </div>
-                              );
-
-                              const shortcutActions = [
-                                {
-                                  content: selectedContacts.includes(id) ? 'Deselect' : 'Select',
-                                  onAction: () => handleContactSelect(id),
-                                },
-                                {
-                                  content: 'Manage',
-                                  onAction: () => handleManageMenu(contact, { currentTarget: { getBoundingClientRect: () => ({ top: 0, left: 0 }) } }),
-                                },
-                                {
-                                  content: 'Delete',
-                                  destructive: true,
-                                  onAction: () => handleContactDelete(id),
-                                },
-                              ];
-
-                              const isContactSelected = selectedContacts.includes(id);
-                              const rowBackgroundColor = isContactSelected ? '#fffbf8' : (pinnedAt ? '#f0f8ff' : 'transparent');
-                              const rowBorderColor = isContactSelected ? '#FF8C00' : (pinnedAt ? '#007bff' : 'transparent');
-                              
-                              return (
-                                <div 
-                                  data-contact-row={id}
-                                  className={`contact-row ${pinnedAt ? 'pinned' : ''} ${isContactSelected ? 'selected' : ''}`}
-                                  style={{ 
-                                    backgroundColor: rowBackgroundColor,
-                                    border: `1px solid ${rowBorderColor}`,
-                                    borderRadius: '8px',
-                                    marginBottom: '4px',
-                                    transition: 'all 0.2s ease',
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  <ResourceItem
-                                    id={id}
-                                    url="#"
-                                    media={media}
-                                    onClick={(e) => {
-                                      // Only show modal if not clicking on buttons or badges
-                                      if (e.target && !e.target.closest('button') && !e.target.closest('.Polaris-Badge') && !e.target.closest('[class*="tag-"]')) {
-                                        setSelectedContact(contact);
-                                        setShowContactDetails(true);
-                                      }
-                                    }}
-                                  >
-                                    <div 
-                                      style={{ 
-                                        display: 'grid', 
-                                        gridTemplateColumns: '200px 180px 120px 150px 150px', 
-                                        gap: '16px', 
-                                        alignItems: 'center'
-                                      }}
-                                    >
-                                      
-                                      {/* Name */}
-                                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        <Text as="span" variant="bodyMd" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                          {type === 'PERSON' 
-                                            ? `${firstName || ''} ${lastName || ''}`.trim() || '-'
-                                            : businessName || '-'
-                                          }
-                                        </Text>
-                                      </div>
+                                  {/* Contact Content */}
+                                  <div className="contact-content">
+                                    {/* Name */}
+                                    <div className="contact-name">
+                                      <Text as="span" variant="bodyMd">
+                                        {type === 'PERSON' 
+                                          ? `${firstName || ''} ${lastName || ''}`.trim() || '-'
+                                          : businessName || '-'
+                                        }
+                                      </Text>
+                                    </div>
                                     
                                     {/* Contact Info */}
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                      <div style={{ display: "flex", flexDirection: "column", gap: "2px", alignItems: 'center' }}>
+                                    <div className="contact-info">
+                                      <div className="contact-details">
                                         {email && (
-                                          <Text as="span" variant="bodySm" tone="subdued" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                          <Text as="span" variant="bodySm" tone="subdued">
                                             {email}
                                           </Text>
                                         )}
                                         {phone && (
-                                          <Text as="span" variant="bodySm" tone="subdued" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                          <Text as="span" variant="bodySm" tone="subdued">
                                             {phone}
                                           </Text>
                                         )}
@@ -2286,20 +2340,20 @@ export default function ContactsPage() {
                                     </div>
                                     
                                     {/* Creation Date */}
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    <div className="contact-date">
                                       <Text as="span" variant="bodySm" tone="subdued">
                                         {new Date(createdAt).toLocaleDateString()}
                                       </Text>
                                     </div>
                                     
                                     {/* Tags */}
-                                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
+                                    <div className="contact-tags">
                                       <div 
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           setSelectedTagFilter(type === 'PERSON' ? 'Person' : 'Business');
                                         }}
-                                        style={{ cursor: 'pointer' }}
+                                        className="tag-clickable"
                                       >
                                         <Badge tone={type === 'PERSON' ? 'info' : 'success'}>
                                           {type === 'PERSON' ? 'Person' : 'Business'}
@@ -2312,7 +2366,7 @@ export default function ContactsPage() {
                                             e.stopPropagation();
                                             setSelectedTagFilter(tag);
                                           }}
-                                          style={{ cursor: 'pointer' }}
+                                          className="tag-clickable"
                                         >
                                           <Badge tone="default">
                                             {tag}
@@ -2328,7 +2382,7 @@ export default function ContactsPage() {
                                                 e.stopPropagation();
                                                 setTagPopoverActive(prev => ({ ...prev, [id]: !prev[id] }));
                                               }}
-                                              style={{ cursor: 'pointer' }}
+                                              className="tag-clickable"
                                             >
                                               <Badge tone="default">
                                                 +{(contact.tags || []).length - 2}
@@ -2348,7 +2402,7 @@ export default function ContactsPage() {
                                                     setSelectedTagFilter(tag);
                                                     setTagPopoverActive(prev => ({ ...prev, [id]: false }));
                                                   }}
-                                                  style={{ cursor: 'pointer' }}
+                                                  className="tag-clickable"
                                                 >
                                                   <Badge tone="default">
                                                     {tag}
@@ -2362,20 +2416,17 @@ export default function ContactsPage() {
                                     </div>
                                     
                                     {/* Actions */}
-                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginLeft: 'auto', width: 'fit-content' }}>
-                                      <div style={{ boxSizing: 'content-box' }}>
-                                        <Button
-                                          size="medium"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleContactSelect(id);
-                                          }}
-                                        >
-                                          {selectedContacts.includes(id) ? 'Deselect' : 'Select'}
-                                        </Button>
-                                      </div>
-                                      <div style={{ boxSizing: 'content-box' }}>
-                                        <Popover
+                                    <div className="contact-actions">
+                                      <Button
+                                        size="medium"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleContactSelect(id);
+                                        }}
+                                      >
+                                        {selectedContacts.includes(id) ? 'Deselect' : 'Select'}
+                                      </Button>
+                                      <Popover
                                           active={managePopoverActive[id] || false}
                                           activator={
                                             <Button
@@ -2498,27 +2549,22 @@ export default function ContactsPage() {
                                             </button>
                                           </div>
                                         </Popover>
-                                      </div>
-                                      <div style={{ boxSizing: 'content-box' }}>
-                                        <Button
-                                          size="medium"
-                                          variant="primary"
-                                          tone="critical"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleContactDelete(id);
-                                          }}
-                                        >
-                                          Delete
-                                        </Button>
-                                      </div>
+                                      <Button
+                                        size="medium"
+                                        tone="critical"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleContactDelete(id);
+                                        }}
+                                      >
+                                        Delete
+                                      </Button>
                                     </div>
                                   </div>
-                                </ResourceItem>
                                 </div>
                               );
-                            }}
-                          />
+                            })}
+                          </div>
                         ) : (
                           <div style={{ 
                             display: "flex", 
