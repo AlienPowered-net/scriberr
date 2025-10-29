@@ -533,108 +533,35 @@ function ContactForm({
 export default function ContactsPage() {
   const { folders: initialFolders, contacts: initialContacts, version } = useLoaderData();
   
-  // Add hover states using MutationObserver and direct DOM manipulation
+  // Add simple CSS for contact row hover states
   useEffect(() => {
-    console.log('Setting up contact row hover states...');
-    
-    const addHoverListeners = () => {
-      const contactRows = document.querySelectorAll('[data-contact-row]');
-      console.log(`Found ${contactRows.length} contact rows`);
-      
-      contactRows.forEach((row) => {
-        // Remove existing listeners to avoid duplicates
-        row.removeEventListener('mouseenter', row._hoverEnterHandler);
-        row.removeEventListener('mouseleave', row._hoverLeaveHandler);
-        
-        const isPinned = row.classList.contains('pinned');
-        const isSelected = row.classList.contains('selected');
-        
-        console.log(`Setting up hover for row: pinned=${isPinned}, selected=${isSelected}`);
-        
-        // Create hover handlers
-        const hoverEnterHandler = (e) => {
-          console.log('Mouse enter - applying hover style');
-          if (isPinned) {
-            row.style.setProperty('background-color', '#d5ebff', 'important');
-            row.style.setProperty('border', '1px solid #007bff', 'important');
-            row.style.setProperty('border-radius', '8px', 'important');
-          } else if (isSelected) {
-            row.style.setProperty('background-color', '#ffe7d5', 'important');
-            row.style.setProperty('border', '1px solid #ff8c00', 'important');
-            row.style.setProperty('border-radius', '8px', 'important');
-          } else {
-            row.style.setProperty('background-color', '#f1f1f1', 'important');
-            row.style.setProperty('border', '1px solid #dedede', 'important');
-            row.style.setProperty('border-radius', '8px', 'important');
-          }
-        };
-        
-        const hoverLeaveHandler = (e) => {
-          console.log('Mouse leave - resetting style');
-          if (isPinned) {
-            row.style.setProperty('background-color', '#f0f8ff', 'important');
-            row.style.setProperty('border', '1px solid #007bff', 'important');
-          } else if (isSelected) {
-            row.style.setProperty('background-color', '#fffbf8', 'important');
-            row.style.setProperty('border', '1px solid #ff8c00', 'important');
-          } else {
-            row.style.setProperty('background-color', 'transparent', 'important');
-            row.style.setProperty('border', '1px solid transparent', 'important');
-          }
-        };
-        
-        // Store handlers on the element for cleanup
-        row._hoverEnterHandler = hoverEnterHandler;
-        row._hoverLeaveHandler = hoverLeaveHandler;
-        
-        // Add event listeners
-        row.addEventListener('mouseenter', hoverEnterHandler);
-        row.addEventListener('mouseleave', hoverLeaveHandler);
-      });
-    };
-    
-    // Initial setup
-    addHoverListeners();
-    
-    // Watch for changes in the contact list
-    const observer = new MutationObserver((mutations) => {
-      let shouldUpdate = false;
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'childList') {
-          mutation.addedNodes.forEach((node) => {
-            if (node.nodeType === Node.ELEMENT_NODE) {
-              if (node.querySelector && node.querySelector('[data-contact-row]')) {
-                shouldUpdate = true;
-              }
-            }
-          });
-        }
-      });
-      
-      if (shouldUpdate) {
-        console.log('Contact list changed, updating hover listeners');
-        setTimeout(addHoverListeners, 100); // Small delay to ensure DOM is ready
+    const style = document.createElement('style');
+    style.textContent = `
+      /* Simple hover states that work with Polaris */
+      [data-contact-row].contact-row:hover {
+        background-color: #f1f1f1 !important;
+        border: 1px solid #dedede !important;
+        border-radius: 8px !important;
       }
-    });
-    
-    // Start observing
-    const resourceList = document.querySelector('.Polaris-ResourceList');
-    if (resourceList) {
-      observer.observe(resourceList, { childList: true, subtree: true });
-    }
+      
+      [data-contact-row].contact-row.pinned:hover {
+        background-color: #d5ebff !important;
+        border: 1px solid #007bff !important;
+        border-radius: 8px !important;
+      }
+      
+      [data-contact-row].contact-row.selected:hover {
+        background-color: #ffe7d5 !important;
+        border: 1px solid #ff8c00 !important;
+        border-radius: 8px !important;
+      }
+    `;
+    document.head.appendChild(style);
     
     return () => {
-      observer.disconnect();
-      // Clean up event listeners
-      const contactRows = document.querySelectorAll('[data-contact-row]');
-      contactRows.forEach((row) => {
-        if (row._hoverEnterHandler) {
-          row.removeEventListener('mouseenter', row._hoverEnterHandler);
-        }
-        if (row._hoverLeaveHandler) {
-          row.removeEventListener('mouseleave', row._hoverLeaveHandler);
-        }
-      });
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
     };
   }, []);
   
