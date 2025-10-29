@@ -559,31 +559,31 @@ export default function ContactsPage() {
       }
       
       .custom-contact-row.pinned {
-        background-color: #f0f8ff;
-        border: 1px solid #007bff;
+        background-color: #f0f8ff !important;
+        border: 1px solid #007bff !important;
       }
       
       .custom-contact-row.selected {
-        background-color: #fffbf8;
-        border: 1px solid #ff8c00;
+        background-color: #fffbf8 !important;
+        border: 1px solid #ff8c00 !important;
       }
       
       .custom-contact-row:hover {
-        background-color: #f1f1f1;
-        border: 1px solid #dedede;
-        border-radius: 8px;
+        background-color: #f1f1f1 !important;
+        border: 1px solid #dedede !important;
+        border-radius: 8px !important;
       }
       
       .custom-contact-row.pinned:hover {
-        background-color: #d5ebff;
-        border: 1px solid #007bff;
-        border-radius: 8px;
+        background-color: #d5ebff !important;
+        border: 1px solid #007bff !important;
+        border-radius: 8px !important;
       }
       
       .custom-contact-row.selected:hover {
-        background-color: #ffe7d5;
-        border: 1px solid #ff8c00;
-        border-radius: 8px;
+        background-color: #ffe7d5 !important;
+        border: 1px solid #ff8c00 !important;
+        border-radius: 8px !important;
       }
       
       .contact-avatar {
@@ -594,24 +594,24 @@ export default function ContactsPage() {
         flex-shrink: 0 !important;
         border-radius: 10px !important;
         overflow: hidden !important;
-        width: 60px !important;
-        height: 60px !important;
+        width: 40px !important;
+        height: 40px !important;
       }
       
       .contact-avatar .Polaris-Avatar {
-        width: 60px !important;
-        height: 60px !important;
+        width: 40px !important;
+        height: 40px !important;
         border-radius: 10px !important;
       }
       
       .custom-contact-row .contact-avatar .Polaris-Avatar__Image {
-        width: 60px !important;
-        height: 60px !important;
+        width: 40px !important;
+        height: 40px !important;
         border-radius: 10px !important;
       }
       
       .custom-contact-row .contact-avatar .Polaris-Avatar__Text {
-        font-size: 24px !important;
+        font-size: 16px !important;
         font-weight: 600 !important;
       }
       
