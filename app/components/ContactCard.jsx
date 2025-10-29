@@ -221,7 +221,7 @@ const ContactCard = ({
       )}
 
       {/* Business points of contact */}
-      {contact.type === 'BUSINESS' && contact.pointsOfContact && contact.pointsOfContact.length > 0 && (
+      {contact.type === 'BUSINESS' && contact.pointsOfContact && contact.pointsOfContact.length > 0 && contact.pointsOfContact.some(point => point.name || point.phone || point.email) && (
         <div style={{ marginBottom: '24px' }}>
           <Text as="h3" variant="headingSm" fontWeight="semibold" style={{ color: '#202223', marginBottom: '12px' }}>
             Points of Contact
@@ -332,7 +332,10 @@ const ContactCard = ({
       primaryAction={onEdit ? {
         content: 'Edit Contact',
         icon: EditIcon,
-        onAction: onEdit
+        onAction: () => {
+          console.log('Edit button clicked, onEdit function:', onEdit);
+          onEdit();
+        }
       } : undefined}
       secondaryActions={[
         {
