@@ -2652,6 +2652,25 @@ export default function ContactsPage() {
             variant={contactCardVariant}
             isVisible={showContactCard}
             onClose={handleContactCardClose}
+            onEdit={() => {
+              setShowContactCard(false);
+              setShowContactForm(true);
+              setFormData({
+                type: contactCardContact.type,
+                firstName: contactCardContact.firstName || '',
+                lastName: contactCardContact.lastName || '',
+                businessName: contactCardContact.businessName || '',
+                email: contactCardContact.email || '',
+                phone: contactCardContact.phone || '',
+                mobile: contactCardContact.mobile || '',
+                company: contactCardContact.company || '',
+                role: contactCardContact.role || '',
+                memo: contactCardContact.memo || '',
+                tags: contactCardContact.tags || [],
+                pointsOfContact: contactCardContact.pointsOfContact || []
+              });
+              setEditingContactId(contactCardContact.id);
+            }}
             position={contactCardPosition}
           />
         )}

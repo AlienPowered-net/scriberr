@@ -169,54 +169,56 @@ const ContactCard = ({
       )}
 
       {/* Contact Information Section */}
-      <div style={{ marginBottom: '24px' }}>
-        <Text as="h3" variant="headingSm" fontWeight="semibold" style={{ color: '#202223', marginBottom: '12px' }}>
-          Contact Information
-        </Text>
-        <BlockStack gap="200">
-          {contact.email && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Icon source={EmailIcon} tone="subdued" />
-                <Text as="span" variant="bodyMd" style={{ color: '#202223' }}>
-                  {contact.email}
-                </Text>
+      {(contact.email || contact.phone || contact.mobile) && (
+        <div style={{ marginBottom: '24px' }}>
+          <Text as="h3" variant="headingSm" fontWeight="semibold" style={{ color: '#202223', marginBottom: '12px' }}>
+            Contact Information
+          </Text>
+          <BlockStack gap="200">
+            {contact.email && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Icon source={EmailIcon} tone="subdued" />
+                  <Text as="span" variant="bodyMd" style={{ color: '#202223' }}>
+                    {contact.email}
+                  </Text>
+                </div>
+                {variant === 'modal' && (
+                  <CopyButton text={contact.email} fieldName="email" />
+                )}
               </div>
-              {variant === 'modal' && (
-                <CopyButton text={contact.email} fieldName="email" />
-              )}
-            </div>
-          )}
+            )}
 
-          {contact.phone && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Icon source={PhoneIcon} tone="subdued" />
-                <Text as="span" variant="bodyMd" style={{ color: '#202223' }}>
-                  {contact.phone}
-                </Text>
+            {contact.phone && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Icon source={PhoneIcon} tone="subdued" />
+                  <Text as="span" variant="bodyMd" style={{ color: '#202223' }}>
+                    {contact.phone}
+                  </Text>
+                </div>
+                {variant === 'modal' && (
+                  <CopyButton text={contact.phone} fieldName="phone" />
+                )}
               </div>
-              {variant === 'modal' && (
-                <CopyButton text={contact.phone} fieldName="phone" />
-              )}
-            </div>
-          )}
+            )}
 
-          {contact.mobile && contact.mobile !== contact.phone && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Icon source={PhoneIcon} tone="subdued" />
-                <Text as="span" variant="bodyMd" style={{ color: '#202223' }}>
-                  {contact.mobile} (Mobile)
-                </Text>
+            {contact.mobile && contact.mobile !== contact.phone && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Icon source={PhoneIcon} tone="subdued" />
+                  <Text as="span" variant="bodyMd" style={{ color: '#202223' }}>
+                    {contact.mobile} (Mobile)
+                  </Text>
+                </div>
+                {variant === 'modal' && (
+                  <CopyButton text={contact.mobile} fieldName="mobile" />
+                )}
               </div>
-              {variant === 'modal' && (
-                <CopyButton text={contact.mobile} fieldName="mobile" />
-              )}
-            </div>
-          )}
-        </BlockStack>
-      </div>
+            )}
+          </BlockStack>
+        </div>
+      )}
 
       {/* Business points of contact */}
       {contact.type === 'BUSINESS' && contact.pointsOfContact && contact.pointsOfContact.length > 0 && (
