@@ -540,25 +540,18 @@ export default function ContactsPage() {
     
     const contactRow = e.currentTarget;
     
-    // Debug logging
-    console.log('Mouse enter - isPinned:', isPinned, 'isSelected:', isSelected);
-    console.log('Contact row classes:', contactRow.className);
-    
     if (isPinned) {
-      console.log('Applying pinned hover style');
-      contactRow.style.backgroundColor = '#d5ebff';
-      contactRow.style.border = '1px solid #007bff';
-      contactRow.style.borderRadius = '8px';
+      contactRow.style.setProperty('background-color', '#d5ebff', 'important');
+      contactRow.style.setProperty('border', '1px solid #007bff', 'important');
+      contactRow.style.setProperty('border-radius', '8px', 'important');
     } else if (isSelected) {
-      console.log('Applying selected hover style');
-      contactRow.style.backgroundColor = '#ffe7d5';
-      contactRow.style.border = '1px solid #ff8c00';
-      contactRow.style.borderRadius = '8px';
+      contactRow.style.setProperty('background-color', '#ffe7d5', 'important');
+      contactRow.style.setProperty('border', '1px solid #ff8c00', 'important');
+      contactRow.style.setProperty('border-radius', '8px', 'important');
     } else {
-      console.log('Applying normal hover style');
-      contactRow.style.backgroundColor = '#f1f1f1';
-      contactRow.style.border = '1px solid #dedede';
-      contactRow.style.borderRadius = '8px';
+      contactRow.style.setProperty('background-color', '#f1f1f1', 'important');
+      contactRow.style.setProperty('border', '1px solid #dedede', 'important');
+      contactRow.style.setProperty('border-radius', '8px', 'important');
     }
   };
 
@@ -570,14 +563,14 @@ export default function ContactsPage() {
     
     // Reset to original styles
     if (isPinned) {
-      contactRow.style.backgroundColor = '#f0f8ff';
-      contactRow.style.border = '1px solid #007bff';
+      contactRow.style.setProperty('background-color', '#f0f8ff', 'important');
+      contactRow.style.setProperty('border', '1px solid #007bff', 'important');
     } else if (isSelected) {
-      contactRow.style.backgroundColor = '#fffbf8';
-      contactRow.style.border = '1px solid #ff8c00';
+      contactRow.style.setProperty('background-color', '#fffbf8', 'important');
+      contactRow.style.setProperty('border', '1px solid #ff8c00', 'important');
     } else {
-      contactRow.style.backgroundColor = 'transparent';
-      contactRow.style.border = '1px solid transparent';
+      contactRow.style.setProperty('background-color', 'transparent', 'important');
+      contactRow.style.setProperty('border', '1px solid transparent', 'important');
     }
   };
   
@@ -2253,14 +2246,8 @@ export default function ContactsPage() {
                                     transition: 'all 0.2s ease',
                                     cursor: 'pointer'
                                   }}
-                                  onMouseEnter={(e) => {
-                                    console.log('onMouseEnter called - pinnedAt:', pinnedAt, 'isContactSelected:', isContactSelected);
-                                    handleContactMouseEnter(e, !!pinnedAt, isContactSelected);
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    console.log('onMouseLeave called - pinnedAt:', pinnedAt, 'isContactSelected:', isContactSelected);
-                                    handleContactMouseLeave(e, !!pinnedAt, isContactSelected);
-                                  }}
+                                  onMouseEnter={(e) => handleContactMouseEnter(e, !!pinnedAt, isContactSelected)}
+                                  onMouseLeave={(e) => handleContactMouseLeave(e, !!pinnedAt, isContactSelected)}
                                 >
                                   <ResourceItem
                                     id={id}
