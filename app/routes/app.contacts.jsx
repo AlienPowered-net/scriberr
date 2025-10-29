@@ -590,6 +590,10 @@ export default function ContactsPage() {
         justify-content: center;
         margin-right: 16px;
         flex-shrink: 0;
+        border-radius: 10px;
+        overflow: hidden;
+        width: 50px;
+        height: 50px;
       }
       
       .contact-content {
@@ -2308,7 +2312,7 @@ export default function ContactsPage() {
                                           return 'BU';
                                         }
                                       })()}
-                                      size="medium"
+                                      size="large"
                                     />
                                   </div>
                                   {/* Contact Content */}
