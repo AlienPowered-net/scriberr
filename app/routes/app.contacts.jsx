@@ -3071,44 +3071,6 @@ export default function ContactsPage() {
         </Modal>
         )}
 
-        {/* Contact Details Modal - Desktop Only */}
-        {!isMobile && (
-          <Modal
-            open={showContactDetails && selectedContact !== null}
-            onClose={() => {
-              setShowContactDetails(false);
-              setSelectedContact(null);
-            }}
-            title="Contact Details"
-            primaryAction={{
-              content: 'Edit',
-              onAction: () => {
-                setShowContactDetails(false);
-                setEditingContact(selectedContact);
-              }
-            }}
-          secondaryActions={[{
-            content: 'Close',
-            onAction: () => {
-              setShowContactDetails(false);
-              setSelectedContact(null);
-            }
-          }]}
-        >
-          <Modal.Section>
-            {selectedContact && (
-              <ContactCard 
-                contact={selectedContact} 
-                variant="modal" 
-                onClose={() => {
-                  setShowContactDetails(false);
-                  setSelectedContact(null);
-                }}
-              />
-            )}
-          </Modal.Section>
-        </Modal>
-        )}
 
         {/* Desktop Bulk Move Modal */}
         {!isMobile && showBulkMoveModal && (
@@ -3199,57 +3161,34 @@ export default function ContactsPage() {
 
         {/* Contact Details Modal */}
         {showContactDetails && selectedContact && (
-          <Modal
-            open={showContactDetails}
+          <ContactCard 
+            contact={selectedContact}
+            variant="modal"
+            isVisible={true}
             onClose={() => {
               setShowContactDetails(false);
               setSelectedContact(null);
             }}
-            title={selectedContact.type === 'PERSON' 
-              ? `${selectedContact.firstName || ''} ${selectedContact.lastName || ''}`.trim() || 'Contact Details'
-              : selectedContact.businessName || 'Contact Details'
-            }
-            size="large"
-            primaryAction={{
-              content: 'Edit',
-              onAction: () => {
-                setShowContactDetails(false);
-                setShowContactForm(true);
-                setFormData({
-                  type: selectedContact.type,
-                  firstName: selectedContact.firstName || '',
-                  lastName: selectedContact.lastName || '',
-                  businessName: selectedContact.businessName || '',
-                  email: selectedContact.email || '',
-                  phone: selectedContact.phone || '',
-                  mobile: selectedContact.mobile || '',
-                  company: selectedContact.company || '',
-                  role: selectedContact.role || '',
-                  memo: selectedContact.memo || '',
-                  tags: selectedContact.tags || [],
-                  pointsOfContact: selectedContact.pointsOfContact || []
-                });
-                setEditingContactId(selectedContact.id);
-              }
+            onEdit={() => {
+              setShowContactDetails(false);
+              setShowContactForm(true);
+              setFormData({
+                type: selectedContact.type,
+                firstName: selectedContact.firstName || '',
+                lastName: selectedContact.lastName || '',
+                businessName: selectedContact.businessName || '',
+                email: selectedContact.email || '',
+                phone: selectedContact.phone || '',
+                mobile: selectedContact.mobile || '',
+                company: selectedContact.company || '',
+                role: selectedContact.role || '',
+                memo: selectedContact.memo || '',
+                tags: selectedContact.tags || [],
+                pointsOfContact: selectedContact.pointsOfContact || []
+              });
+              setEditingContactId(selectedContact.id);
             }}
-            secondaryActions={[
-              {
-                content: 'Close',
-                onAction: () => {
-                  setShowContactDetails(false);
-                  setSelectedContact(null);
-                }
-              }
-            ]}
-          >
-            <Modal.Section>
-              <ContactCard 
-                contact={selectedContact}
-                variant="modal"
-                isVisible={true}
-              />
-            </Modal.Section>
-          </Modal>
+          />
         )}
       </div>
     </Page>

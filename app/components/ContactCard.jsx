@@ -19,7 +19,8 @@ import {
   EmailIcon,
   CollectionIcon,
   EditIcon,
-  XIcon
+  XIcon,
+  CopyIcon
 } from '@shopify/polaris-icons';
 
 const ContactCard = ({ 
@@ -27,6 +28,7 @@ const ContactCard = ({
   variant = 'tooltip', // 'tooltip' or 'modal'
   isVisible = false,
   onClose,
+  onEdit,
   position = { x: 0, y: 0 }
 }) => {
   const [copiedField, setCopiedField] = useState(null);
@@ -69,6 +71,19 @@ const ContactCard = ({
     }
   };
 
+  // Copy button component
+  const CopyButton = ({ text, fieldName, size = "micro" }) => (
+    <Tooltip content={copiedField === fieldName ? "Copied!" : "Copy to clipboard"}>
+      <Button
+        size={size}
+        icon={CopyIcon}
+        onClick={() => handleCopy(text, fieldName)}
+        disabled={copiedField === fieldName}
+        tone={copiedField === fieldName ? "success" : "subdued"}
+      />
+    </Tooltip>
+  );
+
   // Get contact display name
   const getDisplayName = () => {
     if (contact.type === 'PERSON') {
@@ -90,167 +105,219 @@ const ContactCard = ({
 
   // Render contact info section
   const renderContactInfo = () => (
-    <BlockStack gap="200">
-      {/* Header with name and type */}
-      <InlineStack align="space-between" blockAlign="center">
-        <InlineStack gap="200" blockAlign="center">
-          <div style={{ borderRadius: '10px', overflow: 'hidden', width: '48px', height: '48px' }}>
-            <Avatar initials={getInitials()} size="large" />
+    <div style={{
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      borderRadius: '16px',
+      padding: '24px',
+      color: 'white',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Decorative background pattern */}
+      <div style={{
+        position: 'absolute',
+        top: '-50px',
+        right: '-50px',
+        width: '200px',
+        height: '200px',
+        background: 'rgba(255, 255, 255, 0.1)',
+        borderRadius: '50%',
+        zIndex: 0
+      }} />
+      <div style={{
+        position: 'absolute',
+        bottom: '-30px',
+        left: '-30px',
+        width: '150px',
+        height: '150px',
+        background: 'rgba(255, 255, 255, 0.05)',
+        borderRadius: '50%',
+        zIndex: 0
+      }} />
+      
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {/* Header with name and type */}
+        <InlineStack align="space-between" blockAlign="center" wrap={false}>
+          <InlineStack gap="300" blockAlign="center">
+            <div style={{ 
+              borderRadius: '12px', 
+              overflow: 'hidden', 
+              width: '64px', 
+              height: '64px',
+              border: '3px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+            }}>
+              <Avatar initials={getInitials()} size="large" />
+            </div>
+            <BlockStack gap="100">
+              <Text as="h2" variant="headingLg" fontWeight="bold" style={{ color: 'white', margin: 0 }}>
+                {getDisplayName()}
+              </Text>
+              {contact.role && (
+                <Text as="p" variant="bodyMd" style={{ color: 'rgba(255, 255, 255, 0.8)', margin: 0 }}>
+                  {contact.role}
+                </Text>
+              )}
+            </BlockStack>
+          </InlineStack>
+          <Badge tone="info" size="large">
+            {contact.type === 'PERSON' ? 'Person' : 'Business'}
+          </Badge>
+        </InlineStack>
+
+        {/* Company/Business info */}
+        {contact.company && (
+          <div style={{ marginTop: '16px' }}>
+            <InlineStack gap="200" blockAlign="center">
+              <Icon source={CollectionIcon} tone="subdued" />
+              <Text as="span" variant="bodyLg" fontWeight="medium" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                {contact.company}
+              </Text>
+            </InlineStack>
           </div>
-          <Text as="h3" variant="headingMd" fontWeight="semibold">
-            {getDisplayName()}
-          </Text>
-        </InlineStack>
-        <Badge tone={getTypeColor()}>
-          {contact.type === 'PERSON' ? 'Person' : 'Business'}
-        </Badge>
-      </InlineStack>
-
-      {/* Company/Business info */}
-      {contact.company && (
-        <InlineStack gap="200" blockAlign="center">
-          <Icon source={CollectionIcon} tone="subdued" />
-          <Text as="span" variant="bodyMd">
-            {contact.company}
-          </Text>
-        </InlineStack>
-      )}
-
-      {/* Role */}
-      {contact.role && (
-        <Text as="p" variant="bodyMd" tone="subdued">
-          {contact.role}
-        </Text>
-      )}
-
-      {/* Contact details */}
-      <BlockStack gap="100">
-        {contact.email && (
-          <InlineStack gap="200" blockAlign="center">
-            <Icon source={EmailIcon} tone="subdued" />
-            <Text as="span" variant="bodyMd">
-              {contact.email}
-            </Text>
-            {variant === 'modal' && (
-              <Button
-                size="micro"
-                icon={EditIcon}
-                onClick={() => handleCopy(contact.email, 'email')}
-                disabled={copiedField === 'email'}
-              >
-                {copiedField === 'email' ? 'Copied!' : 'Copy'}
-              </Button>
-            )}
-          </InlineStack>
         )}
 
-        {contact.phone && (
-          <InlineStack gap="200" blockAlign="center">
-            <Icon source={PhoneIcon} tone="subdued" />
-            <Text as="span" variant="bodyMd">
-              {contact.phone}
-            </Text>
-            {variant === 'modal' && (
-              <Button
-                size="micro"
-                icon={EditIcon}
-                onClick={() => handleCopy(contact.phone, 'phone')}
-                disabled={copiedField === 'phone'}
-              >
-                {copiedField === 'phone' ? 'Copied!' : 'Copy'}
-              </Button>
-            )}
-          </InlineStack>
-        )}
-
-        {contact.mobile && contact.mobile !== contact.phone && (
-          <InlineStack gap="200" blockAlign="center">
-            <Icon source={PhoneIcon} tone="subdued" />
-            <Text as="span" variant="bodyMd">
-              {contact.mobile} (Mobile)
-            </Text>
-            {variant === 'modal' && (
-              <Button
-                size="micro"
-                icon={EditIcon}
-                onClick={() => handleCopy(contact.mobile, 'mobile')}
-                disabled={copiedField === 'mobile'}
-              >
-                {copiedField === 'mobile' ? 'Copied!' : 'Copy'}
-              </Button>
-            )}
-          </InlineStack>
-        )}
-      </BlockStack>
-
-      {/* Business points of contact */}
-      {contact.type === 'BUSINESS' && contact.pointsOfContact && contact.pointsOfContact.length > 0 && (
-        <BlockStack gap="200">
-          <Text as="h4" variant="headingSm" fontWeight="semibold">
-            Points of Contact
-          </Text>
-          {contact.pointsOfContact.map((point, index) => (
-            <Card key={index} sectioned>
-              <BlockStack gap="100">
-                {point.name && (
-                  <Text as="p" variant="bodyMd" fontWeight="medium">
-                    {point.name}
-                  </Text>
-                )}
-                {point.phone && (
-                  <InlineStack gap="200" blockAlign="center">
-                    <Icon source={PhoneIcon} tone="subdued" />
-                    <Text as="span" variant="bodyMd">
-                      {point.phone}
-                    </Text>
-                    {variant === 'modal' && (
-                      <Button
-                        size="micro"
-                        icon={EditIcon}
-                        onClick={() => handleCopy(point.phone, `point-phone-${index}`)}
-                        disabled={copiedField === `point-phone-${index}`}
-                      >
-                        {copiedField === `point-phone-${index}` ? 'Copied!' : 'Copy'}
-                      </Button>
-                    )}
-                  </InlineStack>
-                )}
-                {point.email && (
+        {/* Contact details */}
+        <div style={{ marginTop: '20px' }}>
+          <BlockStack gap="300">
+            {contact.email && (
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                backdropFilter: 'blur(10px)'
+              }}>
+                <InlineStack align="space-between" blockAlign="center">
                   <InlineStack gap="200" blockAlign="center">
                     <Icon source={EmailIcon} tone="subdued" />
-                    <Text as="span" variant="bodyMd">
-                      {point.email}
+                    <Text as="span" variant="bodyMd" style={{ color: 'white' }}>
+                      {contact.email}
                     </Text>
-                    {variant === 'modal' && (
-                      <Button
-                        size="micro"
-                        icon={EditIcon}
-                        onClick={() => handleCopy(point.email, `point-email-${index}`)}
-                        disabled={copiedField === `point-email-${index}`}
-                      >
-                        {copiedField === `point-email-${index}` ? 'Copied!' : 'Copy'}
-                      </Button>
-                    )}
                   </InlineStack>
-                )}
-              </BlockStack>
-            </Card>
-          ))}
-        </BlockStack>
-      )}
+                    {variant === 'modal' && (
+                      <CopyButton text={contact.email} fieldName="email" />
+                    )}
+                </InlineStack>
+              </div>
+            )}
 
-      {/* Memo */}
-      {contact.memo && (
-        <BlockStack gap="100">
-          <Text as="h4" variant="headingSm" fontWeight="semibold">
-            Notes
-          </Text>
-          <Text as="p" variant="bodyMd">
-            {contact.memo}
-          </Text>
-        </BlockStack>
-      )}
-    </BlockStack>
+            {contact.phone && (
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                backdropFilter: 'blur(10px)'
+              }}>
+                <InlineStack align="space-between" blockAlign="center">
+                  <InlineStack gap="200" blockAlign="center">
+                    <Icon source={PhoneIcon} tone="subdued" />
+                    <Text as="span" variant="bodyMd" style={{ color: 'white' }}>
+                      {contact.phone}
+                    </Text>
+                  </InlineStack>
+                    {variant === 'modal' && (
+                      <CopyButton text={contact.phone} fieldName="phone" />
+                    )}
+                </InlineStack>
+              </div>
+            )}
+
+            {contact.mobile && contact.mobile !== contact.phone && (
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                backdropFilter: 'blur(10px)'
+              }}>
+                <InlineStack align="space-between" blockAlign="center">
+                  <InlineStack gap="200" blockAlign="center">
+                    <Icon source={PhoneIcon} tone="subdued" />
+                    <Text as="span" variant="bodyMd" style={{ color: 'white' }}>
+                      {contact.mobile} (Mobile)
+                    </Text>
+                  </InlineStack>
+                    {variant === 'modal' && (
+                      <CopyButton text={contact.mobile} fieldName="mobile" />
+                    )}
+                </InlineStack>
+              </div>
+            )}
+          </BlockStack>
+        </div>
+
+        {/* Business points of contact */}
+        {contact.type === 'BUSINESS' && contact.pointsOfContact && contact.pointsOfContact.length > 0 && (
+          <div style={{ marginTop: '20px' }}>
+            <Text as="h4" variant="headingSm" fontWeight="semibold" style={{ color: 'white', marginBottom: '12px' }}>
+              Points of Contact
+            </Text>
+            <BlockStack gap="200">
+              {contact.pointsOfContact.map((point, index) => (
+                <div key={index} style={{
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  <BlockStack gap="200">
+                    {point.name && (
+                      <Text as="p" variant="bodyMd" fontWeight="medium" style={{ color: 'white', margin: 0 }}>
+                        {point.name}
+                      </Text>
+                    )}
+                    {point.phone && (
+                      <InlineStack align="space-between" blockAlign="center">
+                        <InlineStack gap="200" blockAlign="center">
+                          <Icon source={PhoneIcon} tone="subdued" />
+                          <Text as="span" variant="bodyMd" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                            {point.phone}
+                          </Text>
+                        </InlineStack>
+                        {variant === 'modal' && (
+                          <CopyButton text={point.phone} fieldName={`point-phone-${index}`} />
+                        )}
+                      </InlineStack>
+                    )}
+                    {point.email && (
+                      <InlineStack align="space-between" blockAlign="center">
+                        <InlineStack gap="200" blockAlign="center">
+                          <Icon source={EmailIcon} tone="subdued" />
+                          <Text as="span" variant="bodyMd" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                            {point.email}
+                          </Text>
+                        </InlineStack>
+                        {variant === 'modal' && (
+                          <CopyButton text={point.email} fieldName={`point-email-${index}`} />
+                        )}
+                      </InlineStack>
+                    )}
+                  </BlockStack>
+                </div>
+              ))}
+            </BlockStack>
+          </div>
+        )}
+
+        {/* Memo */}
+        {contact.memo && (
+          <div style={{ marginTop: '20px' }}>
+            <Text as="h4" variant="headingSm" fontWeight="semibold" style={{ color: 'white', marginBottom: '8px' }}>
+              Notes
+            </Text>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              backdropFilter: 'blur(10px)'
+            }}>
+              <Text as="p" variant="bodyMd" style={{ color: 'rgba(255, 255, 255, 0.9)', margin: 0 }}>
+                {contact.memo}
+              </Text>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 
   // Tooltip variant
@@ -286,17 +353,23 @@ const ContactCard = ({
     <Modal
       open={isVisible}
       onClose={onClose}
-      title={getDisplayName()}
-      size="medium"
-      primaryAction={{
-        content: 'Close',
-        onAction: onClose
-      }}
+      title=""
+      size="large"
+      primaryAction={onEdit ? {
+        content: 'Edit Contact',
+        icon: EditIcon,
+        onAction: onEdit
+      } : undefined}
+      secondaryActions={[
+        {
+          content: 'Close',
+          icon: XIcon,
+          onAction: onClose
+        }
+      ]}
     >
       <Modal.Section>
-        <Card sectioned>
-          {renderContactInfo()}
-        </Card>
+        {renderContactInfo()}
       </Modal.Section>
     </Modal>
   );
