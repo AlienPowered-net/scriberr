@@ -106,217 +106,189 @@ const ContactCard = ({
   // Render contact info section
   const renderContactInfo = () => (
     <div style={{
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      borderRadius: '16px',
+      background: 'white',
+      borderRadius: '12px',
       padding: '24px',
-      color: 'white',
-      position: 'relative',
-      overflow: 'hidden'
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+      maxWidth: '400px',
+      margin: '0 auto'
     }}>
-      {/* Decorative background pattern */}
-      <div style={{
-        position: 'absolute',
-        top: '-50px',
-        right: '-50px',
-        width: '200px',
-        height: '200px',
-        background: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: '50%',
-        zIndex: 0
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: '-30px',
-        left: '-30px',
-        width: '150px',
-        height: '150px',
-        background: 'rgba(255, 255, 255, 0.05)',
-        borderRadius: '50%',
-        zIndex: 0
-      }} />
-      
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Header with name and type */}
-        <InlineStack align="space-between" blockAlign="center" wrap={false}>
-          <InlineStack gap="300" blockAlign="center">
-            <div style={{ 
-              borderRadius: '12px', 
-              overflow: 'hidden', 
-              width: '64px', 
-              height: '64px',
-              border: '3px solid rgba(255, 255, 255, 0.3)',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
-            }}>
-              <Avatar initials={getInitials()} size="large" />
-            </div>
-            <BlockStack gap="100">
-              <Text as="h2" variant="headingLg" fontWeight="bold" style={{ color: 'white', margin: 0 }}>
-                {getDisplayName()}
+      {/* Header with avatar and name */}
+      <div style={{ marginBottom: '24px' }}>
+        <InlineStack gap="300" blockAlign="center">
+          <div style={{ 
+            borderRadius: '50%', 
+            overflow: 'hidden', 
+            width: '60px', 
+            height: '60px',
+            border: '2px solid #e1e3e5'
+          }}>
+            <Avatar initials={getInitials()} size="large" />
+          </div>
+          <div>
+            <Text as="h2" variant="headingLg" fontWeight="bold" style={{ margin: 0, color: '#202223' }}>
+              {getDisplayName()}
+            </Text>
+            {contact.role && (
+              <Text as="p" variant="bodyMd" style={{ color: '#6d7175', margin: '4px 0 0 0' }}>
+                {contact.role}
               </Text>
-              {contact.role && (
-                <Text as="p" variant="bodyMd" style={{ color: 'rgba(255, 255, 255, 0.8)', margin: 0 }}>
-                  {contact.role}
-                </Text>
-              )}
-            </BlockStack>
-          </InlineStack>
-          <Badge tone="info" size="large">
+            )}
+          </div>
+        </InlineStack>
+        <div style={{ marginTop: '12px' }}>
+          <Badge tone={getTypeColor()}>
             {contact.type === 'PERSON' ? 'Person' : 'Business'}
           </Badge>
-        </InlineStack>
-
-        {/* Company/Business info */}
-        {contact.company && (
-          <div style={{ marginTop: '16px' }}>
-            <InlineStack gap="200" blockAlign="center">
-              <Icon source={CollectionIcon} tone="subdued" />
-              <Text as="span" variant="bodyLg" fontWeight="medium" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                {contact.company}
-              </Text>
-            </InlineStack>
-          </div>
-        )}
-
-        {/* Contact details */}
-        <div style={{ marginTop: '20px' }}>
-          <BlockStack gap="300">
-            {contact.email && (
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
-                padding: '12px 16px',
-                backdropFilter: 'blur(10px)'
-              }}>
-                <InlineStack align="space-between" blockAlign="center">
-                  <InlineStack gap="200" blockAlign="center">
-                    <Icon source={EmailIcon} tone="subdued" />
-                    <Text as="span" variant="bodyMd" style={{ color: 'white' }}>
-                      {contact.email}
-                    </Text>
-                  </InlineStack>
-                    {variant === 'modal' && (
-                      <CopyButton text={contact.email} fieldName="email" />
-                    )}
-                </InlineStack>
-              </div>
-            )}
-
-            {contact.phone && (
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
-                padding: '12px 16px',
-                backdropFilter: 'blur(10px)'
-              }}>
-                <InlineStack align="space-between" blockAlign="center">
-                  <InlineStack gap="200" blockAlign="center">
-                    <Icon source={PhoneIcon} tone="subdued" />
-                    <Text as="span" variant="bodyMd" style={{ color: 'white' }}>
-                      {contact.phone}
-                    </Text>
-                  </InlineStack>
-                    {variant === 'modal' && (
-                      <CopyButton text={contact.phone} fieldName="phone" />
-                    )}
-                </InlineStack>
-              </div>
-            )}
-
-            {contact.mobile && contact.mobile !== contact.phone && (
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                borderRadius: '8px',
-                padding: '12px 16px',
-                backdropFilter: 'blur(10px)'
-              }}>
-                <InlineStack align="space-between" blockAlign="center">
-                  <InlineStack gap="200" blockAlign="center">
-                    <Icon source={PhoneIcon} tone="subdued" />
-                    <Text as="span" variant="bodyMd" style={{ color: 'white' }}>
-                      {contact.mobile} (Mobile)
-                    </Text>
-                  </InlineStack>
-                    {variant === 'modal' && (
-                      <CopyButton text={contact.mobile} fieldName="mobile" />
-                    )}
-                </InlineStack>
-              </div>
-            )}
-          </BlockStack>
         </div>
+      </div>
 
-        {/* Business points of contact */}
-        {contact.type === 'BUSINESS' && contact.pointsOfContact && contact.pointsOfContact.length > 0 && (
-          <div style={{ marginTop: '20px' }}>
-            <Text as="h4" variant="headingSm" fontWeight="semibold" style={{ color: 'white', marginBottom: '12px' }}>
-              Points of Contact
+      {/* Company Information Section */}
+      {contact.company && (
+        <div style={{ marginBottom: '24px' }}>
+          <Text as="h3" variant="headingSm" fontWeight="semibold" style={{ color: '#202223', marginBottom: '12px' }}>
+            Company Information
+          </Text>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <Icon source={CollectionIcon} tone="subdued" />
+            <Text as="span" variant="bodyMd" style={{ color: '#6d7175' }}>Company</Text>
+            <Text as="span" variant="bodyMd" style={{ color: '#202223', marginLeft: '8px' }}>
+              {contact.company}
             </Text>
-            <BlockStack gap="200">
-              {contact.pointsOfContact.map((point, index) => (
-                <div key={index} style={{
-                  background: 'rgba(255, 255, 255, 0.15)',
-                  borderRadius: '8px',
-                  padding: '16px',
-                  backdropFilter: 'blur(10px)'
-                }}>
-                  <BlockStack gap="200">
-                    {point.name && (
-                      <Text as="p" variant="bodyMd" fontWeight="medium" style={{ color: 'white', margin: 0 }}>
-                        {point.name}
-                      </Text>
-                    )}
-                    {point.phone && (
-                      <InlineStack align="space-between" blockAlign="center">
-                        <InlineStack gap="200" blockAlign="center">
-                          <Icon source={PhoneIcon} tone="subdued" />
-                          <Text as="span" variant="bodyMd" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                            {point.phone}
-                          </Text>
-                        </InlineStack>
-                        {variant === 'modal' && (
-                          <CopyButton text={point.phone} fieldName={`point-phone-${index}`} />
-                        )}
-                      </InlineStack>
-                    )}
-                    {point.email && (
-                      <InlineStack align="space-between" blockAlign="center">
-                        <InlineStack gap="200" blockAlign="center">
-                          <Icon source={EmailIcon} tone="subdued" />
-                          <Text as="span" variant="bodyMd" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                            {point.email}
-                          </Text>
-                        </InlineStack>
-                        {variant === 'modal' && (
-                          <CopyButton text={point.email} fieldName={`point-email-${index}`} />
-                        )}
-                      </InlineStack>
-                    )}
-                  </BlockStack>
-                </div>
-              ))}
-            </BlockStack>
           </div>
-        )}
-
-        {/* Memo */}
-        {contact.memo && (
-          <div style={{ marginTop: '20px' }}>
-            <Text as="h4" variant="headingSm" fontWeight="semibold" style={{ color: 'white', marginBottom: '8px' }}>
-              Notes
-            </Text>
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              borderRadius: '8px',
-              padding: '12px 16px',
-              backdropFilter: 'blur(10px)'
-            }}>
-              <Text as="p" variant="bodyMd" style={{ color: 'rgba(255, 255, 255, 0.9)', margin: 0 }}>
-                {contact.memo}
+          {contact.role && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <Icon source={PersonIcon} tone="subdued" />
+              <Text as="span" variant="bodyMd" style={{ color: '#6d7175' }}>Role</Text>
+              <Text as="span" variant="bodyMd" style={{ color: '#202223', marginLeft: '8px' }}>
+                {contact.role}
               </Text>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+      )}
+
+      {/* Contact Information Section */}
+      <div style={{ marginBottom: '24px' }}>
+        <Text as="h3" variant="headingSm" fontWeight="semibold" style={{ color: '#202223', marginBottom: '12px' }}>
+          Contact Information
+        </Text>
+        <BlockStack gap="200">
+          {contact.email && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Icon source={EmailIcon} tone="subdued" />
+                <Text as="span" variant="bodyMd" style={{ color: '#202223' }}>
+                  {contact.email}
+                </Text>
+              </div>
+              {variant === 'modal' && (
+                <CopyButton text={contact.email} fieldName="email" />
+              )}
+            </div>
+          )}
+
+          {contact.phone && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Icon source={PhoneIcon} tone="subdued" />
+                <Text as="span" variant="bodyMd" style={{ color: '#202223' }}>
+                  {contact.phone}
+                </Text>
+              </div>
+              {variant === 'modal' && (
+                <CopyButton text={contact.phone} fieldName="phone" />
+              )}
+            </div>
+          )}
+
+          {contact.mobile && contact.mobile !== contact.phone && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Icon source={PhoneIcon} tone="subdued" />
+                <Text as="span" variant="bodyMd" style={{ color: '#202223' }}>
+                  {contact.mobile} (Mobile)
+                </Text>
+              </div>
+              {variant === 'modal' && (
+                <CopyButton text={contact.mobile} fieldName="mobile" />
+              )}
+            </div>
+          )}
+        </BlockStack>
       </div>
+
+      {/* Business points of contact */}
+      {contact.type === 'BUSINESS' && contact.pointsOfContact && contact.pointsOfContact.length > 0 && (
+        <div style={{ marginBottom: '24px' }}>
+          <Text as="h3" variant="headingSm" fontWeight="semibold" style={{ color: '#202223', marginBottom: '12px' }}>
+            Points of Contact
+          </Text>
+          <BlockStack gap="200">
+            {contact.pointsOfContact.map((point, index) => (
+              <div key={index} style={{
+                background: '#f6f6f7',
+                borderRadius: '8px',
+                padding: '12px',
+                border: '1px solid #e1e3e5'
+              }}>
+                <BlockStack gap="200">
+                  {point.name && (
+                    <Text as="p" variant="bodyMd" fontWeight="medium" style={{ color: '#202223', margin: 0 }}>
+                      {point.name}
+                    </Text>
+                  )}
+                  {point.phone && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Icon source={PhoneIcon} tone="subdued" />
+                        <Text as="span" variant="bodyMd" style={{ color: '#6d7175' }}>
+                          {point.phone}
+                        </Text>
+                      </div>
+                      {variant === 'modal' && (
+                        <CopyButton text={point.phone} fieldName={`point-phone-${index}`} />
+                      )}
+                    </div>
+                  )}
+                  {point.email && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Icon source={EmailIcon} tone="subdued" />
+                        <Text as="span" variant="bodyMd" style={{ color: '#6d7175' }}>
+                          {point.email}
+                        </Text>
+                      </div>
+                      {variant === 'modal' && (
+                        <CopyButton text={point.email} fieldName={`point-email-${index}`} />
+                      )}
+                    </div>
+                  )}
+                </BlockStack>
+              </div>
+            ))}
+          </BlockStack>
+        </div>
+      )}
+
+      {/* Summary/Memo Section */}
+      {contact.memo && (
+        <div>
+          <Text as="h3" variant="headingSm" fontWeight="semibold" style={{ color: '#202223', marginBottom: '12px' }}>
+            Summary
+          </Text>
+          <div style={{
+            background: '#f6f6f7',
+            borderRadius: '8px',
+            padding: '12px',
+            border: '1px solid #e1e3e5'
+          }}>
+            <Text as="p" variant="bodyMd" style={{ color: '#6d7175', margin: 0 }}>
+              {contact.memo}
+            </Text>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -354,7 +326,7 @@ const ContactCard = ({
       open={isVisible}
       onClose={onClose}
       title=""
-      size="large"
+      size="small"
       primaryAction={onEdit ? {
         content: 'Edit Contact',
         icon: EditIcon,
