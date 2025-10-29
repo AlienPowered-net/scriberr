@@ -533,46 +533,78 @@ function ContactForm({
 export default function ContactsPage() {
   const { folders: initialFolders, contacts: initialContacts, version } = useLoaderData();
   
-  // Helper functions for hover states
-  const handleContactMouseEnter = (e, isPinned, isSelected) => {
-    e.preventDefault();
-    e.stopPropagation();
+  // Add CSS for contact row hover states
+  useEffect(() => {
+    console.log('Injecting contact row hover CSS...');
+    const style = document.createElement('style');
+    style.textContent = `
+      /* Contact row hover states with maximum specificity */
+      .Polaris-ResourceList__ItemWrapper div[data-contact-row].contact-row:hover {
+        background-color: #f1f1f1 !important;
+        border: 1px solid #dedede !important;
+        border-radius: 8px !important;
+      }
+      
+      .Polaris-ResourceList__ItemWrapper div[data-contact-row].contact-row.pinned:hover {
+        background-color: #d5ebff !important;
+        border: 1px solid #007bff !important;
+        border-radius: 8px !important;
+      }
+      
+      .Polaris-ResourceList__ItemWrapper div[data-contact-row].contact-row.selected:hover {
+        background-color: #ffe7d5 !important;
+        border: 1px solid #ff8c00 !important;
+        border-radius: 8px !important;
+      }
+      
+      /* Additional selectors for different Polaris structures */
+      .Polaris-ResourceList .Polaris-ResourceList__ItemWrapper .Polaris-ResourceList__Item div[data-contact-row].contact-row:hover {
+        background-color: #f1f1f1 !important;
+        border: 1px solid #dedede !important;
+        border-radius: 8px !important;
+      }
+      
+      .Polaris-ResourceList .Polaris-ResourceList__ItemWrapper .Polaris-ResourceList__Item div[data-contact-row].contact-row.pinned:hover {
+        background-color: #d5ebff !important;
+        border: 1px solid #007bff !important;
+        border-radius: 8px !important;
+      }
+      
+      .Polaris-ResourceList .Polaris-ResourceList__ItemWrapper .Polaris-ResourceList__Item div[data-contact-row].contact-row.selected:hover {
+        background-color: #ffe7d5 !important;
+        border: 1px solid #ff8c00 !important;
+        border-radius: 8px !important;
+      }
+      
+      /* Even more specific selectors */
+      div[data-contact-row].contact-row:hover {
+        background-color: #f1f1f1 !important;
+        border: 1px solid #dedede !important;
+        border-radius: 8px !important;
+      }
+      
+      div[data-contact-row].contact-row.pinned:hover {
+        background-color: #d5ebff !important;
+        border: 1px solid #007bff !important;
+        border-radius: 8px !important;
+      }
+      
+      div[data-contact-row].contact-row.selected:hover {
+        background-color: #ffe7d5 !important;
+        border: 1px solid #ff8c00 !important;
+        border-radius: 8px !important;
+      }
+    `;
+    document.head.appendChild(style);
+    console.log('Contact row hover CSS injected successfully');
     
-    const contactRow = e.currentTarget;
-    
-    if (isPinned) {
-      contactRow.style.setProperty('background-color', '#d5ebff', 'important');
-      contactRow.style.setProperty('border', '1px solid #007bff', 'important');
-      contactRow.style.setProperty('border-radius', '8px', 'important');
-    } else if (isSelected) {
-      contactRow.style.setProperty('background-color', '#ffe7d5', 'important');
-      contactRow.style.setProperty('border', '1px solid #ff8c00', 'important');
-      contactRow.style.setProperty('border-radius', '8px', 'important');
-    } else {
-      contactRow.style.setProperty('background-color', '#f1f1f1', 'important');
-      contactRow.style.setProperty('border', '1px solid #dedede', 'important');
-      contactRow.style.setProperty('border-radius', '8px', 'important');
-    }
-  };
-
-  const handleContactMouseLeave = (e, isPinned, isSelected) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const contactRow = e.currentTarget;
-    
-    // Reset to original styles
-    if (isPinned) {
-      contactRow.style.setProperty('background-color', '#f0f8ff', 'important');
-      contactRow.style.setProperty('border', '1px solid #007bff', 'important');
-    } else if (isSelected) {
-      contactRow.style.setProperty('background-color', '#fffbf8', 'important');
-      contactRow.style.setProperty('border', '1px solid #ff8c00', 'important');
-    } else {
-      contactRow.style.setProperty('background-color', 'transparent', 'important');
-      contactRow.style.setProperty('border', '1px solid transparent', 'important');
-    }
-  };
+    return () => {
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+        console.log('Contact row hover CSS removed');
+      }
+    };
+  }, []);
   
   // State management
   const [folders, setFolders] = useState(initialFolders || []);
@@ -2246,8 +2278,6 @@ export default function ContactsPage() {
                                     transition: 'all 0.2s ease',
                                     cursor: 'pointer'
                                   }}
-                                  onMouseEnter={(e) => handleContactMouseEnter(e, !!pinnedAt, isContactSelected)}
-                                  onMouseLeave={(e) => handleContactMouseLeave(e, !!pinnedAt, isContactSelected)}
                                 >
                                   <ResourceItem
                                     id={id}
