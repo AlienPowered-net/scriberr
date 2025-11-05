@@ -83,6 +83,12 @@ export const loader = async ({ request }) => {
 export default function HomePage() {
   const { folders, notes, totalFolders, totalNotes, version } = useLoaderData();
   const navigate = useNavigate();
+  const [showUpgradeBanner, setShowUpgradeBanner] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('scriberr-upgrade-banner-dismissed') !== 'true';
+    }
+    return true;
+  });
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -134,6 +140,63 @@ export default function HomePage() {
     <Page title="Welcome to Scriberr" subtitle={`Version ${version}`}>
       <div style={{ paddingBottom: "80px" }}>
         <Layout>
+        {/* Upgrade Banner */}
+        {showUpgradeBanner && (
+          <Layout.Section>
+            <Card>
+              <div style={{
+                background: 'linear-gradient(135deg, #008060 0%, #007050 100%)',
+                borderRadius: '8px',
+                padding: '24px',
+                color: 'white'
+              }}>
+                <BlockStack gap="300">
+                  <InlineStack align="space-between" blockAlign="start">
+                    <BlockStack gap="200">
+                      <Text as="h2" variant="headingMd" fontWeight="bold" style={{ color: 'white' }}>
+                        ⚡ Upgrade to Pro Plan
+                      </Text>
+                      <Text as="p" variant="bodyMd" style={{ color: 'rgba(255, 255, 255, 0.95)' }}>
+                        Unlock unlimited notes, advanced features, priority support, and more storage.
+                      </Text>
+                      <InlineStack gap="300" blockAlign="center">
+                        <Text as="span" variant="headingMd" fontWeight="bold" style={{ color: 'white' }}>
+                          $19.99/month
+                        </Text>
+                        <Text as="span" variant="bodySm" style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
+                          • Unlimited notes • 25GB storage • Advanced search
+                        </Text>
+                      </InlineStack>
+                    </BlockStack>
+                    <Button
+                      variant="primary"
+                      tone="inverse"
+                      url="/app/settings"
+                      size="large"
+                    >
+                      Upgrade Now
+                    </Button>
+                  </InlineStack>
+                  <Button
+                    variant="plain"
+                    tone="inverse"
+                    onClick={() => {
+                      setShowUpgradeBanner(false);
+                      if (typeof window !== 'undefined') {
+                        localStorage.setItem('scriberr-upgrade-banner-dismissed', 'true');
+                      }
+                    }}
+                    size="slim"
+                    style={{ alignSelf: 'flex-end', marginTop: '-8px' }}
+                  >
+                    Dismiss
+                  </Button>
+                </BlockStack>
+              </div>
+            </Card>
+          </Layout.Section>
+        )}
+
         {/* Setup Guide */}
         <Layout.Section>
           <SetupGuide 
