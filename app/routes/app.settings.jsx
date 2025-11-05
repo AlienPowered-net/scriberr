@@ -14,6 +14,7 @@ import {
   TextField,
   Checkbox,
   Icon,
+  Grid,
 } from "@shopify/polaris";
 import { DeleteIcon } from "@shopify/polaris-icons";
 import { useState, useEffect } from "react";
@@ -193,49 +194,51 @@ export default function Settings() {
                 Choose the subscription plan that best fits your needs.
               </Text>
 
-              <InlineStack gap="400" align="stretch">
+              <Grid>
                 {subscriptionPlans.map((plan) => (
-                  <Card key={plan.id} sectioned style={{ flex: 1 }}>
-                    <BlockStack gap="300">
-                      <BlockStack gap="100">
-                        <InlineStack gap="200" align="center">
-                          <Text as="h3" variant="headingSm">
-                            {plan.name}
-                          </Text>
-                          {selectedSubscription === plan.id && (
-                            <Badge tone="success">Current Plan</Badge>
-                          )}
-                        </InlineStack>
-                        <Text as="p" variant="headingMd" tone="accent">
-                          {plan.price}
-                        </Text>
-                      </BlockStack>
-                      
-                      <Text as="p" variant="bodyMd" tone="subdued">
-                        {plan.description}
-                      </Text>
-                      
-                      <List type="bullet">
-                        {plan.features.map((feature, index) => (
-                          <List.Item key={index}>
-                            <Text as="span" variant="bodyMd">
-                              {feature}
+                  <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 6, lg: 6, xl: 6 }} key={plan.id}>
+                    <Card sectioned>
+                      <BlockStack gap="300">
+                        <BlockStack gap="100">
+                          <InlineStack gap="200" align="center">
+                            <Text as="h3" variant="headingSm">
+                              {plan.name}
                             </Text>
-                          </List.Item>
-                        ))}
-                      </List>
+                            {selectedSubscription === plan.id && (
+                              <Badge tone="success">Current Plan</Badge>
+                            )}
+                          </InlineStack>
+                          <Text as="p" variant="headingMd" tone="accent">
+                            {plan.price}
+                          </Text>
+                        </BlockStack>
+                        
+                        <Text as="p" variant="bodyMd" tone="subdued">
+                          {plan.description}
+                        </Text>
+                        
+                        <List type="bullet">
+                          {plan.features.map((feature, index) => (
+                            <List.Item key={index}>
+                              <Text as="span" variant="bodyMd">
+                                {feature}
+                              </Text>
+                            </List.Item>
+                          ))}
+                        </List>
 
-                      <Button
-                        variant={selectedSubscription === plan.id ? "primary" : "secondary"}
-                        onClick={() => setSelectedSubscription(plan.id)}
-                        fullWidth
-                      >
-                        {selectedSubscription === plan.id ? "Current Plan" : "Select Plan"}
-                      </Button>
-                    </BlockStack>
-                  </Card>
+                        <Button
+                          variant={selectedSubscription === plan.id ? "primary" : "secondary"}
+                          onClick={() => setSelectedSubscription(plan.id)}
+                          fullWidth
+                        >
+                          {selectedSubscription === plan.id ? "Current Plan" : "Select Plan"}
+                        </Button>
+                      </BlockStack>
+                    </Card>
+                  </Grid.Cell>
                 ))}
-              </InlineStack>
+              </Grid>
 
               <Banner tone="info">
                 <Text as="p" variant="bodyMd">
