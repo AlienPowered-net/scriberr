@@ -770,7 +770,7 @@ export default function ContactsPage() {
   
   // Selection and bulk actions state
   const [selectedContacts, setSelectedContacts] = useState([]);
-  const [selectedTagFilter, setSelectedTagFilter] = useState(null);
+  const [selectedTagFilter, setSelectedTagFilter] = useState([]);
   const [tagPopoverActive, setTagPopoverActive] = useState({});
   const [showTagsSection, setShowTagsSection] = useState(false);
   const [selectedTags, setSelectedTags] = useState([]);
@@ -839,11 +839,15 @@ export default function ContactsPage() {
     const matchesTags = selectedTags.length === 0 || 
       (contact.tags && selectedTags.every(tag => contact.tags.includes(tag)));
     
-    // Tag filter from clicking tags
-    const matchesTagFilter = !selectedTagFilter || 
-      (selectedTagFilter === 'Person' && contact.type === 'PERSON') ||
-      (selectedTagFilter === 'Business' && contact.type === 'BUSINESS') ||
-      (contact.tags && contact.tags.includes(selectedTagFilter));
+    // Tag filter from clicking tags - now supports multiple tags
+    const matchesTagFilter = selectedTagFilter.length === 0 || 
+      selectedTagFilter.every(filterTag => {
+        // Handle Person/Business type filters
+        if (filterTag === 'Person' && contact.type === 'PERSON') return true;
+        if (filterTag === 'Business' && contact.type === 'BUSINESS') return true;
+        // Handle regular tag filters
+        return contact.tags && contact.tags.includes(filterTag);
+      });
     
     return matchesFolder && matchesSearch && matchesTags && matchesTagFilter;
   }).sort((a, b) => {
@@ -855,6 +859,19 @@ export default function ContactsPage() {
     }
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
+
+  // Helper function to toggle tag filter
+  const toggleTagFilter = (tag) => {
+    setSelectedTagFilter(prev => {
+      if (prev.includes(tag)) {
+        // Remove tag if already selected
+        return prev.filter(t => t !== tag);
+      } else {
+        // Add tag if not selected
+        return [...prev, tag];
+      }
+    });
+  };
 
   // DnD sensors
   const sensors = useSensors(
@@ -2250,14 +2267,23 @@ export default function ContactsPage() {
                       </div>
 
                       {/* Tag Filter Badge */}
-                      {selectedTagFilter && (
+                      {selectedTagFilter.length > 0 && (
                         <div style={{ padding: '8px 16px', backgroundColor: '#f6f6f7', borderBottom: '1px solid #e1e3e5' }}>
-                          <InlineStack gap="200" align="start">
+                          <InlineStack gap="200" align="center">
                             <Text variant="bodySm" as="span">Filtering by tag:</Text>
-                            <Badge tone="info">{selectedTagFilter}</Badge>
+                            <InlineStack gap="100" wrap={true}>
+                              {selectedTagFilter.map((tag, index) => (
+                                <Badge 
+                                  key={index} 
+                                  tone={tag === 'Person' || tag === 'Business' ? (tag === 'Person' ? 'info' : 'success') : 'info'}
+                                >
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </InlineStack>
                             <Button
                               size="slim"
-                              onClick={() => setSelectedTagFilter(null)}
+                              onClick={() => setSelectedTagFilter([])}
                             >
                               Clear filter
                             </Button>
@@ -2374,7 +2400,7 @@ export default function ContactsPage() {
                                       <div 
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          setSelectedTagFilter(type === 'PERSON' ? 'Person' : 'Business');
+                                          toggleTagFilter(type === 'PERSON' ? 'Person' : 'Business');
                                         }}
                                         className="tag-clickable"
                                       >
@@ -2387,7 +2413,7 @@ export default function ContactsPage() {
                                           key={index}
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            setSelectedTagFilter(tag);
+                                            toggleTagFilter(tag);
                                           }}
                                           className="tag-clickable"
                                         >
@@ -2422,7 +2448,7 @@ export default function ContactsPage() {
                                                   key={index}
                                                   onClick={(e) => {
                                                     e.stopPropagation();
-                                                    setSelectedTagFilter(tag);
+                                                    toggleTagFilter(tag);
                                                     setTagPopoverActive(prev => ({ ...prev, [id]: false }));
                                                   }}
                                                   className="tag-clickable"
