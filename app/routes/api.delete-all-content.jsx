@@ -20,16 +20,28 @@ export async function action({ request }) {
       where: { shopId },
     });
 
-    // Delete all folders for this shop
+    // Delete all folders (notes folders) for this shop
     const foldersResult = await prisma.folder.deleteMany({
+      where: { shopId },
+    });
+
+    // Delete all contacts for this shop
+    const contactsResult = await prisma.contact.deleteMany({
+      where: { shopId },
+    });
+
+    // Delete all contact folders for this shop
+    const contactFoldersResult = await prisma.contactFolder.deleteMany({
       where: { shopId },
     });
     
     return json({ 
       success: true, 
-      message: `Successfully deleted all content: ${foldersResult.count} folders and ${notesResult.count} notes`,
+      message: `Successfully deleted all content: ${foldersResult.count} notes folders, ${notesResult.count} notes, ${contactFoldersResult.count} contact folders, and ${contactsResult.count} contacts`,
       deletedFoldersCount: foldersResult.count,
-      deletedNotesCount: notesResult.count
+      deletedNotesCount: notesResult.count,
+      deletedContactFoldersCount: contactFoldersResult.count,
+      deletedContactsCount: contactsResult.count
     });
   } catch (error) {
     console.error("Error deleting all content:", error);

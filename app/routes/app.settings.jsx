@@ -34,6 +34,8 @@ export default function Settings() {
   // Modal states for delete confirmations
   const [showDeleteNotesModal, setShowDeleteNotesModal] = useState(false);
   const [showDeleteFoldersModal, setShowDeleteFoldersModal] = useState(false);
+  const [showDeleteContactFoldersModal, setShowDeleteContactFoldersModal] = useState(false);
+  const [showDeleteContactsModal, setShowDeleteContactsModal] = useState(false);
   const [showDeleteContentModal, setShowDeleteContentModal] = useState(false);
   const [confirmationText, setConfirmationText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -64,6 +66,16 @@ export default function Settings() {
 
   const handleDeleteAllFolders = () => {
     setShowDeleteFoldersModal(true);
+    setConfirmationText("");
+  };
+
+  const handleDeleteAllContactFolders = () => {
+    setShowDeleteContactFoldersModal(true);
+    setConfirmationText("");
+  };
+
+  const handleDeleteAllContacts = () => {
+    setShowDeleteContactsModal(true);
     setConfirmationText("");
   };
 
@@ -103,6 +115,10 @@ export default function Settings() {
           setShowDeleteNotesModal(false);
         } else if (endpoint === "delete-all-folders") {
           setShowDeleteFoldersModal(false);
+        } else if (endpoint === "delete-all-contact-folders") {
+          setShowDeleteContactFoldersModal(false);
+        } else if (endpoint === "delete-all-contacts") {
+          setShowDeleteContactsModal(false);
         } else if (endpoint === "delete-all-content") {
           setShowDeleteContentModal(false);
         }
@@ -125,6 +141,8 @@ export default function Settings() {
   const closeModal = () => {
     setShowDeleteNotesModal(false);
     setShowDeleteFoldersModal(false);
+    setShowDeleteContactFoldersModal(false);
+    setShowDeleteContactsModal(false);
     setShowDeleteContentModal(false);
     setConfirmationText("");
     setAlertMessage("");
@@ -187,7 +205,7 @@ export default function Settings() {
                 Content Management
               </Text>
               <Text as="p" variant="bodyMd" tone="subdued">
-                Manage your notes and folders. These actions cannot be undone.
+                Manage your notes, folders, contacts, and contact folders. These actions cannot be undone.
               </Text>
               
               <Banner tone="warning">
@@ -196,26 +214,59 @@ export default function Settings() {
                 </Text>
               </Banner>
 
-              <ButtonGroup>
-                <Button 
-                  tone="critical" 
-                  onClick={handleDeleteAllNotes}
-                >
-                  Delete All Notes
-                </Button>
-                <Button 
-                  tone="critical" 
-                  onClick={handleDeleteAllFolders}
-                >
-                  Delete All Folders
-                </Button>
-                <Button 
-                  tone="critical" 
-                  onClick={handleDeleteAllContent}
-                >
-                  Delete All Content
-                </Button>
-              </ButtonGroup>
+              <BlockStack gap="300">
+                <Text as="h3" variant="headingSm">
+                  Notes
+                </Text>
+                <ButtonGroup>
+                  <Button 
+                    tone="critical" 
+                    onClick={handleDeleteAllNotes}
+                  >
+                    Delete All Notes
+                  </Button>
+                  <Button 
+                    tone="critical" 
+                    onClick={handleDeleteAllFolders}
+                  >
+                    Delete All Notes Folders
+                  </Button>
+                </ButtonGroup>
+              </BlockStack>
+
+              <BlockStack gap="300">
+                <Text as="h3" variant="headingSm">
+                  Contacts
+                </Text>
+                <ButtonGroup>
+                  <Button 
+                    tone="critical" 
+                    onClick={handleDeleteAllContacts}
+                  >
+                    Delete All Contacts
+                  </Button>
+                  <Button 
+                    tone="critical" 
+                    onClick={handleDeleteAllContactFolders}
+                  >
+                    Delete All Contact Folders
+                  </Button>
+                </ButtonGroup>
+              </BlockStack>
+
+              <BlockStack gap="300">
+                <Text as="h3" variant="headingSm">
+                  Everything
+                </Text>
+                <ButtonGroup>
+                  <Button 
+                    tone="critical" 
+                    onClick={handleDeleteAllContent}
+                  >
+                    Delete All Content
+                  </Button>
+                </ButtonGroup>
+              </BlockStack>
             </BlockStack>
           </div>
         </Card>
@@ -406,14 +457,14 @@ export default function Settings() {
         </Modal.Section>
       </Modal>
 
-      {/* Delete All Folders Confirmation Modal */}
+      {/* Delete All Notes Folders Confirmation Modal */}
       <Modal
         open={showDeleteFoldersModal}
         onClose={closeModal}
-        title="Delete All Folders"
+        title="Delete All Notes Folders"
         primaryAction={{
-          content: 'Delete All Folders',
-          onAction: () => performDelete("delete-all-folders", "delete all folders"),
+          content: 'Delete All Notes Folders',
+          onAction: () => performDelete("delete-all-folders", "delete all notes folders"),
           destructive: true,
           loading: isDeleting,
           disabled: confirmationText !== "DELETE" || isDeleting
@@ -430,7 +481,93 @@ export default function Settings() {
           <BlockStack gap="400">
             <Banner tone="critical">
               <Text as="p" variant="bodyMd">
-                <strong>Warning:</strong> This action will permanently delete ALL folders and ALL notes in your account. This action cannot be undone.
+                <strong>Warning:</strong> This action will permanently delete ALL notes folders and ALL notes in your account. This action cannot be undone.
+              </Text>
+            </Banner>
+            
+            <Text as="p" variant="bodyMd">
+              To confirm this action, please type <strong>DELETE</strong> in the field below:
+            </Text>
+            
+            <TextField
+              label="Confirmation"
+              value={confirmationText}
+              onChange={setConfirmationText}
+              placeholder="Type DELETE to confirm"
+              autoComplete="off"
+            />
+          </BlockStack>
+        </Modal.Section>
+      </Modal>
+
+      {/* Delete All Contact Folders Confirmation Modal */}
+      <Modal
+        open={showDeleteContactFoldersModal}
+        onClose={closeModal}
+        title="Delete All Contact Folders"
+        primaryAction={{
+          content: 'Delete All Contact Folders',
+          onAction: () => performDelete("delete-all-contact-folders", "delete all contact folders"),
+          destructive: true,
+          loading: isDeleting,
+          disabled: confirmationText !== "DELETE" || isDeleting
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: closeModal,
+            disabled: isDeleting
+          },
+        ]}
+      >
+        <Modal.Section>
+          <BlockStack gap="400">
+            <Banner tone="critical">
+              <Text as="p" variant="bodyMd">
+                <strong>Warning:</strong> This action will permanently delete ALL contact folders in your account. Contacts in these folders will be moved to "All Contacts". This action cannot be undone.
+              </Text>
+            </Banner>
+            
+            <Text as="p" variant="bodyMd">
+              To confirm this action, please type <strong>DELETE</strong> in the field below:
+            </Text>
+            
+            <TextField
+              label="Confirmation"
+              value={confirmationText}
+              onChange={setConfirmationText}
+              placeholder="Type DELETE to confirm"
+              autoComplete="off"
+            />
+          </BlockStack>
+        </Modal.Section>
+      </Modal>
+
+      {/* Delete All Contacts Confirmation Modal */}
+      <Modal
+        open={showDeleteContactsModal}
+        onClose={closeModal}
+        title="Delete All Contacts"
+        primaryAction={{
+          content: 'Delete All Contacts',
+          onAction: () => performDelete("delete-all-contacts", "delete all contacts"),
+          destructive: true,
+          loading: isDeleting,
+          disabled: confirmationText !== "DELETE" || isDeleting
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: closeModal,
+            disabled: isDeleting
+          },
+        ]}
+      >
+        <Modal.Section>
+          <BlockStack gap="400">
+            <Banner tone="critical">
+              <Text as="p" variant="bodyMd">
+                <strong>Warning:</strong> This action will permanently delete ALL contacts in your account. This action cannot be undone.
               </Text>
             </Banner>
             
@@ -473,7 +610,7 @@ export default function Settings() {
           <BlockStack gap="400">
             <Banner tone="critical">
               <Text as="p" variant="bodyMd">
-                <strong>Warning:</strong> This action will permanently delete ALL content in your account (all folders and all notes). This action cannot be undone.
+                <strong>Warning:</strong> This action will permanently delete ALL content in your account (all notes folders, all notes, all contact folders, and all contacts). This action cannot be undone.
               </Text>
             </Banner>
             
