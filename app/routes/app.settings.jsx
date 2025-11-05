@@ -20,7 +20,7 @@ import { useState, useEffect } from "react";
 import packageJson from "../../package.json" with { type: "json" };
 
 export default function Settings() {
-  const [selectedSubscription, setSelectedSubscription] = useState("basic");
+  const [selectedSubscription, setSelectedSubscription] = useState("free");
   const version = packageJson.version;
   
   // Onboarding guide preference
@@ -150,9 +150,9 @@ export default function Settings() {
 
   const subscriptionPlans = [
     {
-      id: "basic",
-      name: "Basic Plan",
-      price: "$9.99/month",
+      id: "free",
+      name: "Free Plan",
+      price: "$0/month",
       features: [
         "Up to 100 notes",
         "Basic folder organization",
@@ -174,21 +174,6 @@ export default function Settings() {
         "Export options"
       ],
       description: "Ideal for professionals and teams who need advanced features and more storage capacity."
-    },
-    {
-      id: "enterprise",
-      name: "Enterprise Plan",
-      price: "$49.99/month",
-      features: [
-        "Unlimited everything",
-        "Team collaboration",
-        "24/7 premium support",
-        "Unlimited storage",
-        "Advanced analytics",
-        "Custom integrations",
-        "API access"
-      ],
-      description: "Built for large organizations that need enterprise-grade features, security, and support."
     }
   ];
 
@@ -197,6 +182,72 @@ export default function Settings() {
     <Page title="Settings">
       <div style={{ paddingBottom: "80px" }}>
         <BlockStack gap="500">
+        {/* Subscription Management Section */}
+        <Card>
+          <div style={{ padding: "16px" }}>
+            <BlockStack gap="400">
+              <Text as="h2" variant="headingMd">
+                Subscription Management
+              </Text>
+              <Text as="p" variant="bodyMd" tone="subdued">
+                Choose the subscription plan that best fits your needs.
+              </Text>
+
+              <InlineStack gap="400" align="stretch">
+                {subscriptionPlans.map((plan) => (
+                  <Card key={plan.id} sectioned style={{ flex: 1 }}>
+                    <BlockStack gap="300">
+                      <BlockStack gap="100">
+                        <InlineStack gap="200" align="center">
+                          <Text as="h3" variant="headingSm">
+                            {plan.name}
+                          </Text>
+                          {selectedSubscription === plan.id && (
+                            <Badge tone="success">Current Plan</Badge>
+                          )}
+                        </InlineStack>
+                        <Text as="p" variant="headingMd" tone="accent">
+                          {plan.price}
+                        </Text>
+                      </BlockStack>
+                      
+                      <Text as="p" variant="bodyMd" tone="subdued">
+                        {plan.description}
+                      </Text>
+                      
+                      <List type="bullet">
+                        {plan.features.map((feature, index) => (
+                          <List.Item key={index}>
+                            <Text as="span" variant="bodyMd">
+                              {feature}
+                            </Text>
+                          </List.Item>
+                        ))}
+                      </List>
+
+                      <Button
+                        variant={selectedSubscription === plan.id ? "primary" : "secondary"}
+                        onClick={() => setSelectedSubscription(plan.id)}
+                        fullWidth
+                      >
+                        {selectedSubscription === plan.id ? "Current Plan" : "Select Plan"}
+                      </Button>
+                    </BlockStack>
+                  </Card>
+                ))}
+              </InlineStack>
+
+              <Banner tone="info">
+                <Text as="p" variant="bodyMd">
+                  Note: This is a demo implementation. In a real application, you would integrate with a payment processor and subscription management system.
+                </Text>
+              </Banner>
+            </BlockStack>
+          </div>
+        </Card>
+
+        <Divider />
+
         {/* Content Management Section */}
         <Card>
           <div style={{ padding: "16px" }}>
@@ -273,38 +324,6 @@ export default function Settings() {
 
         <Divider />
 
-        {/* Contacts Management Section */}
-        <Card>
-          <div style={{ padding: "16px" }}>
-            <BlockStack gap="400">
-              <Text as="h2" variant="headingMd">
-                Contact Management
-              </Text>
-              <Text as="p" variant="bodyMd" tone="subdued">
-                Manage your contacts and mentions in the new Contacts section. Create detailed contact cards for people and businesses, organize them in folders, and mention them in your notes.
-              </Text>
-              
-              <Banner tone="info">
-                <Text as="p" variant="bodyMd">
-                  <strong>New Feature:</strong> Custom mentions have been upgraded to a full contact management system. 
-                  Visit the <a href="/app/contacts" style={{ color: '#008060', textDecoration: 'none' }}>Contacts page</a> to manage your contacts and create detailed contact cards.
-                </Text>
-              </Banner>
-
-              <div>
-                <Button 
-                  url="/app/contacts"
-                  variant="primary"
-                >
-                  Go to Contacts
-                </Button>
-              </div>
-            </BlockStack>
-          </div>
-        </Card>
-
-        <Divider />
-
         {/* App Preferences Section */}
         <Card>
           <div style={{ padding: "16px" }}>
@@ -324,72 +343,6 @@ export default function Settings() {
                   onChange={handleOnboardingGuideToggle}
                 />
               </BlockStack>
-            </BlockStack>
-          </div>
-        </Card>
-
-        <Divider />
-
-        {/* Subscription Management Section */}
-        <Card>
-          <div style={{ padding: "16px" }}>
-            <BlockStack gap="400">
-              <Text as="h2" variant="headingMd">
-                Subscription Management
-              </Text>
-              <Text as="p" variant="bodyMd" tone="subdued">
-                Choose the subscription plan that best fits your needs.
-              </Text>
-
-              <BlockStack gap="300">
-                {subscriptionPlans.map((plan) => (
-                  <Card key={plan.id} sectioned>
-                    <BlockStack gap="300">
-                      <InlineStack align="space-between">
-                        <BlockStack gap="100">
-                          <InlineStack gap="200" align="center">
-                            <Text as="h3" variant="headingSm">
-                              {plan.name}
-                            </Text>
-                            {selectedSubscription === plan.id && (
-                              <Badge tone="success">Current Plan</Badge>
-                            )}
-                          </InlineStack>
-                          <Text as="p" variant="headingMd" tone="accent">
-                            {plan.price}
-                          </Text>
-                        </BlockStack>
-                        <Button
-                          variant={selectedSubscription === plan.id ? "primary" : "secondary"}
-                          onClick={() => setSelectedSubscription(plan.id)}
-                        >
-                          {selectedSubscription === plan.id ? "Current Plan" : "Select Plan"}
-                        </Button>
-                      </InlineStack>
-                      
-                      <Text as="p" variant="bodyMd" tone="subdued">
-                        {plan.description}
-                      </Text>
-                      
-                      <List type="bullet">
-                        {plan.features.map((feature, index) => (
-                          <List.Item key={index}>
-                            <Text as="span" variant="bodyMd">
-                              {feature}
-                            </Text>
-                          </List.Item>
-                        ))}
-                      </List>
-                    </BlockStack>
-                  </Card>
-                ))}
-              </BlockStack>
-
-              <Banner tone="info">
-                <Text as="p" variant="bodyMd">
-                  Note: This is a demo implementation. In a real application, you would integrate with a payment processor and subscription management system.
-                </Text>
-              </Banner>
             </BlockStack>
           </div>
         </Card>
