@@ -1598,10 +1598,25 @@ export default function Index() {
     });
   };
 
-  // Handle tag search from tooltip
+  // Handle tag search from tooltip - now supports multiple tags
   const handleTagSearch = (tag) => {
-    setGlobalSearchQuery(`tag:${tag}`);
-    setSelectedTags([tag]);
+    setSelectedTags(prevTags => {
+      if (prevTags.includes(tag)) {
+        // Remove tag if already selected
+        const newTags = prevTags.filter(t => t !== tag);
+        if (newTags.length === 0) {
+          setGlobalSearchQuery("");
+        } else {
+          setGlobalSearchQuery(`tag:${newTags.join(' tag:')}`);
+        }
+        return newTags;
+      } else {
+        // Add tag if not selected
+        const newTags = [...prevTags, tag];
+        setGlobalSearchQuery(`tag:${newTags.join(' tag:')}`);
+        return newTags;
+      }
+    });
     setSelectedFolder(null);
     setSelectedNoteId(null);
     setSelectedNote(null);
@@ -1769,13 +1784,23 @@ export default function Index() {
     // First filter by selected folder
     const folderMatch = selectedFolder ? note.folderId === selectedFolder.id : true;
     
-    // Handle tag filtering
+    // Handle tag filtering - now supports multiple tags
     let globalSearchMatch = true;
     if (globalSearchQuery) {
       if (globalSearchQuery.startsWith('tag:')) {
-        // Tag-specific search
-        const tagName = globalSearchQuery.substring(4).toLowerCase();
-        globalSearchMatch = note.tags && note.tags.some(tag => tag.toLowerCase() === tagName);
+        // Tag-specific search - extract all tags from query like "tag:tag1 tag:tag2"
+        const tagMatches = globalSearchQuery.match(/tag:([^\s]+)/g);
+        if (tagMatches && tagMatches.length > 0) {
+          const tagNames = tagMatches.map(match => match.substring(4).toLowerCase());
+          // Note must have ALL selected tags (AND logic)
+          globalSearchMatch = note.tags && tagNames.every(tagName => 
+            note.tags.some(tag => tag.toLowerCase() === tagName)
+          );
+        } else {
+          // Fallback for single tag (backward compatibility)
+          const tagName = globalSearchQuery.substring(4).toLowerCase();
+          globalSearchMatch = note.tags && note.tags.some(tag => tag.toLowerCase() === tagName);
+        }
       } else {
         // Regular search
         globalSearchMatch = 
@@ -4241,6 +4266,36 @@ export default function Index() {
                   <i className="fas fa-search"></i>
                 </span>
               </div>
+
+              {/* Tag Filter Badge */}
+              {selectedTags.length > 0 && (
+                <div style={{ padding: '8px 16px', backgroundColor: '#f6f6f7', borderBottom: '1px solid #e1e3e5', marginBottom: '16px', borderRadius: '8px' }}>
+                  <InlineStack gap="200" align="start" blockAlign="center">
+                    <Text variant="bodySm" as="span" style={{ display: 'flex', alignItems: 'center', height: '100%' }}>Filtering by tag:</Text>
+                    <InlineStack gap="100" wrap={true} blockAlign="center">
+                      {selectedTags.map((tag, index) => (
+                        <Badge 
+                          key={index} 
+                          tone="info"
+                          style={{ height: '24px', fontSize: '12px', padding: '2px 8px' }}
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </InlineStack>
+                    <Button
+                      size="micro"
+                      onClick={() => {
+                        setSelectedTags([]);
+                        setGlobalSearchQuery("");
+                      }}
+                      style={{ height: '24px', padding: '4px 12px' }}
+                    >
+                      Clear filter
+                    </Button>
+                  </InlineStack>
+                </div>
+              )}
               
               {/* New Note Button */}
               <div style={{ marginTop: "16px" }}>
@@ -4389,11 +4444,10 @@ export default function Index() {
                         onManage={() => setOpenNoteMenu(openNoteMenu === note.id ? null : note.id)}
                         onDelete={() => setShowDeleteNoteConfirm(note.id)}
                         onTagClick={(tag) => {
-                          // Filter notes by tag within current context
+                          // Filter notes by tag within current context - now supports multiple tags
                           // - If in a specific folder: shows notes with that tag in that folder only
                           // - If in All Notes: shows notes with that tag across all folders
-                          console.log('onTagClick called with tag:', tag);
-                          setGlobalSearchQuery(`tag:${tag}`);
+                          handleTagClick(tag);
                         }}
                         onDuplicate={(type) => handleDuplicateFromMenu(note.id, type)}
                         onMove={() => handleMoveFromMenu(note.id)}
@@ -5400,15 +5454,8 @@ export default function Index() {
                     key={index}
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Filter notes by this tag
-                      const tagFilter = `tag:${tag}`;
-                      if (selectedFolder) {
-                        // In a specific folder, show notes with this tag in this folder
-                        setGlobalSearchQuery(tagFilter);
-                      } else {
-                        // In "All Notes", show all notes with this tag
-                        setGlobalSearchQuery(tagFilter);
-                      }
+                      // Filter notes by this tag - now supports multiple tags
+                      handleTagClick(tag);
                       setShowTagPopup(null);
                     }}
                     style={{
