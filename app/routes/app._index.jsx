@@ -140,6 +140,15 @@ export default function HomePage() {
     <Page title="Welcome to Scriberr" subtitle={`Version ${version}`}>
       <div style={{ paddingBottom: "80px" }}>
         <Layout>
+        {/* Setup Guide */}
+        <Layout.Section>
+          <SetupGuide 
+            totalFolders={totalFolders}
+            totalNotes={totalNotes}
+            pinnedNotes={notes.filter(note => note.pinnedAt).length}
+          />
+        </Layout.Section>
+
         {/* Upgrade Banner */}
         {showUpgradeBanner && (
           <Layout.Section>
@@ -196,15 +205,6 @@ export default function HomePage() {
             </Card>
           </Layout.Section>
         )}
-
-        {/* Setup Guide */}
-        <Layout.Section>
-          <SetupGuide 
-            totalFolders={totalFolders}
-            totalNotes={totalNotes}
-            pinnedNotes={notes.filter(note => note.pinnedAt).length}
-          />
-        </Layout.Section>
 
         {/* Onboarding Section */}
         <Layout.Section>

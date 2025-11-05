@@ -197,67 +197,64 @@ export default function Settings() {
               <Grid>
                 {subscriptionPlans.map((plan) => (
                   <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 6, lg: 6, xl: 6 }} key={plan.id}>
-                    <Card 
-                      sectioned
-                      background={selectedSubscription === plan.id ? "bg-surface-success-subdued" : undefined}
-                    >
-                      <div style={{
-                        border: selectedSubscription === plan.id ? '2px solid #008060' : '1px solid #e1e3e5',
-                        borderRadius: '8px',
-                        padding: selectedSubscription === plan.id ? '20px' : '16px',
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column'
-                      }}>
-                        <BlockStack gap="400">
-                          <BlockStack gap="200">
-                            <InlineStack gap="200" align="center">
-                              <Text as="h3" variant="headingMd" fontWeight="semibold">
-                                {plan.name}
-                              </Text>
-                              {selectedSubscription === plan.id && (
-                                <Badge tone="success" size="small">Current Plan</Badge>
-                              )}
-                            </InlineStack>
-                            <BlockStack gap="100">
-                              <Text as="p" variant="headingLg" tone="accent" fontWeight="bold">
-                                {plan.price}
-                              </Text>
-                              {plan.id === "pro" && (
-                                <Badge tone="info" size="small">Most Popular</Badge>
-                              )}
-                            </BlockStack>
-                          </BlockStack>
-                          
-                          <Text as="p" variant="bodyMd" tone="subdued">
-                            {plan.description}
-                          </Text>
-                          
-                          <BlockStack gap="200" style={{ flex: 1 }}>
-                            <Text as="p" variant="bodySm" fontWeight="medium">
-                              Features:
+                    <Card>
+                      <BlockStack 
+                        gap="400"
+                        style={{
+                          border: selectedSubscription === plan.id ? '2px solid #008060' : '1px solid #e1e3e5',
+                          borderRadius: '8px',
+                          padding: '24px',
+                          height: '100%',
+                          backgroundColor: selectedSubscription === plan.id ? '#f0f9f4' : '#ffffff'
+                        }}
+                      >
+                        <BlockStack gap="200">
+                          <InlineStack gap="200" align="center">
+                            <Text as="h3" variant="headingMd" fontWeight="semibold">
+                              {plan.name}
                             </Text>
-                            <List type="bullet">
-                              {plan.features.map((feature, index) => (
-                                <List.Item key={index}>
-                                  <Text as="span" variant="bodyMd">
-                                    {feature}
-                                  </Text>
-                                </List.Item>
-                              ))}
-                            </List>
+                            {selectedSubscription === plan.id && (
+                              <Badge tone="success" size="small">Current Plan</Badge>
+                            )}
+                          </InlineStack>
+                          <BlockStack gap="100">
+                            <Text as="p" variant="headingLg" tone="accent" fontWeight="bold">
+                              {plan.price}
+                            </Text>
+                            {plan.id === "pro" && (
+                              <Badge tone="info" size="small">Most Popular</Badge>
+                            )}
                           </BlockStack>
-
-                          <Button
-                            variant={selectedSubscription === plan.id ? "primary" : "secondary"}
-                            onClick={() => setSelectedSubscription(plan.id)}
-                            fullWidth
-                            size="large"
-                          >
-                            {selectedSubscription === plan.id ? "Current Plan" : "Select Plan"}
-                          </Button>
                         </BlockStack>
-                      </div>
+                        
+                        <Text as="p" variant="bodyMd" tone="subdued">
+                          {plan.description}
+                        </Text>
+                        
+                        <BlockStack gap="200" style={{ flex: 1 }}>
+                          <Text as="p" variant="bodySm" fontWeight="medium">
+                            Features:
+                          </Text>
+                          <List type="bullet">
+                            {plan.features.map((feature, index) => (
+                              <List.Item key={index}>
+                                <Text as="span" variant="bodyMd">
+                                  {feature}
+                                </Text>
+                              </List.Item>
+                            ))}
+                          </List>
+                        </BlockStack>
+
+                        <Button
+                          variant={selectedSubscription === plan.id ? "primary" : "secondary"}
+                          onClick={() => setSelectedSubscription(plan.id)}
+                          fullWidth
+                          size="large"
+                        >
+                          {selectedSubscription === plan.id ? "Current Plan" : "Select Plan"}
+                        </Button>
+                      </BlockStack>
                     </Card>
                   </Grid.Cell>
                 ))}
