@@ -1943,17 +1943,14 @@ export default function ContactsPage() {
                                   <span
                                     key={index}
                                     onClick={() => {
-                                      if (selectedTags.includes(tagData.name)) {
-                                        setSelectedTags(prev => prev.filter(t => t !== tagData.name));
-                                      } else {
-                                        setSelectedTags(prev => [...prev, tagData.name]);
-                                      }
+                                      // Add tag to filter section under search bar
+                                      toggleTagFilter(tagData.name);
                                     }}
                                     style={{
                                       padding: "6px 10px",
-                                      backgroundColor: selectedTags.includes(tagData.name) ? "#e8f5e8" : "#f1f3f4",
-                                      color: selectedTags.includes(tagData.name) ? "#008060" : "#374151",
-                                      border: selectedTags.includes(tagData.name) ? "1px solid #b8e6b8" : "1px solid #e1e3e5",
+                                      backgroundColor: selectedTagFilter.includes(tagData.name) ? "#e8f5e8" : "#f1f3f4",
+                                      color: selectedTagFilter.includes(tagData.name) ? "#008060" : "#374151",
+                                      border: selectedTagFilter.includes(tagData.name) ? "1px solid #b8e6b8" : "1px solid #e1e3e5",
                                       borderRadius: "16px",
                                       fontSize: "12px",
                                       fontWeight: "500",
@@ -3551,17 +3548,14 @@ export default function ContactsPage() {
                           <span
                             key={index}
                             onClick={() => {
-                              if (selectedTags.includes(tagData.name)) {
-                                setSelectedTags(prev => prev.filter(t => t !== tagData.name));
-                              } else {
-                                setSelectedTags(prev => [...prev, tagData.name]);
-                              }
+                              // Add tag to filter section under search bar
+                              toggleTagFilter(tagData.name);
                             }}
                             style={{
                               padding: '6px 10px',
-                              backgroundColor: selectedTags.includes(tagData.name) ? '#e8f5e8' : '#f1f3f4',
-                              color: selectedTags.includes(tagData.name) ? '#008060' : '#374151',
-                              border: selectedTags.includes(tagData.name) ? '1px solid #b8e6b8' : '1px solid #e1e3e5',
+                              backgroundColor: selectedTagFilter.includes(tagData.name) ? '#e8f5e8' : '#f1f3f4',
+                              color: selectedTagFilter.includes(tagData.name) ? '#008060' : '#374151',
+                              border: selectedTagFilter.includes(tagData.name) ? '1px solid #b8e6b8' : '1px solid #e1e3e5',
                               borderRadius: '16px',
                               fontSize: '12px',
                               fontWeight: '500',
