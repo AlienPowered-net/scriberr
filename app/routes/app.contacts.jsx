@@ -2269,21 +2269,23 @@ export default function ContactsPage() {
                       {/* Tag Filter Badge */}
                       {selectedTagFilter.length > 0 && (
                         <div style={{ padding: '8px 16px', backgroundColor: '#f6f6f7', borderBottom: '1px solid #e1e3e5' }}>
-                          <InlineStack gap="200" align="center">
-                            <Text variant="bodySm" as="span">Filtering by tag:</Text>
-                            <InlineStack gap="100" wrap={true}>
+                          <InlineStack gap="200" align="start" blockAlign="center">
+                            <Text variant="bodySm" as="span" style={{ display: 'flex', alignItems: 'center', height: '100%' }}>Filtering by tag:</Text>
+                            <InlineStack gap="100" wrap={true} blockAlign="center">
                               {selectedTagFilter.map((tag, index) => (
                                 <Badge 
                                   key={index} 
                                   tone={tag === 'Person' || tag === 'Business' ? (tag === 'Person' ? 'info' : 'success') : 'info'}
+                                  style={{ height: '24px', fontSize: '12px', padding: '2px 8px' }}
                                 >
                                   {tag}
                                 </Badge>
                               ))}
                             </InlineStack>
                             <Button
-                              size="slim"
+                              size="micro"
                               onClick={() => setSelectedTagFilter([])}
+                              style={{ height: '24px', padding: '4px 12px' }}
                             >
                               Clear filter
                             </Button>
