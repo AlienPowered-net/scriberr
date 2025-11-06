@@ -247,7 +247,7 @@ export default function Settings() {
                             </Text>
                           </BlockStack>
                           
-                          <BlockStack gap="300" style={{ flex: 1 }}>
+                          <BlockStack gap="200" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                             {plan.features.map((feature, index) => (
                               <InlineStack key={index} gap="200" align="start" blockAlign="start" wrap={false}>
                                 <Icon source={CheckSmallIcon} tone="success" />
