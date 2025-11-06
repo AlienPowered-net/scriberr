@@ -2614,37 +2614,16 @@ export default function ContactsPage() {
                             })}
                           </div>
                         ) : (
-                          <div style={{ 
-                            display: "flex", 
-                            flexDirection: "column", 
-                            alignItems: "center", 
-                            justifyContent: "center", 
-                            height: "200px",
-                            textAlign: "center",
-                            padding: "40px"
-                          }}>
-                            <div style={{ 
-                              width: "80px", 
-                              height: "80px", 
-                              borderRadius: "50%", 
-                              backgroundColor: "#f6f6f7", 
-                              display: "flex", 
-                              alignItems: "center", 
-                              justifyContent: "center", 
-                              marginBottom: "16px" 
-                            }}>
-                              <i className="far fa-address-book" style={{ fontSize: "32px", color: "#8c9196" }}></i>
-                            </div>
-                            <Text as="h3" variant="headingMd" style={{ marginBottom: "8px" }}>
-                              No contacts found
-                            </Text>
-                            <Text as="p" variant="bodyMd" tone="subdued" style={{ marginBottom: "16px" }}>
-                              Start building your contact list by adding people and businesses.
-                            </Text>
-                            <Button variant="primary" onClick={() => setShowNewContactForm(true)}>
-                              Create your first contact
-                            </Button>
-                          </div>
+                          <EmptyState
+                            heading="No contacts yet"
+                            action={{
+                              content: "Create your first contact",
+                              onAction: () => setShowNewContactForm(true),
+                            }}
+                            image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+                          >
+                            <p>Start building your contact list by adding people and businesses.</p>
+                          </EmptyState>
                         )}
                       </div>
                     </Card>
@@ -3623,17 +3602,16 @@ export default function ContactsPage() {
                 >
                   <div>
                     {folders.length === 0 ? (
-                      <div style={{ 
-                        textAlign: 'center', 
-                        padding: '40px 20px', 
-                        color: '#666' 
-                      }}>
-                        <i className="far fa-folder" style={{ fontSize: '48px', marginBottom: '16px', display: 'block' }}></i>
-                        <p style={{ margin: 0, fontSize: '16px' }}>No folders yet</p>
-                        <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#999' }}>
-                          Create your first folder to organize contacts
-                        </p>
-                      </div>
+                      <EmptyState
+                        heading="No folders yet"
+                        action={{
+                          content: "Create your first folder",
+                          onAction: () => setShowNewFolderModal(true),
+                        }}
+                        image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+                      >
+                        <p>Get started by creating your first folder to organize your contacts.</p>
+                      </EmptyState>
                     ) : (
                       folders.map((folder) => (
                         <DraggableFolder 
@@ -3927,17 +3905,16 @@ export default function ContactsPage() {
                 {/* Contacts List */}
                 <div>
                 {filteredContacts.length === 0 ? (
-                  <div style={{ 
-                    textAlign: 'center', 
-                    padding: '40px 20px', 
-                    color: '#666' 
-                  }}>
-                    <i className="far fa-address-book" style={{ fontSize: '48px', marginBottom: '16px', display: 'block' }}></i>
-                    <p style={{ margin: 0, fontSize: '16px' }}>No contacts yet</p>
-                    <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#999' }}>
-                      Add your first contact to get started
-                    </p>
-                  </div>
+                  <EmptyState
+                    heading="No contacts yet"
+                    action={{
+                      content: "Create your first contact",
+                      onAction: () => setShowNewContactForm(true),
+                    }}
+                    image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+                  >
+                    <p>Start building your contact list by adding people and businesses.</p>
+                  </EmptyState>
                 ) : (
                   filteredContacts.map((contact) => (
                     <div
