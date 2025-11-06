@@ -14,7 +14,6 @@ import {
   TextField,
   Checkbox,
   Icon,
-  Grid,
 } from "@shopify/polaris";
 import { DeleteIcon } from "@shopify/polaris-icons";
 import { useState, useEffect } from "react";
@@ -153,28 +152,27 @@ export default function Settings() {
     {
       id: "free",
       name: "Free Plan",
-      price: "$0/month",
+      price: "Free",
       features: [
-        "Up to 100 notes",
+        "25 notes max",
+        "3 folders max",
+        "Basic note editing",
         "Basic folder organization",
-        "Standard support",
-        "5GB storage"
-      ],
-      description: "Perfect for individuals who need basic note-taking functionality with simple organization features."
+        "Standard support"
+      ]
     },
     {
       id: "pro",
       name: "Pro Plan",
-      price: "$19.99/month",
+      price: "$5/mo",
       features: [
+        "Everything in Free",
         "Unlimited notes",
-        "Advanced folder organization",
-        "Priority support",
-        "25GB storage",
-        "Advanced search",
-        "Export options"
-      ],
-      description: "Ideal for professionals and teams who need advanced features and more storage capacity."
+        "Unlimited folders",
+        "Tags",
+        "Contacts",
+        "Advanced features"
+      ]
     }
   ];
 
@@ -194,42 +192,52 @@ export default function Settings() {
                 Choose the subscription plan that best fits your needs.
               </Text>
 
-              <Grid>
-                {subscriptionPlans.map((plan) => (
-                  <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 6, lg: 6, xl: 6 }} key={plan.id}>
-                    <Card>
-                      <BlockStack 
-                        gap="400"
-                        style={{
-                          border: selectedSubscription === plan.id ? '2px solid #008060' : '1px solid #e1e3e5',
-                          borderRadius: '8px',
-                          padding: '24px',
-                          height: '100%',
-                          backgroundColor: selectedSubscription === plan.id ? '#f0f9f4' : '#ffffff'
-                        }}
-                      >
+              <InlineStack gap="400" align="stretch">
+                {subscriptionPlans.map((plan) => {
+                  const isSelected = selectedSubscription === plan.id;
+                  const isPro = plan.id === "pro";
+                  const isFree = plan.id === "free";
+                  
+                  // Determine styling based on plan type and selection state
+                  let cardStyle = {
+                    flex: 1,
+                    borderRadius: '8px',
+                    padding: '24px',
+                    height: '100%',
+                  };
+
+                  if (isFree) {
+                    // Free Plan: Gray theme
+                    cardStyle = {
+                      ...cardStyle,
+                      border: isSelected ? '2px solid #6d7175' : '1px solid #e1e3e5',
+                      backgroundColor: isSelected ? '#f6f6f7' : '#ffffff',
+                    };
+                  } else if (isPro) {
+                    // Pro Plan: Green theme
+                    cardStyle = {
+                      ...cardStyle,
+                      border: isSelected ? '2px solid #008060' : '2px solid #008060',
+                      backgroundColor: isSelected ? '#f0f9f4' : '#ffffff',
+                    };
+                  }
+
+                  return (
+                    <Card key={plan.id}>
+                      <BlockStack gap="400" style={cardStyle}>
                         <BlockStack gap="200">
                           <InlineStack gap="200" align="center">
                             <Text as="h3" variant="headingMd" fontWeight="semibold">
                               {plan.name}
                             </Text>
-                            {selectedSubscription === plan.id && (
+                            {isSelected && (
                               <Badge tone="success" size="small">Current Plan</Badge>
                             )}
                           </InlineStack>
-                          <BlockStack gap="100">
-                            <Text as="p" variant="headingLg" tone="accent" fontWeight="bold">
-                              {plan.price}
-                            </Text>
-                            {plan.id === "pro" && (
-                              <Badge tone="info" size="small">Most Popular</Badge>
-                            )}
-                          </BlockStack>
+                          <Text as="p" variant="headingLg" tone={isPro ? "success" : "subdued"} fontWeight="bold">
+                            {plan.price}
+                          </Text>
                         </BlockStack>
-                        
-                        <Text as="p" variant="bodyMd" tone="subdued">
-                          {plan.description}
-                        </Text>
                         
                         <BlockStack gap="200" style={{ flex: 1 }}>
                           <Text as="p" variant="bodySm" fontWeight="medium">
@@ -247,18 +255,18 @@ export default function Settings() {
                         </BlockStack>
 
                         <Button
-                          variant={selectedSubscription === plan.id ? "primary" : "secondary"}
+                          variant={isSelected ? "primary" : "secondary"}
                           onClick={() => setSelectedSubscription(plan.id)}
                           fullWidth
                           size="large"
                         >
-                          {selectedSubscription === plan.id ? "Current Plan" : "Select Plan"}
+                          {isSelected ? "Current Plan" : "Select Plan"}
                         </Button>
                       </BlockStack>
                     </Card>
-                  </Grid.Cell>
-                ))}
-              </Grid>
+                  );
+                })}
+              </InlineStack>
 
               <Banner tone="info">
                 <Text as="p" variant="bodyMd">
