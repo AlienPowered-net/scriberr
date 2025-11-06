@@ -174,6 +174,20 @@ export default function Settings() {
         "Contacts",
         "Advanced features"
       ]
+    },
+    {
+      id: "business",
+      name: "Business Plan",
+      price: "$20/mo",
+      comingSoon: true,
+      features: [
+        "Everything in Pro",
+        "Team collaboration",
+        "Advanced analytics",
+        "Priority support",
+        "Custom integrations",
+        "API access"
+      ]
     }
   ];
 
@@ -198,6 +212,8 @@ export default function Settings() {
                   const isSelected = selectedSubscription === plan.id;
                   const isPro = plan.id === "pro";
                   const isFree = plan.id === "free";
+                  const isBusiness = plan.id === "business";
+                  const isComingSoon = plan.comingSoon === true;
                   
                   // Determine styling based on plan type and selection state
                   let cardStyle = {
@@ -227,6 +243,14 @@ export default function Settings() {
                       border: '2px solid #008060',
                       backgroundColor: isSelected ? '#f0f9f4' : '#ffffff',
                     };
+                  } else if (isBusiness) {
+                    // Business Plan: Blue theme for coming soon
+                    innerCardStyle = {
+                      ...innerCardStyle,
+                      border: '2px solid #5c6ac4',
+                      backgroundColor: '#f6f7f9',
+                      opacity: isComingSoon ? 0.9 : 1,
+                    };
                   }
 
                   return (
@@ -238,11 +262,14 @@ export default function Settings() {
                               <Text as="h3" variant="headingMd" fontWeight="semibold">
                                 {plan.name}
                               </Text>
-                              {isSelected && (
+                              {isSelected && !isComingSoon && (
                                 <Badge tone="success" size="small">Current Plan</Badge>
                               )}
+                              {isComingSoon && (
+                                <Badge tone="info" size="small">COMING SOON</Badge>
+                              )}
                             </InlineStack>
-                            <Text as="p" variant="headingLg" tone={isPro ? "success" : "subdued"} fontWeight="bold">
+                            <Text as="p" variant="headingLg" tone={isPro ? "success" : isBusiness ? "info" : "subdued"} fontWeight="bold">
                               {plan.price}
                             </Text>
                           </BlockStack>
@@ -260,11 +287,12 @@ export default function Settings() {
 
                           <Button
                             variant={isSelected ? "primary" : "secondary"}
-                            onClick={() => setSelectedSubscription(plan.id)}
+                            onClick={() => !isComingSoon && setSelectedSubscription(plan.id)}
                             fullWidth
                             size="large"
+                            disabled={isComingSoon}
                           >
-                            {isSelected ? "Current Plan" : "Select Plan"}
+                            {isComingSoon ? "COMING SOON" : isSelected ? "Current Plan" : "Select Plan"}
                           </Button>
                         </BlockStack>
                       </Box>
