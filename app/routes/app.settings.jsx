@@ -277,9 +277,9 @@ export default function Settings() {
                           <BlockStack gap="200" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
                             {plan.features.map((feature, index) => (
                               <InlineStack key={index} gap="200" align="start" blockAlign="start" wrap={false} style={{ width: '100%', justifyContent: 'flex-start' }}>
-                                <Icon source={CheckSmallIcon} tone="success" />
+                                <Icon source={CheckSmallIcon} tone={isComingSoon ? "subdued" : "success"} />
                                 <Text as="span" variant="bodyMd" style={{ textAlign: 'left' }}>
-                                  {feature}
+                                  {isComingSoon ? "COMING SOON" : feature}
                                 </Text>
                               </InlineStack>
                             ))}
