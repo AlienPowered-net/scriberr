@@ -2009,8 +2009,18 @@ export default function ContactsPage() {
                               borderRadius: "8px",
                               border: "1px solid #e1e3e5"
                             }}>
-                              <i className="far fa-folder" style={{ fontSize: "24px", marginBottom: "8px", display: "block" }}></i>
-                              <p style={{ margin: 0, fontSize: "14px" }}>No folders created yet</p>
+                              <i className="far fa-folder" style={{ fontSize: "48px", marginBottom: "16px", display: "block", color: "#6d7175" }}></i>
+                              <p style={{ margin: 0, fontSize: "16px", fontWeight: "500", color: "#202223", marginBottom: "8px" }}>No folders yet</p>
+                              <p style={{ margin: "8px 0 24px 0", fontSize: "14px", color: "#6d7175" }}>
+                                Get started by creating your first folder to organize your contacts.
+                              </p>
+                              <Button
+                                variant="primary"
+                                onClick={() => setShowNewFolderModal(true)}
+                                size="medium"
+                              >
+                                Create your first folder
+                              </Button>
                             </div>
                           ) : (
                             <DndContext
@@ -3602,16 +3612,27 @@ export default function ContactsPage() {
                 >
                   <div>
                     {folders.length === 0 ? (
-                      <EmptyState
-                        heading="No folders yet"
-                        action={{
-                          content: "Create your first folder",
-                          onAction: () => setShowNewFolderModal(true),
-                        }}
-                        image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
-                      >
-                        <p>Get started by creating your first folder to organize your contacts.</p>
-                      </EmptyState>
+                      <div style={{ 
+                        textAlign: "center", 
+                        padding: "40px 20px",
+                        color: "#6d7175",
+                        backgroundColor: "#f8f9fa",
+                        borderRadius: "8px",
+                        border: "1px solid #e1e3e5"
+                      }}>
+                        <i className="far fa-folder" style={{ fontSize: "48px", marginBottom: "16px", display: "block", color: "#6d7175" }}></i>
+                        <p style={{ margin: 0, fontSize: "16px", fontWeight: "500", color: "#202223", marginBottom: "8px" }}>No folders yet</p>
+                        <p style={{ margin: "8px 0 24px 0", fontSize: "14px", color: "#6d7175" }}>
+                          Get started by creating your first folder to organize your contacts.
+                        </p>
+                        <Button
+                          variant="primary"
+                          onClick={() => setShowNewFolderModal(true)}
+                          size="medium"
+                        >
+                          Create your first folder
+                        </Button>
+                      </div>
                     ) : (
                       folders.map((folder) => (
                         <DraggableFolder 
