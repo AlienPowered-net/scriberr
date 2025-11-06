@@ -16,7 +16,7 @@ import {
   Icon,
   Box,
 } from "@shopify/polaris";
-import { DeleteIcon } from "@shopify/polaris-icons";
+import { DeleteIcon, CheckSmallIcon } from "@shopify/polaris-icons";
 import { useState, useEffect } from "react";
 import packageJson from "../../package.json" with { type: "json" };
 
@@ -248,15 +248,14 @@ export default function Settings() {
                           </BlockStack>
                           
                           <BlockStack gap="200" style={{ flex: 1 }}>
-                            <List type="bullet">
-                              {plan.features.map((feature, index) => (
-                                <List.Item key={index}>
-                                  <Text as="span" variant="bodyMd">
-                                    {feature}
-                                  </Text>
-                                </List.Item>
-                              ))}
-                            </List>
+                            {plan.features.map((feature, index) => (
+                              <InlineStack key={index} gap="200" align="start">
+                                <Icon source={CheckSmallIcon} tone="success" />
+                                <Text as="span" variant="bodyMd">
+                                  {feature}
+                                </Text>
+                              </InlineStack>
+                            ))}
                           </BlockStack>
 
                           <Button
