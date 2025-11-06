@@ -233,8 +233,8 @@ export default function Settings() {
                     <Box key={plan.id} style={cardStyle}>
                       <Box style={innerCardStyle}>
                         <BlockStack gap="400">
-                          <BlockStack gap="200">
-                            <InlineStack gap="200" align="center" wrap={false}>
+                          <BlockStack gap="100">
+                            <InlineStack gap="200" align="start" wrap={false}>
                               <Text as="h3" variant="headingMd" fontWeight="semibold">
                                 {plan.name}
                               </Text>
@@ -248,9 +248,6 @@ export default function Settings() {
                           </BlockStack>
                           
                           <BlockStack gap="200" style={{ flex: 1 }}>
-                            <Text as="p" variant="bodySm" fontWeight="medium">
-                              Features:
-                            </Text>
                             <List type="bullet">
                               {plan.features.map((feature, index) => (
                                 <List.Item key={index}>
