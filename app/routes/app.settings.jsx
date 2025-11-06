@@ -14,6 +14,7 @@ import {
   TextField,
   Checkbox,
   Icon,
+  Box,
 } from "@shopify/polaris";
 import { DeleteIcon } from "@shopify/polaris-icons";
 import { useState, useEffect } from "react";
@@ -201,69 +202,77 @@ export default function Settings() {
                   // Determine styling based on plan type and selection state
                   let cardStyle = {
                     flex: 1,
+                  };
+
+                  let innerCardStyle = {
                     borderRadius: '8px',
                     padding: '24px',
                     height: '100%',
+                    boxShadow: isSelected 
+                      ? (isPro ? '0 2px 8px rgba(0, 128, 96, 0.15)' : '0 2px 8px rgba(109, 113, 117, 0.15)')
+                      : (isPro ? '0 1px 3px rgba(0, 128, 96, 0.1)' : '0 1px 3px rgba(0, 0, 0, 0.1)'),
                   };
-
+                  
                   if (isFree) {
                     // Free Plan: Gray theme
-                    cardStyle = {
-                      ...cardStyle,
+                    innerCardStyle = {
+                      ...innerCardStyle,
                       border: isSelected ? '2px solid #6d7175' : '1px solid #e1e3e5',
                       backgroundColor: isSelected ? '#f6f6f7' : '#ffffff',
                     };
                   } else if (isPro) {
                     // Pro Plan: Green theme
-                    cardStyle = {
-                      ...cardStyle,
-                      border: isSelected ? '2px solid #008060' : '2px solid #008060',
+                    innerCardStyle = {
+                      ...innerCardStyle,
+                      border: '2px solid #008060',
                       backgroundColor: isSelected ? '#f0f9f4' : '#ffffff',
                     };
                   }
 
                   return (
-                    <Card key={plan.id}>
-                      <BlockStack gap="400" style={cardStyle}>
-                        <BlockStack gap="200">
-                          <InlineStack gap="200" align="center">
-                            <Text as="h3" variant="headingMd" fontWeight="semibold">
-                              {plan.name}
+                    <Box key={plan.id} style={cardStyle}>
+                      <Box style={innerCardStyle}>
+                        <BlockStack gap="400">
+                          <BlockStack gap="200">
+                            <InlineStack gap="200" align="center" wrap={false}>
+                              <Text as="h3" variant="headingMd" fontWeight="semibold">
+                                {plan.name}
+                              </Text>
+                              {isSelected && (
+                                <Badge tone="success" size="small">Current Plan</Badge>
+                              )}
+                            </InlineStack>
+                            <Text as="p" variant="headingLg" tone={isPro ? "success" : "subdued"} fontWeight="bold">
+                              {plan.price}
                             </Text>
-                            {isSelected && (
-                              <Badge tone="success" size="small">Current Plan</Badge>
-                            )}
-                          </InlineStack>
-                          <Text as="p" variant="headingLg" tone={isPro ? "success" : "subdued"} fontWeight="bold">
-                            {plan.price}
-                          </Text>
-                        </BlockStack>
-                        
-                        <BlockStack gap="200" style={{ flex: 1 }}>
-                          <Text as="p" variant="bodySm" fontWeight="medium">
-                            Features:
-                          </Text>
-                          <List type="bullet">
-                            {plan.features.map((feature, index) => (
-                              <List.Item key={index}>
-                                <Text as="span" variant="bodyMd">
-                                  {feature}
-                                </Text>
-                              </List.Item>
-                            ))}
-                          </List>
-                        </BlockStack>
+                          </BlockStack>
+                          
+                          <BlockStack gap="200" style={{ flex: 1 }}>
+                            <Text as="p" variant="bodySm" fontWeight="medium">
+                              Features:
+                            </Text>
+                            <List type="bullet">
+                              {plan.features.map((feature, index) => (
+                                <List.Item key={index}>
+                                  <Text as="span" variant="bodyMd">
+                                    {feature}
+                                  </Text>
+                                </List.Item>
+                              ))}
+                            </List>
+                          </BlockStack>
 
-                        <Button
-                          variant={isSelected ? "primary" : "secondary"}
-                          onClick={() => setSelectedSubscription(plan.id)}
-                          fullWidth
-                          size="large"
-                        >
-                          {isSelected ? "Current Plan" : "Select Plan"}
-                        </Button>
-                      </BlockStack>
-                    </Card>
+                          <Button
+                            variant={isSelected ? "primary" : "secondary"}
+                            onClick={() => setSelectedSubscription(plan.id)}
+                            fullWidth
+                            size="large"
+                          >
+                            {isSelected ? "Current Plan" : "Select Plan"}
+                          </Button>
+                        </BlockStack>
+                      </Box>
+                    </Box>
                   );
                 })}
               </InlineStack>
