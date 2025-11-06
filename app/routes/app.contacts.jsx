@@ -2009,7 +2009,17 @@ export default function ContactsPage() {
                               borderRadius: "8px",
                               border: "1px solid #e1e3e5"
                             }}>
-                              <i className="far fa-folder" style={{ fontSize: "48px", marginBottom: "16px", display: "block", color: "#6d7175" }}></i>
+                              <img 
+                                src="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png" 
+                                alt="No folders" 
+                                style={{ 
+                                  width: "120px", 
+                                  height: "auto", 
+                                  marginBottom: "16px", 
+                                  display: "block",
+                                  margin: "0 auto 16px auto"
+                                }} 
+                              />
                               <p style={{ margin: 0, fontSize: "16px", fontWeight: "500", color: "#202223", marginBottom: "8px" }}>No folders yet</p>
                               <p style={{ margin: "8px 0 24px 0", fontSize: "14px", color: "#6d7175" }}>
                                 Get started by creating your first folder to organize your contacts.
@@ -3620,7 +3630,17 @@ export default function ContactsPage() {
                         borderRadius: "8px",
                         border: "1px solid #e1e3e5"
                       }}>
-                        <i className="far fa-folder" style={{ fontSize: "48px", marginBottom: "16px", display: "block", color: "#6d7175" }}></i>
+                        <img 
+                          src="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png" 
+                          alt="No folders" 
+                          style={{ 
+                            width: "120px", 
+                            height: "auto", 
+                            marginBottom: "16px", 
+                            display: "block",
+                            margin: "0 auto 16px auto"
+                          }} 
+                        />
                         <p style={{ margin: 0, fontSize: "16px", fontWeight: "500", color: "#202223", marginBottom: "8px" }}>No folders yet</p>
                         <p style={{ margin: "8px 0 24px 0", fontSize: "14px", color: "#6d7175" }}>
                           Get started by creating your first folder to organize your contacts.
