@@ -47,13 +47,7 @@ export const loader = async ({ request }) => {
 
 export default function App() {
   const { apiKey, flags, plan } = useLoaderData();
-  const [upgradePrompt, setUpgradePrompt] = useState<
-    | {
-        code?: string;
-        message?: string;
-      }
-    | null
-  >(null);
+  const [upgradePrompt, setUpgradePrompt] = useState(null);
   const [upgradeSubmitting, setUpgradeSubmitting] = useState(false);
 
   useEffect(() => {
