@@ -1,6 +1,5 @@
 import { Node, mergeAttributes } from '@tiptap/core';
 import { PluginKey } from '@tiptap/pm/state';
-import { TextSelection } from '@tiptap/pm/state';
 import Suggestion from '@tiptap/suggestion';
 
 export const EntityMentionPluginKey = new PluginKey('entityMention');
