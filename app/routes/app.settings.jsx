@@ -30,7 +30,8 @@ export default function Settings() {
     notesLimit: 25,
     foldersUsed: 0,
     foldersLimit: 3,
-    loading: true
+    loading: true,
+    error: null,
   });
   
   // Onboarding guide preference
@@ -160,36 +161,41 @@ export default function Settings() {
 
   // Fetch plan usage when on free plan
   useEffect(() => {
-    if (selectedSubscription === "free") {
-      const fetchUsage = async () => {
-        try {
-          setPlanUsage(prev => ({ ...prev, loading: true }));
-          
-          // Fetch notes count
-          const notesResponse = await fetch('/api/notes');
-          const notesData = notesResponse.ok ? await notesResponse.json() : { notes: [] };
-          const notesCount = Array.isArray(notesData.notes) ? notesData.notes.length : 0;
-          
-          // Fetch folders count
-          const foldersResponse = await fetch('/api/folders');
-          const foldersData = foldersResponse.ok ? await foldersResponse.json() : { folders: [] };
-          const foldersCount = Array.isArray(foldersData.folders) ? foldersData.folders.length : 0;
-          
-          setPlanUsage({
-            notesUsed: notesCount,
-            notesLimit: 25,
-            foldersUsed: foldersCount,
-            foldersLimit: 3,
-            loading: false
-          });
-        } catch (error) {
-          console.error('Error fetching plan usage:', error);
-          setPlanUsage(prev => ({ ...prev, loading: false }));
-        }
-      };
-      
-      fetchUsage();
+    if (selectedSubscription !== "free") {
+      return;
     }
+
+    const fetchUsage = async () => {
+      try {
+        setPlanUsage((prev) => ({ ...prev, loading: true, error: null }));
+
+        const usageResponse = await fetch("/api/plan-usage");
+
+        if (!usageResponse.ok) {
+          throw new Error(`Request failed with status ${usageResponse.status}`);
+        }
+
+        const usageData = await usageResponse.json();
+
+        setPlanUsage({
+          notesUsed: usageData?.notesUsed ?? 0,
+          notesLimit: usageData?.notesLimit ?? 25,
+          foldersUsed: usageData?.foldersUsed ?? 0,
+          foldersLimit: usageData?.foldersLimit ?? 3,
+          loading: false,
+          error: null,
+        });
+      } catch (error) {
+        console.error("Error fetching plan usage:", error);
+        setPlanUsage((prev) => ({
+          ...prev,
+          loading: false,
+          error: "We couldn't load your usage right now. Please refresh to try again.",
+        }));
+      }
+    };
+
+    fetchUsage();
   }, [selectedSubscription]);
 
   const subscriptionPlans = [
@@ -367,71 +373,95 @@ export default function Settings() {
                     Track your usage of Free Plan features. Upgrade to Pro Plan for unlimited access.
                   </Text>
 
-                  {planUsage.loading ? (
-                    <Text as="p" variant="bodyMd" tone="subdued">
-                      Loading usage data...
-                    </Text>
-                  ) : (
-                    <BlockStack gap="400">
-                      {/* Notes Usage */}
-                      <BlockStack gap="200">
-                        <InlineStack align="space-between">
-                          <Text as="p" variant="bodyMd" fontWeight="medium">
-                            Notes
-                          </Text>
-                          <Text as="p" variant="bodyMd" tone={planUsage.notesUsed >= planUsage.notesLimit ? "critical" : "subdued"}>
-                            {planUsage.notesUsed} / {planUsage.notesLimit}
-                          </Text>
-                        </InlineStack>
-                        <div style={{
-                          width: '100%',
-                          height: '8px',
-                          backgroundColor: '#e1e3e5',
-                          borderRadius: '4px',
-                          overflow: 'hidden'
-                        }}>
-                          <div style={{
-                            width: `${Math.min((planUsage.notesUsed / planUsage.notesLimit) * 100, 100)}%`,
-                            height: '100%',
-                            backgroundColor: planUsage.notesUsed >= planUsage.notesLimit ? '#d72c0d' : planUsage.notesUsed >= planUsage.notesLimit * 0.8 ? '#ffc453' : '#008060',
-                            transition: 'width 0.3s ease'
-                          }} />
-                        </div>
-                        <Text as="p" variant="bodySm" tone="subdued">
-                          {planUsage.notesLimit - planUsage.notesUsed} notes remaining
+                    {planUsage.loading ? (
+                      <Text as="p" variant="bodyMd" tone="subdued">
+                        Loading usage data...
+                      </Text>
+                    ) : planUsage.error ? (
+                      <Banner tone="critical">
+                        <Text as="p" variant="bodyMd">
+                          {planUsage.error}
                         </Text>
-                      </BlockStack>
+                      </Banner>
+                    ) : (
+                      <BlockStack gap="400">
+                        {/* Notes Usage */}
+                        <BlockStack gap="200">
+                          <InlineStack align="space-between">
+                            <Text as="p" variant="bodyMd" fontWeight="medium">
+                              Notes
+                            </Text>
+                            <Text as="p" variant="bodyMd" tone={planUsage.notesUsed >= planUsage.notesLimit ? "critical" : "subdued"}>
+                              {planUsage.notesUsed} / {planUsage.notesLimit}
+                            </Text>
+                          </InlineStack>
+                          <div
+                            style={{
+                              width: "100%",
+                              height: "8px",
+                              backgroundColor: "#e1e3e5",
+                              borderRadius: "4px",
+                              overflow: "hidden",
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: `${planUsage.notesLimit > 0 ? Math.min((planUsage.notesUsed / planUsage.notesLimit) * 100, 100) : 0}%`,
+                                height: "100%",
+                                backgroundColor:
+                                  planUsage.notesUsed >= planUsage.notesLimit
+                                    ? "#d72c0d"
+                                    : planUsage.notesUsed >= planUsage.notesLimit * 0.8
+                                    ? "#ffc453"
+                                    : "#008060",
+                                transition: "width 0.3s ease",
+                              }}
+                            />
+                          </div>
+                          <Text as="p" variant="bodySm" tone="subdued">
+                            {Math.max(planUsage.notesLimit - planUsage.notesUsed, 0)} notes remaining
+                          </Text>
+                        </BlockStack>
 
-                      {/* Folders Usage */}
-                      <BlockStack gap="200">
-                        <InlineStack align="space-between">
-                          <Text as="p" variant="bodyMd" fontWeight="medium">
-                            Folders
+                        {/* Folders Usage */}
+                        <BlockStack gap="200">
+                          <InlineStack align="space-between">
+                            <Text as="p" variant="bodyMd" fontWeight="medium">
+                              Folders
+                            </Text>
+                            <Text as="p" variant="bodyMd" tone={planUsage.foldersUsed >= planUsage.foldersLimit ? "critical" : "subdued"}>
+                              {planUsage.foldersUsed} / {planUsage.foldersLimit}
+                            </Text>
+                          </InlineStack>
+                          <div
+                            style={{
+                              width: "100%",
+                              height: "8px",
+                              backgroundColor: "#e1e3e5",
+                              borderRadius: "4px",
+                              overflow: "hidden",
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: `${planUsage.foldersLimit > 0 ? Math.min((planUsage.foldersUsed / planUsage.foldersLimit) * 100, 100) : 0}%`,
+                                height: "100%",
+                                backgroundColor:
+                                  planUsage.foldersUsed >= planUsage.foldersLimit
+                                    ? "#d72c0d"
+                                    : planUsage.foldersUsed >= planUsage.foldersLimit * 0.8
+                                    ? "#ffc453"
+                                    : "#008060",
+                                transition: "width 0.3s ease",
+                              }}
+                            />
+                          </div>
+                          <Text as="p" variant="bodySm" tone="subdued">
+                            {Math.max(planUsage.foldersLimit - planUsage.foldersUsed, 0)} folders remaining
                           </Text>
-                          <Text as="p" variant="bodyMd" tone={planUsage.foldersUsed >= planUsage.foldersLimit ? "critical" : "subdued"}>
-                            {planUsage.foldersUsed} / {planUsage.foldersLimit}
-                          </Text>
-                        </InlineStack>
-                        <div style={{
-                          width: '100%',
-                          height: '8px',
-                          backgroundColor: '#e1e3e5',
-                          borderRadius: '4px',
-                          overflow: 'hidden'
-                        }}>
-                          <div style={{
-                            width: `${Math.min((planUsage.foldersUsed / planUsage.foldersLimit) * 100, 100)}%`,
-                            height: '100%',
-                            backgroundColor: planUsage.foldersUsed >= planUsage.foldersLimit ? '#d72c0d' : planUsage.foldersUsed >= planUsage.foldersLimit * 0.8 ? '#ffc453' : '#008060',
-                            transition: 'width 0.3s ease'
-                          }} />
-                        </div>
-                        <Text as="p" variant="bodySm" tone="subdued">
-                          {planUsage.foldersLimit - planUsage.foldersUsed} folders remaining
-                        </Text>
+                        </BlockStack>
                       </BlockStack>
-                    </BlockStack>
-                  )}
+                    )}
                 </BlockStack>
               </div>
             </Card>
