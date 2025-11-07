@@ -1,12 +1,15 @@
 import { json } from "@remix-run/node";
-import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
+import {
+  isPlanError,
+  requireFeature,
+  serializePlanError,
+  withPlanContext,
+} from "../../src/server/guards/ensurePlan";
 
-export async function action({ request }) {
+export const action = withPlanContext(async ({ request, planContext }) => {
   try {
-    const { session } = await shopify.authenticate.admin(request);
-    const shopId = await getOrCreateShopId(session.shop);
+    await requireFeature("contacts")(planContext);
 
     const { contactId } = await request.json();
 
@@ -27,15 +30,19 @@ export async function action({ request }) {
     const currentContact = await prisma.contact.findUnique({
       where: {
         id: contactId,
-        shopId: shopId
       },
       select: {
         id: true,
-        pinnedAt: true
-      }
+        shopId: true,
+        pinnedAt: true,
+      },
     });
 
     if (!currentContact) {
+      return json({ error: "Contact not found" }, { status: 404 });
+    }
+
+    if (currentContact.shopId !== planContext.shopId) {
       return json({ error: "Contact not found" }, { status: 404 });
     }
 
@@ -46,7 +53,6 @@ export async function action({ request }) {
     const updatedContact = await prisma.contact.update({
       where: {
         id: contactId,
-        shopId: shopId
       },
       data: {
         pinnedAt: newPinnedAt
@@ -60,7 +66,11 @@ export async function action({ request }) {
       pinnedAt: newPinnedAt // Return the new pinnedAt value
     });
   } catch (error) {
+    if (isPlanError(error)) {
+      return json(serializePlanError(error), { status: error.status });
+    }
+
     console.error('Error toggling contact pin:', error);
     return json({ error: "Failed to toggle contact pin" }, { status: 500 });
   }
-}
+});

@@ -10,17 +10,32 @@ datasource db {
   // directUrl = env("DIRECT_URL")     // use primary for migrations
 }
 
-model Shop {
-  id        String   @id @default(cuid())
-  domain    String   @unique           // e.g. dev-alienpowered.myshopify.com
-  installedAt DateTime @default(now())
+enum Plan {
+  FREE
+  PRO
+}
 
-  folders   Folder[]
-  notes     Note[]
+enum SubscriptionStatus {
+  NONE
+  ACTIVE
+  CANCELED
+  PAST_DUE
+}
+
+model Shop {
+  id             String         @id @default(cuid())
+  domain         String         @unique           // e.g. dev-alienpowered.myshopify.com
+  shopGid        String?
+  installedAt    DateTime       @default(now())
+  plan           Plan           @default(FREE)
+  subscription   Subscription?
+  folders        Folder[]
+  notes          Note[]
   customMentions CustomMention[]
   contactFolders ContactFolder[]
-  contacts  Contact[]
-  createdAt DateTime @default(now())
+  contacts       Contact[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 }
 
 model Folder {
@@ -167,4 +182,19 @@ model Contact {
 enum ContactType {
   PERSON
   BUSINESS
+}
+
+model Subscription {
+  id            String             @id @default(cuid())
+  shopId        String             @unique
+  shop          Shop               @relation(fields: [shopId], references: [id])
+  status        SubscriptionStatus @default(NONE)
+  shopifySubGid String?
+  name          String?
+  priceAmount   Decimal?           @db.Decimal(10, 2)
+  currency      String?
+  testMode      Boolean            @default(true)
+  trialEndsAt   DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
 }

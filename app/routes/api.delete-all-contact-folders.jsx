@@ -1,12 +1,13 @@
 import { json } from "@remix-run/node";
-import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
+import {
+  isPlanError,
+  requireFeature,
+  serializePlanError,
+  withPlanContext,
+} from "../../src/server/guards/ensurePlan";
 
-export async function action({ request }) {
-  const { session } = await shopify.authenticate.admin(request);
-  const shopId = await getOrCreateShopId(session.shop);
-
+export const action = withPlanContext(async ({ request, planContext }) => {
   const form = await request.formData();
   const confirmation = form.get("confirmation");
 
@@ -15,10 +16,12 @@ export async function action({ request }) {
   }
 
   try {
+    await requireFeature("contacts")(planContext);
+
     // First, set folderId to null for all contacts in contact folders (move them to "All Contacts")
     await prisma.contact.updateMany({
       where: { 
-        shopId,
+        shopId: planContext.shopId,
         folderId: { not: null }
       },
       data: {
@@ -28,7 +31,7 @@ export async function action({ request }) {
 
     // Then delete all contact folders for this shop
     const foldersResult = await prisma.contactFolder.deleteMany({
-      where: { shopId },
+      where: { shopId: planContext.shopId },
     });
     
     return json({ 
@@ -37,7 +40,11 @@ export async function action({ request }) {
       deletedFoldersCount: foldersResult.count
     });
   } catch (error) {
+    if (isPlanError(error)) {
+      return json(serializePlanError(error), { status: error.status });
+    }
+
     console.error("Error deleting all contact folders:", error);
     return json({ error: "Failed to delete all contact folders" });
   }
-}
+});

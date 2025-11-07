@@ -1,12 +1,14 @@
 import { json } from "@remix-run/node";
-import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
+import {
+  isPlanError,
+  requireCapacity,
+  serializePlanError,
+  withPlanContext,
+} from "../../src/server/guards/ensurePlan";
 
-export async function action({ request }) {
-  const { session } = await shopify.authenticate.admin(request);
-  const shopId = await getOrCreateShopId(session.shop);
-
+export const action = withPlanContext(async ({ request, planContext }) => {
+  const { shopId } = planContext;
   const form = await request.formData();
   const title = form.get("title");
   const body = form.get("body");
@@ -34,6 +36,8 @@ export async function action({ request }) {
   }
 
   try {
+    await requireCapacity("note")(planContext);
+
     // Verify the folder exists and belongs to this shop
     const folder = await prisma.folder.findFirst({
       where: { 
@@ -82,7 +86,11 @@ export async function action({ request }) {
       }
     });
   } catch (error) {
+    if (isPlanError(error)) {
+      return json(serializePlanError(error), { status: error.status });
+    }
+
     console.error("Error creating note:", error);
     return json({ error: "Failed to create note" });
   }
-}
+});

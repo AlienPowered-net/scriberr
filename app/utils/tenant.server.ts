@@ -1,11 +1,6 @@
-import { prisma } from "../utils/db.server";
+import { getMerchantByShop } from "../../src/server/guards/ensurePlan";
 
 export async function getOrCreateShopId(shopDomain) {
-  const shop = await prisma.shop.upsert({
-    where: { domain: shopDomain },
-    update: {},
-    create: { domain: shopDomain },
-    select: { id: true },
-  });
-  return shop.id;
+  const merchant = await getMerchantByShop(shopDomain);
+  return merchant.id;
 }

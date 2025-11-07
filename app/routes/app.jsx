@@ -2,38 +2,161 @@ import { Link, Outlet, useLoaderData, useRouteError } from "@remix-run/react";
 import { boundary } from "@shopify/shopify-app-remix/server";
 import { AppProvider  } from "@shopify/shopify-app-remix/react";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
-import { authenticate } from "../shopify.server";
 import "@shopify/polaris/build/esm/styles.css";
-
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { flagsFor } from "../../src/lib/featureFlags";
+import { withPlanContext } from "../../src/server/guards/ensurePlan";
+import { UpgradeModal } from "../../src/components/UpgradeModal";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }) => {
   try {
-    await authenticate.admin(request);
-    return { apiKey: process.env.SHOPIFY_API_KEY || "" };
+    const loadWithPlan = withPlanContext(async ({ planContext }) => {
+      return {
+        apiKey: process.env.SHOPIFY_API_KEY || "",
+        plan: planContext.plan,
+        flags: flagsFor(planContext.plan),
+      };
+    });
+
+    return await loadWithPlan({ request });
   } catch (error) {
-    // If authentication fails due to database issues, provide helpful error
-    if (error.message?.includes('session') || error.message?.includes('table') || error.message?.includes('relation')) {
+    if (
+      error?.message?.includes("session") ||
+      error?.message?.includes("table") ||
+      error?.message?.includes("relation")
+    ) {
       console.error("Database authentication error:", error);
       throw new Response(
         JSON.stringify({
           error: "Database connection issue detected. Please check the database health endpoint.",
           details: error.message,
-          suggestion: "Visit /api/db-health?action=repair to attempt automatic repair"
+          suggestion: "Visit /api/db-health?action=repair to attempt automatic repair",
         }),
         {
           status: 503,
-          headers: { "Content-Type": "application/json" }
-        }
+          headers: { "Content-Type": "application/json" },
+        },
       );
     }
+
     throw error;
   }
 };
 
 export default function App() {
-  const { apiKey } = useLoaderData();
+  const { apiKey, flags, plan } = useLoaderData();
+  const [upgradePrompt, setUpgradePrompt] = useState<
+    | {
+        code?: string;
+        message?: string;
+      }
+    | null
+  >(null);
+  const [upgradeSubmitting, setUpgradeSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const originalFetch = window.fetch.bind(window);
+
+    window.fetch = async (...args) => {
+      const response = await originalFetch(...args);
+
+      if (response.status === 403) {
+        try {
+          const cloned = response.clone();
+          const payload = await cloned.json();
+
+          if (payload?.upgradeHint) {
+            const now = Date.now();
+            const lastShownRaw =
+              typeof sessionStorage !== "undefined"
+                ? sessionStorage.getItem("scriberr-upgrade-last-shown")
+                : null;
+            const lastShown = lastShownRaw ? Number(lastShownRaw) : 0;
+
+            if (!lastShown || now - lastShown > 60_000) {
+              setUpgradePrompt({
+                code: payload.error,
+                message: payload.message,
+              });
+
+              if (typeof sessionStorage !== "undefined") {
+                sessionStorage.setItem(
+                  "scriberr-upgrade-last-shown",
+                  String(now),
+                );
+              }
+            }
+          }
+        } catch (error) {
+          console.debug("Failed to parse plan error response", error);
+        }
+      }
+
+      return response;
+    };
+
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, []);
+
+  const openUpgradeModal = useCallback(
+    (payload?: { code?: string; message?: string }) => {
+      setUpgradePrompt(
+        payload ?? {
+          code: "LIMIT_REACHED",
+          message:
+            "Upgrade to unlock Pro features, unlimited notes, and full contact management.",
+        },
+      );
+    },
+    [],
+  );
+
+  const handleUpgrade = useCallback(async () => {
+    try {
+      setUpgradeSubmitting(true);
+      const response = await fetch("/api/billing/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to initiate upgrade");
+      }
+
+      const payload = await response.json();
+      if (payload?.confirmationUrl) {
+        const target = window.top ?? window;
+        target.location.assign(payload.confirmationUrl);
+      } else {
+        throw new Error("Missing confirmation URL");
+      }
+    } catch (error) {
+      console.error("Upgrade initiation failed", error);
+      setUpgradePrompt((current) => ({
+        code: "UPGRADE_FAILED",
+        message:
+          "We couldn't start the upgrade flow. Please try again or contact support.",
+        ...(current ?? {}),
+      }));
+    } finally {
+      setUpgradeSubmitting(false);
+    }
+  }, []);
+
+  const modalHeadline = useMemo(() => {
+    if (!upgradePrompt?.message) {
+      return "Ready for Scriberr Pro? Unlock all premium features with one click.";
+    }
+    return upgradePrompt.message;
+  }, [upgradePrompt]);
 
   return (
     <AppProvider isEmbeddedApp apiKey={apiKey}>
@@ -42,10 +165,19 @@ export default function App() {
           Home
         </Link>
         <Link to="/app/dashboard">Dashboard</Link>
-        <Link to="/app/contacts">Contacts</Link>
+        {flags.contactsEnabled ? (
+          <Link to="/app/contacts">Contacts</Link>
+        ) : null}
         <Link to="/app/settings">Settings</Link>
       </ui-nav-menu>
-      <Outlet />
+      <Outlet context={{ plan, flags, openUpgradeModal }} />
+      <UpgradeModal
+        open={Boolean(upgradePrompt)}
+        onClose={() => setUpgradePrompt(null)}
+        onUpgrade={handleUpgrade}
+        isSubmitting={upgradeSubmitting}
+        headline={modalHeadline}
+      />
     </AppProvider>
   );
 }

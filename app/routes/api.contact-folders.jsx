@@ -1,54 +1,45 @@
 import { json } from "@remix-run/node";
-import { authenticate } from "../shopify.server";
 import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
+import {
+  isPlanError,
+  requireFeature,
+  serializePlanError,
+  withPlanContext,
+} from "../../src/server/guards/ensurePlan";
 
-export const loader = async ({ request }) => {
-  const { session } = await authenticate.admin(request);
-  
-  // Ensure we have a valid shop
-  if (!session?.shop) {
-    return json({ error: "Invalid session or shop not found" }, { status: 401 });
-  }
-  
+export const loader = withPlanContext(async ({ planContext }) => {
   try {
-    const shopId = await getOrCreateShopId(session.shop);
+    await requireFeature("contacts")(planContext);
 
     const folders = await prisma.contactFolder.findMany({
-      where: { shopId },
+      where: { shopId: planContext.shopId },
       include: {
         _count: {
-          select: { contacts: true }
-        }
+          select: { contacts: true },
+        },
       },
-      orderBy: { position: 'asc' }
+      orderBy: { position: "asc" },
     });
 
     return json(folders);
   } catch (error) {
-    console.error('Error loading contact folders:', error);
-    return json({ error: 'Failed to load folders' }, { status: 500 });
-  }
-};
-
-export const action = async ({ request }) => {
-  try {
-    const { session } = await authenticate.admin(request);
-    console.log('🔍 Contact Folders API - Session:', { shop: session?.shop, hasSession: !!session });
-    
-    // Ensure we have a valid shop
-    if (!session?.shop) {
-      console.log('❌ Contact Folders API - No valid shop in session');
-      return json({ error: "Invalid session or shop not found" }, { status: 401 });
+    if (isPlanError(error)) {
+      return json(serializePlanError(error), { status: error.status });
     }
 
-  const formData = await request.formData();
-  const action = formData.get("_action");
+    console.error("Error loading contact folders:", error);
+    return json({ error: "Failed to load folders" }, { status: 500 });
+  }
+});
 
+export const action = withPlanContext(async ({ request, planContext }) => {
   try {
-    const shopId = await getOrCreateShopId(session.shop);
+    await requireFeature("contacts")(planContext);
 
-    switch (action) {
+    const formData = await request.formData();
+    const actionType = formData.get("_action");
+
+    switch (actionType) {
       case "create": {
         const name = formData.get("name");
         const icon = formData.get("icon") || "folder";
@@ -69,9 +60,9 @@ export const action = async ({ request }) => {
 
         // Check if a folder with this name already exists
         const existingFolder = await prisma.contactFolder.findFirst({
-          where: { 
-            shopId: shopId,
-            name: trimmedName
+          where: {
+            shopId: planContext.shopId,
+            name: trimmedName,
           },
         });
 
@@ -81,20 +72,20 @@ export const action = async ({ request }) => {
 
         // Get the highest position
         const lastFolder = await prisma.contactFolder.findFirst({
-          where: { shopId: shopId },
-          orderBy: { position: 'desc' }
+          where: { shopId: planContext.shopId },
+          orderBy: { position: "desc" },
         });
 
         const position = lastFolder ? lastFolder.position + 1 : 0;
 
         const folder = await prisma.contactFolder.create({
           data: {
-            shopId: shopId,
+            shopId: planContext.shopId,
             name: trimmedName,
             icon,
             iconColor,
-            position
-          }
+            position,
+          },
         });
 
         return json({ success: true, folder, message: "Folder created successfully" });
@@ -117,12 +108,11 @@ export const action = async ({ request }) => {
           return json({ error: "Folder name cannot exceed 35 characters" });
         }
 
-        // Check if a folder with this name already exists
         const existingFolder = await prisma.contactFolder.findFirst({
-          where: { 
-            shopId: shopId,
+          where: {
+            shopId: planContext.shopId,
             name: trimmedName,
-            id: { not: id } // Exclude the current folder
+            id: { not: id },
           },
         });
 
@@ -131,6 +121,11 @@ export const action = async ({ request }) => {
         }
 
         // Update the folder name
+        const folder = await prisma.contactFolder.findUnique({ where: { id } });
+        if (!folder || folder.shopId !== planContext.shopId) {
+          return json({ error: "Folder not found" }, { status: 404 });
+        }
+
         await prisma.contactFolder.update({
           where: { id },
           data: { name: trimmedName },
@@ -147,14 +142,18 @@ export const action = async ({ request }) => {
         }
 
         // Move contacts to no folder (set folderId to null)
+        const folder = await prisma.contactFolder.findUnique({ where: { id } });
+        if (!folder || folder.shopId !== planContext.shopId) {
+          return json({ error: "Folder not found" }, { status: 404 });
+        }
+
         await prisma.contact.updateMany({
-          where: { folderId: id },
-          data: { folderId: null }
+          where: { folderId: id, shopId: planContext.shopId },
+          data: { folderId: null },
         });
 
-        // Delete the folder
         await prisma.contactFolder.delete({
-          where: { id }
+          where: { id },
         });
 
         return json({ success: true, message: "Folder deleted successfully" });
@@ -169,27 +168,43 @@ export const action = async ({ request }) => {
           return json({ error: "Folder ID is required" }, { status: 400 });
         }
 
-        const folder = await prisma.contactFolder.update({
+        const folder = await prisma.contactFolder.findUnique({ where: { id } });
+        if (!folder || folder.shopId !== planContext.shopId) {
+          return json({ error: "Folder not found" }, { status: 404 });
+        }
+
+        const updated = await prisma.contactFolder.update({
           where: { id },
           data: {
             ...(icon && { icon }),
-            ...(iconColor && { iconColor })
-          }
+            ...(iconColor && { iconColor }),
+          },
         });
 
-        return json({ success: true, folder, message: "Folder icon updated successfully" });
+        return json({
+          success: true,
+          folder: updated,
+          message: "Folder icon updated successfully",
+        });
       }
 
       case "reorder": {
         const folderIds = JSON.parse(formData.get("folderIds") || "[]");
 
-        // Update positions for all folders
-        const updates = folderIds.map((folderId, index) =>
-          prisma.contactFolder.update({
-            where: { id: folderId },
-            data: { position: index }
-          })
-        );
+        const existingFolders = await prisma.contactFolder.findMany({
+          where: { shopId: planContext.shopId, id: { in: folderIds } },
+          select: { id: true },
+        });
+        const allowedIds = new Set(existingFolders.map((folder) => folder.id));
+
+        const updates = folderIds
+          .filter((folderId) => allowedIds.has(folderId))
+          .map((folderId, index) =>
+            prisma.contactFolder.update({
+              where: { id: folderId, shopId: planContext.shopId },
+              data: { position: index },
+            }),
+          );
 
         await Promise.all(updates);
 
@@ -200,11 +215,11 @@ export const action = async ({ request }) => {
         return json({ error: "Invalid action" }, { status: 400 });
     }
   } catch (error) {
-    console.error('Error in contact folders action:', error);
+    if (isPlanError(error)) {
+      return json(serializePlanError(error), { status: error.status });
+    }
+
+    console.error("Error in contact folders action:", error);
     return json({ error: "Failed to process request" }, { status: 500 });
   }
-  } catch (authError) {
-    console.error('❌ Contact Folders API - Authentication error:', authError);
-    return json({ error: "Authentication failed" }, { status: 401 });
-  }
-};
+});

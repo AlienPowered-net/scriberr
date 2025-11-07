@@ -1,14 +1,15 @@
 import { json } from "@remix-run/node";
-import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
+import {
+  enforceVersionRetention,
+  isPlanError,
+  serializePlanError,
+  withPlanContext,
+} from "../../src/server/guards/ensurePlan";
 
-export const action = async ({ request }) => {
+export const action = withPlanContext(async ({ request, planContext }) => {
   try {
-    const { session } = await shopify.authenticate.admin(request);
-    const shopId = await getOrCreateShopId(session.shop);
-    
-    console.log("Creating version for shop:", session.shop, "shopId:", shopId);
+    const { shopId } = planContext;
     
     const { noteId, title, content, versionTitle, snapshot, isAuto = false } = await request.json();
     
@@ -27,22 +28,30 @@ export const action = async ({ request }) => {
       return json({ error: "Note not found" }, { status: 404 });
     }
 
-    // Create the version with enhanced data
-    const version = await prisma.noteVersion.create({
-      data: {
-        noteId,
-        title,
-        content,
-        versionTitle,
-        snapshot: snapshot ? JSON.parse(snapshot) : null,
-        isAuto,
-      },
+    const version = await prisma.$transaction(async (tx) => {
+      const created = await tx.noteVersion.create({
+        data: {
+          noteId,
+          title,
+          content,
+          versionTitle,
+          snapshot: snapshot ? JSON.parse(snapshot) : null,
+          isAuto,
+        },
+      });
+
+      await enforceVersionRetention(noteId, planContext.plan, tx);
+      return created;
     });
 
     console.log("Version created successfully:", version.id);
     return json(version);
   } catch (error) {
+    if (isPlanError(error)) {
+      return json(serializePlanError(error), { status: error.status });
+    }
+
     console.error("Error creating note version:", error);
     return json({ error: "Failed to create version", details: error.message }, { status: 500 });
   }
-};
+});

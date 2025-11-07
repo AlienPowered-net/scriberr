@@ -1,79 +1,43 @@
 import { json } from "@remix-run/node";
-import { authenticate } from "../shopify.server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../utils/db.server";
+import {
+  isPlanError,
+  requireFeature,
+  serializePlanError,
+  withPlanContext,
+} from "../../src/server/guards/ensurePlan";
 
-const prisma = new PrismaClient();
-
-export const loader = async ({ request }) => {
-  const { session } = await authenticate.admin(request);
-  
-  // Ensure we have a valid shop
-  if (!session?.shop) {
-    return json({ error: "Invalid session or shop not found" }, { status: 401 });
-  }
-  
+export const loader = withPlanContext(async ({ planContext }) => {
   try {
-    // Ensure the shop exists in the database
-    let shop = await prisma.shop.findUnique({
-      where: { domain: session.shop }
-    });
-
-    if (!shop) {
-      // Create the shop if it doesn't exist
-      shop = await prisma.shop.create({
-        data: {
-          domain: session.shop,
-          installedAt: new Date()
-        }
-      });
-    }
+    await requireFeature("contacts")(planContext);
 
     const contacts = await prisma.contact.findMany({
-      where: { shopId: shop.id },
+      where: { shopId: planContext.shopId },
       include: {
-        folder: true
+        folder: true,
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     });
 
     return json(contacts);
   } catch (error) {
-    console.error('Error loading contacts:', error);
-    return json({ error: 'Failed to load contacts' }, { status: 500 });
+    if (isPlanError(error)) {
+      return json(serializePlanError(error), { status: error.status });
+    }
+
+    console.error("Error loading contacts:", error);
+    return json({ error: "Failed to load contacts" }, { status: 500 });
   }
-};
+});
 
-export const action = async ({ request }) => {
+export const action = withPlanContext(async ({ request, planContext }) => {
   try {
-    const { session } = await authenticate.admin(request);
-    console.log('🔍 Contacts API - Session:', { shop: session?.shop, hasSession: !!session });
-    
-    // Ensure we have a valid shop
-    if (!session?.shop) {
-      console.log('❌ Contacts API - No valid shop in session');
-      return json({ error: "Invalid session or shop not found" }, { status: 401 });
-    }
+    await requireFeature("contacts")(planContext);
 
-  const formData = await request.formData();
-  const action = formData.get("_action");
+    const formData = await request.formData();
+    const actionType = formData.get("_action");
 
-  try {
-    // Ensure the shop exists in the database
-    let shop = await prisma.shop.findUnique({
-      where: { domain: session.shop }
-    });
-
-    if (!shop) {
-      // Create the shop if it doesn't exist
-      shop = await prisma.shop.create({
-        data: {
-          domain: session.shop,
-          installedAt: new Date()
-        }
-      });
-    }
-
-    switch (action) {
+    switch (actionType) {
       case "create": {
         const type = formData.get("type");
         const firstName = formData.get("firstName");
@@ -104,7 +68,7 @@ export const action = async ({ request }) => {
         }
 
         const contactData = {
-          shopId: shop.id, // Use the shop ID from database, not session.shop
+          shopId: planContext.shopId,
           type,
           folderId: folderId || null,
           ...(firstName && { firstName }),
@@ -151,6 +115,11 @@ export const action = async ({ request }) => {
           return json({ error: "Contact ID is required" }, { status: 400 });
         }
 
+        const existing = await prisma.contact.findUnique({ where: { id } });
+        if (!existing || existing.shopId !== planContext.shopId) {
+          return json({ error: "Contact not found" }, { status: 404 });
+        }
+
         const updateData = {
           ...(type && { type }),
           ...(firstName !== null && { firstName }),
@@ -171,7 +140,7 @@ export const action = async ({ request }) => {
 
         const contact = await prisma.contact.update({
           where: { id },
-          data: updateData
+          data: updateData,
         });
 
         return json({ success: true, contact });
@@ -184,8 +153,13 @@ export const action = async ({ request }) => {
           return json({ error: "Contact ID is required" }, { status: 400 });
         }
 
+        const contact = await prisma.contact.findUnique({ where: { id } });
+        if (!contact || contact.shopId !== planContext.shopId) {
+          return json({ error: "Contact not found" }, { status: 404 });
+        }
+
         await prisma.contact.delete({
-          where: { id }
+          where: { id },
         });
 
         return json({ success: true });
@@ -203,8 +177,8 @@ export const action = async ({ request }) => {
         await prisma.contact.deleteMany({
           where: {
             id: { in: ids },
-            shopId: shop.id
-          }
+            shopId: planContext.shopId,
+          },
         });
 
         return json({ success: true, deletedCount: ids.length });
@@ -223,11 +197,11 @@ export const action = async ({ request }) => {
         await prisma.contact.updateMany({
           where: {
             id: { in: ids },
-            shopId: shop.id
+            shopId: planContext.shopId,
           },
           data: {
-            folderId: folderId
-          }
+            folderId: folderId,
+          },
         });
 
         return json({ success: true, movedCount: ids.length });
@@ -243,7 +217,7 @@ export const action = async ({ request }) => {
         // Get all contacts with this tag
         const contactsWithTag = await prisma.contact.findMany({
           where: {
-            shopId: shop.id,
+            shopId: planContext.shopId,
             tags: {
               has: tag
             }
@@ -266,11 +240,11 @@ export const action = async ({ request }) => {
         return json({ error: "Invalid action" }, { status: 400 });
     }
   } catch (error) {
-    console.error('Error in contacts action:', error);
+    if (isPlanError(error)) {
+      return json(serializePlanError(error), { status: error.status });
+    }
+
+    console.error("Error in contacts action:", error);
     return json({ error: "Failed to process request" }, { status: 500 });
   }
-  } catch (authError) {
-    console.error('❌ Contacts API - Authentication error:', authError);
-    return json({ error: "Authentication failed" }, { status: 401 });
-  }
-};
+});

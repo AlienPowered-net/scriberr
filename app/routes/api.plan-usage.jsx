@@ -1,22 +1,11 @@
 import { json } from "@remix-run/node";
-import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
+import { PLAN } from "../../src/lib/plan";
+import { withPlanContext } from "../../src/server/guards/ensurePlan";
 
-const FREE_PLAN_LIMITS = {
-  notesLimit: 25,
-  foldersLimit: 3,
-};
-
-export async function loader({ request }) {
+export const loader = withPlanContext(async ({ planContext }) => {
   try {
-    const { session } = await shopify.authenticate.admin(request);
-
-    if (!session?.shop) {
-      return json({ error: "Invalid session or shop not found" }, { status: 401 });
-    }
-
-    const shopId = await getOrCreateShopId(session.shop);
+    const { shopId, plan } = planContext;
 
     const [notesUsed, foldersUsed] = await Promise.all([
       prisma.note.count({ where: { shopId } }),
@@ -25,12 +14,13 @@ export async function loader({ request }) {
 
     return json({
       notesUsed,
-      notesLimit: FREE_PLAN_LIMITS.notesLimit,
+      notesLimit: PLAN[plan].NOTES_MAX,
       foldersUsed,
-      foldersLimit: FREE_PLAN_LIMITS.foldersLimit,
+      foldersLimit: PLAN[plan].NOTE_FOLDERS_MAX,
+      plan,
     });
   } catch (error) {
     console.error("Error loading plan usage:", error);
     return json({ error: "Failed to load plan usage data" }, { status: 500 });
   }
-}
+});

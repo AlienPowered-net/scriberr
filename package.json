@@ -1,11 +1,12 @@
 {
   "name": "scriberr",
-  "version": "v.a356",
+  "version": "v.a358",
   "private": true,
   "scripts": {
     "vercel-build": "prisma generate && npm run migrate-deploy && node scripts/init-database.js && node scripts/create-contacts-tables.js && node scripts/add-contact-fields-migration.js && npm run build",
     "migrate-deploy": "bash scripts/migrate-deploy-fixed.sh",
     "build": "remix vite:build",
+    "test": "vitest run",
     "increment-version": "node scripts/increment-version.js",
     "apply-icon-migration": "node scripts/apply-icon-migration.js",
     "dev": "shopify app dev",
@@ -106,7 +107,8 @@
     "prettier": "^3.2.4",
     "prisma": "^6.14.0",
     "typescript": "^5.2.2",
-    "vite": "^6.2.2"
+    "vite": "^6.2.2",
+    "vitest": "^1.6.0"
   },
   "workspaces": [
     "extensions/*"
@@ -119,6 +121,7 @@
     "@graphql-codegen/client-preset": "4.7.0",
     "@graphql-codegen/typescript-operations": "4.5.0",
     "minimatch": "9.0.5",
+    "vitest": "^1.6.0",
     "vite": "^6.2.2"
   },
   "overrides": {

@@ -6,6 +6,7 @@ import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
 import packageJson from "../../package.json" with { type: "json" };
+import { usePlanContext } from "../hooks/usePlanContext";
 
 import {
   Page,
@@ -415,6 +416,7 @@ export async function action({ request }) {
 /* ------------------ UI ------------------ */
 export default function Index() {
   const { folders, notes, version, folderId: initialFolderId, noteId: initialNoteId, isMobileParam } = useLoaderData();
+  const { flags, openUpgradeModal } = usePlanContext();
   const [localNotes, setLocalNotes] = useState(notes);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -556,6 +558,13 @@ export default function Index() {
   const [showTagsSection, setShowTagsSection] = useState(false);
   const [showDeleteTagConfirm, setShowDeleteTagConfirm] = useState(null);
   const [selectedTags, setSelectedTags] = useState([]);
+
+  useEffect(() => {
+    if (!flags.noteTagsEnabled) {
+      setShowTagsSection(false);
+      setSelectedTags([]);
+    }
+  }, [flags.noteTagsEnabled]);
   
   // Column collapse states
   const [collapsedColumns, setCollapsedColumns] = useState({
@@ -1261,6 +1270,12 @@ export default function Index() {
   const [showMobileTags, setShowMobileTags] = useState(false);
   const [mobileOpenFolderMenu, setMobileOpenFolderMenu] = useState(null);
   
+  useEffect(() => {
+    if (!flags.noteTagsEnabled) {
+      setShowMobileTags(false);
+    }
+  }, [flags.noteTagsEnabled]);
+
   // Initialize mobile icon picker state when modal opens
   useEffect(() => {
     if (showIconPicker && isMobile) {
@@ -3979,15 +3994,25 @@ export default function Index() {
                       display: "flex",
                       justifyContent: "center",
                       alignItems: "center",
-                      cursor: "pointer",
+                      cursor: flags.noteTagsEnabled ? "pointer" : "not-allowed",
                       backgroundColor: showTagsSection ? "#f6fff8" : "#F8F9FA",
                       border: showTagsSection ? "2px solid #008060" : "2px solid #E1E3E5",
                       borderRadius: "8px",
                       position: "relative",
                       transition: "all 0.2s ease",
-                      boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                      boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)",
+                      opacity: flags.noteTagsEnabled ? 1 : 0.6,
                     }}
                     onClick={() => {
+                      if (!flags.noteTagsEnabled) {
+                        openUpgradeModal({
+                          code: "FEATURE_NOTE_TAGS_DISABLED",
+                          message:
+                            "Upgrade to Pro to organize notes with unlimited tags.",
+                        });
+                        return;
+                      }
+
                       if (showTagsSection) {
                         // When closing All Tags section, keep only selected tags visible
                         setShowTagsSection(false);
@@ -3997,6 +4022,10 @@ export default function Index() {
                       }
                     }}
                     onMouseEnter={(e) => {
+                      if (!flags.noteTagsEnabled || showTagsSection) {
+                        return;
+                      }
+
                       if (!showTagsSection) {
                         e.currentTarget.style.backgroundColor = "#f6fff8";
                         e.currentTarget.style.borderColor = "#008060";
@@ -4004,6 +4033,10 @@ export default function Index() {
                       }
                     }}
                     onMouseLeave={(e) => {
+                      if (!flags.noteTagsEnabled || showTagsSection) {
+                        return;
+                      }
+
                       if (!showTagsSection) {
                         e.currentTarget.style.backgroundColor = "#F8F9FA";
                         e.currentTarget.style.borderColor = "#E1E3E5";
@@ -4020,7 +4053,7 @@ export default function Index() {
                       fontSize: "14px"
                     }}>
                       <i className="far fa-bookmark" style={{ fontSize: "16px" }}></i>
-                      All Tags
+                      {flags.noteTagsEnabled ? "All Tags" : "Tags (Pro)"}
                     </Text>
                   </div>
                 </div>
@@ -4041,7 +4074,7 @@ export default function Index() {
               </div>
 
               {/* Tags Section - Under All Notes & All Tags Buttons */}
-              {(showTagsSection || selectedTags.length > 0) && (
+              {flags.noteTagsEnabled && (showTagsSection || selectedTags.length > 0) && (
                 <div style={{ 
                   marginBottom: "12px",
                   padding: "12px",
@@ -4581,96 +4614,115 @@ export default function Index() {
                   <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
                     Tags
                   </label>
-                  <div style={{ marginBottom: "8px" }}>
-                    <input
-                      type="text"
-                      style={{
-                        border: "none",
-                        outline: "none",
-                        fontSize: "14px",
-                        color: "#202223",
-                        padding: "8px 0",
-                        borderBottom: "1px solid #e1e3e5",
-                        cursor: "text",
-                        width: "100%",
-                        backgroundColor: "transparent",
-                        fontFamily: "inherit",
-                        transition: "border-color 0.2s ease"
-                      }}
-                      value={newTagInput}
-                      onChange={(e) => {
-                        const newValue = e.target.value;
-                        // Remove emojis from tag input
-                        const cleanValue = removeEmojis(newValue);
-                        if (cleanValue.length <= 32) {
-                          setNewTagInput(cleanValue);
-                        } else {
-                          setAlertMessage('Tag cannot exceed 32 characters');
-                          setAlertType('error');
-                          setTimeout(() => setAlertMessage(''), 3000);
-                        }
-                      }}
-                      placeholder="Add a tag and press Enter..."
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && newTagInput.trim()) {
-                          const cleanTag = removeEmojis(newTagInput.trim());
-                          if (!noteTags.includes(cleanTag)) {
-                            const newTags = [...noteTags, cleanTag];
-                            setNoteTags(newTags);
-                            handleAutoSaveTags(newTags);
-                          }
-                          setNewTagInput("");
-                        }
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderBottomColor = "#008060";
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderBottomColor = "#e1e3e5";
-                      }}
-                    />
-                  </div>
-                  {noteTags.length > 0 && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                      {noteTags.map((tag, index) => (
-                        <div
-                          key={index}
+                  {flags.noteTagsEnabled ? (
+                    <>
+                      <div style={{ marginBottom: "8px" }}>
+                        <input
+                          type="text"
                           style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            padding: "4px 8px",
-                            backgroundColor: "#f6fff8",
-                            border: "1px solid #008060",
-                            borderRadius: "16px",
-                            fontSize: "12px",
-                            color: "#008060"
+                            border: "none",
+                            outline: "none",
+                            fontSize: "14px",
+                            color: "#202223",
+                            padding: "8px 0",
+                            borderBottom: "1px solid #e1e3e5",
+                            cursor: "text",
+                            width: "100%",
+                            backgroundColor: "transparent",
+                            fontFamily: "inherit",
+                            transition: "border-color 0.2s ease"
                           }}
-                        >
-                          <span>{tag}</span>
-                          <button
-                            onClick={() => {
-                              const newTags = noteTags.filter((_, i) => i !== index);
-                              setNoteTags(newTags);
-                              handleAutoSaveTags(newTags);
-                            }}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              cursor: "pointer",
-                              fontSize: "14px",
-                              color: "rgba(199, 10, 36, 1)",
-                              padding: "0",
-                              display: "flex",
-                              alignItems: "center",
-                              fontWeight: "bold"
-                            }}
-                          >
-                            ×
-                          </button>
+                          value={newTagInput}
+                          onChange={(e) => {
+                            const newValue = e.target.value;
+                            const cleanValue = removeEmojis(newValue);
+                            if (cleanValue.length <= 32) {
+                              setNewTagInput(cleanValue);
+                            } else {
+                              setAlertMessage('Tag cannot exceed 32 characters');
+                              setAlertType('error');
+                              setTimeout(() => setAlertMessage(''), 3000);
+                            }
+                          }}
+                          placeholder="Add a tag and press Enter..."
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && newTagInput.trim()) {
+                              const cleanTag = removeEmojis(newTagInput.trim());
+                              if (!noteTags.includes(cleanTag)) {
+                                const newTags = [...noteTags, cleanTag];
+                                setNoteTags(newTags);
+                                handleAutoSaveTags(newTags);
+                              }
+                              setNewTagInput("");
+                            }
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderBottomColor = "#008060";
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderBottomColor = "#e1e3e5";
+                          }}
+                        />
+                      </div>
+                      {noteTags.length > 0 && (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                          {noteTags.map((tag, index) => (
+                            <div
+                              key={index}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                padding: "4px 8px",
+                                backgroundColor: "#f6fff8",
+                                border: "1px solid #008060",
+                                borderRadius: "16px",
+                                fontSize: "12px",
+                                color: "#008060"
+                              }}
+                            >
+                              <span>{tag}</span>
+                              <button
+                                onClick={() => {
+                                  const newTags = noteTags.filter((_, i) => i !== index);
+                                  setNoteTags(newTags);
+                                  handleAutoSaveTags(newTags);
+                                }}
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  fontSize: "14px",
+                                  color: "rgba(199, 10, 36, 1)",
+                                  padding: "0",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  fontWeight: "bold"
+                                }}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      )}
+                    </>
+                  ) : (
+                    <Banner
+                      tone="info"
+                      title="Upgrade to add tags"
+                      action={{
+                        content: "Upgrade to PRO – $5/mo",
+                        onAction: () =>
+                          openUpgradeModal({
+                            code: "FEATURE_NOTE_TAGS_DISABLED",
+                            message:
+                              "Unlock unlimited note tags and advanced organization with Scriberr Pro.",
+                          }),
+                      }}
+                    >
+                      <p>Tags help organize notes, and they’re unlocked with the Pro plan.</p>
+                    </Banner>
                   )}
                 </div>
                 <div>
@@ -5807,15 +5859,25 @@ export default function Index() {
                       display: "flex",
                       justifyContent: "center",
                       alignItems: "center",
-                      cursor: "pointer",
+                      cursor: flags.noteTagsEnabled ? "pointer" : "not-allowed",
                       backgroundColor: showTagsSection ? "#f6fff8" : "#F8F9FA",
                       border: showTagsSection ? "2px solid #008060" : "2px solid #E1E3E5",
                       borderRadius: "8px",
                       position: "relative",
                       transition: "all 0.2s ease",
-                      boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)"
+                      boxShadow: showTagsSection ? "0 2px 8px rgba(10, 0, 0, 0.1)" : "0 1px 3px rgba(0, 0, 0, 0.05)",
+                      opacity: flags.noteTagsEnabled ? 1 : 0.6,
                     }}
                     onClick={() => {
+                      if (!flags.noteTagsEnabled) {
+                        openUpgradeModal({
+                          code: "FEATURE_NOTE_TAGS_DISABLED",
+                          message:
+                            "Upgrade to Pro to organize notes with unlimited tags.",
+                        });
+                        return;
+                      }
+
                       if (showTagsSection) {
                         // When closing All Tags section, keep only selected tags visible
                         setShowTagsSection(false);
@@ -5834,7 +5896,7 @@ export default function Index() {
                       fontSize: "14px"
                     }}>
                       <i className="far fa-bookmark" style={{ fontSize: "16px" }}></i>
-                      All Tags
+                      {flags.noteTagsEnabled ? "All Tags" : "Tags (Pro)"}
                     </span>
                   </div>
                 </div>

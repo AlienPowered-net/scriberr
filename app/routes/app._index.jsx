@@ -1,12 +1,13 @@
 // app/routes/app.home.jsx - Home Page
 import { json } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
 import packageJson from "../../package.json" with { type: "json" };
 import SetupGuide from "../components/SetupGuide";
+import { usePlanContext } from "../hooks/usePlanContext";
 
 import {
   Page,
@@ -82,13 +83,24 @@ export const loader = async ({ request }) => {
 
 export default function HomePage() {
   const { folders, notes, totalFolders, totalNotes, version } = useLoaderData();
+  const { plan, openUpgradeModal } = usePlanContext();
+  const isPro = plan === "PRO";
   const navigate = useNavigate();
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(() => {
     if (typeof window !== 'undefined') {
+      if (plan === "PRO") {
+        return false;
+      }
       return localStorage.getItem('scriberr-upgrade-banner-dismissed') !== 'true';
     }
-    return true;
+    return plan !== "PRO";
   });
+
+  useEffect(() => {
+    if (isPro) {
+      setShowUpgradeBanner(false);
+    }
+  }, [isPro]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -150,7 +162,7 @@ export default function HomePage() {
         </Layout.Section>
 
         {/* Upgrade Banner */}
-        {showUpgradeBanner && (
+        {showUpgradeBanner && !isPro && (
           <Layout.Section>
             <Card>
               <div style={{
@@ -163,27 +175,33 @@ export default function HomePage() {
                   <InlineStack align="space-between" blockAlign="start">
                     <BlockStack gap="200">
                       <Text as="h2" variant="headingMd" fontWeight="bold" style={{ color: 'white' }}>
-                        ⚡ Upgrade to Pro Plan
+                        ⚡ Unlock Scriberr Pro
                       </Text>
                       <Text as="p" variant="bodyMd" style={{ color: 'rgba(255, 255, 255, 0.95)' }}>
-                        Unlock unlimited notes, advanced features, priority support, and more storage.
+                        Remove Free plan limits and access contacts, note tags, and unlimited version history.
                       </Text>
                       <InlineStack gap="300" blockAlign="center">
                         <Text as="span" variant="headingMd" fontWeight="bold" style={{ color: 'white' }}>
-                          $19.99/month
+                          $5/mo
                         </Text>
                         <Text as="span" variant="bodySm" style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
-                          • Unlimited notes • 25GB storage • Advanced search
+                          Unlimited notes & folders • Contacts workspace • Unlimited tags
                         </Text>
                       </InlineStack>
                     </BlockStack>
                     <Button
                       variant="primary"
                       tone="inverse"
-                      url="/app/settings"
                       size="large"
+                      onClick={() =>
+                        openUpgradeModal({
+                          code: "LIMIT_NOTES",
+                          message:
+                            "Upgrade to Scriberr Pro for unlimited notes, folders, contacts, and tags.",
+                        })
+                      }
                     >
-                      Upgrade Now
+                      Upgrade to PRO – $5/mo
                     </Button>
                   </InlineStack>
                   <Button

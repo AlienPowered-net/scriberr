@@ -1,12 +1,14 @@
 import { json } from "@remix-run/node";
 import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
-import { shopify } from "../shopify.server";
+import {
+  isPlanError,
+  requireCapacity,
+  serializePlanError,
+  withPlanContext,
+} from "../../src/server/guards/ensurePlan";
 
-export async function action({ request }) {
-  const { session } = await shopify.authenticate.admin(request);
-  const shopId = await getOrCreateShopId(session.shop);
-
+export const action = withPlanContext(async ({ request, planContext }) => {
+  const { shopId } = planContext;
   if (request.method !== "POST") {
     return json({ error: "Method not allowed" }, { status: 405 });
   }
@@ -50,6 +52,8 @@ export async function action({ request }) {
     }
 
     // Create the duplicate note
+    await requireCapacity("note")(planContext);
+
     const duplicatedNote = await prisma.note.create({
       data: {
         title: originalNote.title ? `${originalNote.title} (Copy)` : "Untitled (Copy)",
@@ -70,7 +74,11 @@ export async function action({ request }) {
     });
 
   } catch (error) {
+    if (isPlanError(error)) {
+      return json(serializePlanError(error), { status: error.status });
+    }
+
     console.error('Error duplicating note:', error);
     return json({ error: "Failed to duplicate note" });
   }
-}
+});

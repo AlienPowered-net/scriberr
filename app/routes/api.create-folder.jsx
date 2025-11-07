@@ -1,12 +1,14 @@
 import { json } from "@remix-run/node";
-import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
+import {
+  isPlanError,
+  requireCapacity,
+  serializePlanError,
+  withPlanContext,
+} from "../../src/server/guards/ensurePlan";
 
-export async function action({ request }) {
-  const { session } = await shopify.authenticate.admin(request);
-  const shopId = await getOrCreateShopId(session.shop);
-
+export const action = withPlanContext(async ({ request, planContext }) => {
+  const { shopId } = planContext;
   const data = await request.json();
   const { name, icon = "folder", iconColor = "#f57c00" } = data;
 
@@ -24,6 +26,8 @@ export async function action({ request }) {
   }
 
   try {
+    await requireCapacity("noteFolder")(planContext);
+
     // Check if a folder with this name already exists
     const existingFolder = await prisma.folder.findFirst({
       where: { 
@@ -94,7 +98,11 @@ export async function action({ request }) {
     
     return json({ success: true, message: "Folder created successfully", folder: newFolder });
   } catch (error) {
+    if (isPlanError(error)) {
+      return json(serializePlanError(error), { status: error.status });
+    }
+
     console.error("Error creating folder:", error);
     return json({ error: "Failed to create folder" });
   }
-}
+});

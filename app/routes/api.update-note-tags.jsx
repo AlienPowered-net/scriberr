@@ -1,8 +1,13 @@
 import { json } from "@remix-run/node";
 import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
+import {
+  isPlanError,
+  requireFeature,
+  serializePlanError,
+  withPlanContext,
+} from "../../src/server/guards/ensurePlan";
 
-export async function action({ request }) {
+export const action = withPlanContext(async ({ request, planContext }) => {
   try {
     const formData = await request.formData();
     const noteId = formData.get("noteId");
@@ -12,15 +17,8 @@ export async function action({ request }) {
       return json({ error: "Note ID and tags are required" }, { status: 400 });
     }
 
-    // Get the shop ID from the request
-    const url = new URL(request.url);
-    const shop = url.searchParams.get('shop');
-    
-    if (!shop) {
-      return json({ error: "Shop parameter is required" }, { status: 400 });
-    }
-
-    const shopId = await getOrCreateShopId(shop);
+    await requireFeature("noteTags")(planContext);
+    const { shopId } = planContext;
 
     // Parse the tags
     let tags;
@@ -43,7 +41,11 @@ export async function action({ request }) {
 
     return json({ success: true, note: updatedNote });
   } catch (error) {
+    if (isPlanError(error)) {
+      return json(serializePlanError(error), { status: error.status });
+    }
+
     console.error('Error updating note tags:', error);
     return json({ error: "Failed to update note tags" }, { status: 500 });
   }
-}
+});

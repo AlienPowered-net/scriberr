@@ -4,6 +4,7 @@ import { authenticate } from "../shopify.server";
 import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
 import packageJson from "../../package.json";
+import { usePlanContext } from "../hooks/usePlanContext";
 
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
@@ -532,9 +533,14 @@ function ContactForm({
 // Main Contacts Page Component
 export default function ContactsPage() {
   const { folders: initialFolders, contacts: initialContacts, version } = useLoaderData();
+  const { flags, openUpgradeModal } = usePlanContext();
   
   // Add CSS for custom contact list
   useEffect(() => {
+    if (!flags.contactsEnabled) {
+      return;
+    }
+
     const style = document.createElement('style');
     style.textContent = `
       /* Custom Contact List Styles */
@@ -684,7 +690,37 @@ export default function ContactsPage() {
         document.head.removeChild(style);
       }
     };
-  }, []);
+  }, [flags.contactsEnabled]);
+  
+  if (!flags.contactsEnabled) {
+    return (
+      <Page title="Contacts" subtitle={`Version ${version}`}>
+        <Layout>
+          <Layout.Section>
+            <Card>
+              <EmptyState
+                heading="Contacts are a Pro feature"
+                action={{
+                  content: "Upgrade to PRO – $5/mo",
+                  onAction: () =>
+                    openUpgradeModal({
+                      code: "FEATURE_CONTACTS_DISABLED",
+                      message:
+                        "Upgrade to Pro to unlock the Contacts workspace, unlimited contacts, and advanced organization tools.",
+                    }),
+                }}
+                image="https://cdn.shopify.com/s/files/1/2376/3307/articles/PolarisPlaceholders--product-features_480x480_crop_center.png?v=1623437273"
+              >
+                <p>
+                  Manage unlimited contacts, folders, and tags with Scriberr Pro. Upgrade to unlock the full CRM toolkit.
+                </p>
+              </EmptyState>
+            </Card>
+          </Layout.Section>
+        </Layout>
+      </Page>
+    );
+  }
   
   // State management
   const [folders, setFolders] = useState(initialFolders || []);
