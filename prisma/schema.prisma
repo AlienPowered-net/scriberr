@@ -19,6 +19,20 @@ model Shop {
   notes     Note[]
   customMentions CustomMention[]
   createdAt DateTime @default(now())
+
+  plan               PlanCode    @default(FREE)
+  planStatus         PlanStatus  @default(ACTIVE)
+  planManaged        Boolean     @default(false)
+  planActivatedAt    DateTime?
+  planTrialEndsAt    DateTime?
+  planGraceEndsAt    DateTime?
+  planRenewsAt       DateTime?
+  billingSubscriptionId        String?   @unique
+  billingSubscriptionLineItemId String?
+  billingManagedAt    DateTime?
+  billingCancelledAt  DateTime?
+  billingLastSyncAt   DateTime?
+  billingLastSyncError String?
 }
 
 model Folder {
@@ -106,4 +120,19 @@ model CustomMention {
   shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
   @@index([shopId])
+}
+
+enum PlanCode {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum PlanStatus {
+  ACTIVE
+  TRIAL
+  GRACE
+  CANCELLED
+  PAST_DUE
 }

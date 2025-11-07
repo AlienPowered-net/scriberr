@@ -4,7 +4,11 @@ import { useLoaderData, useNavigate } from "@remix-run/react";
 import { useState } from "react";
 import { shopify } from "../shopify.server";
 import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
+import {
+  ensurePlan,
+  getOrCreateShopId,
+  serializePlanContext,
+} from "../utils/tenant.server";
 import packageJson from "../../package.json" with { type: "json" };
 import SetupGuide from "../components/SetupGuide";
 
@@ -71,18 +75,71 @@ export const loader = async ({ request }) => {
   const totalFolders = await prisma.folder.count({ where: { shopId } });
   const totalNotes = await prisma.note.count({ where: { shopId } });
 
+  const planContext = await ensurePlan({
+    shopId,
+    requireActive: false,
+    usage: [
+      { key: "notes" },
+      { key: "folders" },
+      { key: "mentions" },
+    ],
+  });
+  const planPayload = serializePlanContext(
+    planContext,
+    planContext.usageSummary,
+  );
+
   return json({
     folders,
     notes,
     totalFolders,
     totalNotes,
     version: packageJson.version,
+    plan: planPayload.plan,
+    planUsage: planPayload.usage,
   });
 };
 
 export default function HomePage() {
-  const { folders, notes, totalFolders, totalNotes, version } = useLoaderData();
+  const {
+    folders,
+    notes,
+    totalFolders,
+    totalNotes,
+    version,
+    plan,
+    planUsage,
+  } = useLoaderData();
   const navigate = useNavigate();
+  const planManaged = plan?.managed ?? false;
+  const planUsageBreakdown = [
+    { key: "notes", label: "Notes" },
+    { key: "folders", label: "Folders" },
+    { key: "mentions", label: "Contacts" },
+  ];
+
+  const formatUsageValue = (entry) => {
+    if (!entry) {
+      return "0";
+    }
+    if (entry.limit === null || entry.limit === undefined) {
+      return `${entry.quantity ?? 0} / ∞`;
+    }
+    return `${entry.quantity ?? 0} / ${entry.limit}`;
+  };
+
+  const formatPlanDate = (isoString) => {
+    if (!isoString) return null;
+    const date = new Date(isoString);
+    if (Number.isNaN(date.getTime())) {
+      return null;
+    }
+    return date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -133,6 +190,83 @@ export default function HomePage() {
     <Page title="Welcome to Scriberr" subtitle={`Version ${version}`}>
       <div style={{ paddingBottom: "80px" }}>
         <Layout>
+          <Layout.Section>
+            <Card>
+              <BlockStack gap="300">
+                <InlineStack align="space-between" gap="200">
+                  <BlockStack gap="100">
+                    <Text as="h2" variant="headingMd">
+                      Subscription Overview
+                    </Text>
+                    <InlineStack gap="200" align="center">
+                      <Badge tone={planManaged ? "success" : "attention"}>
+                        {plan?.title ?? "Free Plan"}
+                      </Badge>
+                      {plan?.status && (
+                        <Badge tone="info">
+                          {plan.status.toLowerCase()}
+                        </Badge>
+                      )}
+                    </InlineStack>
+                  </BlockStack>
+                  {!planManaged && (
+                    <Button
+                      onClick={() =>
+                        navigate("/app/settings#subscription-management")
+                      }
+                    >
+                      Upgrade plan
+                    </Button>
+                  )}
+                </InlineStack>
+                <Text as="p" variant="bodyMd" tone="subdued">
+                  {plan?.description ??
+                    "Upgrade to a managed plan to unlock additional capacity and advanced collaboration features."}
+                </Text>
+                <InlineStack gap="400">
+                  {planUsageBreakdown.map(({ key, label }) => {
+                    const usageEntry = planUsage?.[key];
+                    const limitReached =
+                      usageEntry?.limit !== null &&
+                      usageEntry?.limit !== undefined &&
+                      usageEntry?.quantity >= usageEntry?.limit;
+                    return (
+                      <BlockStack key={key} gap="100">
+                        <Text as="span" tone="subdued" variant="bodySm">
+                          {label}
+                        </Text>
+                        <InlineStack gap="150" align="center">
+                          <Text as="span" variant="headingMd">
+                            {formatUsageValue(usageEntry)}
+                          </Text>
+                          {limitReached && (
+                            <Badge tone="critical">Limit reached</Badge>
+                          )}
+                        </InlineStack>
+                      </BlockStack>
+                    );
+                  })}
+                </InlineStack>
+                <InlineStack gap="400" align="start">
+                  {plan?.trialEndsAt && (
+                    <Text as="span" tone="subdued" variant="bodySm">
+                      Trial ends {formatPlanDate(plan.trialEndsAt)}
+                    </Text>
+                  )}
+                  {plan?.graceEndsAt && (
+                    <Text as="span" tone="subdued" variant="bodySm">
+                      Grace period ends {formatPlanDate(plan.graceEndsAt)}
+                    </Text>
+                  )}
+                  {planManaged && plan?.renewsAt && (
+                    <Text as="span" tone="subdued" variant="bodySm">
+                      Next renewal {formatPlanDate(plan.renewsAt)}
+                    </Text>
+                  )}
+                </InlineStack>
+              </BlockStack>
+          </Card>
+        </Layout.Section>
         {/* Setup Guide */}
         <Layout.Section>
           <SetupGuide 

@@ -12,13 +12,17 @@ automatically_update_urls_on_dev = true
 [webhooks]
 api_version = "2025-07"
 
-  [[webhooks.subscriptions]]
-  topics = [ "app/uninstalled" ]
-  uri = "/webhooks/app/uninstalled"
+    [[webhooks.subscriptions]]
+    topics = [ "app/uninstalled" ]
+    uri = "/webhooks/app/uninstalled"
 
-  [[webhooks.subscriptions]]
-  topics = [ "app/scopes_update" ]
-  uri = "/webhooks/app/scopes_update"
+    [[webhooks.subscriptions]]
+    topics = [ "app/scopes_update" ]
+    uri = "/webhooks/app/scopes_update"
+
+    [[webhooks.subscriptions]]
+    topics = [ "app_subscriptions/update" ]
+    uri = "/webhooks/app/app_subscriptions_update"
 
 [access_scopes]
 # Scopes required for entity mentions (@mentions for products, orders, customers, etc.)

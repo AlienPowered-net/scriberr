@@ -1,6 +1,10 @@
 import { json } from "@remix-run/node";
 import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
+import {
+  buildPlanAccessErrorBody,
+  ensurePlan,
+  isPlanAccessError,
+} from "../utils/tenant.server";
 
 export async function action({ request }) {
   try {
@@ -20,8 +24,6 @@ export async function action({ request }) {
       return json({ error: "Shop parameter is required" }, { status: 400 });
     }
 
-    const shopId = await getOrCreateShopId(shop);
-
     // Parse the tags
     let tags;
     try {
@@ -29,6 +31,13 @@ export async function action({ request }) {
     } catch (error) {
       return json({ error: "Invalid tags format" }, { status: 400 });
     }
+
+    const planContext = await ensurePlan({
+      shopDomain: shop,
+      usage: [{ key: "tags", currentQuantity: Array.isArray(tags) ? tags.length : 0 }],
+    });
+
+    const shopId = planContext.shop.id;
 
     // Update only the tags for the note
     const updatedNote = await prisma.note.update({
@@ -41,8 +50,16 @@ export async function action({ request }) {
       }
     });
 
-    return json({ success: true, note: updatedNote });
+    return json({
+      success: true,
+      note: updatedNote,
+      planUsage: planContext.usageSummary,
+    });
   } catch (error) {
+    if (isPlanAccessError(error)) {
+      return json(buildPlanAccessErrorBody(error), { status: error.status });
+    }
+
     console.error('Error updating note tags:', error);
     return json({ error: "Failed to update note tags" }, { status: 500 });
   }

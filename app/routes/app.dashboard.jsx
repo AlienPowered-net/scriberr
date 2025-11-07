@@ -417,6 +417,53 @@ export default function Index() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [folderId, setFolderId] = useState("");
+  const {
+    plan,
+    usage: planUsage,
+    loading: planLoading,
+    upgradePrompt,
+    closeUpgradePrompt,
+    refreshPlan,
+    handlePlanResponse,
+    showUpgradePrompt,
+  } = usePlanUsage();
+  const planManaged = plan?.managed ?? false;
+  const noteUsage = planUsage?.notes;
+  const noteLimitReached =
+    noteUsage?.limit !== null &&
+    noteUsage?.limit !== undefined &&
+    noteUsage?.quantity >= noteUsage?.limit;
+  const folderUsage = planUsage?.folders;
+  const folderLimitReached =
+    folderUsage?.limit !== null &&
+    folderUsage?.limit !== undefined &&
+    folderUsage?.quantity >= folderUsage?.limit;
+  const tagLimit =
+    plan?.limits?.tags?.limit ?? null;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+      const response = await originalFetch(...args);
+      if (response.status === 403) {
+        try {
+          const data = await response.clone().json();
+          showUpgradePrompt(data);
+        } catch (error) {
+          showUpgradePrompt({
+            message:
+              "Upgrade your plan to continue using this feature.",
+            plan,
+          });
+        }
+      }
+      return response;
+    };
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, [showUpgradePrompt, plan]);
 
   // Sync localNotes with server data when notes change
   useEffect(() => {
@@ -2012,6 +2059,17 @@ export default function Index() {
       return;
     }
 
+    if (noteLimitReached) {
+      setAlertMessage('You have reached the note limit for your current plan.');
+      setAlertType('error');
+      showUpgradePrompt({
+        message: 'Upgrade to create additional notes.',
+        plan,
+      });
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
     // If there's an open note being edited, save it first (only if it has content)
     if (editingNoteId && (title.trim() || body.trim())) {
       const trimmedTitle = removeEmojis(title.trim());
@@ -2084,21 +2142,36 @@ export default function Index() {
     
 
     
-    try {
-      const response = await fetch('/api/create-note', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Accept-Charset': 'utf-8'
-        },
-        body: formData
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.note) {
+  try {
+    const response = await fetch('/api/create-note', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Accept-Charset': 'utf-8'
+      },
+      body: formData
+    });
+    
+    const result = await handlePlanResponse(response);
+    
+    if (!result.ok) {
+      if (result.status === 403) {
+        showUpgradePrompt(result.data);
+        setAlertMessage(result.data?.message || 'Upgrade to create additional notes.');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+        refreshPlan();
+        return;
+      }
+      setAlertMessage(result.data?.error || 'Failed to create new note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
+    if (result.data.success && result.data.note) {
           // Add new note to the notes list immediately
-          const newNote = result.note;
+        const newNote = result.data.note;
           
           // Update notes state to include new note (add after oldest pinned note)
           setLocalNotes(prevNotes => insertNoteAfterOldestPin(newNote, prevNotes));
@@ -2121,15 +2194,11 @@ export default function Index() {
           setAlertMessage('New note created successfully!');
           setAlertType('success');
           setTimeout(() => setAlertMessage(''), 3000);
-        } else {
-          setAlertMessage(result.error || 'Failed to create new note');
-          setAlertType('error');
-          setTimeout(() => setAlertMessage(''), 3000);
-        }
-      } else {
-        setAlertMessage('Failed to create new note');
-        setAlertType('error');
-        setTimeout(() => setAlertMessage(''), 3000);
+        refreshPlan();
+    } else {
+      setAlertMessage(result.data.error || 'Failed to create new note');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
       }
     } catch (error) {
       console.error('Error creating new note:', error);
@@ -2207,6 +2276,16 @@ export default function Index() {
   // Handle duplicating a note
   const handleDuplicateNote = async () => {
     if (!showDuplicateModal) return;
+    if (noteLimitReached) {
+      setAlertMessage('You have reached the note limit for your current plan.');
+      setAlertType('error');
+      showUpgradePrompt({
+        message: 'Upgrade to create additional notes.',
+        plan,
+      });
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
     
     const formData = new FormData();
     formData.append('noteId', showDuplicateModal);
@@ -2222,19 +2301,30 @@ export default function Index() {
         body: formData
       });
       
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
+      const result = await handlePlanResponse(response);
+      
+      if (!result.ok) {
+        if (result.status === 403) {
+          showUpgradePrompt(result.data);
+          setAlertMessage(result.data?.message || 'Upgrade to duplicate notes.');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
+          refreshPlan();
+          return;
+        }
+        setAlertMessage(result.data?.error || 'Failed to duplicate note');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+        return;
+      }
+
+      if (result.data.success) {
           setShowDuplicateModal(null);
           setDuplicateFolderId("");
           window.location.reload();
-        } else {
-          setAlertMessage(result.error || 'Failed to duplicate note');
-          setAlertType('error');
-          setTimeout(() => setAlertMessage(''), 3000);
-        }
+        refreshPlan();
       } else {
-        setAlertMessage('Failed to duplicate note');
+        setAlertMessage(result.data.error || 'Failed to duplicate note');
         setAlertType('error');
         setTimeout(() => setAlertMessage(''), 3000);
       }
@@ -3048,6 +3138,28 @@ export default function Index() {
     const trimmedBody = body.trim();
     const trimmedFolderId = folderId.trim();
 
+    if (!editingNoteId && noteLimitReached) {
+      setAlertMessage('You have reached the note limit for your current plan.');
+      setAlertType('error');
+      showUpgradePrompt({
+        message: 'Upgrade to create additional notes.',
+        plan,
+      });
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
+    if (tagLimit !== null && noteTags.length > tagLimit) {
+      setAlertMessage(`You can assign up to ${tagLimit} tags per note on your current plan.`);
+      setAlertType('error');
+      showUpgradePrompt({
+        message: `Reduce tags or upgrade to add more than ${tagLimit} tags per note.`,
+        plan,
+      });
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
     // Check if at least title or body is provided
     if (!trimmedTitle && !trimmedBody) {
       setAlertMessage('Please provide a title or content for the note');
@@ -3080,13 +3192,28 @@ export default function Index() {
         method: 'POST',
         body: formData
       });
-      
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
+
+      const result = await handlePlanResponse(response);
+
+      if (!result.ok) {
+        if (result.status === 403) {
+          setAlertMessage(result.data?.message || 'Upgrade to create additional notes.');
+          setAlertType('error');
+          showUpgradePrompt(result.data);
+          setTimeout(() => setAlertMessage(''), 3000);
+          refreshPlan();
+          return;
+        }
+        setAlertMessage(result.data?.error || 'Failed to save note');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+        return;
+      }
+
+      if (result.data.success) {
           // Add the new note to the notes list
           const newNote = {
-            id: result.noteId,
+            id: result.data.noteId,
             title: trimmedTitle || "Untitled",
             content: trimmedBody,
             tags: noteTags.map(tag => removeEmojis(tag)),
@@ -3116,16 +3243,12 @@ export default function Index() {
           setAlertMessage('Note created successfully');
           setAlertType('success');
           setTimeout(() => setAlertMessage(''), 3000);
+          refreshPlan();
         } else {
-          setAlertMessage(result.error || 'Failed to save note');
+          setAlertMessage(result.data.error || 'Failed to save note');
           setAlertType('error');
           setTimeout(() => setAlertMessage(''), 3000);
         }
-      } else {
-        setAlertMessage('Failed to save note');
-        setAlertType('error');
-        setTimeout(() => setAlertMessage(''), 3000);
-      }
     } catch (error) {
       console.error('Error saving note:', error);
       setAlertMessage('Failed to save note');
@@ -3136,6 +3259,16 @@ export default function Index() {
 
   // Handle new folder button click - launches new folder modal
   const handleNewFolderClick = () => {
+    if (folderLimitReached) {
+      setAlertMessage('You have reached the folder limit for your current plan.');
+      setAlertType('error');
+      showUpgradePrompt({
+        message: 'Upgrade to create additional folders.',
+        plan,
+      });
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
     // Launch new folder modal directly
     setShowNewFolderModal(true);
   };
@@ -3146,6 +3279,17 @@ export default function Index() {
     if (!trimmedName) {
       setAlertMessage('Folder name cannot be empty');
       setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
+    if (folderLimitReached) {
+      setAlertMessage('You have reached the folder limit for your current plan.');
+      setAlertType('error');
+      showUpgradePrompt({
+        message: 'Upgrade to create additional folders.',
+        plan,
+      });
       setTimeout(() => setAlertMessage(''), 3000);
       return;
     }
@@ -3163,24 +3307,35 @@ export default function Index() {
         })
       });
       
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.folder) {
+      const result = await handlePlanResponse(response);
+      
+      if (!result.ok) {
+        if (result.status === 403) {
+          showUpgradePrompt(result.data);
+          setAlertMessage(result.data?.message || 'Upgrade to create additional folders.');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
+          refreshPlan();
+          return;
+        }
+        setAlertMessage(result.data?.error || 'Failed to create folder');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+        return;
+      }
+
+      if (result.data.success && result.data.folder) {
           // Add new folder to local state immediately
-          setLocalFolders(prev => [result.folder, ...prev]);
+          setLocalFolders(prev => [result.data.folder, ...prev]);
           setFolderName(''); // Clear the input
           
           
           setAlertMessage('Folder created successfully!');
           setAlertType('success');
           setTimeout(() => setAlertMessage(''), 3000);
-        } else {
-          setAlertMessage(result.error || 'Failed to create folder');
-          setAlertType('error');
-          setTimeout(() => setAlertMessage(''), 3000);
-        }
+          refreshPlan();
       } else {
-        setAlertMessage('Failed to create folder');
+        setAlertMessage(result.data.error || 'Failed to create folder');
         setAlertType('error');
         setTimeout(() => setAlertMessage(''), 3000);
       }
@@ -3202,6 +3357,17 @@ export default function Index() {
       return;
     }
 
+    if (folderLimitReached) {
+      setAlertMessage('You have reached the folder limit for your current plan.');
+      setAlertType('error');
+      showUpgradePrompt({
+        message: 'Upgrade to create additional folders.',
+        plan,
+      });
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
     const formData = new FormData();
     formData.append('name', trimmedName);
     
@@ -3211,22 +3377,33 @@ export default function Index() {
         body: formData
       });
       
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.folder) {
+      const result = await handlePlanResponse(response);
+      
+      if (!result.ok) {
+        if (result.status === 403) {
+          showUpgradePrompt(result.data);
+          setAlertMessage(result.data?.message || 'Upgrade to create additional folders.');
+          setAlertType('error');
+          setTimeout(() => setAlertMessage(''), 3000);
+          refreshPlan();
+          return;
+        }
+        setAlertMessage(result.data?.error || 'Failed to create folder');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+        return;
+      }
+
+      if (result.data.success && result.data.folder) {
           setFolderName(''); // Clear the input
           // Add new folder to local state immediately
-          setLocalFolders(prev => [result.folder, ...prev]);
+        setLocalFolders(prev => [result.data.folder, ...prev]);
           setAlertMessage('Folder created successfully!');
           setAlertType('success');
           setTimeout(() => setAlertMessage(''), 3000);
-        } else {
-          setAlertMessage(result.error || 'Failed to create folder');
-          setAlertType('error');
-          setTimeout(() => setAlertMessage(''), 3000);
-        }
+        refreshPlan();
       } else {
-        setAlertMessage('Failed to create folder');
+        setAlertMessage(result.data.error || 'Failed to create folder');
         setAlertType('error');
         setTimeout(() => setAlertMessage(''), 3000);
       }
@@ -4261,13 +4438,21 @@ export default function Index() {
                 </span>
               </div>
               
-              {/* New Note Button */}
+                {/* New Note Button */}
+                {noteLimitReached && (
+                  <Banner tone="critical">
+                    <Text as="p" variant="bodyMd">
+                      You have reached the note limit for your current plan. Upgrade to create additional notes.
+                    </Text>
+                  </Banner>
+                )}
               <div style={{ marginTop: "16px" }}>
                 <Button 
                   onClick={handleNewNote}
                   variant="primary" 
                   tone="warning"
                   fullWidth
+                    disabled={noteLimitReached}
                 >
                   New Note
                 </Button>

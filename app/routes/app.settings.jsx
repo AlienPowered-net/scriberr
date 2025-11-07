@@ -16,12 +16,44 @@ import {
   Icon,
 } from "@shopify/polaris";
 import { DeleteIcon } from "@shopify/polaris-icons";
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import packageJson from "../../package.json" with { type: "json" };
+import { usePlanUsage } from "../hooks/usePlanUsage";
+import PlanUpgradeModal from "../components/PlanUpgradeModal";
 
 export default function Settings() {
-  const [selectedSubscription, setSelectedSubscription] = useState("basic");
+  const {
+    plan,
+    usage: planUsage,
+    loading: planLoading,
+    upgradePrompt,
+    closeUpgradePrompt,
+    refreshPlan,
+    handlePlanResponse,
+  } = usePlanUsage();
+  const [selectedSubscription, setSelectedSubscription] = useState(null);
   const version = packageJson.version;
+  
+  useEffect(() => {
+    if (!plan) {
+      setSelectedSubscription(null);
+      return;
+    }
+    const mapping = {
+      FREE: null,
+      BASIC: "basic",
+      PRO: "pro",
+      ENTERPRISE: "enterprise",
+    };
+    setSelectedSubscription(mapping[plan.code] ?? null);
+  }, [plan]);
+  
+  const planManaged = plan?.managed ?? false;
+  const mentionUsage = planUsage?.mentions;
+  const mentionsLimitReached =
+    mentionUsage?.limit !== null &&
+    mentionUsage?.limit !== undefined &&
+    mentionUsage?.quantity >= mentionUsage?.limit;
   
   // Onboarding guide preference
   const [showOnboardingGuide, setShowOnboardingGuide] = useState(() => {
@@ -46,24 +78,41 @@ export default function Settings() {
   const [newMentionEmail, setNewMentionEmail] = useState("");
   const [mentionAlertMessage, setMentionAlertMessage] = useState("");
 
-  // Fetch custom mentions on mount
-  useEffect(() => {
-    fetchCustomMentions();
-  }, []);
-
-  const fetchCustomMentions = async () => {
+  const fetchContacts = useCallback(async () => {
     try {
-      const response = await fetch('/api/custom-mentions');
-      const data = await response.json();
-      if (data.success) {
-        setCustomMentions(data.mentions);
+      const response = await fetch("/api/contacts");
+      const result = await handlePlanResponse(response);
+      if (!result.ok) {
+        if (result.status === 403) {
+          return;
+        }
+        console.error("Error fetching contacts:", result.data?.error);
+        return;
+      }
+      if (result.data.success) {
+        setCustomMentions(result.data.contacts ?? []);
       }
     } catch (error) {
-      console.error('Error fetching custom mentions:', error);
+      console.error("Error fetching contacts:", error);
     }
-  };
+  }, [handlePlanResponse]);
+  
+  useEffect(() => {
+    if (planLoading) {
+      return;
+    }
+    if (planManaged) {
+      fetchContacts();
+    } else {
+      setCustomMentions([]);
+    }
+  }, [planLoading, planManaged, fetchContacts]);
 
   const handleAddMention = async () => {
+    if (!planManaged) {
+      setMentionAlertMessage("Upgrade required to add contacts.");
+      return;
+    }
     if (!newMentionName.trim() || !newMentionEmail.trim()) {
       setMentionAlertMessage("Please enter both name and email");
       return;
@@ -75,25 +124,38 @@ export default function Settings() {
       formData.append("name", newMentionName.trim());
       formData.append("email", newMentionEmail.trim());
 
-      const response = await fetch('/api/custom-mentions', {
-        method: 'POST',
-        body: formData
+      const response = await fetch("/api/custom-mentions", {
+        method: "POST",
+        body: formData,
       });
 
-      const data = await response.json();
-      
-      if (data.success) {
-        setCustomMentions([...customMentions, data.mention]);
+      const result = await handlePlanResponse(response);
+
+      if (!result.ok) {
+        if (result.status === 403) {
+          return;
+        }
+        setMentionAlertMessage(
+          result.data?.error || "Failed to add contact",
+        );
+        return;
+      }
+
+      if (result.data.success) {
+        setCustomMentions((prev) => [...prev, result.data.mention]);
         setShowAddMentionModal(false);
         setNewMentionName("");
         setNewMentionEmail("");
         setMentionAlertMessage("");
+        refreshPlan();
       } else {
-        setMentionAlertMessage(data.error || "Failed to add mention");
+        setMentionAlertMessage(
+          result.data.error || "Failed to add contact",
+        );
       }
     } catch (error) {
-      console.error('Error adding mention:', error);
-      setMentionAlertMessage("Error adding mention");
+      console.error("Error adding contact:", error);
+      setMentionAlertMessage("Error adding contact");
     }
   };
 
@@ -108,13 +170,23 @@ export default function Settings() {
         body: formData
       });
 
-      const data = await response.json();
-      
-      if (data.success) {
-        setCustomMentions(customMentions.filter(m => m.id !== id));
+      const result = await handlePlanResponse(response);
+
+      if (!result.ok) {
+        if (result.status === 403) {
+          return;
+        }
+        setMentionAlertMessage(result.data?.error || "Failed to remove contact");
+        return;
+      }
+
+      if (result.data.success) {
+        setCustomMentions((prev) => prev.filter((m) => m.id !== id));
+        refreshPlan();
       }
     } catch (error) {
-      console.error('Error deleting mention:', error);
+      console.error('Error deleting contact:', error);
+      setMentionAlertMessage("Error deleting mention");
     }
   };
 
@@ -251,10 +323,116 @@ export default function Settings() {
     }
   ];
 
+  const formatUsageValue = (entry) => {
+    if (!entry) {
+      return planLoading ? "…" : "0";
+    }
+    if (entry.limit === null || entry.limit === undefined) {
+      return `${entry.quantity ?? 0} / ∞`;
+    }
+    return `${entry.quantity ?? 0} / ${entry.limit}`;
+  };
+
+  const formatDateLabel = (isoString) => {
+    if (!isoString) return null;
+    const date = new Date(isoString);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const planUsageBreakdown = [
+    { key: "notes", label: "Notes" },
+    { key: "folders", label: "Folders" },
+    { key: "mentions", label: "Contacts" },
+  ];
+
   return (
     <Page title="Settings">
       <div style={{ paddingBottom: "80px" }}>
         <BlockStack gap="500">
+          {/* Plan Overview */}
+          <Card>
+            <div style={{ padding: "16px" }}>
+              <BlockStack gap="300">
+                <InlineStack align="space-between" gap="200">
+                  <BlockStack gap="100">
+                    <Text as="h2" variant="headingMd">
+                      Subscription Overview
+                    </Text>
+                    <InlineStack gap="200" align="center">
+                      <Badge tone={planManaged ? "success" : "attention"}>
+                        {plan?.title ?? "Free Plan"}
+                      </Badge>
+                      {plan?.status && (
+                        <Badge tone="info">
+                          {plan.status.toLowerCase()}
+                        </Badge>
+                      )}
+                    </InlineStack>
+                  </BlockStack>
+                  <Text variant="bodyMd" tone="subdued">
+                    Version {version}
+                  </Text>
+                </InlineStack>
+
+                <Text as="p" variant="bodyMd" tone="subdued">
+                  {plan?.description ??
+                    "Upgrade to a Shopify managed plan to unlock advanced features and higher usage limits."}
+                </Text>
+
+                <InlineStack gap="400">
+                  {planUsageBreakdown.map(({ key, label }) => {
+                    const usageEntry = planUsage?.[key];
+                    const limitReached =
+                      usageEntry?.limit !== null &&
+                      usageEntry?.limit !== undefined &&
+                      usageEntry?.quantity >= usageEntry?.limit;
+
+                    return (
+                      <BlockStack key={key} gap="100">
+                        <Text as="span" tone="subdued" variant="bodySm">
+                          {label}
+                        </Text>
+                        <InlineStack gap="150" align="center">
+                          <Text as="span" variant="headingMd">
+                            {formatUsageValue(usageEntry)}
+                          </Text>
+                          {limitReached && (
+                            <Badge tone="critical">
+                              Limit reached
+                            </Badge>
+                          )}
+                        </InlineStack>
+                      </BlockStack>
+                    );
+                  })}
+                </InlineStack>
+
+                <InlineStack gap="400" align="start">
+                  {plan?.trialEndsAt && (
+                    <Text as="span" tone="subdued" variant="bodySm">
+                      Trial ends {formatDateLabel(plan.trialEndsAt)}
+                    </Text>
+                  )}
+                  {plan?.graceEndsAt && (
+                    <Text as="span" tone="subdued" variant="bodySm">
+                      Grace period ends {formatDateLabel(plan.graceEndsAt)}
+                    </Text>
+                  )}
+                  {planManaged && plan?.renewsAt && (
+                    <Text as="span" tone="subdued" variant="bodySm">
+                      Next renewal {formatDateLabel(plan.renewsAt)}
+                    </Text>
+                  )}
+                </InlineStack>
+              </BlockStack>
+            </div>
+          </Card>
+
         {/* Content Management Section */}
         <Card>
           <div style={{ padding: "16px" }}>
@@ -315,11 +493,30 @@ export default function Settings() {
                 </Banner>
               )}
 
-              <div>
-                <Button onClick={() => setShowAddMentionModal(true)}>
-                  Add Person
-                </Button>
-              </div>
+                {!planManaged && (
+                  <Banner tone="warning">
+                    <Text as="p" variant="bodyMd">
+                      Contacts are available on managed plans. Upgrade to add and manage custom mentions.
+                    </Text>
+                  </Banner>
+                )}
+
+                {mentionsLimitReached && (
+                  <Banner tone="critical">
+                    <Text as="p" variant="bodyMd">
+                      You have reached the contacts limit for your current plan.
+                    </Text>
+                  </Banner>
+                )}
+
+                <div>
+                  <Button
+                    onClick={() => setShowAddMentionModal(true)}
+                    disabled={!planManaged || mentionsLimitReached}
+                  >
+                    Add Person
+                  </Button>
+                </div>
 
               {customMentions.length > 0 ? (
                 <div style={{ 
@@ -399,6 +596,7 @@ export default function Settings() {
         <Divider />
 
         {/* Subscription Management Section */}
+        <div id="subscription-management">
         <Card>
           <div style={{ padding: "16px" }}>
             <BlockStack gap="400">
@@ -461,6 +659,7 @@ export default function Settings() {
             </BlockStack>
           </div>
         </Card>
+        </div>
 
         {/* Alert Message */}
         {alertMessage && (
@@ -663,7 +862,29 @@ export default function Settings() {
             />
           </BlockStack>
         </Modal.Section>
-      </Modal>
+        </Modal>
+
+        <PlanUpgradeModal
+          open={upgradePrompt.open}
+          onClose={closeUpgradePrompt}
+          message={
+            upgradePrompt.message ||
+            "Upgrade your Shopify managed plan to unlock this feature."
+          }
+          plan={upgradePrompt.plan ?? plan}
+          primaryAction={{
+            content: "View plans",
+            onAction: () => {
+              closeUpgradePrompt();
+              const target = document.getElementById("subscription-management");
+              if (target) {
+                target.scrollIntoView({ behavior: "smooth", block: "start" });
+              } else {
+                window.location.hash = "subscription-management";
+              }
+            },
+          }}
+        />
       </BlockStack>
       </div>
 
