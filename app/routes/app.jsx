@@ -101,7 +101,7 @@ export default function App() {
   }, []);
 
   const openUpgradeModal = useCallback(
-    (payload?: { code?: string; message?: string }) => {
+    (payload) => {
       setUpgradePrompt(
         payload ?? {
           code: "LIMIT_REACHED",
