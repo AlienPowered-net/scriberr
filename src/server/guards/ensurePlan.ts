@@ -77,17 +77,49 @@ export async function getMerchantByShop(sessionOrShop: Session | string) {
         ? (sessionOrShop as Session & { shopId?: string }).shopId ?? null
         : null;
 
-  return prisma.shop.upsert({
-    where: { domain: shopDomain },
-    update: shopGid ? { shopGid } : {},
-    create: {
-      domain: shopDomain,
-      ...(shopGid ? { shopGid } : {}),
-    },
-    include: {
-      subscription: true,
-    },
-  });
+  try {
+    // Try with shopGid first (if migration has been applied)
+    return await prisma.shop.upsert({
+      where: { domain: shopDomain },
+      update: shopGid ? { shopGid } : {},
+      create: {
+        domain: shopDomain,
+        ...(shopGid ? { shopGid } : {}),
+      },
+      include: {
+        subscription: true,
+      },
+    });
+  } catch (error: any) {
+    // If shopGid column doesn't exist yet (migration not applied), retry without it
+    if (error?.code === "P2022" && error?.meta?.column === "Shop.shopGid") {
+      try {
+        return await prisma.shop.upsert({
+          where: { domain: shopDomain },
+          update: {},
+          create: {
+            domain: shopDomain,
+          },
+          include: {
+            subscription: true,
+          },
+        });
+      } catch (fallbackError: any) {
+        // If subscription relation also doesn't exist, retry without include
+        if (fallbackError?.code === "P2022" || fallbackError?.code === "P2011") {
+          return await prisma.shop.upsert({
+            where: { domain: shopDomain },
+            update: {},
+            create: {
+              domain: shopDomain,
+            },
+          });
+        }
+        throw fallbackError;
+      }
+    }
+    throw error;
+  }
 }
 
 export async function ensureCanCreateNote(
