@@ -519,37 +519,37 @@ export default function HomePage() {
                         Welcome to the latest version of Scriberr! We've improved the user interface, 
                         added better organization features, and enhanced the note-taking experience.
                       </Text>
-                      <Text variant="bodySm" tone="subdued">
-                        <strong>What's New:</strong>
-                      </Text>
-                    <div style={{ textAlign: 'left', width: '100%' }}>
-                      <BlockStack gap="100" align="start">
-                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', width: '100%' }}>
-                          <InlineStack gap="200" align="start">
-                            <Icon source={CheckIcon} tone="success" />
-                            <Text variant="bodySm">Enhanced folder organization</Text>
-                          </InlineStack>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', width: '100%' }}>
-                          <InlineStack gap="200" align="start">
-                            <Icon source={CheckIcon} tone="success" />
-                            <Text variant="bodySm">Improved note editor with rich text support</Text>
-                          </InlineStack>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', width: '100%' }}>
-                          <InlineStack gap="200" align="start">
-                            <Icon source={CheckIcon} tone="success" />
-                            <Text variant="bodySm">Better mobile responsiveness</Text>
-                          </InlineStack>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', width: '100%' }}>
-                          <InlineStack gap="200" align="start">
-                            <Icon source={CheckIcon} tone="success" />
-                            <Text variant="bodySm">Pin important notes for quick access</Text>
-                          </InlineStack>
-                        </div>
-                      </BlockStack>
-                    </div>
+                        <Text variant="bodySm" tone="subdued">
+                          <strong>What's New:</strong>
+                        </Text>
+                      <div style={{ textAlign: 'left', width: '100%' }}>
+                        <BlockStack gap="100" align="start">
+                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', width: '100%' }}>
+                            <InlineStack gap="200" align="start">
+                              <Icon source={CheckIcon} tone="success" />
+                              <Text variant="bodySm">Guided Setup experience that highlights the next action to finish onboarding.</Text>
+                            </InlineStack>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', width: '100%' }}>
+                            <InlineStack gap="200" align="start">
+                              <Icon source={CheckIcon} tone="success" />
+                              <Text variant="bodySm">Dashboard insight cards for total folders, notes, last update, and pinned notes.</Text>
+                            </InlineStack>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', width: '100%' }}>
+                            <InlineStack gap="200" align="start">
+                              <Icon source={CheckIcon} tone="success" />
+                              <Text variant="bodySm">Recent activity lists with folder context and quick navigation into the workspace.</Text>
+                            </InlineStack>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', width: '100%' }}>
+                            <InlineStack gap="200" align="start">
+                              <Icon source={CheckIcon} tone="success" />
+                              <Text variant="bodySm">Pinned note indicators and streamlined pin management for priority content.</Text>
+                            </InlineStack>
+                          </div>
+                        </BlockStack>
+                      </div>
                     </BlockStack>
                   </div>
                 </Box>
