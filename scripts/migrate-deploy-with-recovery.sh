@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
+
 set -euo pipefail
 
 echo "Starting migration deployment…"
 
-# Use Neon DIRECT URL (non-pooled) for migrations
+# --- Ensure DIRECT_URL is a non-pooled Neon URL (no '-pooler.') ---
 if [ -z "${DIRECT_URL:-}" ] && [ -n "${NEON_DIRECT_URL:-}" ]; then
   export DIRECT_URL="$NEON_DIRECT_URL"
 fi
@@ -12,80 +13,105 @@ if [ -z "${DIRECT_URL:-}" ] && [ -n "${DATABASE_URL:-}" ]; then
 fi
 
 db_host="$(echo "$DATABASE_URL" | sed -E 's#(.*//[^@]*@)([^:/?]+).*#\2#')"
-direct_host="$(echo "$DIRECT_URL" | sed -E 's#(.*//[^@]*@)([^:/?]+).*#\2#')"
+direct_host="$(echo "$DIRECT_URL"   | sed -E 's#(.*//[^@]*@)([^:/?]+).*#\2#')"
 echo "DATABASE_URL host: $db_host"
 echo "DIRECT_URL host:   $direct_host"
 
-echo "Pre-deploy status:"
-npx prisma migrate status || true
+# --- Helpers (NO TTY/tee usage anywhere) ---
 
 attempt_deploy () {
-  set +e
-  # Capture output but also let it pass through to terminal
-  deploy_output="$(npx prisma migrate deploy 2>&1 | tee /dev/tty)"
-  rc=$?
-  set -e
-  
-  # Check for the specific folder_position error
-  if echo "$deploy_output" | grep -qE '(column "position"|add_folder_position)'; then
-    echo "Detected folder_position column already exists error"
-    mark_folder_position_applied
-  fi
-  
-  return $rc
+  # print full output (no prompts)
+  npx prisma migrate deploy --schema prisma/schema.prisma
 }
 
-# return the failed migration id, if any, by scanning only lines that mention 'failed'
 get_failed_id () {
-  npx prisma migrate status 2>&1 \
+  # parse only lines that contain 'failed'
+  npx prisma migrate status --schema prisma/schema.prisma 2>&1 \
     | awk '/failed/ { if (match($0, /`([0-9]{14}_[a-z0-9_]+)`/, m)) { print m[1]; exit } }'
 }
 
-resolve_failed () {
-  echo "Checking for failed migrations…"
-  failed="$(get_failed_id || true)"
-  if [ -z "$failed" ]; then
-    # Fallback: explicitly handle the one that keeps appearing in logs
-    failed="20250102100000_add_save_type_free_visible"
-    echo "No failed id parsed; using fallback: $failed"
-  else
-    echo "Found failed migration: $failed"
+has_folder_position_error () {
+  # grep last deploy attempt logs that we saved to a file
+  # (we avoid /dev/tty; use a tmp file)
+  [ -f .prisma_deploy.log ] && grep -q 'column "position" of relation "Folder" already exists' .prisma_deploy.log
+}
+
+mark_failed_as_rolled_back () {
+  local id="$1"
+  if [ -n "$id" ]; then
+    echo "Marking failed migration as rolled back: $id"
+    # Ignore P3011 if it wasn't applied
+    npx prisma migrate resolve --rolled-back "$id" --schema prisma/schema.prisma || true
+  fi
+}
+
+mark_folder_position_as_applied () {
+  echo "Marking 20250905050203_add_folder_position as applied (duplicate column already exists)…"
+  npx prisma migrate resolve --applied 20250905050203_add_folder_position --schema prisma/schema.prisma || true
+}
+
+echo "Pre-deploy status:"
+npx prisma migrate status --schema prisma/schema.prisma || true
+
+# --- First deploy attempt (log to file, no TTY) ---
+set +e
+attempt_deploy | tee .prisma_deploy.log
+rc=$?
+set -e
+
+if [ $rc -eq 0 ]; then
+  echo "Migration deployment completed on first attempt."
+else
+  echo "First deploy failed with rc=$rc"
+
+  # If the classic duplicate column error was seen, mark that migration as applied once
+  if has_folder_position_error; then
+    echo "Detected folder_position duplicate column. Resolving…"
+    mark_folder_position_as_applied
   fi
 
-  # Try to mark as rolled back; ignore P3011 if it wasn't applied.
+  # Resolve actual failed id, if any
+  failed_id="$(get_failed_id || true)"
+  if [ -n "$failed_id" ]; then
+    echo "Detected failed migration from status: $failed_id"
+    mark_failed_as_rolled_back "$failed_id"
+  else
+    echo "No failed id reported by status; skipping generic rollback."
+  fi
+
+  # --- Second attempt ---
   set +e
-  npx prisma migrate resolve --rolled-back "$failed"
+  attempt_deploy | tee .prisma_deploy.log
   rc=$?
   set -e
+
   if [ $rc -ne 0 ]; then
-    echo "Resolve returned rc=$rc (likely not applied / P3011). Continuing…"
-  fi
-}
+    echo "Second deploy failed with rc=$rc"
 
-mark_folder_position_applied () {
-  echo "Detected 'column position already exists' previously — marking 20250905050203_add_folder_position as applied…"
-  npx prisma migrate resolve --applied 20250905050203_add_folder_position || true
-}
-
-if ! attempt_deploy; then
-  echo "First deploy failed. Resolving and retrying…"
-  resolve_failed
-  failed="$(get_failed_id || echo '20250102100000_add_save_type_free_visible')"
-  # If we previously saw the folder_position error, mark it as applied
-  if echo "$failed" | grep -q "add_folder_position"; then
-    mark_folder_position_applied
-  fi
-  sleep 2
-  if ! attempt_deploy; then
-    echo "Second deploy failed. Resolving once more and final retry…"
-    resolve_failed
-    failed="$(get_failed_id || echo '20250102100000_add_save_type_free_visible')"
-    # If we previously saw the folder_position error, mark it as applied
-    if echo "$failed" | grep -q "add_folder_position"; then
-      mark_folder_position_applied
+    # Try one last time: if the folder_position error still happens, ensure it's applied
+    if has_folder_position_error; then
+      echo "Duplicate Folder.position still present. Re-marking as applied…"
+      mark_folder_position_as_applied
     fi
-    sleep 2
-    attempt_deploy
+
+    # Re-check failed id and resolve once more if any
+    failed_id="$(get_failed_id || true)"
+    if [ -n "$failed_id" ]; then
+      echo "Resolving failed migration again: $failed_id"
+      mark_failed_as_rolled_back "$failed_id"
+    fi
+
+    # --- Final attempt ---
+    set +e
+    attempt_deploy | tee .prisma_deploy.log
+    rc=$?
+    set -e
+
+    if [ $rc -ne 0 ]; then
+      echo "Final migrate deploy failed (rc=$rc). Showing status for debugging:"
+      npx prisma migrate status --schema prisma/schema.prisma || true
+      exit $rc
+    fi
   fi
 fi
 
@@ -93,5 +119,5 @@ echo "Generating Prisma client…"
 npx prisma generate
 
 echo "Post-deploy status:"
-npx prisma migrate status
+npx prisma migrate status --schema prisma/schema.prisma
 echo "Migration deployment completed."
