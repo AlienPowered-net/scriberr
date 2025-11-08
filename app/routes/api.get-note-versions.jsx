@@ -49,6 +49,8 @@ export const loader = withPlanContext(async ({ request, planContext }) => {
 
     // For FREE plan, limit to 5 versions with manual saves taking priority
     let versions = allVersions;
+    let metadata = {};
+    
     if (plan === "FREE") {
       const limit = PLAN.FREE.NOTE_VERSIONS_MAX;
       
@@ -67,10 +69,29 @@ export const loader = withPlanContext(async ({ request, planContext }) => {
       versions = [...manualToShow, ...autoToShow].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
+      
+      // Add metadata for frontend to show inline alert
+      const visibleManualCount = versions.filter((v) => !v.isAuto).length;
+      metadata = {
+        isFreePlan: true,
+        versionLimit: limit,
+        visibleCount: versions.length,
+        manualCount: visibleManualCount,
+        autoSaveBlocked: visibleManualCount >= limit,
+        autoSaveBlockedMessage: visibleManualCount >= limit
+          ? "You've reached your version limit. Remove a manual save to make room for new auto-saves."
+          : null,
+      };
+    } else {
+      metadata = {
+        isFreePlan: false,
+        versionLimit: null,
+        visibleCount: versions.length,
+      };
     }
 
     console.log("Found", versions.length, "versions for noteId:", noteId, "plan:", plan);
-    return json(versions);
+    return json({ versions, ...metadata });
   } catch (error) {
     console.error("Error fetching note versions:", error);
     return json({ error: "Failed to fetch versions", details: error.message }, { status: 500 });

@@ -1195,7 +1195,26 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       });
 
       if (response.ok) {
-        const newVersion = await response.json();
+        const result = await response.json();
+        
+        // Handle skipped auto-saves (blocked due to limit, but not an error)
+        if (result.skipped && isAuto) {
+          console.log('[NotionTiptapEditor] Auto-save skipped:', result.reason || result.message);
+          // Don't update state or show error - auto-save was silently skipped
+          // The version history modal will show the inline alert via metadata
+          return null;
+        }
+        
+        // Handle PlanError responses (manual save limit reached - triggers upgrade modal)
+        if (result.error && result.upgradeHint) {
+          console.error('[NotionTiptapEditor] Version limit reached:', result.message);
+          // This will be caught by the global fetch interceptor in app.jsx
+          // which shows the upgrade modal
+          throw new Error(result.message);
+        }
+        
+        // Success - version was created
+        const newVersion = result;
         setVersions(prev => [newVersion, ...prev.slice(0, 19)]); // Keep last 20 versions
         setLastAutoVersion(new Date());
         setHasUnsavedChanges(false);
@@ -1213,6 +1232,15 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         }
         
         return newVersion;
+      } else {
+        const errorData = await response.json();
+        console.error('[NotionTiptapEditor] Failed to create version:', errorData);
+        
+        // Only throw error for manual saves (triggers upgrade modal)
+        // Auto-saves should never trigger upgrade modal
+        if (!isAuto && errorData.upgradeHint) {
+          throw new Error(errorData.message || 'Version limit reached');
+        }
       }
     } catch (error) {
       console.error('Failed to create version:', error);
@@ -1284,8 +1312,17 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     try {
       const response = await fetch(`/api/get-note-versions?noteId=${noteId}`);
       if (response.ok) {
-        const versionsData = await response.json();
+        const data = await response.json();
+        // Handle both old array format and new object format
+        const versionsData = Array.isArray(data) ? data : (data.versions || []);
+        const metadata = Array.isArray(data) ? {} : data;
+        
         setVersions(versionsData);
+        
+        // Store metadata for showing inline alerts
+        if (metadata.autoSaveBlocked) {
+          console.log('[NotionTiptapEditor] Auto-save blocked:', metadata.autoSaveBlockedMessage);
+        }
         
         // Set the first (most recent) version as current if no current version is set
         if (versionsData.length > 0 && !currentVersionId) {
@@ -1444,17 +1481,28 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             })
           });
           
-          if (!res.ok) {
-            const errorText = await res.text();
-            console.error('Auto-version failed:', res.status, errorText);
-            // Don't throw error, just log it and continue
-            setDebugInfo(prev => ({ ...prev, lastVersion: `Error: ${res.status}` }));
-          } else {
-            const newVersion = await res.json();
+          if (res.ok) {
+            const result = await res.json();
+            
+            // Handle skipped auto-saves (blocked due to limit, but not an error)
+            if (result.skipped) {
+              console.log('[NotionTiptapEditor] Auto-save skipped:', result.reason || result.message);
+              // Don't update state or show error - auto-save was silently skipped
+              setDebugInfo(prev => ({ ...prev, lastVersion: 'Skipped (limit reached)' }));
+              return; // Exit early, don't update versions
+            }
+            
+            // Success - version was created
+            const newVersion = result;
             setVersions(prev => [newVersion, ...prev.slice(0, 19)]);
             setCurrentVersionId(newVersion.id); // Set auto-saved version as current
             setDebugInfo(prev => ({ ...prev, lastVersion: new Date().toLocaleTimeString() }));
             console.debug('Auto-version created:', newVersion.id);
+          } else {
+            const errorText = await res.text();
+            console.error('Auto-version failed:', res.status, errorText);
+            // Don't throw error for auto-saves, just log it and continue
+            setDebugInfo(prev => ({ ...prev, lastVersion: `Error: ${res.status}` }));
           }
         }
       } catch (err) {

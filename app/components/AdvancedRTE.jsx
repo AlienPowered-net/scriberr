@@ -1230,7 +1230,26 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       console.log('[AdvancedRTE] Response status:', response.status);
 
       if (response.ok) {
-        const newVersion = await response.json();
+        const result = await response.json();
+        
+        // Handle skipped auto-saves (blocked due to limit, but not an error)
+        if (result.skipped && isAuto) {
+          console.log('[AdvancedRTE] Auto-save skipped:', result.reason || result.message);
+          // Don't update state or show error - auto-save was silently skipped
+          // The version history modal will show the inline alert via metadata
+          return null;
+        }
+        
+        // Handle PlanError responses (manual save limit reached - triggers upgrade modal)
+        if (result.error && result.upgradeHint) {
+          console.error('[AdvancedRTE] Version limit reached:', result.message);
+          // This will be caught by the global fetch interceptor in app.jsx
+          // which shows the upgrade modal
+          throw new Error(result.message);
+        }
+        
+        // Success - version was created
+        const newVersion = result;
         console.log('[AdvancedRTE] Version created successfully:', newVersion);
         setVersions(prev => [newVersion, ...prev.slice(0, 19)]); // Keep last 20 versions
         setLastAutoVersion(new Date());
@@ -1249,6 +1268,12 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       } else {
         const errorData = await response.json();
         console.error('[AdvancedRTE] Failed to create version:', errorData);
+        
+        // Only throw error for manual saves (triggers upgrade modal)
+        // Auto-saves should never trigger upgrade modal
+        if (!isAuto && errorData.upgradeHint) {
+          throw new Error(errorData.message || 'Version limit reached');
+        }
       }
     } catch (error) {
       console.error('[AdvancedRTE] Failed to create version:', error);
@@ -1400,9 +1425,18 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       const response = await fetch(`/api/get-note-versions?noteId=${noteId}`);
       console.log('[AdvancedRTE] loadVersions response status:', response.status);
       if (response.ok) {
-        const versionsData = await response.json();
+        const data = await response.json();
+        // Handle both old array format and new object format
+        const versionsData = Array.isArray(data) ? data : (data.versions || []);
+        const metadata = Array.isArray(data) ? {} : data;
+        
         console.log('[AdvancedRTE] Loaded versions:', versionsData.length, 'versions');
         setVersions(versionsData);
+        
+        // Store metadata for showing inline alerts
+        if (metadata.autoSaveBlocked) {
+          console.log('[AdvancedRTE] Auto-save blocked:', metadata.autoSaveBlockedMessage);
+        }
         
         // Set the first (most recent) version as current if no current version is set
         if (versionsData.length > 0 && !currentVersionId) {

@@ -187,6 +187,40 @@ export async function ensureCanCreateManualVersion(
   }
 }
 
+export async function canCreateAutoSave(
+  noteId: string,
+  plan: PlanKey,
+  db: PrismaTransaction = prisma,
+): Promise<{ canCreate: boolean; reason?: string }> {
+  if (plan === "PRO") {
+    return { canCreate: true };
+  }
+
+  const limit = PLAN.FREE.NOTE_VERSIONS_MAX;
+  
+  // Count total versions and manual versions
+  const [totalVersions, manualVersions] = await Promise.all([
+    db.noteVersion.count({ where: { noteId } }),
+    db.noteVersion.count({ where: { noteId, isAuto: false } }),
+  ]);
+
+  // If under limit, can always create
+  if (totalVersions < limit) {
+    return { canCreate: true };
+  }
+
+  // If at limit and all are manual saves, cannot create auto-save
+  if (manualVersions >= limit) {
+    return {
+      canCreate: false,
+      reason: "You've reached your version limit. Remove a manual save to make room for new auto-saves.",
+    };
+  }
+
+  // If at limit but there are auto-saves, can create (oldest auto-save will be deleted)
+  return { canCreate: true };
+}
+
 export async function enforceVersionRetention(
   noteId: string,
   plan: PlanKey,

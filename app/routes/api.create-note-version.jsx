@@ -3,6 +3,7 @@ import { prisma } from "../utils/db.server";
 import {
   enforceVersionRetention,
   ensureCanCreateManualVersion,
+  canCreateAutoSave,
   isPlanError,
   serializePlanError,
   withPlanContext,
@@ -29,8 +30,23 @@ export const action = withPlanContext(async ({ request, planContext }) => {
       return json({ error: "Note not found" }, { status: 404 });
     }
 
+    // For auto-saves, check if they can be created (never throws PlanError)
+    if (isAuto) {
+      const autoSaveCheck = await canCreateAutoSave(noteId, plan);
+      if (!autoSaveCheck.canCreate) {
+        // Return a non-error response with the reason (doesn't trigger upgrade modal)
+        return json({
+          success: false,
+          skipped: true,
+          reason: autoSaveCheck.reason,
+          message: autoSaveCheck.reason,
+        }, { status: 200 });
+      }
+    }
+
     const version = await prisma.$transaction(async (tx) => {
       // Check if manual version can be created BEFORE creating it
+      // This will throw PlanError if limit reached (triggers upgrade modal)
       if (!isAuto) {
         await ensureCanCreateManualVersion(noteId, plan, tx);
       }
@@ -55,6 +71,7 @@ export const action = withPlanContext(async ({ request, planContext }) => {
     return json(version);
   } catch (error) {
     if (isPlanError(error)) {
+      // Only manual saves trigger PlanError (upgrade modal)
       return json(serializePlanError(error), { status: error.status });
     }
 

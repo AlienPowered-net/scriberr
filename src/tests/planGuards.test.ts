@@ -25,6 +25,7 @@ import {
   PlanError,
   enforceVersionRetention,
   ensureCanCreateManualVersion,
+  canCreateAutoSave,
 } from "../server/guards/ensurePlan";
 import { mapSubscriptionStatus } from "../lib/shopify/billing";
 
@@ -222,6 +223,60 @@ describe("plan guards", () => {
 
       expect(stubDb.noteVersion.findMany).not.toHaveBeenCalled();
       expect(stubDb.noteVersion.deleteMany).not.toHaveBeenCalled();
+    });
+
+    it("allows auto-save when under limit", async () => {
+      const stubDb = {
+        noteVersion: {
+          count: vi.fn().mockResolvedValue(4),
+        },
+      };
+
+      const result = await canCreateAutoSave("note-123", freePlan, stubDb as any);
+      expect(result.canCreate).toBe(true);
+      expect(result.reason).toBeUndefined();
+    });
+
+    it("allows auto-save when at limit but has auto-saves to rotate", async () => {
+      const stubDb = {
+        noteVersion: {
+          count: vi
+            .fn()
+            .mockResolvedValueOnce(5) // total versions
+            .mockResolvedValueOnce(3), // manual versions (2 are auto)
+        },
+      };
+
+      const result = await canCreateAutoSave("note-123", freePlan, stubDb as any);
+      expect(result.canCreate).toBe(true);
+      expect(result.reason).toBeUndefined();
+    });
+
+    it("blocks auto-save when all 5 versions are manual saves", async () => {
+      const stubDb = {
+        noteVersion: {
+          count: vi
+            .fn()
+            .mockResolvedValueOnce(5) // total versions
+            .mockResolvedValueOnce(5), // all are manual
+        },
+      };
+
+      const result = await canCreateAutoSave("note-123", freePlan, stubDb as any);
+      expect(result.canCreate).toBe(false);
+      expect(result.reason).toContain("Remove a manual save");
+    });
+
+    it("always allows auto-save for pro plan", async () => {
+      const stubDb = {
+        noteVersion: {
+          count: vi.fn().mockResolvedValue(100),
+        },
+      };
+
+      const result = await canCreateAutoSave("note-123", proPlan, stubDb as any);
+      expect(result.canCreate).toBe(true);
+      expect(stubDb.noteVersion.count).not.toHaveBeenCalled();
     });
   });
 });
