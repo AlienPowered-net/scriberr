@@ -11,8 +11,13 @@ if [ -z "${DIRECT_URL:-}" ] && [ -n "${DATABASE_URL:-}" ]; then
   export DIRECT_URL="$(echo "$DATABASE_URL" | sed 's/-pooler\././')"
 fi
 
-echo "DATABASE_URL host: $(echo "$DATABASE_URL" | sed -E 's#(.*//[^@]*@)([^:/?]+).*#\2#')"
-echo "DIRECT_URL host:   $(echo "$DIRECT_URL"   | sed -E 's#(.*//[^@]*@)([^:/?]+).*#\2#')"
+db_host="$(echo "$DATABASE_URL" | sed -E 's#(.*//[^@]*@)([^:/?]+).*#\2#')"
+direct_host="$(echo "$DIRECT_URL" | sed -E 's#(.*//[^@]*@)([^:/?]+).*#\2#')"
+echo "DATABASE_URL host: $db_host"
+echo "DIRECT_URL host:   $direct_host"
+
+echo "Pre-deploy status:"
+npx prisma migrate status || true
 
 attempt_deploy () {
   set +e
@@ -22,27 +27,43 @@ attempt_deploy () {
   return $rc
 }
 
-resolve_failed () {
-  echo "Checking for failed migrations…"
-  # Robustly grep the failed migration name from status output
-  failed="$(npx prisma migrate status 2>&1 | grep -oE '\`[0-9]{14}_[a-z0-9_]+' | tr -d '\`' | head -n1 || true)"
-  if [ -n "$failed" ]; then
-    echo "Found failed migration: $failed — marking as rolled back…"
-    npx prisma migrate resolve --rolled-back "$failed"
-  else
-    # Explicitly handle the known one if grep didn't catch it (as seen in logs)
-    npx prisma migrate resolve --rolled-back 20250102100000_add_save_type_free_visible || true
-  fi
+# return the failed migration id, if any, by scanning only lines that mention 'failed'
+get_failed_id () {
+  npx prisma migrate status 2>&1 \
+    | awk '/failed/ { if (match($0, /`([0-9]{14}_[a-z0-9_]+)`/, m)) { print m[1]; exit } }'
 }
 
-echo "Pre-deploy status:"
-npx prisma migrate status || true
+resolve_failed () {
+  echo "Checking for failed migrations…"
+  failed="$(get_failed_id || true)"
+  if [ -z "$failed" ]; then
+    # Fallback: explicitly handle the one that keeps appearing in logs
+    failed="20250102100000_add_save_type_free_visible"
+    echo "No failed id parsed; using fallback: $failed"
+  else
+    echo "Found failed migration: $failed"
+  fi
+
+  # Try to mark as rolled back; ignore P3011 if it wasn't applied.
+  set +e
+  npx prisma migrate resolve --rolled-back "$failed"
+  rc=$?
+  set -e
+  if [ $rc -ne 0 ]; then
+    echo "Resolve returned rc=$rc (likely not applied / P3011). Continuing…"
+  fi
+}
 
 if ! attempt_deploy; then
   echo "First deploy failed. Resolving and retrying…"
   resolve_failed
   sleep 2
-  attempt_deploy
+  if ! attempt_deploy; then
+    echo "Second deploy failed. Resolving once more and final retry…"
+    resolve_failed
+    sleep 2
+    attempt_deploy
+  fi
 fi
 
 echo "Generating Prisma client…"
@@ -50,3 +71,4 @@ npx prisma generate
 
 echo "Post-deploy status:"
 npx prisma migrate status
+echo "Migration deployment completed."
