@@ -45,8 +45,10 @@ export const isPlanError = (error: unknown): error is PlanError =>
   error instanceof PlanError;
 
 export function serializePlanError(error: PlanError) {
+  const errorCode =
+    error.code === "LIMIT_VERSIONS" ? "UPGRADE_REQUIRED" : error.code;
   return {
-    error: error.code,
+    error: errorCode,
     message: error.message,
     upgradeHint: error.upgradeHint,
   };
@@ -160,108 +162,147 @@ export function ensureNoteTagsEnabled(plan: PlanKey) {
   }
 }
 
-export async function ensureCanCreateManualVersion(
+const VERSION_LIMIT = PLAN.FREE.NOTE_VERSIONS_MAX;
+const ORDER_DESC = [
+  { createdAt: "desc" as const },
+  { id: "desc" as const },
+];
+const ORDER_ASC = [
+  { createdAt: "asc" as const },
+  { id: "asc" as const },
+];
+
+export type InlineAlertCode = "NO_ROOM_DUE_TO_MANUALS";
+export const INLINE_ALERTS: Record<InlineAlertCode, InlineAlertCode> = {
+  NO_ROOM_DUE_TO_MANUALS: "NO_ROOM_DUE_TO_MANUALS",
+};
+
+export async function getVisibleCount(
+  noteId: string,
+  db: PrismaTransaction = prisma,
+): Promise<number> {
+  return db.noteVersion.count({
+    where: { noteId, freeVisible: true },
+  });
+}
+
+export async function hasFiveAllManual(
+  noteId: string,
+  db: PrismaTransaction = prisma,
+): Promise<boolean> {
+  const [visibleCount, manualVisibleCount] = await Promise.all([
+    getVisibleCount(noteId, db),
+    db.noteVersion.count({
+      where: {
+        noteId,
+        freeVisible: true,
+        saveType: "MANUAL",
+      },
+    }),
+  ]);
+
+  return visibleCount >= VERSION_LIMIT && visibleCount === manualVisibleCount;
+}
+
+export async function hideOldestVisibleAuto(
+  noteId: string,
+  db: PrismaTransaction = prisma,
+): Promise<string | null> {
+  const oldestAuto = await db.noteVersion.findFirst({
+    where: { noteId, freeVisible: true, saveType: "AUTO" },
+    orderBy: ORDER_ASC,
+    select: { id: true },
+  });
+
+  if (!oldestAuto) {
+    return null;
+  }
+
+  await db.noteVersion.update({
+    where: { id: oldestAuto.id },
+    data: { freeVisible: false },
+  });
+
+  return oldestAuto.id;
+}
+
+export async function surfaceNewestHiddenAuto(
+  noteId: string,
+  db: PrismaTransaction = prisma,
+): Promise<string | null> {
+  const newestHiddenAuto = await db.noteVersion.findFirst({
+    where: { noteId, freeVisible: false, saveType: "AUTO" },
+    orderBy: ORDER_DESC,
+    select: { id: true },
+  });
+
+  if (!newestHiddenAuto) {
+    return null;
+  }
+
+  await db.noteVersion.update({
+    where: { id: newestHiddenAuto.id },
+    data: { freeVisible: true },
+  });
+
+  return newestHiddenAuto.id;
+}
+
+export async function listVisibleVersions(
   noteId: string,
   plan: PlanKey,
   db: PrismaTransaction = prisma,
 ) {
-  if (plan === "PRO") return;
-
-  const limit = PLAN.FREE.NOTE_VERSIONS_MAX;
-  
-  // Count total versions (manual + auto)
-  const totalVersions = await db.noteVersion.count({
-    where: { noteId },
+  return db.noteVersion.findMany({
+    where:
+      plan === "PRO"
+        ? { noteId }
+        : {
+            noteId,
+            freeVisible: true,
+          },
+    orderBy: ORDER_DESC,
   });
-
-  // If we're at the limit, check if all are manual saves
-  if (totalVersions >= limit) {
-    const manualVersions = await db.noteVersion.count({
-      where: { noteId, isAuto: false },
-    });
-
-    // If all versions are manual saves, block creating another manual save
-    if (manualVersions >= limit) {
-      throw new PlanError("LIMIT_VERSIONS");
-    }
-  }
 }
 
-export async function canCreateAutoSave(
+export async function buildVersionsMeta(
   noteId: string,
   plan: PlanKey,
   db: PrismaTransaction = prisma,
-): Promise<{ canCreate: boolean; reason?: string }> {
+  lastActionInlineAlert: InlineAlertCode | null = null,
+) {
   if (plan === "PRO") {
-    return { canCreate: true };
-  }
-
-  const limit = PLAN.FREE.NOTE_VERSIONS_MAX;
-  
-  // Count total versions and manual versions
-  const [totalVersions, manualVersions] = await Promise.all([
-    db.noteVersion.count({ where: { noteId } }),
-    db.noteVersion.count({ where: { noteId, isAuto: false } }),
-  ]);
-
-  // If under limit, can always create
-  if (totalVersions < limit) {
-    return { canCreate: true };
-  }
-
-  // If at limit and all are manual saves, cannot create auto-save
-  if (manualVersions >= limit) {
+    const visibleCount = await db.noteVersion.count({
+      where: { noteId },
+    });
     return {
-      canCreate: false,
-      reason: "You've reached your version limit. Remove a manual save to make room for new auto-saves.",
+      plan,
+      visibleCount,
+      hasAllManualVisible: false,
+      lastActionInlineAlert,
     };
   }
 
-  // If at limit but there are auto-saves, can create (oldest auto-save will be deleted)
-  return { canCreate: true };
-}
+  const [visibleCount, manualVisibleCount] = await Promise.all([
+    getVisibleCount(noteId, db),
+    db.noteVersion.count({
+      where: {
+        noteId,
+        freeVisible: true,
+        saveType: "MANUAL",
+      },
+    }),
+  ]);
 
-export async function enforceVersionRetention(
-  noteId: string,
-  plan: PlanKey,
-  db: PrismaTransaction = prisma,
-) {
-  if (plan === "PRO") return;
+  const hasAllManualVisible =
+    visibleCount >= VERSION_LIMIT && visibleCount === manualVisibleCount;
 
-  const limit = PLAN.FREE.NOTE_VERSIONS_MAX;
-  
-  // Get all versions ordered by creation date (newest first)
-  const allVersions = await db.noteVersion.findMany({
-    where: { noteId },
-    orderBy: { createdAt: "desc" },
-    select: { id: true, isAuto: true },
-  });
-
-  // If we're within the limit, no action needed
-  if (allVersions.length <= limit) {
-    return;
-  }
-
-  // Separate manual and auto saves
-  const manualSaves = allVersions.filter((v) => !v.isAuto);
-  const autoSaves = allVersions.filter((v) => v.isAuto);
-
-  // Manual saves always take priority - never delete them
-  // We can only delete auto-saves if we exceed the limit
-  const manualCount = manualSaves.length;
-  const maxAutoSaves = Math.max(0, limit - manualCount);
-
-  // If we have more auto-saves than allowed, delete the oldest ones
-  if (autoSaves.length > maxAutoSaves) {
-    const autoSavesToDelete = autoSaves.slice(maxAutoSaves);
-    const idsToDelete = autoSavesToDelete.map((v) => v.id);
-
-    if (idsToDelete.length > 0) {
-      await db.noteVersion.deleteMany({
-        where: { id: { in: idsToDelete } },
-      });
-    }
-  }
+  return {
+    plan,
+    visibleCount,
+    hasAllManualVisible,
+    lastActionInlineAlert,
+  };
 }
 
 export const requireFeature =

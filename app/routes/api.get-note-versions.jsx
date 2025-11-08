@@ -1,7 +1,10 @@
 import { json } from "@remix-run/node";
 import { prisma } from "../utils/db.server";
-import { PLAN } from "../../src/lib/plan";
-import { withPlanContext } from "../../src/server/guards/ensurePlan";
+import {
+  buildVersionsMeta,
+  listVisibleVersions,
+  withPlanContext,
+} from "../../src/server/guards/ensurePlan";
 
 export const loader = withPlanContext(async ({ request, planContext }) => {
   try {
@@ -28,70 +31,20 @@ export const loader = withPlanContext(async ({ request, planContext }) => {
       return json({ error: "Note not found" }, { status: 404 });
     }
 
-    // Get all versions for the note, ordered by creation date (newest first)
-    const allVersions = await prisma.noteVersion.findMany({
-      where: {
-        noteId,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        versionTitle: true,
-        snapshot: true,
-        isAuto: true,
-        createdAt: true,
-      },
-    });
+    const [versions, meta] = await Promise.all([
+      listVisibleVersions(noteId, plan, prisma),
+      buildVersionsMeta(noteId, plan, prisma),
+    ]);
 
-    // For FREE plan, limit to 5 versions with manual saves taking priority
-    let versions = allVersions;
-    let metadata = {};
-    
-    if (plan === "FREE") {
-      const limit = PLAN.FREE.NOTE_VERSIONS_MAX;
-      
-      // Separate manual and auto saves
-      const manualSaves = allVersions.filter((v) => !v.isAuto);
-      const autoSaves = allVersions.filter((v) => v.isAuto);
-      
-      // Manual saves always included (up to limit)
-      const manualToShow = manualSaves.slice(0, limit);
-      const remainingSlots = Math.max(0, limit - manualToShow.length);
-      
-      // Fill remaining slots with newest auto-saves
-      const autoToShow = autoSaves.slice(0, remainingSlots);
-      
-      // Combine and sort by creation date (newest first)
-      versions = [...manualToShow, ...autoToShow].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-      
-      // Add metadata for frontend to show inline alert
-      const visibleManualCount = versions.filter((v) => !v.isAuto).length;
-      metadata = {
-        isFreePlan: true,
-        versionLimit: limit,
-        visibleCount: versions.length,
-        manualCount: visibleManualCount,
-        autoSaveBlocked: visibleManualCount >= limit,
-        autoSaveBlockedMessage: visibleManualCount >= limit
-          ? "You've reached your version limit. Remove a manual save to make room for new auto-saves."
-          : null,
-      };
-    } else {
-      metadata = {
-        isFreePlan: false,
-        versionLimit: null,
-        visibleCount: versions.length,
-      };
-    }
-
-    console.log("Found", versions.length, "versions for noteId:", noteId, "plan:", plan);
-    return json({ versions, ...metadata });
+    console.log(
+      "Found",
+      versions.length,
+      "versions for noteId:",
+      noteId,
+      "plan:",
+      plan,
+    );
+    return json({ versions, meta });
   } catch (error) {
     console.error("Error fetching note versions:", error);
     return json({ error: "Failed to fetch versions", details: error.message }, { status: 500 });

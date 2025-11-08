@@ -1,19 +1,25 @@
 import { json } from "@remix-run/node";
 import { prisma } from "../utils/db.server";
 import {
-  enforceVersionRetention,
-  ensureCanCreateManualVersion,
-  canCreateAutoSave,
+  INLINE_ALERTS,
+  PlanError,
+  buildVersionsMeta,
+  getVisibleCount,
+  hasFiveAllManual,
+  hideOldestVisibleAuto,
   isPlanError,
+  listVisibleVersions,
   serializePlanError,
   withPlanContext,
 } from "../../src/server/guards/ensurePlan";
+import { PLAN } from "../../src/lib/plan";
 
 export const action = withPlanContext(async ({ request, planContext }) => {
   try {
     const { shopId, plan } = planContext;
     
-    const { noteId, title, content, versionTitle, snapshot, isAuto = false } = await request.json();
+    const { noteId, title, content, versionTitle, snapshot, isAuto = false } =
+      await request.json();
     
     console.log("Version request data:", { noteId, title, isAuto });
 
@@ -30,25 +36,31 @@ export const action = withPlanContext(async ({ request, planContext }) => {
       return json({ error: "Note not found" }, { status: 404 });
     }
 
-    // For auto-saves, check if they can be created (never throws PlanError)
-    if (isAuto) {
-      const autoSaveCheck = await canCreateAutoSave(noteId, plan);
-      if (!autoSaveCheck.canCreate) {
-        // Return a non-error response with the reason (doesn't trigger upgrade modal)
-        return json({
-          success: false,
-          skipped: true,
-          reason: autoSaveCheck.reason,
-          message: autoSaveCheck.reason,
-        }, { status: 200 });
-      }
-    }
+    const result = await prisma.$transaction(async (tx) => {
+      let inlineAlert = null;
+      let freeVisible = true;
 
-    const version = await prisma.$transaction(async (tx) => {
-      // Check if manual version can be created BEFORE creating it
-      // This will throw PlanError if limit reached (triggers upgrade modal)
-      if (!isAuto) {
-        await ensureCanCreateManualVersion(noteId, plan, tx);
+      if (!isAuto && plan === "FREE") {
+        const visibleCount = await getVisibleCount(noteId, tx);
+        if (visibleCount >= PLAN.FREE.NOTE_VERSIONS_MAX) {
+          throw new PlanError("LIMIT_VERSIONS");
+        }
+      }
+
+      if (isAuto) {
+        if (plan === "FREE") {
+          const visibleCount = await getVisibleCount(noteId, tx);
+
+          if (visibleCount >= PLAN.FREE.NOTE_VERSIONS_MAX) {
+            const allManual = await hasFiveAllManual(noteId, tx);
+            if (allManual) {
+              freeVisible = false;
+              inlineAlert = INLINE_ALERTS.NO_ROOM_DUE_TO_MANUALS;
+            } else {
+              await hideOldestVisibleAuto(noteId, tx);
+            }
+          }
+        }
       }
 
       const created = await tx.noteVersion.create({
@@ -59,16 +71,26 @@ export const action = withPlanContext(async ({ request, planContext }) => {
           versionTitle,
           snapshot: snapshot ? JSON.parse(snapshot) : null,
           isAuto,
+          saveType: isAuto ? "AUTO" : "MANUAL",
+          freeVisible,
         },
       });
 
-      // After creation, enforce retention (only affects auto-saves for FREE plan)
-      await enforceVersionRetention(noteId, plan, tx);
-      return created;
+      const [versions, meta] = await Promise.all([
+        listVisibleVersions(noteId, plan, tx),
+        buildVersionsMeta(noteId, plan, tx, inlineAlert),
+      ]);
+
+      return {
+        version: created,
+        versions,
+        meta,
+        inlineAlert,
+      };
     });
 
-    console.log("Version created successfully:", version.id);
-    return json(version);
+    console.log("Version created successfully:", result.version.id);
+    return json(result);
   } catch (error) {
     if (isPlanError(error)) {
       // Only manual saves trigger PlanError (upgrade modal)

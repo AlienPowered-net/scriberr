@@ -5,14 +5,19 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")   // use pooled URL at runtime
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // use pooled URL at runtime
   // directUrl = env("DIRECT_URL")     // use primary for migrations
 }
 
 enum Plan {
   FREE
   PRO
+}
+
+enum VersionSaveType {
+  AUTO
+  MANUAL
 }
 
 enum SubscriptionStatus {
@@ -23,19 +28,19 @@ enum SubscriptionStatus {
 }
 
 model Shop {
-  id             String         @id @default(cuid())
-  domain         String         @unique           // e.g. dev-alienpowered.myshopify.com
+  id             String          @id @default(cuid())
+  domain         String          @unique // e.g. dev-alienpowered.myshopify.com
   shopGid        String?
-  installedAt    DateTime       @default(now())
-  plan           Plan           @default(FREE)
+  installedAt    DateTime        @default(now())
+  plan           Plan            @default(FREE)
   subscription   Subscription?
   folders        Folder[]
   notes          Note[]
   customMentions CustomMention[]
   contactFolders ContactFolder[]
   contacts       Contact[]
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }
 
 model Folder {
@@ -50,64 +55,69 @@ model Folder {
   updatedAt DateTime @updatedAt
   shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
-  @@index([shopId])
   @@unique([shopId, name]) // names unique per shop (optional)
+  @@index([shopId])
 }
 
 model Note {
-  id        String    @id @default(cuid())
+  id        String        @id @default(cuid())
   shopId    String
   folderId  String?
   title     String
-  content   String    @db.Text
-  tags      String[]  @default([])
+  content   String        @db.Text
+  tags      String[]      @default([])
   pinnedAt  DateTime?
-  createdAt DateTime  @default(now())
-  shop      Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  folder    Folder?   @relation(fields: [folderId], references: [id])
+  createdAt DateTime      @default(now())
+  shop      Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  folder    Folder?       @relation(fields: [folderId], references: [id])
   versions  NoteVersion[]
-  updatedAt DateTime  @updatedAt
+  updatedAt DateTime      @updatedAt
+
   @@index([shopId, folderId, updatedAt])
 }
 
 model NoteVersion {
-  id          String   @id @default(cuid())
-  noteId      String
-  title       String
-  content     String   @db.Text
+  id           String          @id @default(cuid())
+  noteId       String
+  title        String
+  content      String          @db.Text
   versionTitle String? // User-defined title for the version
-  snapshot    Json?    // Tiptap editor state snapshot for comparison
-  isAuto      Boolean  @default(false) // Whether this is an auto-generated version
-  createdAt   DateTime @default(now())
-  note        Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  
+  snapshot     Json? // Tiptap editor state snapshot for comparison
+  isAuto       Boolean         @default(false) // Whether this is an auto-generated version
+  createdAt    DateTime        @default(now())
+  saveType     VersionSaveType @default(MANUAL)
+  freeVisible  Boolean         @default(true)
+  note         Note            @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
   @@index([noteId, createdAt])
+  @@index([noteId, freeVisible, createdAt])
+  @@index([noteId, saveType, createdAt])
 }
 
 model Session {
-  id              String   @id                              // "offline_<shop>" or online session id
-  shop            String
-  state           String
-  isOnline        Boolean
-  scope           String?
-  expires         DateTime?
-  accessToken     String?
+  id          String    @id // "offline_<shop>" or online session id
+  shop        String
+  state       String
+  isOnline    Boolean
+  scope       String?
+  expires     DateTime?
+  accessToken String?
 
   // Fields used for online sessions (nullable for offline)
-  userId          BigInt?  @db.BigInt
-  firstName       String?
-  lastName        String?
-  email           String?
-  accountOwner    Boolean? @default(false)
-  locale          String?
-  collaborator    Boolean? @default(false)
-  emailVerified   Boolean? @default(false)
+  userId        BigInt?  @db.BigInt
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean? @default(false)
+  locale        String?
+  collaborator  Boolean? @default(false)
+  emailVerified Boolean? @default(false)
 
   // Raw payload info for online tokens
   onlineAccessInfo Json?
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([shop])
   @@map("session")
@@ -126,54 +136,54 @@ model CustomMention {
 }
 
 model ContactFolder {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   shopId    String
   name      String
-  icon      String   @default("folder")
-  iconColor String   @default("#f57c00")
-  position  Int      @default(0)
+  icon      String    @default("folder")
+  iconColor String    @default("#f57c00")
+  position  Int       @default(0)
   contacts  Contact[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  shop      Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
-  @@index([shopId])
   @@unique([shopId, name])
+  @@index([shopId])
 }
 
 model Contact {
-  id        String   @id @default(cuid())
-  shopId    String
-  folderId  String?
-  type      ContactType @default(PERSON)
-  
+  id       String      @id @default(cuid())
+  shopId   String
+  folderId String?
+  type     ContactType @default(PERSON)
+
   // Person fields
   firstName String?
   lastName  String?
-  
+
   // Business fields
   businessName String?
-  
+
   // Common fields
-  company   String?
-  phone     String?
-  mobile    String?
-  email     String?
-  role      String?
-  memo      String? @db.Text
-  address   String? @db.Text
-  
+  company String?
+  phone   String?
+  mobile  String?
+  email   String?
+  role    String?
+  memo    String? @db.Text
+  address String? @db.Text
+
   // Business-specific: points of contact (JSON array)
   pointsOfContact Json? @default("[]")
-  
+
   // New fields for enhanced functionality
-  tags        String[] @default([])
+  tags        String[]  @default([])
   pinnedAt    DateTime?
-  avatarColor String   @default("#10b981")
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  avatarColor String    @default("#10b981")
+
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  shop      Shop           @relation(fields: [shopId], references: [id], onDelete: Cascade)
   folder    ContactFolder? @relation(fields: [folderId], references: [id])
 
   @@index([shopId, folderId])

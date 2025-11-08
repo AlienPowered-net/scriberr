@@ -1,12 +1,10 @@
 import { json } from "@remix-run/node";
-import { authenticate } from "../shopify.server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../utils/db.server";
+import { withPlanContext } from "../../src/server/guards/ensurePlan";
 
-const prisma = new PrismaClient();
-
-export const loader = async ({ request }) => {
+export const loader = withPlanContext(async ({ request, planContext }) => {
   try {
-    const { admin } = await authenticate.admin(request);
+    const { shopId, plan } = planContext;
     const url = new URL(request.url);
     const noteId = url.searchParams.get("noteId");
     const versionId1 = url.searchParams.get("versionId1");
@@ -18,10 +16,7 @@ export const loader = async ({ request }) => {
 
     // Verify the note belongs to the shop
     const note = await prisma.note.findFirst({
-      where: {
-        id: noteId,
-        shopId: admin.session.shop,
-      },
+      where: { id: noteId, shopId },
     });
 
     if (!note) {
@@ -29,12 +24,17 @@ export const loader = async ({ request }) => {
     }
 
     // Get both versions
+    const visibilityFilter =
+      plan === "FREE"
+        ? { freeVisible: true }
+        : {};
+
     const [version1, version2] = await Promise.all([
       prisma.noteVersion.findFirst({
-        where: { id: versionId1, noteId },
+        where: { id: versionId1, noteId, ...visibilityFilter },
       }),
       prisma.noteVersion.findFirst({
-        where: { id: versionId2, noteId },
+        where: { id: versionId2, noteId, ...visibilityFilter },
       }),
     ]);
 
@@ -51,6 +51,8 @@ export const loader = async ({ request }) => {
         createdAt: version1.createdAt,
         versionTitle: version1.versionTitle,
         isAuto: version1.isAuto,
+        saveType: version1.saveType,
+        freeVisible: version1.freeVisible,
       },
       version2: {
         id: version2.id,
@@ -59,6 +61,8 @@ export const loader = async ({ request }) => {
         createdAt: version2.createdAt,
         versionTitle: version2.versionTitle,
         isAuto: version2.isAuto,
+        saveType: version2.saveType,
+        freeVisible: version2.freeVisible,
       },
       differences: {
         titleChanged: version1.title !== version2.title,
@@ -72,4 +76,4 @@ export const loader = async ({ request }) => {
     console.error("Error comparing note versions:", error);
     return json({ error: "Failed to compare versions" }, { status: 500 });
   }
-};
+});

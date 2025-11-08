@@ -23,9 +23,12 @@ import {
   ensureCanCreateNoteFolder,
   requireFeature,
   PlanError,
-  enforceVersionRetention,
-  ensureCanCreateManualVersion,
-  canCreateAutoSave,
+  getVisibleCount,
+  hasFiveAllManual,
+  hideOldestVisibleAuto,
+  surfaceNewestHiddenAuto,
+  listVisibleVersions,
+  buildVersionsMeta,
 } from "../server/guards/ensurePlan";
 import { mapSubscriptionStatus } from "../lib/shopify/billing";
 
@@ -124,159 +127,236 @@ describe("plan guards", () => {
     expect(stubDb.folder.count).not.toHaveBeenCalled();
   });
 
-  describe("version limits", () => {
-    it("blocks manual version creation when 5 manual saves exist", async () => {
+  describe("version visibility model", () => {
+    it("counts visible versions correctly", async () => {
       const stubDb = {
         noteVersion: {
-          count: vi
-            .fn()
-            .mockResolvedValueOnce(5) // total versions
-            .mockResolvedValueOnce(5), // manual versions
+          count: vi.fn().mockResolvedValue(3),
         },
       };
 
-      await expect(
-        ensureCanCreateManualVersion("note-123", freePlan, stubDb as any),
-      ).rejects.toMatchObject({
-        code: "LIMIT_VERSIONS",
-      } satisfies Partial<PlanError>);
-    });
-
-    it("allows manual version when under limit", async () => {
-      const stubDb = {
-        noteVersion: {
-          count: vi.fn().mockResolvedValue(4),
-        },
-      };
-
-      await expect(
-        ensureCanCreateManualVersion("note-123", freePlan, stubDb as any),
-      ).resolves.toBeUndefined();
-    });
-
-    it("allows manual version when at limit but not all are manual", async () => {
-      const stubDb = {
-        noteVersion: {
-          count: vi
-            .fn()
-            .mockResolvedValueOnce(5) // total versions
-            .mockResolvedValueOnce(3), // manual versions (2 are auto)
-        },
-      };
-
-      await expect(
-        ensureCanCreateManualVersion("note-123", freePlan, stubDb as any),
-      ).resolves.toBeUndefined();
-    });
-
-    it("enforces version retention prioritizing manual saves", async () => {
-      const stubDb = {
-        noteVersion: {
-          findMany: vi.fn().mockResolvedValue([
-            { id: "new-auto-1", isAuto: true },
-            { id: "manual-5", isAuto: false },
-            { id: "manual-4", isAuto: false },
-            { id: "manual-3", isAuto: false },
-            { id: "manual-2", isAuto: false },
-            { id: "manual-1", isAuto: false },
-            { id: "old-auto-1", isAuto: true },
-            { id: "old-auto-2", isAuto: true },
-          ]),
-          deleteMany: vi.fn().mockResolvedValue({ count: 3 }),
-        },
-      };
-
-      await enforceVersionRetention("note-123", freePlan, stubDb as any);
-
-      // With 5 manual saves and 3 auto-saves (8 total), limit is 5
-      // Should keep all 5 manual saves and delete all 3 auto-saves
-      expect(stubDb.noteVersion.deleteMany).toHaveBeenCalledWith({
-        where: { id: { in: ["new-auto-1", "old-auto-1", "old-auto-2"] } },
+      const result = await getVisibleCount("note-123", stubDb as any);
+      expect(result).toBe(3);
+      expect(stubDb.noteVersion.count).toHaveBeenCalledWith({
+        where: { noteId: "note-123", freeVisible: true },
       });
     });
 
-    it("does not delete versions when under limit", async () => {
-      const stubDb = {
-        noteVersion: {
-          findMany: vi.fn().mockResolvedValue([
-            { id: "version-1", isAuto: false },
-            { id: "version-2", isAuto: true },
-          ]),
-          deleteMany: vi.fn(),
-        },
-      };
-
-      await enforceVersionRetention("note-123", freePlan, stubDb as any);
-
-      expect(stubDb.noteVersion.deleteMany).not.toHaveBeenCalled();
-    });
-
-    it("skips version trimming for pro plan", async () => {
-      const stubDb = {
-        noteVersion: {
-          findMany: vi.fn(),
-          deleteMany: vi.fn(),
-        },
-      };
-
-      await enforceVersionRetention("note-123", proPlan, stubDb as any);
-
-      expect(stubDb.noteVersion.findMany).not.toHaveBeenCalled();
-      expect(stubDb.noteVersion.deleteMany).not.toHaveBeenCalled();
-    });
-
-    it("allows auto-save when under limit", async () => {
-      const stubDb = {
-        noteVersion: {
-          count: vi.fn().mockResolvedValue(4),
-        },
-      };
-
-      const result = await canCreateAutoSave("note-123", freePlan, stubDb as any);
-      expect(result.canCreate).toBe(true);
-      expect(result.reason).toBeUndefined();
-    });
-
-    it("allows auto-save when at limit but has auto-saves to rotate", async () => {
+    it("detects when all 5 visible versions are manual", async () => {
       const stubDb = {
         noteVersion: {
           count: vi
             .fn()
-            .mockResolvedValueOnce(5) // total versions
-            .mockResolvedValueOnce(3), // manual versions (2 are auto)
+            .mockResolvedValueOnce(5) // visible count
+            .mockResolvedValueOnce(5), // manual visible count
         },
       };
 
-      const result = await canCreateAutoSave("note-123", freePlan, stubDb as any);
-      expect(result.canCreate).toBe(true);
-      expect(result.reason).toBeUndefined();
+      const result = await hasFiveAllManual("note-123", stubDb as any);
+      expect(result).toBe(true);
     });
 
-    it("blocks auto-save when all 5 versions are manual saves", async () => {
+    it("detects when not all visible versions are manual", async () => {
       const stubDb = {
         noteVersion: {
           count: vi
             .fn()
-            .mockResolvedValueOnce(5) // total versions
-            .mockResolvedValueOnce(5), // all are manual
+            .mockResolvedValueOnce(5) // visible count
+            .mockResolvedValueOnce(3), // manual visible count (2 are auto)
         },
       };
 
-      const result = await canCreateAutoSave("note-123", freePlan, stubDb as any);
-      expect(result.canCreate).toBe(false);
-      expect(result.reason).toContain("Remove a manual save");
+      const result = await hasFiveAllManual("note-123", stubDb as any);
+      expect(result).toBe(false);
     });
 
-    it("always allows auto-save for pro plan", async () => {
+    it("hides oldest visible auto version", async () => {
+      const oldestAuto = { id: "old-auto-1" };
       const stubDb = {
         noteVersion: {
-          count: vi.fn().mockResolvedValue(100),
+          findFirst: vi.fn().mockResolvedValue(oldestAuto),
+          update: vi.fn().mockResolvedValue(oldestAuto),
         },
       };
 
-      const result = await canCreateAutoSave("note-123", proPlan, stubDb as any);
-      expect(result.canCreate).toBe(true);
-      expect(stubDb.noteVersion.count).not.toHaveBeenCalled();
+      const result = await hideOldestVisibleAuto("note-123", stubDb as any);
+      expect(result).toBe("old-auto-1");
+      expect(stubDb.noteVersion.findFirst).toHaveBeenCalledWith({
+        where: { noteId: "note-123", freeVisible: true, saveType: "AUTO" },
+        orderBy: [
+          { createdAt: "asc" },
+          { id: "asc" },
+        ],
+        select: { id: true },
+      });
+      expect(stubDb.noteVersion.update).toHaveBeenCalledWith({
+        where: { id: "old-auto-1" },
+        data: { freeVisible: false },
+      });
+    });
+
+    it("returns null when no visible auto versions exist", async () => {
+      const stubDb = {
+        noteVersion: {
+          findFirst: vi.fn().mockResolvedValue(null),
+        },
+      };
+
+      const result = await hideOldestVisibleAuto("note-123", stubDb as any);
+      expect(result).toBeNull();
+    });
+
+    it("surfaces newest hidden auto version", async () => {
+      const newestHiddenAuto = { id: "hidden-auto-1" };
+      const stubDb = {
+        noteVersion: {
+          findFirst: vi.fn().mockResolvedValue(newestHiddenAuto),
+          update: vi.fn().mockResolvedValue(newestHiddenAuto),
+        },
+      };
+
+      const result = await surfaceNewestHiddenAuto("note-123", stubDb as any);
+      expect(result).toBe("hidden-auto-1");
+      expect(stubDb.noteVersion.findFirst).toHaveBeenCalledWith({
+        where: { noteId: "note-123", freeVisible: false, saveType: "AUTO" },
+        orderBy: [
+          { createdAt: "desc" },
+          { id: "desc" },
+        ],
+        select: { id: true },
+      });
+      expect(stubDb.noteVersion.update).toHaveBeenCalledWith({
+        where: { id: "hidden-auto-1" },
+        data: { freeVisible: true },
+      });
+    });
+
+    it("returns null when no hidden auto versions exist", async () => {
+      const stubDb = {
+        noteVersion: {
+          findFirst: vi.fn().mockResolvedValue(null),
+        },
+      };
+
+      const result = await surfaceNewestHiddenAuto("note-123", stubDb as any);
+      expect(result).toBeNull();
+    });
+
+    it("lists visible versions for FREE plan", async () => {
+      const versions = [
+        { id: "v1", createdAt: new Date("2024-01-02") },
+        { id: "v2", createdAt: new Date("2024-01-01") },
+      ];
+      const stubDb = {
+        noteVersion: {
+          findMany: vi.fn().mockResolvedValue(versions),
+        },
+      };
+
+      const result = await listVisibleVersions("note-123", freePlan, stubDb as any);
+      expect(result).toEqual(versions);
+      expect(stubDb.noteVersion.findMany).toHaveBeenCalledWith({
+        where: { noteId: "note-123", freeVisible: true },
+        orderBy: [
+          { createdAt: "desc" },
+          { id: "desc" },
+        ],
+      });
+    });
+
+    it("lists all versions for PRO plan", async () => {
+      const versions = [
+        { id: "v1", createdAt: new Date("2024-01-02") },
+        { id: "v2", createdAt: new Date("2024-01-01") },
+      ];
+      const stubDb = {
+        noteVersion: {
+          findMany: vi.fn().mockResolvedValue(versions),
+        },
+      };
+
+      const result = await listVisibleVersions("note-123", proPlan, stubDb as any);
+      expect(result).toEqual(versions);
+      expect(stubDb.noteVersion.findMany).toHaveBeenCalledWith({
+        where: { noteId: "note-123" },
+        orderBy: [
+          { createdAt: "desc" },
+          { id: "desc" },
+        ],
+      });
+    });
+
+    it("builds meta for FREE plan with all manual visible", async () => {
+      const stubDb = {
+        noteVersion: {
+          count: vi
+            .fn()
+            .mockResolvedValueOnce(5) // visible count
+            .mockResolvedValueOnce(5), // manual visible count
+        },
+      };
+
+      const result = await buildVersionsMeta("note-123", freePlan, stubDb as any);
+      expect(result).toMatchObject({
+        plan: "FREE",
+        visibleCount: 5,
+        hasAllManualVisible: true,
+        lastActionInlineAlert: null,
+      });
+    });
+
+    it("builds meta for FREE plan with mixed visible", async () => {
+      const stubDb = {
+        noteVersion: {
+          count: vi
+            .fn()
+            .mockResolvedValueOnce(5) // visible count
+            .mockResolvedValueOnce(3), // manual visible count
+        },
+      };
+
+      const result = await buildVersionsMeta("note-123", freePlan, stubDb as any);
+      expect(result).toMatchObject({
+        plan: "FREE",
+        visibleCount: 5,
+        hasAllManualVisible: false,
+        lastActionInlineAlert: null,
+      });
+    });
+
+    it("builds meta for PRO plan", async () => {
+      const stubDb = {
+        noteVersion: {
+          count: vi.fn().mockResolvedValue(10),
+        },
+      };
+
+      const result = await buildVersionsMeta("note-123", proPlan, stubDb as any);
+      expect(result).toMatchObject({
+        plan: "PRO",
+        visibleCount: 10,
+        hasAllManualVisible: false,
+        lastActionInlineAlert: null,
+      });
+    });
+
+    it("includes inline alert in meta", async () => {
+      const stubDb = {
+        noteVersion: {
+          count: vi
+            .fn()
+            .mockResolvedValueOnce(5)
+            .mockResolvedValueOnce(5),
+        },
+      };
+
+      const result = await buildVersionsMeta(
+        "note-123",
+        freePlan,
+        stubDb as any,
+        "NO_ROOM_DUE_TO_MANUALS",
+      );
+      expect(result.lastActionInlineAlert).toBe("NO_ROOM_DUE_TO_MANUALS");
     });
   });
 });
@@ -290,4 +370,3 @@ describe("mapSubscriptionStatus", () => {
     expect(mapSubscriptionStatus("UNKNOWN")).toBe("NONE");
   });
 });
-

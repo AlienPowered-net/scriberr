@@ -30,13 +30,13 @@ import TiptapDragHandle from './TiptapDragHandle';
 import { LineHeight } from './LineHeightExtension';
 import ContactCard from './ContactCard';
 import { createLowlight } from 'lowlight';
-import { 
-  Button, 
-  Text, 
-  Modal, 
-  TextField, 
-  Card, 
-  InlineStack, 
+import {
+  Button,
+  Text,
+  Modal,
+  TextField,
+  Card,
+  InlineStack,
   BlockStack,
   Popover,
   ActionList,
@@ -47,7 +47,8 @@ import {
   Badge,
   Spinner,
   SkeletonBodyText,
-  SkeletonDisplayText
+  SkeletonDisplayText,
+  Banner,
 } from '@shopify/polaris';
 import { 
   SmileyHappyIcon,
@@ -226,6 +227,13 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   const [showComparisonModal, setShowComparisonModal] = useState(false);
   const [comparisonVersions, setComparisonVersions] = useState({ version1: null, version2: null });
   const [versions, setVersions] = useState([]);
+  const [versionsMeta, setVersionsMeta] = useState({
+    plan: null,
+    visibleCount: 0,
+    hasAllManualVisible: false,
+    lastActionInlineAlert: null,
+  });
+  const [inlineAlertCode, setInlineAlertCode] = useState(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [lastAutoVersion, setLastAutoVersion] = useState(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -249,6 +257,77 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   const editorRef = useRef(null);
   const slashMenuRef = useRef(null);
   const autoVersionIntervalRef = useRef(null);
+
+  const synchronizeVersionsState = useCallback(
+    (payload, { selectCreated = false } = {}) => {
+      if (!payload || typeof payload !== 'object') {
+        return null;
+      }
+
+      const {
+        versions: incomingVersions,
+        meta,
+        inlineAlert,
+        version: createdVersion,
+      } = payload;
+
+      if (meta) {
+        setVersionsMeta(meta);
+        const metaAlert =
+          Object.prototype.hasOwnProperty.call(meta, 'lastActionInlineAlert')
+            ? meta.lastActionInlineAlert
+            : null;
+        if (inlineAlert !== undefined || metaAlert !== undefined) {
+          setInlineAlertCode(
+            inlineAlert !== undefined ? inlineAlert : metaAlert ?? null,
+          );
+        }
+        if (metaAlert === null && inlineAlert === undefined) {
+          setInlineAlertCode(null);
+        }
+      } else if (inlineAlert !== undefined) {
+        setInlineAlertCode(inlineAlert);
+      }
+
+      if (Array.isArray(incomingVersions)) {
+        setVersions(incomingVersions);
+        setCurrentVersionId((previous) => {
+          if (
+            selectCreated &&
+            createdVersion &&
+            createdVersion.freeVisible
+          ) {
+            return createdVersion.id;
+          }
+
+          if (previous && incomingVersions.some((v) => v.id === previous)) {
+            return previous;
+          }
+
+          return incomingVersions[0]?.id ?? null;
+        });
+      }
+
+      return createdVersion ?? null;
+    },
+    [setVersions, setVersionsMeta, setInlineAlertCode, setCurrentVersionId],
+  );
+
+  const renderVersionInlineAlert = useCallback(() => {
+    if (inlineAlertCode !== 'NO_ROOM_DUE_TO_MANUALS') {
+      return null;
+    }
+
+    return (
+      <Banner
+        tone="warning"
+        title="Version limit reached"
+        onDismiss={() => setInlineAlertCode(null)}
+      >
+        You’ve reached your version limit. Remove a manual save to make room for auto-saves.
+      </Banner>
+    );
+  }, [inlineAlertCode]);
 
 
   // Create lowlight instance for syntax highlighting
@@ -1192,14 +1271,16 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   // Enhanced version management functionality
   const createVersion = async (versionTitle = null, isAuto = false) => {
     if (!editor || !noteId) return;
-    
+
     try {
       const content = editor.getHTML();
-      const title = versionTitle || (isAuto ? `Auto-Saved ${new Date().toLocaleTimeString()}` : `Version ${new Date().toLocaleString()}`);
-      
-      // Create a snapshot of the current editor state
+      const title =
+        versionTitle ||
+        (isAuto
+          ? `Auto-Saved ${new Date().toLocaleTimeString()}`
+          : `Version ${new Date().toLocaleString()}`);
       const snapshot = editor.getJSON();
-      
+
       const response = await fetch('/api/create-note-version', {
         method: 'POST',
         headers: {
@@ -1211,57 +1292,46 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           content,
           versionTitle: versionTitle || null,
           snapshot: JSON.stringify(snapshot),
-          isAuto
+          isAuto,
         }),
       });
 
       if (response.ok) {
         const result = await response.json();
-        
-        // Handle skipped auto-saves (blocked due to limit, but not an error)
-        if (result.skipped && isAuto) {
-          console.log('[NotionTiptapEditor] Auto-save skipped:', result.reason || result.message);
-          // Don't update state or show error - auto-save was silently skipped
-          // The version history modal will show the inline alert via metadata
-          return null;
-        }
-        
-        // Handle PlanError responses (manual save limit reached - triggers upgrade modal)
-        if (result.error && result.upgradeHint) {
-          console.error('[NotionTiptapEditor] Version limit reached:', result.message);
-          // This will be caught by the global fetch interceptor in app.jsx
-          // which shows the upgrade modal
-          throw new Error(result.message);
-        }
-        
-        // Success - version was created
-        const newVersion = result;
-        setVersions(prev => {
-          const prevArray = Array.isArray(prev) ? prev : [];
-          return [newVersion, ...prevArray.slice(0, 19)]; // Keep last 20 versions
+        const shouldSelectCreated =
+          !isAuto || Boolean(result?.version?.freeVisible);
+        const createdVersion = synchronizeVersionsState(result, {
+          selectCreated: shouldSelectCreated,
         });
-        setLastAutoVersion(new Date());
-        setHasUnsavedChanges(false);
-        
-        // Reset pending change flag for manual versions to prevent immediate auto-save
-        if (!isAuto) {
+
+        if (isAuto) {
+          setLastAutoVersion(new Date());
+          setHasUnsavedChanges(false);
+          const alertCode =
+            result.inlineAlert ??
+            result?.meta?.lastActionInlineAlert ??
+            null;
+          setDebugInfo((prev) => ({
+            ...prev,
+            lastVersion:
+              alertCode === 'NO_ROOM_DUE_TO_MANUALS'
+                ? 'Hidden (manual limit reached)'
+                : new Date().toLocaleTimeString(),
+          }));
+        } else {
           hasPendingChange.current = false;
           lastContentRef.current = content;
-          // Set this as the current version
-          setCurrentVersionId(newVersion.id);
+          setHasUnsavedChanges(false);
+          if (onVersionCreated && createdVersion) {
+            onVersionCreated(createdVersion);
+          }
         }
-        
-        if (onVersionCreated) {
-          onVersionCreated(newVersion);
-        }
-        
-        return newVersion;
+
+        return createdVersion ?? null;
       } else {
         const errorData = await response.json();
         console.error('[NotionTiptapEditor] Failed to create version:', errorData);
-        
-        // Only throw error for manual saves (triggers upgrade modal)
-        // Auto-saves should never trigger upgrade modal
+
         if (!isAuto && errorData.upgradeHint) {
           throw new Error(errorData.message || 'Version limit reached');
         }
@@ -1273,45 +1343,55 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
 
   const restoreVersion = async (version, createCheckpoint = false) => {
     if (!editor || !version || !noteId) return;
-    
+
+    setRestoringVersionId(version.id);
+
     try {
-      // Set loading state
-      setRestoringVersionId(version.id);
-      console.log('Setting restoringVersionId to:', version.id);
-      
-      // Create a pre-restore checkpoint if requested
-      if (createCheckpoint) {
-        await createVersion(`Pre-restore checkpoint - ${new Date().toLocaleTimeString()}`, true);
+      const response = await fetch('/api/restore-note-version', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          noteId,
+          versionId: version.id,
+          preserveCurrentChanges: createCheckpoint,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('[NotionTiptapEditor] Failed to restore version:', errorData);
+        if (errorData.upgradeHint) {
+          throw new Error(errorData.message || 'Version limit reached');
+        }
+        throw new Error(errorData.error || 'Failed to restore version');
       }
-      
-      // Restore the selected version
-      if (version.snapshot) {
+
+      const result = await response.json();
+
+      if (result.restoredVersion?.snapshot) {
+        editor.commands.setContent(result.restoredVersion.snapshot);
+      } else if (result.restoredVersion?.content) {
+        editor.commands.setContent(result.restoredVersion.content);
+      } else if (version.snapshot) {
         editor.commands.setContent(version.snapshot);
-      } else {
+      } else if (version.content) {
         editor.commands.setContent(version.content);
       }
-      
-      // Show spinner for 1 second to make it more visible
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       setShowVersionModal(false);
       setShowVersionPopover(false);
       setHasUnsavedChanges(false);
-      
-      // Set this version as current and show restoration info
-      setCurrentVersionId(version.id);
+
       setRestorationInfo({
         title: version.versionTitle || version.title || 'Unknown Version',
-        time: version.createdAt
+        time: version.createdAt,
       });
-      
-      // Clear loading state
-      setRestoringVersionId(null);
-      
-      // Reload versions to get the updated list
-      await loadVersions();
+
+      synchronizeVersionsState(result, { selectCreated: false });
+      setCurrentVersionId(version.id);
     } catch (error) {
       console.error('Failed to restore version:', error);
+    } finally {
       setRestoringVersionId(null);
     }
   };
@@ -1337,21 +1417,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       const response = await fetch(`/api/get-note-versions?noteId=${noteId}`);
       if (response.ok) {
         const data = await response.json();
-        // Handle both old array format and new object format
-        const versionsData = Array.isArray(data) ? data : (data.versions || []);
-        const metadata = Array.isArray(data) ? {} : data;
-        
-        setVersions(versionsData);
-        
-        // Store metadata for showing inline alerts
-        if (metadata.autoSaveBlocked) {
-          console.log('[NotionTiptapEditor] Auto-save blocked:', metadata.autoSaveBlockedMessage);
-        }
-        
-        // Set the first (most recent) version as current if no current version is set
-        if (versionsData.length > 0 && !currentVersionId) {
-          setCurrentVersionId(versionsData[0].id);
-        }
+        synchronizeVersionsState(data, { selectCreated: false });
       }
     } catch (error) {
       console.error('Failed to load versions:', error);
@@ -1381,38 +1447,21 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           noteId: noteId,
-          versionId: version.id
-        })
+          versionId: version.id,
+        }),
       });
 
       if (response.ok) {
         console.log('[NotionTiptapEditor] Version deleted successfully');
-        
-        // Show spinner for 1 second to make it more visible
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Update versions state directly to avoid triggering auto-save
-        setVersions(prev => prev.filter(v => v.id !== version.id));
-        
-        // If we deleted the current version, set the next most recent as current
-        if (currentVersionId === version.id) {
-          const remainingVersions = versions.filter(v => v.id !== version.id);
-          if (remainingVersions.length > 0) {
-            setCurrentVersionId(remainingVersions[0].id);
-          } else {
-            setCurrentVersionId(null);
-          }
-        }
-        
-        // Clear loading state
-        setDeletingVersionId(null);
+        const payload = await response.json();
+        synchronizeVersionsState(payload, { selectCreated: false });
       } else {
         const errorData = await response.json();
         console.error('[NotionTiptapEditor] Failed to delete version:', errorData);
-        setDeletingVersionId(null);
       }
     } catch (error) {
       console.error('[NotionTiptapEditor] Failed to delete version:', error);
+    } finally {
       setDeletingVersionId(null);
     }
   };
@@ -1507,24 +1556,24 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           
           if (res.ok) {
             const result = await res.json();
-            
-            // Handle skipped auto-saves (blocked due to limit, but not an error)
-            if (result.skipped) {
-              console.log('[NotionTiptapEditor] Auto-save skipped:', result.reason || result.message);
-              // Don't update state or show error - auto-save was silently skipped
-              setDebugInfo(prev => ({ ...prev, lastVersion: 'Skipped (limit reached)' }));
-              return; // Exit early, don't update versions
-            }
-            
-            // Success - version was created
-            const newVersion = result;
-            setVersions(prev => {
-              const prevArray = Array.isArray(prev) ? prev : [];
-              return [newVersion, ...prevArray.slice(0, 19)];
+            const createdVersion = synchronizeVersionsState(result, {
+              selectCreated: Boolean(result?.version?.freeVisible),
             });
-            setCurrentVersionId(newVersion.id); // Set auto-saved version as current
-            setDebugInfo(prev => ({ ...prev, lastVersion: new Date().toLocaleTimeString() }));
-            console.debug('Auto-version created:', newVersion.id);
+            setLastAutoVersion(new Date());
+            const alertCode =
+              result.inlineAlert ??
+              result?.meta?.lastActionInlineAlert ??
+              null;
+            setDebugInfo(prev => ({
+              ...prev,
+              lastVersion:
+                alertCode === 'NO_ROOM_DUE_TO_MANUALS'
+                  ? 'Hidden (manual limit reached)'
+                  : new Date().toLocaleTimeString(),
+            }));
+            if (createdVersion) {
+              console.debug('Auto-version created:', createdVersion.id);
+            }
           } else {
             const errorText = await res.text();
             console.error('Auto-version failed:', res.status, errorText);
@@ -2387,6 +2436,12 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               <Icon source={ClockIcon} />
             </Button>
           </Tooltip>
+
+          {inlineAlertCode === 'NO_ROOM_DUE_TO_MANUALS' && (
+            <div style={{ flexBasis: '100%', marginTop: '8px' }}>
+              {renderVersionInlineAlert()}
+            </div>
+          )}
           
           {/* Divider */}
           <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
@@ -3445,6 +3500,12 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 </Button>
               </Tooltip>
 
+              {inlineAlertCode === 'NO_ROOM_DUE_TO_MANUALS' && (
+                <div style={{ flexBasis: '100%', marginTop: '8px' }}>
+                  {renderVersionInlineAlert()}
+                </div>
+              )}
+
               {/* Divider */}
               <div style={{ width: '1px', height: '24px', background: '#e1e3e5', margin: '0 4px' }} />
 
@@ -3691,6 +3752,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               </button>
             </div>
             <div style={{ padding: '20px' }}>
+              {inlineAlertCode === 'NO_ROOM_DUE_TO_MANUALS' && renderVersionInlineAlert()}
               {/* Create New Version Button */}
               <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
                 <button

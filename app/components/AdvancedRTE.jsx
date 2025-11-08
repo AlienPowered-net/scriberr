@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -28,7 +28,7 @@ import { LineHeight } from './LineHeightExtension';
 import TiptapDragHandle from './TiptapDragHandle';
 import ContactCard from './ContactCard';
 import { createLowlight } from 'lowlight';
-import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, SkeletonDisplayText, Icon, Popover, ActionList, Tooltip, ButtonGroup, Badge } from '@shopify/polaris';
+import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, SkeletonDisplayText, Icon, Popover, ActionList, Tooltip, ButtonGroup, Badge, Banner } from '@shopify/polaris';
 import { 
   CheckboxIcon,
   SmileyHappyIcon,
@@ -196,6 +196,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [showVersionNameModal, setShowVersionNameModal] = useState(false);
   const [versionNameInput, setVersionNameInput] = useState('');
   const [versions, setVersions] = useState([]);
+  const [versionsMeta, setVersionsMeta] = useState({
+    plan: null,
+    visibleCount: 0,
+    hasAllManualVisible: false,
+    lastActionInlineAlert: null,
+  });
+  const [inlineAlertCode, setInlineAlertCode] = useState(null);
   const [compareMode, setCompareMode] = useState(false);
   const [selectedVersions, setSelectedVersions] = useState({ version1: null, version2: null });
   const [comparisonResult, setComparisonResult] = useState(null);
@@ -252,6 +259,76 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   
   const editorRef = useRef(null);
 
+  const synchronizeVersionsState = useCallback(
+    (payload, { selectCreated = false } = {}) => {
+      if (!payload || typeof payload !== 'object') {
+        return null;
+      }
+
+      const {
+        versions: incomingVersions,
+        meta,
+        inlineAlert,
+        version: createdVersion,
+      } = payload;
+
+      if (meta) {
+        setVersionsMeta(meta);
+        const metaAlert =
+          Object.prototype.hasOwnProperty.call(meta, 'lastActionInlineAlert')
+            ? meta.lastActionInlineAlert
+            : null;
+        if (inlineAlert !== undefined || metaAlert !== undefined) {
+          setInlineAlertCode(
+            inlineAlert !== undefined ? inlineAlert : metaAlert ?? null,
+          );
+        }
+        if (metaAlert === null && inlineAlert === undefined) {
+          setInlineAlertCode(null);
+        }
+      } else if (inlineAlert !== undefined) {
+        setInlineAlertCode(inlineAlert);
+      }
+
+      if (Array.isArray(incomingVersions)) {
+        setVersions(incomingVersions);
+        setCurrentVersionId((previous) => {
+          if (
+            selectCreated &&
+            createdVersion &&
+            createdVersion.freeVisible
+          ) {
+            return createdVersion.id;
+          }
+
+          if (previous && incomingVersions.some((v) => v.id === previous)) {
+            return previous;
+          }
+
+          return incomingVersions[0]?.id ?? null;
+        });
+      }
+
+      return createdVersion ?? null;
+    },
+    [setVersions, setVersionsMeta, setInlineAlertCode, setCurrentVersionId],
+  );
+
+  const renderVersionInlineAlert = useCallback(() => {
+    if (inlineAlertCode !== 'NO_ROOM_DUE_TO_MANUALS') {
+      return null;
+    }
+
+    return (
+      <Banner
+        tone="warning"
+        title="Version limit reached"
+        onDismiss={() => setInlineAlertCode(null)}
+      >
+        You’ve reached your version limit. Remove a manual save to make room for auto-saves.
+      </Banner>
+    );
+  }, [inlineAlertCode]);
 
   // Create lowlight instance for syntax highlighting
   const lowlight = createLowlight();
@@ -1184,43 +1261,48 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
   // Version history functionality
   const createVersion = async (versionTitle = null, isAuto = false) => {
-    console.log('[AdvancedRTE] createVersion called', { 
-      noteId, 
-      hasEditor: !!editor, 
-      versionTitle, 
-      isAuto 
+    console.log('[AdvancedRTE] createVersion called', {
+      noteId,
+      hasEditor: !!editor,
+      versionTitle,
+      isAuto,
     });
-    
+
     if (!editor) {
       console.error('[AdvancedRTE] Cannot create version: editor not initialized');
       return;
     }
-    
+
     if (!noteId) {
-      console.error('[AdvancedRTE] Cannot create version: noteId is missing', { noteId });
+      console.error('[AdvancedRTE] Cannot create version: noteId is missing', {
+        noteId,
+      });
       return;
     }
-    
+
     try {
       const content = editor.getHTML();
-      const title = versionTitle || (isAuto ? `Auto-Saved ${new Date().toLocaleTimeString()}` : `Version ${new Date().toLocaleString()}`);
-      
+      const title =
+        versionTitle ||
+        (isAuto
+          ? `Auto-Saved ${new Date().toLocaleTimeString()}`
+          : `Version ${new Date().toLocaleString()}`);
+
       console.log('[AdvancedRTE] Creating version with content length:', content.length);
-      
-      // Create a snapshot of the current editor state
+
       const snapshot = editor.getJSON();
-      
+
       const payload = {
-        noteId: noteId,
+        noteId,
         title,
         content,
         versionTitle: versionTitle || null,
         snapshot: JSON.stringify(snapshot),
-        isAuto
+        isAuto,
       };
-      
+
       console.log('[AdvancedRTE] Sending version creation request:', payload);
-      
+
       const response = await fetch('/api/create-note-version', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1231,49 +1313,38 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
       if (response.ok) {
         const result = await response.json();
-        
-        // Handle skipped auto-saves (blocked due to limit, but not an error)
-        if (result.skipped && isAuto) {
-          console.log('[AdvancedRTE] Auto-save skipped:', result.reason || result.message);
-          // Don't update state or show error - auto-save was silently skipped
-          // The version history modal will show the inline alert via metadata
-          return null;
-        }
-        
-        // Handle PlanError responses (manual save limit reached - triggers upgrade modal)
-        if (result.error && result.upgradeHint) {
-          console.error('[AdvancedRTE] Version limit reached:', result.message);
-          // This will be caught by the global fetch interceptor in app.jsx
-          // which shows the upgrade modal
-          throw new Error(result.message);
-        }
-        
-        // Success - version was created
-        const newVersion = result;
-        console.log('[AdvancedRTE] Version created successfully:', newVersion);
-        setVersions(prev => {
-          const prevArray = Array.isArray(prev) ? prev : [];
-          return [newVersion, ...prevArray.slice(0, 19)]; // Keep last 20 versions
+        const shouldSelectCreated =
+          !isAuto || Boolean(result?.version?.freeVisible);
+        const createdVersion = synchronizeVersionsState(result, {
+          selectCreated: shouldSelectCreated,
         });
-        setLastAutoVersion(new Date());
-        setHasUnsavedChanges(false);
-        
-        // Set this as the current version for manual versions
-        if (!isAuto) {
-          setCurrentVersionId(newVersion.id);
+
+        if (isAuto) {
+          setLastAutoVersion(new Date());
+          setHasUnsavedChanges(false);
+          const alertCode =
+            result.inlineAlert ??
+            result?.meta?.lastActionInlineAlert ??
+            null;
+          setDebugInfo((prev) => ({
+            ...prev,
+            lastVersion:
+              alertCode === 'NO_ROOM_DUE_TO_MANUALS'
+                ? 'Hidden (manual limit reached)'
+                : new Date().toLocaleTimeString(),
+          }));
+        } else {
+          setHasUnsavedChanges(false);
+          if (onVersionCreated && createdVersion) {
+            onVersionCreated(createdVersion);
+          }
         }
-        
-        if (onVersionCreated) {
-          onVersionCreated(newVersion);
-        }
-        
-        return newVersion;
+
+        return createdVersion ?? null;
       } else {
         const errorData = await response.json();
         console.error('[AdvancedRTE] Failed to create version:', errorData);
-        
-        // Only throw error for manual saves (triggers upgrade modal)
-        // Auto-saves should never trigger upgrade modal
+
         if (!isAuto && errorData.upgradeHint) {
           throw new Error(errorData.message || 'Version limit reached');
         }
@@ -1284,55 +1355,69 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   };
 
   const restoreVersion = async (version, createCheckpoint = false) => {
-    console.log('[AdvancedRTE] restoreVersion called with:', { versionId: version.id, createCheckpoint });
+    console.log('[AdvancedRTE] restoreVersion called with:', {
+      versionId: version?.id,
+      createCheckpoint,
+    });
+
     if (!editor || !version || !noteId) {
-      console.error('[AdvancedRTE] restoreVersion failed - missing editor, version, or noteId');
+      console.error(
+        '[AdvancedRTE] restoreVersion failed - missing editor, version, or noteId',
+      );
       return;
     }
-    
+
+    setRestoringVersionId(version.id);
+
     try {
-      // Set loading state
-      setRestoringVersionId(version.id);
-      console.log('[AdvancedRTE] Setting restoringVersionId to:', version.id);
-      
-      // Create a pre-restore checkpoint if requested
-      if (createCheckpoint) {
-        await createVersion(`Pre-restore checkpoint - ${new Date().toLocaleTimeString()}`, true);
+      const response = await fetch('/api/restore-note-version', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          noteId,
+          versionId: version.id,
+          preserveCurrentChanges: createCheckpoint,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('[AdvancedRTE] Failed to restore version:', errorData);
+        if (errorData.upgradeHint) {
+          throw new Error(errorData.message || 'Version limit reached');
+        }
+        throw new Error(errorData.error || 'Failed to restore version');
       }
-      
-      // Restore the selected version
-      if (version.snapshot) {
+
+      const result = await response.json();
+
+      if (result.restoredVersion?.snapshot) {
+        editor.commands.setContent(result.restoredVersion.snapshot);
+      } else if (result.restoredVersion?.content) {
+        editor.commands.setContent(result.restoredVersion.content);
+      } else if (version.snapshot) {
         editor.commands.setContent(version.snapshot);
-      } else {
+      } else if (version.content) {
         editor.commands.setContent(version.content);
       }
-      
-      // Show spinner for 1 second to make it more visible
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       setShowVersionPopover(false);
       setHasUnsavedChanges(false);
-      
-      // Set this version as current and show restoration info
-      setCurrentVersionId(version.id);
+
       const restorationData = {
         title: version.versionTitle || version.title || 'Unknown Version',
-        time: version.createdAt
+        time: version.createdAt,
       };
       setRestorationInfo(restorationData);
-      
-      // Notify parent component about restoration info
       if (onRestorationInfoChange) {
         onRestorationInfoChange(restorationData);
       }
-      
-      // Clear loading state
-      setRestoringVersionId(null);
-      
-      // Reload versions to get the updated list
-      await loadVersions();
+
+      synchronizeVersionsState(result, { selectCreated: false });
+      setCurrentVersionId(version.id);
     } catch (error) {
       console.error('Failed to restore version:', error);
+    } finally {
       setRestoringVersionId(null);
     }
   };
@@ -1381,32 +1466,15 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
       if (response.ok) {
         console.log('[AdvancedRTE] Version deleted successfully');
-        
-        // Show spinner for 1 second to make it more visible
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Update versions state directly to avoid triggering auto-save
-        setVersions(prev => prev.filter(v => v.id !== version.id));
-        
-        // If we deleted the current version, set the next most recent as current
-        if (currentVersionId === version.id) {
-          const remainingVersions = versions.filter(v => v.id !== version.id);
-          if (remainingVersions.length > 0) {
-            setCurrentVersionId(remainingVersions[0].id);
-          } else {
-            setCurrentVersionId(null);
-          }
-        }
-        
-        // Clear loading state
-        setDeletingVersionId(null);
+        const payload = await response.json();
+        synchronizeVersionsState(payload, { selectCreated: false });
       } else {
         const errorData = await response.json();
         console.error('[AdvancedRTE] Failed to delete version:', errorData);
-        setDeletingVersionId(null);
       }
     } catch (error) {
       console.error('[AdvancedRTE] Failed to delete version:', error);
+    } finally {
       setDeletingVersionId(null);
     }
   };
@@ -1429,22 +1497,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       console.log('[AdvancedRTE] loadVersions response status:', response.status);
       if (response.ok) {
         const data = await response.json();
-        // Handle both old array format and new object format
-        const versionsData = Array.isArray(data) ? data : (data.versions || []);
-        const metadata = Array.isArray(data) ? {} : data;
-        
-        console.log('[AdvancedRTE] Loaded versions:', versionsData.length, 'versions');
-        setVersions(versionsData);
-        
-        // Store metadata for showing inline alerts
-        if (metadata.autoSaveBlocked) {
-          console.log('[AdvancedRTE] Auto-save blocked:', metadata.autoSaveBlockedMessage);
-        }
-        
-        // Set the first (most recent) version as current if no current version is set
-        if (versionsData.length > 0 && !currentVersionId) {
-          setCurrentVersionId(versionsData[0].id);
-        }
+        const versionsCount = Array.isArray(data?.versions)
+          ? data.versions.length
+          : Array.isArray(data)
+            ? data.length
+            : 0;
+        console.log('[AdvancedRTE] Loaded versions:', versionsCount, 'versions');
+        synchronizeVersionsState(data, { selectCreated: false });
       } else {
         const errorData = await response.json();
         console.error('[AdvancedRTE] Failed to load versions:', errorData);
@@ -1533,16 +1592,26 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     setDeletingVersionId('bulk'); // Use 'bulk' to indicate bulk operation
     
     try {
+      let latestPayload = null;
       for (const versionId of versionIdsToDelete) {
-        await fetch('/api/delete-note-version', {
-          method: 'DELETE',
+        const response = await fetch('/api/delete-note-version', {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ versionId })
+          body: JSON.stringify({ noteId, versionId })
         });
+        if (response.ok) {
+          latestPayload = await response.json();
+        } else {
+          const errorData = await response.json();
+          console.error('[AdvancedRTE] Failed to delete version during bulk operation:', errorData);
+        }
       }
-      
-      // Reload versions after bulk delete
-      await loadVersions();
+
+      if (latestPayload) {
+        synchronizeVersionsState(latestPayload, { selectCreated: false });
+      } else {
+        await loadVersions();
+      }
       setSelectedVersionIds(new Set());
       setMultiSelectMode(false);
     } catch (error) {
@@ -1649,31 +1718,27 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
             if (res.ok) {
               const result = await res.json();
-              
-              // Handle skipped auto-saves (blocked due to limit, but not an error)
-              if (result.skipped) {
-                console.log('[AdvancedRTE] Auto-save skipped:', result.reason || result.message);
-                // Don't update state or show error - auto-save was silently skipped
-                setDebugInfo(prev => ({
-                  ...prev,
-                  lastVersion: 'Skipped (limit reached)'
-                }));
-                return; // Exit early, don't update versions
-              }
-              
-              // Success - version was created
-              const newVersion = result;
-              console.log('[AdvancedRTE] Auto-version created successfully:', newVersion);
-              setVersions(prev => {
-                const prevArray = Array.isArray(prev) ? prev : [];
-                return [newVersion, ...prevArray.slice(0, 19)];
+              const createdVersion = synchronizeVersionsState(result, {
+                selectCreated: Boolean(result?.version?.freeVisible),
               });
-              setCurrentVersionId(newVersion.id); // Set auto-saved version as current
+
               setLastAutoVersion(new Date());
-              setDebugInfo(prev => ({
+              setHasUnsavedChanges(false);
+              const alertCode =
+                result.inlineAlert ??
+                result?.meta?.lastActionInlineAlert ??
+                null;
+              setDebugInfo((prev) => ({
                 ...prev,
-                lastVersion: new Date().toLocaleTimeString()
+                lastVersion:
+                  alertCode === 'NO_ROOM_DUE_TO_MANUALS'
+                    ? 'Hidden (manual limit reached)'
+                    : new Date().toLocaleTimeString(),
               }));
+
+              if (createdVersion) {
+                console.log('[AdvancedRTE] Auto-version created successfully:', createdVersion);
+              }
             } else {
               const errorData = await res.json();
               console.error('[AdvancedRTE] Auto-version failed:', errorData);
@@ -2749,6 +2814,12 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
               <Icon source={ClockIcon} />
             </Button>
           </Tooltip>
+
+          {inlineAlertCode === 'NO_ROOM_DUE_TO_MANUALS' && (
+            <div style={{ flexBasis: '100%', marginTop: '8px' }}>
+              {renderVersionInlineAlert()}
+            </div>
+          )}
           
           {/* Version History Modal - DESKTOP ONLY */}
           {!isMobile && (
@@ -2826,6 +2897,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   padding: '0 8px'
                 })
               }}>
+                {inlineAlertCode === 'NO_ROOM_DUE_TO_MANUALS' && renderVersionInlineAlert()}
                 
                 {comparisonResult ? (
                   <div>
