@@ -1,3 +1,8 @@
+-- WARNING: This migration has already been applied manually in production.
+-- If deploying to an existing Neon DB, mark it as applied via
+--   prisma migrate resolve --applied 20250905050203_add_folder_position
+-- before running prisma migrate deploy.
+
 -- AlterTable
 ALTER TABLE "Folder" ADD COLUMN "position" INTEGER NOT NULL DEFAULT 0;
 

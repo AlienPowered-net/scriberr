@@ -21,9 +21,17 @@ npx prisma migrate status || true
 
 attempt_deploy () {
   set +e
-  npx prisma migrate deploy
+  # Capture output but also let it pass through to terminal
+  deploy_output="$(npx prisma migrate deploy 2>&1 | tee /dev/tty)"
   rc=$?
   set -e
+  
+  # Check for the specific folder_position error
+  if echo "$deploy_output" | grep -qE '(column "position"|add_folder_position)'; then
+    echo "Detected folder_position column already exists error"
+    mark_folder_position_applied
+  fi
+  
   return $rc
 }
 
@@ -54,13 +62,28 @@ resolve_failed () {
   fi
 }
 
+mark_folder_position_applied () {
+  echo "Detected 'column position already exists' previously — marking 20250905050203_add_folder_position as applied…"
+  npx prisma migrate resolve --applied 20250905050203_add_folder_position || true
+}
+
 if ! attempt_deploy; then
   echo "First deploy failed. Resolving and retrying…"
   resolve_failed
+  failed="$(get_failed_id || echo '20250102100000_add_save_type_free_visible')"
+  # If we previously saw the folder_position error, mark it as applied
+  if echo "$failed" | grep -q "add_folder_position"; then
+    mark_folder_position_applied
+  fi
   sleep 2
   if ! attempt_deploy; then
     echo "Second deploy failed. Resolving once more and final retry…"
     resolve_failed
+    failed="$(get_failed_id || echo '20250102100000_add_save_type_free_visible')"
+    # If we previously saw the folder_position error, mark it as applied
+    if echo "$failed" | grep -q "add_folder_position"; then
+      mark_folder_position_applied
+    fi
     sleep 2
     attempt_deploy
   fi
