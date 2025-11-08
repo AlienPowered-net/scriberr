@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "vercel-build": "prisma generate && npm run migrate-deploy && node scripts/init-database.js && node scripts/create-contacts-tables.js && node scripts/add-contact-fields-migration.js && npm run build",
-    "migrate-deploy": "prisma migrate deploy && prisma generate",
+    "migrate-deploy": "bash scripts/migrate-deploy-with-recovery.sh",
+    "migrate:resolve-failed": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/resolve-failed-migration.ps1",
     "migrate:note-versions": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/migrate-note-versions.ps1",
     "build": "remix vite:build",
     "test": "vitest run",
