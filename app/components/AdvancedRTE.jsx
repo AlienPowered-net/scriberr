@@ -1251,7 +1251,10 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         // Success - version was created
         const newVersion = result;
         console.log('[AdvancedRTE] Version created successfully:', newVersion);
-        setVersions(prev => [newVersion, ...prev.slice(0, 19)]); // Keep last 20 versions
+        setVersions(prev => {
+          const prevArray = Array.isArray(prev) ? prev : [];
+          return [newVersion, ...prevArray.slice(0, 19)]; // Keep last 20 versions
+        });
         setLastAutoVersion(new Date());
         setHasUnsavedChanges(false);
         
@@ -1645,9 +1648,26 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             console.log('[AdvancedRTE] Auto-version response status:', res.status);
 
             if (res.ok) {
-              const newVersion = await res.json();
+              const result = await res.json();
+              
+              // Handle skipped auto-saves (blocked due to limit, but not an error)
+              if (result.skipped) {
+                console.log('[AdvancedRTE] Auto-save skipped:', result.reason || result.message);
+                // Don't update state or show error - auto-save was silently skipped
+                setDebugInfo(prev => ({
+                  ...prev,
+                  lastVersion: 'Skipped (limit reached)'
+                }));
+                return; // Exit early, don't update versions
+              }
+              
+              // Success - version was created
+              const newVersion = result;
               console.log('[AdvancedRTE] Auto-version created successfully:', newVersion);
-              setVersions(prev => [newVersion, ...prev.slice(0, 19)]);
+              setVersions(prev => {
+                const prevArray = Array.isArray(prev) ? prev : [];
+                return [newVersion, ...prevArray.slice(0, 19)];
+              });
               setCurrentVersionId(newVersion.id); // Set auto-saved version as current
               setLastAutoVersion(new Date());
               setDebugInfo(prev => ({

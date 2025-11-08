@@ -834,6 +834,10 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         beforeinput: (view, event) => {
           const nodeAt = view.state.doc.nodeAt(view.state.selection.from);
           const nodeBefore = view.state.doc.nodeAt(view.state.selection.from - 1);
+          const parentNode = view.state.selection.$from.parent;
+          const isAtParagraphStart = view.state.selection.from === 1 || 
+            (parentNode.type.name === 'paragraph' && view.state.selection.$from.parentOffset === 0);
+          const isEmptyDocument = view.state.doc.textContent.length === 0;
           
           console.log('[NotionEditor beforeinput] Event:', event.inputType, {
             data: event.data,
@@ -841,8 +845,10 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             selectionTo: view.state.selection.to,
             nodeAtCursor: nodeAt?.type.name,
             nodeBefore: nodeBefore?.type.name,
-            parentNode: view.state.selection.$from.parent.type.name,
-            editable: view.editable
+            parentNode: parentNode.type.name,
+            editable: view.editable,
+            isAtParagraphStart,
+            isEmptyDocument
           });
           
           // If inserting text and cursor is at end boundary (nodeAtCursor is undefined)
@@ -856,6 +862,21 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             view.dispatch(tr);
             
             // Prevent default
+            event.preventDefault();
+            return true;
+          }
+          
+          // Handle spacebar at beginning of paragraph or empty document
+          // This ensures spaces appear immediately when typing at the start
+          if (event.inputType === 'insertText' && event.data === ' ' && (isAtParagraphStart || isEmptyDocument)) {
+            console.log('[NotionEditor beforeinput] Spacebar at paragraph/document start, manually inserting space');
+            
+            // Manually insert the space at the current position
+            const { state } = view;
+            const tr = state.tr.insertText(' ', state.selection.from);
+            view.dispatch(tr);
+            
+            // Prevent default to ensure our manual insertion is used
             event.preventDefault();
             return true;
           }
@@ -1215,7 +1236,10 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         
         // Success - version was created
         const newVersion = result;
-        setVersions(prev => [newVersion, ...prev.slice(0, 19)]); // Keep last 20 versions
+        setVersions(prev => {
+          const prevArray = Array.isArray(prev) ? prev : [];
+          return [newVersion, ...prevArray.slice(0, 19)]; // Keep last 20 versions
+        });
         setLastAutoVersion(new Date());
         setHasUnsavedChanges(false);
         
@@ -1494,7 +1518,10 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             
             // Success - version was created
             const newVersion = result;
-            setVersions(prev => [newVersion, ...prev.slice(0, 19)]);
+            setVersions(prev => {
+              const prevArray = Array.isArray(prev) ? prev : [];
+              return [newVersion, ...prevArray.slice(0, 19)];
+            });
             setCurrentVersionId(newVersion.id); // Set auto-saved version as current
             setDebugInfo(prev => ({ ...prev, lastVersion: new Date().toLocaleTimeString() }));
             console.debug('Auto-version created:', newVersion.id);
