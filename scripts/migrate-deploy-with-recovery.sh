@@ -11,17 +11,18 @@ if [ -z "$DIRECT_URL" ] && [ -n "$DATABASE_URL" ]; then
     echo "Set DIRECT_URL to DATABASE_URL for migration compatibility"
 fi
 
-# Try to deploy migrations
-if npx prisma migrate deploy; then
+# Try to deploy migrations and capture output
+DEPLOY_OUTPUT=$(npx prisma migrate deploy 2>&1) && DEPLOY_SUCCESS=1 || DEPLOY_SUCCESS=0
+
+if [ "$DEPLOY_SUCCESS" -eq 1 ]; then
     echo "Migrations deployed successfully"
     npx prisma generate
     exit 0
 fi
 
 echo "Migration deployment failed, checking for failed migrations..."
-
-# Capture the error output from the failed migrate deploy
-DEPLOY_OUTPUT=$(npx prisma migrate deploy 2>&1 || true)
+echo "Error output:"
+echo "$DEPLOY_OUTPUT"
 
 # Extract failed migration name from error message
 # Error format: "The `20250905050203_add_folder_position` migration started at ... failed"
