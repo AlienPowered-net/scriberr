@@ -6407,7 +6407,7 @@ export default function Index() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {localNotes
                   .filter(note => {
-                    if (selectedFolder && note.folderId !== selectedFolder) return false;
+                    if (selectedFolder && note.folderId !== selectedFolder?.id) return false;
                     if (selectedTags.length > 0) {
                       const noteTags = note.tags || [];
                       return selectedTags.some(tag => noteTags.includes(tag));
@@ -8004,6 +8004,7 @@ export default function Index() {
                 Aliens
               </a>
             </div>
+
             <div style={{ 
               fontStyle: "italic", 
               fontSize: "12px", 
