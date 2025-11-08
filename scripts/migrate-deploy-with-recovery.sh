@@ -4,7 +4,7 @@ set -euo pipefail
 
 echo "Starting migration deployment…"
 
-# --- Ensure DIRECT_URL is a non-pooled Neon URL (no '-pooler.') ---
+# --- Ensure DIRECT_URL is non-pooled (Neon) ---
 if [ -z "${DIRECT_URL:-}" ] && [ -n "${NEON_DIRECT_URL:-}" ]; then
   export DIRECT_URL="$NEON_DIRECT_URL"
 fi
@@ -17,35 +17,41 @@ direct_host="$(echo "$DIRECT_URL"   | sed -E 's#(.*//[^@]*@)([^:/?]+).*#\2#')"
 echo "DATABASE_URL host: $db_host"
 echo "DIRECT_URL host:   $direct_host"
 
-# --- Helpers (NO TTY/tee usage anywhere) ---
+log=.prisma_deploy.log
+: > "$log"  # truncate
 
 attempt_deploy () {
-  # print full output (no prompts)
-  npx prisma migrate deploy --schema prisma/schema.prisma
+  npx prisma migrate deploy --schema prisma/schema.prisma | tee "$log"
+  return "${PIPESTATUS[0]}"
 }
 
-get_failed_id () {
-  # parse only lines that contain 'failed'
+# Parse failed id from `prisma migrate status`
+get_failed_from_status () {
   npx prisma migrate status --schema prisma/schema.prisma 2>&1 \
     | awk '/failed/ { if (match($0, /`([0-9]{14}_[a-z0-9_]+)`/, m)) { print m[1]; exit } }'
 }
 
+# Parse failed id from the last deploy log (P3009 text)
+get_failed_from_deploy_log () {
+  awk '
+    /migration started/ && /failed/ {
+      if (match($0, /`([0-9]{14}_[a-z0-9_]+)`/, m)) { print m[1]; exit }
+    }
+  ' "$log"
+}
+
 has_folder_position_error () {
-  # grep last deploy attempt logs that we saved to a file
-  # (we avoid /dev/tty; use a tmp file)
-  [ -f .prisma_deploy.log ] && grep -q 'column "position" of relation "Folder" already exists' .prisma_deploy.log
+  grep -q 'column "position" of relation "Folder" already exists' "$log"
 }
 
-mark_failed_as_rolled_back () {
+mark_rolled_back () {
   local id="$1"
-  if [ -n "$id" ]; then
-    echo "Marking failed migration as rolled back: $id"
-    # Ignore P3011 if it wasn't applied
-    npx prisma migrate resolve --rolled-back "$id" --schema prisma/schema.prisma || true
-  fi
+  [ -z "$id" ] && return 0
+  echo "Marking failed migration as rolled back: $id"
+  npx prisma migrate resolve --rolled-back "$id" --schema prisma/schema.prisma || true
 }
 
-mark_folder_position_as_applied () {
+mark_applied_folder_position () {
   echo "Marking 20250905050203_add_folder_position as applied (duplicate column already exists)…"
   npx prisma migrate resolve --applied 20250905050203_add_folder_position --schema prisma/schema.prisma || true
 }
@@ -53,66 +59,47 @@ mark_folder_position_as_applied () {
 echo "Pre-deploy status:"
 npx prisma migrate status --schema prisma/schema.prisma || true
 
-# --- First deploy attempt (log to file, no TTY) ---
-set +e
-attempt_deploy | tee .prisma_deploy.log
-rc=$?
-set -e
+pass=1
+while [ $pass -le 3 ]; do
+  echo "=== Deploy attempt $pass ==="
 
-if [ $rc -eq 0 ]; then
-  echo "Migration deployment completed on first attempt."
-else
-  echo "First deploy failed with rc=$rc"
-
-  # If the classic duplicate column error was seen, mark that migration as applied once
-  if has_folder_position_error; then
-    echo "Detected folder_position duplicate column. Resolving…"
-    mark_folder_position_as_applied
-  fi
-
-  # Resolve actual failed id, if any
-  failed_id="$(get_failed_id || true)"
-  if [ -n "$failed_id" ]; then
-    echo "Detected failed migration from status: $failed_id"
-    mark_failed_as_rolled_back "$failed_id"
-  else
-    echo "No failed id reported by status; skipping generic rollback."
-  fi
-
-  # --- Second attempt ---
   set +e
-  attempt_deploy | tee .prisma_deploy.log
+  attempt_deploy
   rc=$?
   set -e
 
-  if [ $rc -ne 0 ]; then
-    echo "Second deploy failed with rc=$rc"
-
-    # Try one last time: if the folder_position error still happens, ensure it's applied
-    if has_folder_position_error; then
-      echo "Duplicate Folder.position still present. Re-marking as applied…"
-      mark_folder_position_as_applied
-    fi
-
-    # Re-check failed id and resolve once more if any
-    failed_id="$(get_failed_id || true)"
-    if [ -n "$failed_id" ]; then
-      echo "Resolving failed migration again: $failed_id"
-      mark_failed_as_rolled_back "$failed_id"
-    fi
-
-    # --- Final attempt ---
-    set +e
-    attempt_deploy | tee .prisma_deploy.log
-    rc=$?
-    set -e
-
-    if [ $rc -ne 0 ]; then
-      echo "Final migrate deploy failed (rc=$rc). Showing status for debugging:"
-      npx prisma migrate status --schema prisma/schema.prisma || true
-      exit $rc
-    fi
+  if [ $rc -eq 0 ]; then
+    echo "Migration deployment completed on attempt $pass."
+    break
   fi
+
+  echo "Deploy attempt $pass failed (rc=$rc). Resolving…"
+
+  # 1) If duplicate Folder.position seen, mark as applied once
+  if has_folder_position_error; then
+    mark_applied_folder_position
+  fi
+
+  # 2) Resolve failed ID from deploy log, else from status
+  failed_id="$(get_failed_from_deploy_log || true)"
+  if [ -z "$failed_id" ]; then
+    failed_id="$(get_failed_from_status || true)"
+  fi
+
+  if [ -n "$failed_id" ]; then
+    echo "Detected failed migration id: $failed_id"
+    mark_rolled_back "$failed_id"
+  else
+    echo "No failed migration id detected; skipping rollback."
+  fi
+
+  pass=$((pass+1))
+done
+
+if [ $rc -ne 0 ]; then
+  echo "Final migrate deploy failed (rc=$rc). Dumping status:"
+  npx prisma migrate status --schema prisma/schema.prisma || true
+  exit $rc
 fi
 
 echo "Generating Prisma client…"
