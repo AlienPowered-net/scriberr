@@ -92,12 +92,18 @@ export async function getMerchantByShop(sessionOrShop: Session | string) {
     });
   } catch (error: any) {
     // If Subscription table doesn't exist (P2021) or shopGid column doesn't exist (P2022)
+    const errorMessage = String(error?.message || "").toLowerCase();
     const isTableMissing = 
       error?.code === "P2021" && 
-      (error?.meta?.table?.includes("Subscription") || error?.meta?.modelName === "Subscription");
+      (error?.meta?.table?.includes("Subscription") || 
+       error?.meta?.modelName === "Subscription" ||
+       errorMessage.includes("subscription") ||
+       (errorMessage.includes("table") && errorMessage.includes("does not exist")));
     const isColumnMissing = 
       error?.code === "P2022" && 
-      error?.meta?.column === "Shop.shopGid";
+      (error?.meta?.column === "Shop.shopGid" || 
+       errorMessage.includes("shopgid") ||
+       (errorMessage.includes("column") && errorMessage.includes("shopgid")));
     
     if (isTableMissing || isColumnMissing) {
       // Retry without shopGid and without subscription include

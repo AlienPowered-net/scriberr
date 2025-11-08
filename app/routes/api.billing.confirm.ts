@@ -31,38 +31,48 @@ export const loader = async ({ request }: { request: Request }) => {
     const subscription = await fetchSubscription(admin, subscriptionGid);
 
     await prisma.$transaction(async (tx) => {
-      const shop = await tx.shop.upsert({
-        where: { domain: session.shop },
-        update: { plan: "PRO" },
-        create: { domain: session.shop },
-      });
+      try {
+        const shop = await tx.shop.upsert({
+          where: { domain: session.shop },
+          update: { plan: "PRO" },
+          create: { domain: session.shop },
+        });
 
-      await tx.subscription.upsert({
-        where: { shopId: shop.id },
-        create: {
-          shopId: shop.id,
-          status: mapSubscriptionStatus(subscription.status),
-          shopifySubGid: subscription.id,
-          name: subscription.name,
-          priceAmount: subscription.priceAmount,
-          currency: subscription.currencyCode,
-          testMode: subscription.test,
-          trialEndsAt: subscription.trialEndsAt
-            ? new Date(subscription.trialEndsAt)
-            : null,
-        },
-        update: {
-          status: mapSubscriptionStatus(subscription.status),
-          shopifySubGid: subscription.id,
-          name: subscription.name,
-          priceAmount: subscription.priceAmount,
-          currency: subscription.currencyCode,
-          testMode: subscription.test,
-          trialEndsAt: subscription.trialEndsAt
-            ? new Date(subscription.trialEndsAt)
-            : null,
-        },
-      });
+        await tx.subscription.upsert({
+          where: { shopId: shop.id },
+          create: {
+            shopId: shop.id,
+            status: mapSubscriptionStatus(subscription.status),
+            shopifySubGid: subscription.id,
+            name: subscription.name,
+            priceAmount: subscription.priceAmount,
+            currency: subscription.currencyCode,
+            testMode: subscription.test,
+            trialEndsAt: subscription.trialEndsAt
+              ? new Date(subscription.trialEndsAt)
+              : null,
+          },
+          update: {
+            status: mapSubscriptionStatus(subscription.status),
+            shopifySubGid: subscription.id,
+            name: subscription.name,
+            priceAmount: subscription.priceAmount,
+            currency: subscription.currencyCode,
+            testMode: subscription.test,
+            trialEndsAt: subscription.trialEndsAt
+              ? new Date(subscription.trialEndsAt)
+              : null,
+          },
+        });
+      } catch (error: any) {
+        // If plan column or Subscription table doesn't exist, migration hasn't run
+        if (error?.code === "P2021" || error?.code === "P2022") {
+          throw new Error(
+            "Database migration required. Please ensure the plan/subscription migration has been applied.",
+          );
+        }
+        throw error;
+      }
     });
 
     return redirect(SUCCESS_REDIRECT_PATH);
