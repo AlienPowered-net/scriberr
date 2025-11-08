@@ -19,8 +19,8 @@ ALTER TABLE "NoteVersion"
 -- Backfill saveType from legacy isAuto flag or known pathways
 UPDATE "NoteVersion"
 SET "saveType" = CASE
-  WHEN "isAuto" = true THEN 'AUTO'
-  ELSE 'MANUAL'
+  WHEN "isAuto" = true THEN 'AUTO'::"VersionSaveType"
+  ELSE 'MANUAL'::"VersionSaveType"
 END;
 
 -- Default visibility handling for PRO shops
