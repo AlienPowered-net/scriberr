@@ -24,6 +24,7 @@ import {
   requireFeature,
   PlanError,
   enforceVersionRetention,
+  ensureCanCreateManualVersion,
 } from "../server/guards/ensurePlan";
 import { mapSubscriptionStatus } from "../lib/shopify/billing";
 
@@ -122,43 +123,106 @@ describe("plan guards", () => {
     expect(stubDb.folder.count).not.toHaveBeenCalled();
   });
 
-  it("trims note versions to five for free plan", async () => {
-    const stubDb = {
-      noteVersion: {
-        findMany: vi.fn().mockResolvedValue([
-          { id: "old-1" },
-          { id: "old-2" },
-        ]),
-        deleteMany: vi.fn().mockResolvedValue({ count: 2 }),
-      },
-    };
+  describe("version limits", () => {
+    it("blocks manual version creation when 5 manual saves exist", async () => {
+      const stubDb = {
+        noteVersion: {
+          count: vi
+            .fn()
+            .mockResolvedValueOnce(5) // total versions
+            .mockResolvedValueOnce(5), // manual versions
+        },
+      };
 
-    await enforceVersionRetention("note-123", freePlan, stubDb as any);
-
-    expect(stubDb.noteVersion.findMany).toHaveBeenCalledWith({
-      where: { noteId: "note-123" },
-      orderBy: { createdAt: "desc" },
-      skip: 5,
-      select: { id: true },
+      await expect(
+        ensureCanCreateManualVersion("note-123", freePlan, stubDb as any),
+      ).rejects.toMatchObject({
+        code: "LIMIT_VERSIONS",
+      } satisfies Partial<PlanError>);
     });
 
-    expect(stubDb.noteVersion.deleteMany).toHaveBeenCalledWith({
-      where: { id: { in: ["old-1", "old-2"] } },
+    it("allows manual version when under limit", async () => {
+      const stubDb = {
+        noteVersion: {
+          count: vi.fn().mockResolvedValue(4),
+        },
+      };
+
+      await expect(
+        ensureCanCreateManualVersion("note-123", freePlan, stubDb as any),
+      ).resolves.toBeUndefined();
     });
-  });
 
-  it("skips version trimming for pro plan", async () => {
-    const stubDb = {
-      noteVersion: {
-        findMany: vi.fn(),
-        deleteMany: vi.fn(),
-      },
-    };
+    it("allows manual version when at limit but not all are manual", async () => {
+      const stubDb = {
+        noteVersion: {
+          count: vi
+            .fn()
+            .mockResolvedValueOnce(5) // total versions
+            .mockResolvedValueOnce(3), // manual versions (2 are auto)
+        },
+      };
 
-    await enforceVersionRetention("note-123", proPlan, stubDb as any);
+      await expect(
+        ensureCanCreateManualVersion("note-123", freePlan, stubDb as any),
+      ).resolves.toBeUndefined();
+    });
 
-    expect(stubDb.noteVersion.findMany).not.toHaveBeenCalled();
-    expect(stubDb.noteVersion.deleteMany).not.toHaveBeenCalled();
+    it("enforces version retention prioritizing manual saves", async () => {
+      const stubDb = {
+        noteVersion: {
+          findMany: vi.fn().mockResolvedValue([
+            { id: "new-auto-1", isAuto: true },
+            { id: "manual-5", isAuto: false },
+            { id: "manual-4", isAuto: false },
+            { id: "manual-3", isAuto: false },
+            { id: "manual-2", isAuto: false },
+            { id: "manual-1", isAuto: false },
+            { id: "old-auto-1", isAuto: true },
+            { id: "old-auto-2", isAuto: true },
+          ]),
+          deleteMany: vi.fn().mockResolvedValue({ count: 3 }),
+        },
+      };
+
+      await enforceVersionRetention("note-123", freePlan, stubDb as any);
+
+      // With 5 manual saves and 3 auto-saves (8 total), limit is 5
+      // Should keep all 5 manual saves and delete all 3 auto-saves
+      expect(stubDb.noteVersion.deleteMany).toHaveBeenCalledWith({
+        where: { id: { in: ["new-auto-1", "old-auto-1", "old-auto-2"] } },
+      });
+    });
+
+    it("does not delete versions when under limit", async () => {
+      const stubDb = {
+        noteVersion: {
+          findMany: vi.fn().mockResolvedValue([
+            { id: "version-1", isAuto: false },
+            { id: "version-2", isAuto: true },
+          ]),
+          deleteMany: vi.fn(),
+        },
+      };
+
+      await enforceVersionRetention("note-123", freePlan, stubDb as any);
+
+      expect(stubDb.noteVersion.deleteMany).not.toHaveBeenCalled();
+    });
+
+    it("skips version trimming for pro plan", async () => {
+      const stubDb = {
+        noteVersion: {
+          findMany: vi.fn(),
+          deleteMany: vi.fn(),
+        },
+      };
+
+      await enforceVersionRetention("note-123", proPlan, stubDb as any);
+
+      expect(stubDb.noteVersion.findMany).not.toHaveBeenCalled();
+      expect(stubDb.noteVersion.deleteMany).not.toHaveBeenCalled();
+    });
   });
 });
 

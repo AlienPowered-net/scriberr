@@ -2,6 +2,7 @@ import { json } from "@remix-run/node";
 import { prisma } from "../utils/db.server";
 import {
   enforceVersionRetention,
+  ensureCanCreateManualVersion,
   isPlanError,
   serializePlanError,
   withPlanContext,
@@ -9,7 +10,7 @@ import {
 
 export const action = withPlanContext(async ({ request, planContext }) => {
   try {
-    const { shopId } = planContext;
+    const { shopId, plan } = planContext;
     
     const { noteId, title, content, versionTitle, snapshot, isAuto = false } = await request.json();
     
@@ -29,6 +30,11 @@ export const action = withPlanContext(async ({ request, planContext }) => {
     }
 
     const version = await prisma.$transaction(async (tx) => {
+      // Check if manual version can be created BEFORE creating it
+      if (!isAuto) {
+        await ensureCanCreateManualVersion(noteId, plan, tx);
+      }
+
       const created = await tx.noteVersion.create({
         data: {
           noteId,
@@ -40,7 +46,8 @@ export const action = withPlanContext(async ({ request, planContext }) => {
         },
       });
 
-      await enforceVersionRetention(noteId, planContext.plan, tx);
+      // After creation, enforce retention (only affects auto-saves for FREE plan)
+      await enforceVersionRetention(noteId, plan, tx);
       return created;
     });
 

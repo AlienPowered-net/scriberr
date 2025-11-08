@@ -9,6 +9,7 @@ type PrismaTransaction = PrismaClient | Prisma.TransactionClient;
 export type PlanErrorCode =
   | "LIMIT_NOTES"
   | "LIMIT_FOLDERS"
+  | "LIMIT_VERSIONS"
   | "FEATURE_CONTACTS_DISABLED"
   | "FEATURE_NOTE_TAGS_DISABLED";
 
@@ -17,6 +18,8 @@ const PLAN_ERROR_MESSAGES: Record<PlanErrorCode, string> = {
     "Free plan allows up to 25 notes. Delete a note or upgrade to Pro.",
   LIMIT_FOLDERS:
     "Free plan allows up to 3 folders. Delete a folder or upgrade to Pro.",
+  LIMIT_VERSIONS:
+    "Free plan allows up to 5 versions per note. Delete a manual save or upgrade to Pro for unlimited versions.",
   FEATURE_CONTACTS_DISABLED:
     "Contacts are unlocked on the Pro plan. Upgrade to manage contacts.",
   FEATURE_NOTE_TAGS_DISABLED:
@@ -157,6 +160,33 @@ export function ensureNoteTagsEnabled(plan: PlanKey) {
   }
 }
 
+export async function ensureCanCreateManualVersion(
+  noteId: string,
+  plan: PlanKey,
+  db: PrismaTransaction = prisma,
+) {
+  if (plan === "PRO") return;
+
+  const limit = PLAN.FREE.NOTE_VERSIONS_MAX;
+  
+  // Count total versions (manual + auto)
+  const totalVersions = await db.noteVersion.count({
+    where: { noteId },
+  });
+
+  // If we're at the limit, check if all are manual saves
+  if (totalVersions >= limit) {
+    const manualVersions = await db.noteVersion.count({
+      where: { noteId, isAuto: false },
+    });
+
+    // If all versions are manual saves, block creating another manual save
+    if (manualVersions >= limit) {
+      throw new PlanError("LIMIT_VERSIONS");
+    }
+  }
+}
+
 export async function enforceVersionRetention(
   noteId: string,
   plan: PlanKey,
@@ -165,20 +195,39 @@ export async function enforceVersionRetention(
   if (plan === "PRO") return;
 
   const limit = PLAN.FREE.NOTE_VERSIONS_MAX;
-  const versionsToCull = await db.noteVersion.findMany({
+  
+  // Get all versions ordered by creation date (newest first)
+  const allVersions = await db.noteVersion.findMany({
     where: { noteId },
     orderBy: { createdAt: "desc" },
-    skip: limit,
-    select: { id: true },
+    select: { id: true, isAuto: true },
   });
 
-  if (versionsToCull.length === 0) {
+  // If we're within the limit, no action needed
+  if (allVersions.length <= limit) {
     return;
   }
 
-  await db.noteVersion.deleteMany({
-    where: { id: { in: versionsToCull.map((version) => version.id) } },
-  });
+  // Separate manual and auto saves
+  const manualSaves = allVersions.filter((v) => !v.isAuto);
+  const autoSaves = allVersions.filter((v) => v.isAuto);
+
+  // Manual saves always take priority - never delete them
+  // We can only delete auto-saves if we exceed the limit
+  const manualCount = manualSaves.length;
+  const maxAutoSaves = Math.max(0, limit - manualCount);
+
+  // If we have more auto-saves than allowed, delete the oldest ones
+  if (autoSaves.length > maxAutoSaves) {
+    const autoSavesToDelete = autoSaves.slice(maxAutoSaves);
+    const idsToDelete = autoSavesToDelete.map((v) => v.id);
+
+    if (idsToDelete.length > 0) {
+      await db.noteVersion.deleteMany({
+        where: { id: { in: idsToDelete } },
+      });
+    }
+  }
 }
 
 export const requireFeature =
