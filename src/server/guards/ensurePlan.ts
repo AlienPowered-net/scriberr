@@ -91,32 +91,23 @@ export async function getMerchantByShop(sessionOrShop: Session | string) {
       },
     });
   } catch (error: any) {
-    // If shopGid column doesn't exist yet (migration not applied), retry without it
-    if (error?.code === "P2022" && error?.meta?.column === "Shop.shopGid") {
-      try {
-        return await prisma.shop.upsert({
-          where: { domain: shopDomain },
-          update: {},
-          create: {
-            domain: shopDomain,
-          },
-          include: {
-            subscription: true,
-          },
-        });
-      } catch (fallbackError: any) {
-        // If subscription relation also doesn't exist, retry without include
-        if (fallbackError?.code === "P2022" || fallbackError?.code === "P2011") {
-          return await prisma.shop.upsert({
-            where: { domain: shopDomain },
-            update: {},
-            create: {
-              domain: shopDomain,
-            },
-          });
-        }
-        throw fallbackError;
-      }
+    // If Subscription table doesn't exist (P2021) or shopGid column doesn't exist (P2022)
+    const isTableMissing = 
+      error?.code === "P2021" && 
+      (error?.meta?.table?.includes("Subscription") || error?.meta?.modelName === "Subscription");
+    const isColumnMissing = 
+      error?.code === "P2022" && 
+      error?.meta?.column === "Shop.shopGid";
+    
+    if (isTableMissing || isColumnMissing) {
+      // Retry without shopGid and without subscription include
+      return await prisma.shop.upsert({
+        where: { domain: shopDomain },
+        update: {},
+        create: {
+          domain: shopDomain,
+        },
+      });
     }
     throw error;
   }
@@ -228,7 +219,7 @@ export function withPlanContext<T extends { request: Request }>(
 
     const planContext: PlanContext = {
       shop: merchant,
-      plan: merchant.plan as PlanKey,
+      plan: (merchant.plan ?? "FREE") as PlanKey,
       shopId: merchant.id,
       subscriptionStatus: merchant.subscription?.status ?? "NONE",
       session: auth.session,
