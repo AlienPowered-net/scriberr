@@ -43,6 +43,60 @@ CUSTOMEOF
         echo "CustomMention table check failed, but continuing..."
     fi
     
+    # Ensure Shop table has required columns from plan/subscription migration
+    echo "Ensuring Shop table has required columns (shopGid, plan, updatedAt)..."
+    if npx prisma db execute --schema prisma/schema.prisma --stdin << 'SHOPCOLEOF'
+DO $$
+BEGIN
+    -- Ensure Plan enum exists
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'Plan') THEN
+        CREATE TYPE "Plan" AS ENUM ('FREE', 'PRO');
+        RAISE NOTICE 'Created Plan enum';
+    END IF;
+    
+    -- Ensure shopGid column exists
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'Shop' 
+        AND column_name = 'shopGid' 
+        AND table_schema = 'public'
+    ) THEN
+        ALTER TABLE "Shop" ADD COLUMN "shopGid" TEXT;
+        RAISE NOTICE 'Added shopGid column to Shop table';
+    END IF;
+    
+    -- Ensure plan column exists
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'Shop' 
+        AND column_name = 'plan' 
+        AND table_schema = 'public'
+    ) THEN
+        ALTER TABLE "Shop" ADD COLUMN "plan" "Plan" NOT NULL DEFAULT 'FREE';
+        RAISE NOTICE 'Added plan column to Shop table';
+    END IF;
+    
+    -- Ensure updatedAt column exists
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'Shop' 
+        AND column_name = 'updatedAt' 
+        AND table_schema = 'public'
+    ) THEN
+        ALTER TABLE "Shop" ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+        RAISE NOTICE 'Added updatedAt column to Shop table';
+    END IF;
+END $$;
+SHOPCOLEOF
+    then
+        echo "Shop table columns check completed successfully"
+    else
+        echo "Shop table columns check failed, but continuing..."
+    fi
+    
     exit 0
 fi
 
@@ -159,6 +213,48 @@ BEGIN
         END IF;
         
         RAISE NOTICE 'Ensured session table has all required columns';
+    END IF;
+    
+    -- Ensure Plan enum exists
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'Plan') THEN
+        CREATE TYPE "Plan" AS ENUM ('FREE', 'PRO');
+        RAISE NOTICE 'Created Plan enum';
+    END IF;
+    
+    -- Ensure Shop table has shopGid column
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'Shop' 
+        AND column_name = 'shopGid' 
+        AND table_schema = 'public'
+    ) THEN
+        ALTER TABLE "Shop" ADD COLUMN "shopGid" TEXT;
+        RAISE NOTICE 'Added shopGid column to Shop table';
+    END IF;
+    
+    -- Ensure Shop table has plan column
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'Shop' 
+        AND column_name = 'plan' 
+        AND table_schema = 'public'
+    ) THEN
+        ALTER TABLE "Shop" ADD COLUMN "plan" "Plan" NOT NULL DEFAULT 'FREE';
+        RAISE NOTICE 'Added plan column to Shop table';
+    END IF;
+    
+    -- Ensure Shop table has updatedAt column
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'Shop' 
+        AND column_name = 'updatedAt' 
+        AND table_schema = 'public'
+    ) THEN
+        ALTER TABLE "Shop" ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+        RAISE NOTICE 'Added updatedAt column to Shop table';
     END IF;
 END $$;
 EOF
