@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Migration deployment script with automatic failed migration recovery
-set -e
+# Note: We handle errors manually, so don't use set -e
 
 echo "Starting migration deployment..."
 
