@@ -9,19 +9,26 @@ import {
   hideOldestVisibleAuto,
   isPlanError,
   listVisibleVersions,
+  rotateAutoAndInsertVisible,
   serializePlanError,
   withPlanContext,
 } from "../../src/server/guards/ensurePlan";
 import { PLAN } from "../../src/lib/plan";
 
 export const action = withPlanContext(async ({ request, planContext }) => {
+  const DEBUG_VERSIONS = process.env.DEBUG_VERSIONS === "1";
+  
   try {
     const { shopId, plan } = planContext;
     
     const { noteId, title, content, versionTitle, snapshot, isAuto = false } =
       await request.json();
     
-    console.log("Version request data:", { noteId, title, isAuto });
+    const op = isAuto ? "auto" : "manual";
+    
+    if (DEBUG_VERSIONS) {
+      console.log("[DEBUG_VERSIONS] Request:", { plan, noteId, op, title: title?.substring(0, 50) });
+    }
 
     // Verify the note belongs to the shop
     const note = await prisma.note.findFirst({
@@ -36,68 +43,178 @@ export const action = withPlanContext(async ({ request, planContext }) => {
       return json({ error: "Note not found" }, { status: 404 });
     }
 
-    const result = await prisma.$transaction(async (tx) => {
-      let inlineAlert = null;
-      let freeVisible = true;
+    let inlineAlert = null;
+    let freeVisible = true;
+    let action = "insert-visible";
+    let result = "ok";
+    let errorCode = null;
 
-      if (!isAuto && plan === "FREE") {
-        const visibleCount = await getVisibleCount(noteId, tx);
-        if (visibleCount >= PLAN.FREE.NOTE_VERSIONS_MAX) {
-          throw new PlanError("LIMIT_VERSIONS");
+    // Manual save gating (FREE plan only)
+    if (!isAuto && plan === "FREE") {
+      const visibleCount = await getVisibleCount(noteId);
+      if (DEBUG_VERSIONS) {
+        console.log("[DEBUG_VERSIONS] Manual save check:", { visibleCount, limit: PLAN.FREE.NOTE_VERSIONS_MAX });
+      }
+      if (visibleCount >= PLAN.FREE.NOTE_VERSIONS_MAX) {
+        action = "block-upgrade";
+        result = "blocked";
+        errorCode = "UPGRADE_REQUIRED";
+        if (DEBUG_VERSIONS) {
+          console.log("[DEBUG_VERSIONS] Manual save blocked:", { visibleCount });
         }
+        return json(serializePlanError(new PlanError("LIMIT_VERSIONS")), { status: 403 });
+      }
+    }
+
+    // Auto-save logic (FREE plan only)
+    if (isAuto && plan === "FREE") {
+      const visibleCount = await getVisibleCount(noteId);
+      const hasAllManual = await hasFiveAllManual(noteId);
+
+      if (DEBUG_VERSIONS) {
+        console.log("[DEBUG_VERSIONS] Auto-save check:", { visibleCount, hasAllManual });
       }
 
-      if (isAuto) {
-        if (plan === "FREE") {
-          const visibleCount = await getVisibleCount(noteId, tx);
-
-          if (visibleCount >= PLAN.FREE.NOTE_VERSIONS_MAX) {
-            const allManual = await hasFiveAllManual(noteId, tx);
-            if (allManual) {
-              freeVisible = false;
-              inlineAlert = INLINE_ALERTS.NO_ROOM_DUE_TO_MANUALS;
-            } else {
-              await hideOldestVisibleAuto(noteId, tx);
+      if (visibleCount >= PLAN.FREE.NOTE_VERSIONS_MAX) {
+        if (hasAllManual) {
+          // All 5 are manual - store hidden, show inline alert
+          freeVisible = false;
+          inlineAlert = INLINE_ALERTS.NO_ROOM_DUE_TO_MANUALS;
+          action = "insert-hidden";
+          if (DEBUG_VERSIONS) {
+            console.log("[DEBUG_VERSIONS] All manual - inserting hidden:", { visibleCount });
+          }
+        } else {
+          // At least one visible AUTO - use CTE rotation
+          action = "rotate";
+          const rotated = await rotateAutoAndInsertVisible(
+            noteId,
+            title,
+            content,
+            versionTitle,
+            snapshot ? JSON.parse(snapshot) : null,
+            prisma
+          );
+          
+          if (rotated) {
+            if (DEBUG_VERSIONS) {
+              console.log("[DEBUG_VERSIONS] CTE rotation succeeded:", { newId: rotated.id });
             }
+            // Fetch updated versions and meta
+            const [versions, meta] = await Promise.all([
+              listVisibleVersions(noteId, plan),
+              buildVersionsMeta(noteId, plan, prisma, null),
+            ]);
+            
+            const debugPayload = DEBUG_VERSIONS ? {
+              plan,
+              noteId,
+              op,
+              visibleCount,
+              hasAllManual,
+              action,
+              result: "ok",
+            } : undefined;
+
+            return json({
+              version: { id: rotated.id },
+              versions,
+              meta,
+              inlineAlert: null,
+              ...(debugPayload && { debug: debugPayload }),
+            });
+          } else {
+            // Fallback: no visible AUTO found (shouldn't happen, but handle gracefully)
+            if (DEBUG_VERSIONS) {
+              console.warn("[DEBUG_VERSIONS] CTE rotation returned null, falling back");
+            }
+            freeVisible = false;
+            inlineAlert = INLINE_ALERTS.NO_ROOM_DUE_TO_MANUALS;
+            action = "insert-hidden";
           }
         }
       }
+    }
 
-      const created = await tx.noteVersion.create({
-        data: {
-          noteId,
-          title,
-          content,
-          versionTitle,
-          snapshot: snapshot ? JSON.parse(snapshot) : null,
-          isAuto,
-          saveType: isAuto ? "AUTO" : "MANUAL",
-          freeVisible,
-        },
-      });
-
-      const [versions, meta] = await Promise.all([
-        listVisibleVersions(noteId, plan, tx),
-        buildVersionsMeta(noteId, plan, tx, inlineAlert),
-      ]);
-
-      return {
-        version: created,
-        versions,
-        meta,
-        inlineAlert,
-      };
+    // Create version (for manual saves or auto-saves that don't need rotation)
+    const created = await prisma.noteVersion.create({
+      data: {
+        noteId,
+        title,
+        content,
+        versionTitle,
+        snapshot: snapshot ? JSON.parse(snapshot) : null,
+        isAuto,
+        saveType: isAuto ? "AUTO" : "MANUAL",
+        freeVisible,
+      },
     });
 
-    console.log("Version created successfully:", result.version.id);
-    return json(result);
+    const [versions, meta] = await Promise.all([
+      listVisibleVersions(noteId, plan),
+      buildVersionsMeta(noteId, plan, prisma, inlineAlert),
+    ]);
+
+    if (DEBUG_VERSIONS) {
+      console.log("[DEBUG_VERSIONS] Version created:", {
+        plan,
+        noteId,
+        op,
+        visibleCount: meta.visibleCount,
+        hasAllManual: meta.hasAllManualVisible,
+        action,
+        result: "ok",
+        versionId: created.id,
+        freeVisible: created.freeVisible,
+      });
+    }
+
+    const debugPayload = DEBUG_VERSIONS ? {
+      plan,
+      noteId,
+      op,
+      visibleCount: meta.visibleCount,
+      hasAllManual: meta.hasAllManualVisible,
+      action,
+      result: "ok",
+    } : undefined;
+
+    return json({
+      version: created,
+      versions,
+      meta,
+      inlineAlert,
+      ...(debugPayload && { debug: debugPayload }),
+    });
   } catch (error) {
+    const DEBUG_VERSIONS = process.env.DEBUG_VERSIONS === "1";
+    
     if (isPlanError(error)) {
       // Only manual saves trigger PlanError (upgrade modal)
+      if (DEBUG_VERSIONS) {
+        console.log("[DEBUG_VERSIONS] PlanError:", { code: error.code, status: error.status });
+      }
       return json(serializePlanError(error), { status: error.status });
     }
 
+    const errorDetails = {
+      message: error.message,
+      code: error.code,
+      ...(DEBUG_VERSIONS && { stack: error.stack }),
+    };
+
+    if (DEBUG_VERSIONS) {
+      console.error("[DEBUG_VERSIONS] Error:", {
+        plan: planContext?.plan || "unknown",
+        error: errorDetails,
+      });
+    }
+
     console.error("Error creating note version:", error);
-    return json({ error: "Failed to create version", details: error.message }, { status: 500 });
+    return json({
+      error: "Failed to create version",
+      details: error.message,
+      ...(DEBUG_VERSIONS && { debug: { error: errorDetails } }),
+    }, { status: 500 });
   }
 });

@@ -1302,6 +1302,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       };
 
       console.log('[AdvancedRTE] Sending version creation request:', payload);
+      console.info('[versions] autosave call', { noteId, ts: Date.now(), isAuto });
 
       const response = await fetch('/api/create-note-version', {
         method: 'POST',

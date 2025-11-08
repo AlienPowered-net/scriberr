@@ -226,6 +226,90 @@ export async function hideOldestVisibleAuto(
   return oldestAuto.id;
 }
 
+/**
+ * Atomically hides the oldest visible AUTO version and inserts a new visible AUTO version.
+ * Uses a single SQL CTE to avoid PgBouncer transaction issues.
+ * Returns the ID of the newly created version, or null if no oldest AUTO was found.
+ */
+export async function rotateAutoAndInsertVisible(
+  noteId: string,
+  title: string,
+  content: string,
+  versionTitle: string | null,
+  snapshot: any,
+  db: PrismaTransaction = prisma,
+): Promise<{ id: string } | null> {
+  // First check if there's at least one visible AUTO
+  const hasVisibleAuto = await db.noteVersion.findFirst({
+    where: { noteId, freeVisible: true, saveType: "AUTO" },
+    select: { id: true },
+  });
+
+  if (!hasVisibleAuto) {
+    return null;
+  }
+
+  // Use a single SQL statement with CTE to atomically hide oldest and insert new
+  // This works with PgBouncer because it's a single round-trip
+  try {
+    // Generate ID using cuid format (Prisma's default)
+    // cuid format: c + timestamp + counter + fingerprint (typically 25 chars)
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 15);
+    const newId = `c${timestamp}${random}`.substring(0, 25);
+
+    const snapshotJson = snapshot ? JSON.stringify(snapshot) : null;
+    const result = await db.$queryRawUnsafe(`
+      WITH oldest AS (
+        SELECT id
+        FROM "NoteVersion"
+        WHERE "noteId" = $1 AND "freeVisible" = true AND "saveType" = 'AUTO'
+        ORDER BY "createdAt" ASC, "id" ASC
+        LIMIT 1
+      ),
+      hidden AS (
+        UPDATE "NoteVersion"
+        SET "freeVisible" = false
+        WHERE id IN (SELECT id FROM oldest)
+        RETURNING id
+      )
+      INSERT INTO "NoteVersion" (
+        "id", "noteId", "title", "content", "versionTitle", "snapshot", 
+        "isAuto", "saveType", "freeVisible", "createdAt"
+      )
+      SELECT 
+        $2, $1, $3, $4, $5, $6::jsonb, true, 'AUTO'::"VersionSaveType", true, NOW()
+      WHERE EXISTS (SELECT 1 FROM hidden)
+      RETURNING id;
+    `, noteId, newId, title, content, versionTitle || null, snapshotJson);
+
+    if (Array.isArray(result) && result.length > 0) {
+      return { id: result[0].id };
+    }
+    return null;
+  } catch (error) {
+    // Fallback to two-step process if CTE fails
+    console.warn("CTE rotation failed, falling back to two-step:", error);
+    const hiddenId = await hideOldestVisibleAuto(noteId, db);
+    if (!hiddenId) {
+      return null;
+    }
+    const created = await db.noteVersion.create({
+      data: {
+        noteId,
+        title,
+        content,
+        versionTitle,
+        snapshot,
+        isAuto: true,
+        saveType: "AUTO",
+        freeVisible: true,
+      },
+    });
+    return { id: created.id };
+  }
+}
+
 export async function surfaceNewestHiddenAuto(
   noteId: string,
   db: PrismaTransaction = prisma,

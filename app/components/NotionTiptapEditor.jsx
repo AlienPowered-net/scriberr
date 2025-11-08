@@ -1280,6 +1280,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
           ? `Auto-Saved ${new Date().toLocaleTimeString()}`
           : `Version ${new Date().toLocaleString()}`);
       const snapshot = editor.getJSON();
+      console.info('[versions] autosave call', { noteId, ts: Date.now(), isAuto });
 
       const response = await fetch('/api/create-note-version', {
         method: 'POST',
