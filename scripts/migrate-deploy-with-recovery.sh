@@ -20,11 +20,22 @@ fi
 
 echo "Migration deployment failed, checking for failed migrations..."
 
-# Check migration status to see what failed
+# Try to get failed migration from migrate status
 MIGRATION_STATUS=$(npx prisma migrate status 2>&1 || true)
 
-# Extract failed migration name from status output
-FAILED_MIGRATION=$(echo "$MIGRATION_STATUS" | grep -oP 'The `\K[^`]+' | head -1 || echo "")
+# Extract failed migration name from status output (multiple patterns)
+FAILED_MIGRATION=$(echo "$MIGRATION_STATUS" | grep -oE "The `[^`]+` migration" | sed "s/The \`//" | sed "s/\` migration//" | head -1 || echo "")
+
+# If that didn't work, try parsing from error message format
+if [ -z "$FAILED_MIGRATION" ]; then
+    FAILED_MIGRATION=$(echo "$MIGRATION_STATUS" | grep -oE "[0-9]{14}_[a-z_]+" | head -1 || echo "")
+fi
+
+# Specific known failed migration
+if [ -z "$FAILED_MIGRATION" ]; then
+    FAILED_MIGRATION="20250905050203_add_folder_position"
+    echo "Using known failed migration: $FAILED_MIGRATION"
+fi
 
 if [ -n "$FAILED_MIGRATION" ]; then
     echo "Found failed migration: $FAILED_MIGRATION"
