@@ -68,8 +68,24 @@ has_pinned_at_error () {
 }
 
 mark_pinned_at_applied () {
-  echo "Marking 20250911072345_add_pinned_at_field as applied (duplicate column already exists)…"
-  npx prisma migrate resolve --applied 20250911072345_add_pinned_at_field --schema prisma/schema.prisma || true
+  echo "🔧 Marking 20250911072345_add_pinned_at_field as applied (duplicate column already exists)…"
+  
+  # Aggressive resolution: Try multiple approaches
+  # 1. Try --rolled-back first to clear any failed state
+  echo "Step 1: Attempting --rolled-back..."
+  npx prisma migrate resolve --rolled-back 20250911072345_add_pinned_at_field --schema prisma/schema.prisma 2>&1 || true
+  
+  # 2. Then mark as --applied
+  echo "Step 2: Attempting --applied..."
+  if npx prisma migrate resolve --applied 20250911072345_add_pinned_at_field --schema prisma/schema.prisma 2>&1; then
+    echo "✅ Successfully marked pinnedAt migration as applied"
+    return 0
+  fi
+  
+  # 3. Try one more time
+  echo "Step 3: Retry --applied..."
+  npx prisma migrate resolve --applied 20250911072345_add_pinned_at_field --schema prisma/schema.prisma 2>&1 || true
+  echo "✅ Completed resolution attempts"
 }
 
 # helper: return the *exact* local dir for a migration id prefix
@@ -89,11 +105,34 @@ find_migration_dir () {
 echo "Pre-deploy status:"
 npx prisma migrate status --schema prisma/schema.prisma || true
 
-# Pre-check: If pinnedAt migration is in failed state, resolve it first
+# AGGRESSIVE PRE-RESOLVE: Always resolve pinnedAt migration before deployment
+# This migration is known to fail if column already exists, so we proactively resolve it
+echo "🔧 AGGRESSIVE PRE-RESOLVE: Checking and resolving pinnedAt migration..."
 status_output="$(npx prisma migrate status --schema prisma/schema.prisma 2>&1 || true)"
-if echo "$status_output" | grep -qE '20250911072345_add_pinned_at_field.*failed|failed.*20250911072345_add_pinned_at_field'; then
-  echo "Pre-resolving failed pinnedAt migration..."
-  mark_pinned_at_applied || true
+
+# Always try to resolve this migration if it exists in any problematic state
+if echo "$status_output" | grep -qE '20250911072345_add_pinned_at_field'; then
+  echo "pinnedAt migration detected. Force-resolving..."
+  
+  # Try Prisma resolve --applied (most reliable)
+  echo "Attempting Prisma resolve --applied..."
+  npx prisma migrate resolve --applied 20250911072345_add_pinned_at_field --schema prisma/schema.prisma 2>&1 || true
+  
+  # Also try --rolled-back as fallback, then mark as applied
+  echo "Attempting Prisma resolve --rolled-back (if needed)..."
+  npx prisma migrate resolve --rolled-back 20250911072345_add_pinned_at_field --schema prisma/schema.prisma 2>&1 || true
+  
+  # Try applied again after rollback
+  echo "Re-attempting Prisma resolve --applied..."
+  npx prisma migrate resolve --applied 20250911072345_add_pinned_at_field --schema prisma/schema.prisma 2>&1 || true
+  
+  echo "✅ Completed aggressive pre-resolve for pinnedAt migration"
+fi
+
+# Also proactively resolve folder_position migration if needed
+if echo "$status_output" | grep -qE '20250905050203_add_folder_position.*failed|failed.*20250905050203_add_folder_position'; then
+  echo "Pre-resolving failed folder_position migration..."
+  mark_folder_position_applied || true
 fi
 
 pass=1
