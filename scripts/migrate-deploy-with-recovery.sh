@@ -35,23 +35,16 @@ get_failed_from_status () {
 }
 
 get_failed_from_deploy_log () {
-  awk '
-    # capture: Applying migration `...`
-    /Applying migration `/ {
-      if (match($0, /`([0-9]{14}_[a-z0-9_]+)`/, m)) last=m[1]
-    }
-    # capture: Migration name: 2025...
-    /Migration name: [0-9]{14}_[a-z0-9_]+/ {
-      if (match($0, /Migration name: ([0-9]{14}_[a-z0-9_]+)/, m)) { print m[1]; exit }
-    }
-    # old pattern: "... migration started ... failed"
-    /migration started/ && /failed/ {
-      if (match($0, /`([0-9]{14}_[a-z0-9_]+)`/, m)) { print m[1]; exit }
-    }
-    END {
-      if (last) print last
-    }
-  ' "$log"
+  # Extract migration ID, prioritizing "Migration name:" pattern
+  # Use sed to extract first match and prevent duplicates
+  grep -oE 'Migration name: ([0-9]{14}_[a-z0-9_]+)' "$log" 2>/dev/null | \
+    sed -n 's/Migration name: //p' | head -n 1 | \
+  grep -v '^$' || \
+  grep -oE 'Applying migration `([0-9]{14}_[a-z0-9_]+)`' "$log" 2>/dev/null | \
+    sed -n "s/Applying migration \`//p" | sed 's/`$//' | head -n 1 | \
+  grep -v '^$' || \
+  grep -oE '`([0-9]{14}_[a-z0-9_]+)`' "$log" 2>/dev/null | \
+    sed 's/`//g' | head -n 1
 }
 
 has_duplicate_error () {
@@ -65,6 +58,18 @@ has_folder_position_error () {
 mark_folder_position_applied () {
   echo "Marking 20250905050203_add_folder_position as applied (duplicate column already exists)…"
   npx prisma migrate resolve --applied 20250905050203_add_folder_position --schema prisma/schema.prisma || true
+}
+
+has_pinned_at_error () {
+  # Check for pinnedAt column already exists error (case insensitive, flexible pattern)
+  grep -qiE '(column.*pinnedAt.*already exists|pinnedAt.*of relation.*Note.*already exists|column "pinnedAt" of relation "Note" already exists)' "$log" || \
+  # Also check migration status for this specific migration failure
+  (grep -q '20250911072345_add_pinned_at_field' "$log" && grep -qi 'already exists' "$log")
+}
+
+mark_pinned_at_applied () {
+  echo "Marking 20250911072345_add_pinned_at_field as applied (duplicate column already exists)…"
+  npx prisma migrate resolve --applied 20250911072345_add_pinned_at_field --schema prisma/schema.prisma || true
 }
 
 # helper: return the *exact* local dir for a migration id prefix
@@ -84,6 +89,13 @@ find_migration_dir () {
 echo "Pre-deploy status:"
 npx prisma migrate status --schema prisma/schema.prisma || true
 
+# Pre-check: If pinnedAt migration is in failed state, resolve it first
+status_output="$(npx prisma migrate status --schema prisma/schema.prisma 2>&1 || true)"
+if echo "$status_output" | grep -qE '20250911072345_add_pinned_at_field.*failed|failed.*20250911072345_add_pinned_at_field'; then
+  echo "Pre-resolving failed pinnedAt migration..."
+  mark_pinned_at_applied || true
+fi
+
 pass=1
 rc=1
 while [ $pass -le 3 ]; do
@@ -101,6 +113,11 @@ while [ $pass -le 3 ]; do
     mark_folder_position_applied
   fi
 
+  # Known duplicate Note.pinnedAt case (mark applied)
+  if has_pinned_at_error; then
+    mark_pinned_at_applied
+  fi
+
   # Try to extract the failed id from the deploy log first (covers Applying/Migration name)
   failed_id="$(get_failed_from_deploy_log || true)"
   if [ -z "$failed_id" ]; then
@@ -108,7 +125,10 @@ while [ $pass -le 3 ]; do
   fi
 
   if [ -n "$failed_id" ]; then
-    failed_id="$(printf '%s' "$failed_id" | tr -d '\r\n')"
+    # Clean up the failed_id - remove any duplicates, whitespace, newlines
+    failed_id="$(printf '%s' "$failed_id" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | head -c 50)"
+    # Remove duplicate migration IDs if somehow concatenated
+    failed_id="$(echo "$failed_id" | sed -E 's/([0-9]{14}_[a-z0-9_]+)\1+/\1/')"
     echo "Detected failed migration id: $failed_id"
     dir_name="$(find_migration_dir "$failed_id" || true)"
     if [ -z "$dir_name" ]; then
