@@ -36,8 +36,20 @@ get_failed_from_status () {
 
 get_failed_from_deploy_log () {
   awk '
+    # capture: Applying migration `...`
+    /Applying migration `/ {
+      if (match($0, /`([0-9]{14}_[a-z0-9_]+)`/, m)) last=m[1]
+    }
+    # capture: Migration name: 2025...
+    /Migration name: [0-9]{14}_[a-z0-9_]+/ {
+      if (match($0, /Migration name: ([0-9]{14}_[a-z0-9_]+)/, m)) { print m[1]; exit }
+    }
+    # old pattern: "... migration started ... failed"
     /migration started/ && /failed/ {
       if (match($0, /`([0-9]{14}_[a-z0-9_]+)`/, m)) { print m[1]; exit }
+    }
+    END {
+      if (last) print last
     }
   ' "$log"
 }
@@ -82,12 +94,12 @@ while [ $pass -le 3 ]; do
 
   echo "Deploy attempt $pass failed. Resolving…"
 
-  # Known duplicate Folder.position case
+  # Known duplicate Folder.position case remains (mark applied)
   if has_folder_position_error; then
     mark_folder_position_applied
   fi
 
-  # Detect failed migration id from deploy log, else from status
+  # Try to extract the failed id from the deploy log first (covers Applying/Migration name)
   failed_id="$(get_failed_from_deploy_log || true)"
   if [ -z "$failed_id" ]; then
     failed_id="$(get_failed_from_status || true)"
@@ -95,7 +107,13 @@ while [ $pass -le 3 ]; do
 
   if [ -n "$failed_id" ]; then
     echo "Detected failed migration id: $failed_id"
-    resolve_failed "$failed_id"
+    if has_duplicate_error; then
+      echo "Duplicate/exists error detected in logs."
+      npx prisma migrate resolve --applied "$failed_id" --schema prisma/schema.prisma || true
+    else
+      echo "Non-duplicate failure; marking as ROLLED BACK."
+      npx prisma migrate resolve --rolled-back "$failed_id" --schema prisma/schema.prisma || true
+    fi
   else
     echo "No failed migration id detected; skip resolve."
   fi
