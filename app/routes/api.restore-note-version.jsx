@@ -11,7 +11,7 @@ import {
   listVisibleVersions,
   serializePlanError,
   withPlanContext,
-} from "../../src/server/guards/ensurePlan";
+} from "../utils/ensurePlan.server";
 import { PLAN } from "../../src/lib/plan";
 
 export const action = withPlanContext(async ({ request, planContext }) => {

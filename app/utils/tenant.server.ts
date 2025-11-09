@@ -1,4 +1,4 @@
-import { getMerchantByShop } from "../../src/server/guards/ensurePlan";
+import { getMerchantByShop } from "./ensurePlan.server";
 
 export async function getOrCreateShopId(shopDomain) {
   const merchant = await getMerchantByShop(shopDomain);

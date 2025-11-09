@@ -5,7 +5,7 @@ import {
   requireFeature,
   serializePlanError,
   withPlanContext,
-} from "../../src/server/guards/ensurePlan";
+} from "../utils/ensurePlan.server";
 
 export const action = withPlanContext(async ({ request, planContext }) => {
   try {

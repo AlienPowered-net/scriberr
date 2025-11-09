@@ -10,4 +10,18 @@ module.exports = {
   globals: {
     shopify: "readonly"
   },
+  rules: {
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["**/*.server"],
+            "message": "Do not import server-only modules into client code. Use server-only modules only in loaders/actions or other server-side code.",
+            "allowTypeImports": false
+          }
+        ]
+      }
+    ]
+  },
 };

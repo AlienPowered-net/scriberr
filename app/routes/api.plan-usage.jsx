@@ -1,7 +1,7 @@
 import { json } from "@remix-run/node";
 import { prisma } from "../utils/db.server";
 import { PLAN } from "../../src/lib/plan";
-import { withPlanContext } from "../../src/server/guards/ensurePlan";
+import { withPlanContext } from "../utils/ensurePlan.server";
 
 export const loader = withPlanContext(async ({ planContext }) => {
   try {

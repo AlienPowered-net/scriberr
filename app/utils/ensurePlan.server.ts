@@ -1,8 +1,12 @@
+// app/utils/ensurePlan.server.ts
+// Server-only: uses Prisma/Shopify - DO NOT import in client code
+
 import type { Prisma, PrismaClient, Shop, SubscriptionStatus } from "@prisma/client";
 import type { Session } from "@shopify/shopify-api";
-import shopify from "../../../app/shopify.server.js";
-import { prisma } from "../../../app/utils/db.server";
-import { PLAN, type PlanKey } from "../../lib/plan";
+import shopify from "~/shopify.server";
+import { prisma } from "~/utils/db.server";
+import { PLAN, type PlanKey } from "../../src/lib/plan";
+import type { PlanStatus } from "./plan.shared";
 
 type PrismaTransaction = PrismaClient | Prisma.TransactionClient;
 
@@ -443,3 +447,24 @@ export function withPlanContext<T extends { request: Request }>(
   };
 }
 
+// Simple helper functions matching user's requirements
+export async function getPlanStatus(request: Request): Promise<PlanStatus> {
+  const { session, admin } = await shopify.authenticate.admin(request);
+  const shop = session.shop;
+  const tier = session.plan?.toUpperCase() === "PRO" ? "PRO" : "FREE";
+
+  const noteCount = await prisma.note.count({ where: { shopId: session.shopId } });
+  return { shop, tier, noteCount, maxNotes: tier === "FREE" ? 25 : undefined };
+}
+
+// Throw if action would exceed free limits
+export async function ensurePlan(request: Request, opts?: { requireProFor?: string }) {
+  const status = await getPlanStatus(request);
+  if (status.tier === "FREE" && opts?.requireProFor) {
+    throw new Response(
+      JSON.stringify({ error: "upgrade_required", feature: opts.requireProFor }),
+      { status: 402 }
+    );
+  }
+  return status;
+}

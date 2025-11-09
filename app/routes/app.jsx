@@ -5,7 +5,7 @@ import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import "@shopify/polaris/build/esm/styles.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { flagsFor } from "../../src/lib/featureFlags";
-import { withPlanContext } from "../../src/server/guards/ensurePlan";
+import { withPlanContext } from "../utils/ensurePlan.server";
 import { UpgradeModal } from "../../src/components/UpgradeModal";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];

@@ -4,7 +4,7 @@ import {
   buildVersionsMeta,
   listVisibleVersions,
   withPlanContext,
-} from "../../src/server/guards/ensurePlan";
+} from "../utils/ensurePlan.server";
 
 export const loader = withPlanContext(async ({ request, planContext }) => {
   try {
