@@ -79,6 +79,15 @@ mark_folder_position_applied () {
   npx prisma migrate resolve --applied 20250905050203_add_folder_position --schema prisma/schema.prisma || true
 }
 
+# helper: return the *exact* local dir for a migration id prefix
+find_migration_dir () {
+  # shellcheck disable=SC2010
+  ls -1 prisma/migrations | awk -v id="$1" '
+    $0 ~ ("^" id "$") { print; exit }
+    $0 ~ ("^" id) { print; exit }
+  '
+}
+
 echo "Pre-deploy status:"
 npx prisma migrate status --schema prisma/schema.prisma || true
 
@@ -107,12 +116,17 @@ while [ $pass -le 3 ]; do
 
   if [ -n "$failed_id" ]; then
     echo "Detected failed migration id: $failed_id"
-    if has_duplicate_error; then
-      echo "Duplicate/exists error detected in logs."
-      npx prisma migrate resolve --applied "$failed_id" --schema prisma/schema.prisma || true
+    dir_name="$(find_migration_dir "$failed_id")"
+    if [ -z "$dir_name" ]; then
+      echo "Could not find local directory for $failed_id under prisma/migrations"
     else
-      echo "Non-duplicate failure; marking as ROLLED BACK."
-      npx prisma migrate resolve --rolled-back "$failed_id" --schema prisma/schema.prisma || true
+      if has_duplicate_error; then
+        echo "Duplicate/exists error detected. Marking as APPLIED: $dir_name"
+        npx prisma migrate resolve --applied "$dir_name" --schema prisma/schema.prisma || true
+      else
+        echo "Non-duplicate failure. Marking as ROLLED BACK: $dir_name"
+        npx prisma migrate resolve --rolled-back "$dir_name" --schema prisma/schema.prisma || true
+      fi
     fi
   else
     echo "No failed migration id detected; skip resolve."
