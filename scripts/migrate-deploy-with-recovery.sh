@@ -62,18 +62,6 @@ has_folder_position_error () {
   grep -q 'column "position" of relation "Folder" already exists' "$log"
 }
 
-resolve_failed () {
-  local id="$1"
-  [ -z "$id" ] && return 0
-  if has_duplicate_error; then
-    echo "Duplicate/exists error detected. Marking $id as APPLIED…"
-    npx prisma migrate resolve --applied "$id" --schema prisma/schema.prisma || true
-  else
-    echo "Non-duplicate failure. Marking $id as ROLLED BACK…"
-    npx prisma migrate resolve --rolled-back "$id" --schema prisma/schema.prisma || true
-  fi
-}
-
 mark_folder_position_applied () {
   echo "Marking 20250905050203_add_folder_position as applied (duplicate column already exists)…"
   npx prisma migrate resolve --applied 20250905050203_add_folder_position --schema prisma/schema.prisma || true
@@ -81,11 +69,16 @@ mark_folder_position_applied () {
 
 # helper: return the *exact* local dir for a migration id prefix
 find_migration_dir () {
-  # shellcheck disable=SC2010
-  ls -1 prisma/migrations | awk -v id="$1" '
-    $0 ~ ("^" id "$") { print; exit }
-    $0 ~ ("^" id) { print; exit }
-  '
+  local id="$1"
+  for path in prisma/migrations/*; do
+    [ -d "$path" ] || continue
+    local base="${path##*/}"
+    if [ "$base" = "$id" ] || [[ "$base" == "$id"* ]]; then
+      printf '%s\n' "$base"
+      return 0
+    fi
+  done
+  return 1
 }
 
 echo "Pre-deploy status:"
@@ -115,8 +108,9 @@ while [ $pass -le 3 ]; do
   fi
 
   if [ -n "$failed_id" ]; then
+    failed_id="$(printf '%s' "$failed_id" | tr -d '\r\n')"
     echo "Detected failed migration id: $failed_id"
-    dir_name="$(find_migration_dir "$failed_id")"
+    dir_name="$(find_migration_dir "$failed_id" || true)"
     if [ -z "$dir_name" ]; then
       echo "Could not find local directory for $failed_id under prisma/migrations"
     else
