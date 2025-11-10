@@ -16,6 +16,9 @@
     "moduleResolution": "Bundler",
     "target": "ES2022",
     "baseUrl": ".",
+    "paths": {
+      "~/*": ["app/*"]
+    },
     "types": ["node"]
   }
 }
