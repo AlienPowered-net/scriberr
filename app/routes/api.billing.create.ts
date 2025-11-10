@@ -1,11 +1,17 @@
 import { json } from "@remix-run/node";
-import shopify from "../shopify.server";
 import { createProSubscription } from "../../src/lib/shopify/billing";
 
 export const action = async ({ request }: { request: Request }) => {
   if (request.method !== "POST") {
     return json({ error: "Method not allowed" }, { status: 405 });
   }
+
+  // Dynamic imports for server-only modules
+  const [shopifyModule] = await Promise.all([
+    import("../shopify.server"),
+  ]);
+
+  const shopify = shopifyModule.default;
 
   try {
     const { admin, session } = await shopify.authenticate.admin(request);
@@ -49,4 +55,3 @@ export const action = async ({ request }: { request: Request }) => {
     );
   }
 };
-

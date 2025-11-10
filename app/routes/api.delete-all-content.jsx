@@ -1,9 +1,17 @@
 import { json } from "@remix-run/node";
-import { shopify } from "../shopify.server";
-import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
 
 export async function action({ request }) {
+  // Dynamic imports for server-only modules
+  const [
+    { shopify },
+    { prisma },
+    { getOrCreateShopId },
+  ] = await Promise.all([
+    import("../shopify.server"),
+    import("../utils/db.server"),
+    import("../utils/tenant.server"),
+  ]);
+
   const { session } = await shopify.authenticate.admin(request);
   const shopId = await getOrCreateShopId(session.shop);
 

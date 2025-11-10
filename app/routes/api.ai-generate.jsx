@@ -1,5 +1,4 @@
 import { json } from "@remix-run/node";
-import OpenAI from "openai";
 
 export async function action({ request }) {
   if (request.method !== "POST") {
@@ -21,6 +20,9 @@ export async function action({ request }) {
         details: "Please set the OPENAI_API_KEY environment variable"
       }, { status: 500 });
     }
+
+    // Dynamic import for OpenAI (not a server-only module, but keeping pattern consistent)
+    const { default: OpenAI } = await import("openai");
 
     const openai = new OpenAI({
       apiKey: apiKey,

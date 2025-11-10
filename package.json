@@ -7,7 +7,7 @@
     "migrate-deploy": "bash scripts/migrate-deploy-with-recovery.sh",
     "migrate:resolve-failed": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/resolve-failed-migration.ps1",
     "migrate:note-versions": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/migrate-note-versions.ps1",
-    "prebuild": "node scripts/check-client-imports.mjs",
+    "prebuild": "node scripts/check-client-imports.mjs && node scripts/remix-guard.mjs",
     "build": "remix vite:build",
     "test": "vitest run",
     "increment-version": "node scripts/increment-version.js",

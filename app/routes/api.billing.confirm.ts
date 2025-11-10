@@ -1,6 +1,4 @@
 import { json, redirect } from "@remix-run/node";
-import shopify from "../shopify.server";
-import { prisma } from "../utils/db.server";
 import {
   fetchSubscription,
   mapSubscriptionStatus,
@@ -9,6 +7,17 @@ import {
 const SUCCESS_REDIRECT_PATH = "/app/settings/billing/success";
 
 export const loader = async ({ request }: { request: Request }) => {
+  // Dynamic imports for server-only modules
+  const [
+    shopifyModule,
+    { prisma },
+  ] = await Promise.all([
+    import("../shopify.server"),
+    import("../utils/db.server"),
+  ]);
+
+  const shopify = shopifyModule.default;
+
   try {
     const { admin, session } = await shopify.authenticate.admin(request);
 
@@ -84,4 +93,3 @@ export const loader = async ({ request }: { request: Request }) => {
     );
   }
 };
-

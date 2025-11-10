@@ -1,10 +1,14 @@
 import { json } from "@remix-run/node";
-import { prisma } from "../utils/db.server";
 
 export async function action({ request }) {
   if (request.method !== "PUT") {
     return json({ error: "Method not allowed" }, { status: 405 });
   }
+
+  // Dynamic imports for server-only modules
+  const [{ prisma }] = await Promise.all([
+    import("../utils/db.server"),
+  ]);
 
   try {
     const { versionId, versionTitle } = await request.json();

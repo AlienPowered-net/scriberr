@@ -1,13 +1,18 @@
 import { json } from "@remix-run/node";
-import { authenticate } from "../shopify.server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
 
 export async function action({ request }) {
   if (request.method !== "POST") {
     return json({ error: "Method not allowed" }, { status: 405 });
   }
+
+  // Dynamic imports for server-only modules
+  const [
+    { authenticate },
+    { prisma },
+  ] = await Promise.all([
+    import("../shopify.server"),
+    import("../utils/db.server"),
+  ]);
 
   try {
     const { session } = await authenticate.admin(request);

@@ -1,8 +1,11 @@
 import { json } from "@remix-run/node";
-import { prisma } from "~/db.server";
-import crypto from "crypto";
 
 export async function loader({ request }) {
+  // Dynamic imports for server-only modules
+  const [{ prisma }] = await Promise.all([
+    import("~/db.server"),
+  ]);
+
   const url = new URL(request.url);
   const writeTest = url.searchParams.get("write") === "1";
   const noteId = url.searchParams.get("noteId");
@@ -101,4 +104,3 @@ export async function loader({ request }) {
     );
   }
 }
-

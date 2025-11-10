@@ -1,8 +1,12 @@
 // app/routes/api.db-health.jsx
 import { json } from "@remix-run/node";
-import { checkDatabaseHealth, repairDatabaseHealth } from "../utils/db-health.server";
 
 export async function loader({ request }) {
+  // Dynamic imports for server-only modules
+  const [{ checkDatabaseHealth, repairDatabaseHealth }] = await Promise.all([
+    import("../utils/db-health.server"),
+  ]);
+
   const url = new URL(request.url);
   const action = url.searchParams.get('action');
   
@@ -31,6 +35,11 @@ export async function loader({ request }) {
 }
 
 export async function action({ request }) {
+  // Dynamic imports for server-only modules
+  const [{ repairDatabaseHealth }] = await Promise.all([
+    import("../utils/db-health.server"),
+  ]);
+
   const formData = await request.formData();
   const action = formData.get('action');
   

@@ -1,12 +1,20 @@
 import { json } from "@remix-run/node";
-import { shopify } from "../shopify.server";
-import { prisma } from "../utils/db.server";
-import { getOrCreateShopId } from "../utils/tenant.server";
 
 export async function action({ request }) {
   if (request.method !== "POST") {
     return json({ error: "Method not allowed" }, { status: 405 });
   }
+
+  // Dynamic imports for server-only modules
+  const [
+    { shopify },
+    { prisma },
+    { getOrCreateShopId },
+  ] = await Promise.all([
+    import("../shopify.server"),
+    import("../utils/db.server"),
+    import("../utils/tenant.server"),
+  ]);
 
   try {
     const { session } = await shopify.authenticate.admin(request);

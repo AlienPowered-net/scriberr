@@ -1,8 +1,12 @@
 import { json } from "@remix-run/node";
-import { shopify } from "../shopify.server";
 
 // GET - Fetch Shopify entities based on query parameter
 export async function loader({ request }) {
+  // Dynamic imports for server-only modules
+  const [{ shopify }] = await Promise.all([
+    import("../shopify.server"),
+  ]);
+
   try {
     const { admin, session } = await shopify.authenticate.admin(request);
     const url = new URL(request.url);
