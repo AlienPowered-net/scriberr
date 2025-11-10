@@ -1,10 +1,19 @@
 import { json } from "@remix-run/node";
 
+// NOTE: keep this server-only; avoid alias to prevent SSR resolve issues on Vercel
+// We use a dynamic, relative import so it is tree-shaken from the client
+let db;
+async function getDb() {
+  if (!db) {
+    const mod = await import("../utils/db.server"); // app/routes -> app/utils/db.server
+    db = mod.default ?? mod;
+  }
+  return db;
+}
+
 export async function loader({ request }) {
-  // Dynamic imports for server-only modules
-  const [{ prisma }] = await Promise.all([
-    import("~/db.server"),
-  ]);
+  const dbModule = await getDb();
+  const { prisma } = dbModule;
 
   const url = new URL(request.url);
   const writeTest = url.searchParams.get("write") === "1";

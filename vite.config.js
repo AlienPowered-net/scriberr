@@ -2,6 +2,7 @@ import { vitePlugin as remix } from "@remix-run/dev";
 import { installGlobals } from "@remix-run/node";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+import path from "node:path";
 
 installGlobals({ nativeFetch: true });
 
@@ -64,6 +65,17 @@ export default defineConfig({
     }),
     tsconfigPaths(),
   ],
+  resolve: {
+    alias: [
+      // Support both "~" and "~/" imports for *server* and *client* builds
+      { find: "~",  replacement: path.resolve(process.cwd(), "app") },
+      { find: "~/", replacement: path.resolve(process.cwd(), "app") + "/" },
+    ],
+  },
+  // Not required, but helps keep JSON import behavior consistent across plugins
+  json: {
+    namedExports: true,
+  },
   build: {
     assetsInlineLimit: 0,
   },
