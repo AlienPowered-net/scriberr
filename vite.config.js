@@ -3,6 +3,7 @@ import { installGlobals } from "@remix-run/node";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import path from "node:path";
+import { vercelPreset } from "@vercel/remix/vite";
 
 installGlobals({ nativeFetch: true });
 
@@ -62,6 +63,7 @@ export default defineConfig({
         v3_singleFetch: false,
         v3_routeConfig: true,
       },
+      presets: [vercelPreset()],
     }),
     tsconfigPaths(),
   ],
@@ -78,6 +80,18 @@ export default defineConfig({
   },
   build: {
     assetsInlineLimit: 0,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: [
+            "react",
+            "react-dom",
+            "@shopify/polaris",
+            "@tiptap/react",
+          ],
+        },
+      },
+    },
   },
   optimizeDeps: {
     include: ["@shopify/app-bridge-react", "@shopify/polaris"],

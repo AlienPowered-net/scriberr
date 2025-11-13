@@ -7,7 +7,7 @@
     "migrate-deploy": "bash scripts/migrate-deploy-with-recovery.sh",
     "migrate:resolve-failed": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/resolve-failed-migration.ps1",
     "migrate:note-versions": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/migrate-note-versions.ps1",
-    "prebuild": "node scripts/check-client-imports.mjs && node scripts/remix-guard.mjs",
+    "prebuild": "node scripts/fix-polaris-json-imports.mjs && node scripts/check-client-imports.mjs && node scripts/remix-guard.mjs",
     "build": "remix vite:build",
     "test": "vitest run",
     "increment-version": "node scripts/increment-version.js",
@@ -22,6 +22,7 @@
     "docker-start": "npm run setup && npm run start",
     "setup": "prisma generate && prisma migrate deploy && node scripts/init-database.js && node scripts/add-contact-fields-migration.js",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "shopify": "shopify",
     "prisma": "prisma",
     "graphql-codegen": "graphql-codegen",
@@ -30,7 +31,7 @@
   },
   "type": "module",
   "engines": {
-    "node": "^18.20 || ^20.10 || >=21.0.0"
+    "node": "20.x"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

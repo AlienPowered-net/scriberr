@@ -93,17 +93,21 @@ echo "Pre-deploy status:" | tee -a "$log"
 npx prisma migrate status --schema prisma/schema.prisma |& tee -a "$log" || true
 
 # AGGRESSIVE PRE-RESOLVE: Handle three known legacy issues deterministically
-echo "🔧 AGGRESSIVE PRE-RESOLVE: Checking and resolving known legacy issues..." | tee -a "$log"
+if [ "${AGGRESSIVE_PRE_RESOLVE:-0}" != "0" ]; then
+  echo "🔧 AGGRESSIVE PRE-RESOLVE: Checking and resolving known legacy issues..." | tee -a "$log"
 
-# 1) pinnedAt already exists in DB → mark add_pinned_at_field as APPLIED
-resolve_migration applied 20250911072345_add_pinned_at_field
+  # 1) pinnedAt already exists in DB → mark add_pinned_at_field as APPLIED
+  resolve_migration applied 20250911072345_add_pinned_at_field
 
-# 2) Folder.position already exists → mark add_folder_position as APPLIED
-resolve_migration applied 20250905050203_add_folder_position
+  # 2) Folder.position already exists → mark add_folder_position as APPLIED
+  resolve_migration applied 20250905050203_add_folder_position
 
-# 3) Session rename where "public.Session" does not exist → mark rename_session_table_to_lowercase as APPLIED
-# Because the source table is missing, renaming cannot succeed and is a no-op in practice.
-resolve_migration applied 20250920060228_rename_session_table_to_lowercase
+  # 3) Session rename where "public.Session" does not exist → mark rename_session_table_to_lowercase as APPLIED
+  # Because the source table is missing, renaming cannot succeed and is a no-op in practice.
+  resolve_migration applied 20250920060228_rename_session_table_to_lowercase
+else
+  echo "ℹ️ Skipping aggressive pre-resolve (set AGGRESSIVE_PRE_RESOLVE=1 to enable)." | tee -a "$log"
+fi
 
 pass=1
 rc=1

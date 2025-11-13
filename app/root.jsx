@@ -1,7 +1,7 @@
 // app/root.jsx
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react";
 import { AppProvider } from "@shopify/polaris";
-import en from "@shopify/polaris/locales/en.json" with { type: "json" };
+import en from "@shopify/polaris/locales/en.json";
 import "@shopify/polaris/build/esm/styles.css"; // Polaris (bundled)
 import { MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css"; // Mantine styles
