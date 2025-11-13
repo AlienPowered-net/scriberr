@@ -1,0 +1,897 @@
+{
+  "buildManifest": {
+    "serverBundles": {
+      "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0": {
+        "id": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+        "file": "build/server/nodejs-eyJydW50aW1lIjoibm9kZWpzIn0/index.js",
+        "config": {
+          "runtime": "nodejs"
+        }
+      }
+    },
+    "routeIdToServerBundleId": {
+      "routes/api.delete-all-contact-folders": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/webhooks.app.scopes_update": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.compare-note-versions": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.reorder-folders-drag": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.restore-note-version": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/webhooks.app.uninstalled": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.create-note-version": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.delete-all-contacts": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.delete-note-version": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.update-note-version": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.delete-all-content": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.delete-all-folders": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.update-folder-icon": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.get-note-versions": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.delete-all-notes": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.shopify-entities": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.update-note-tags": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.version-selftest": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.apply-migration": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.billing.confirm": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.contact-folders": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.custom-mentions": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.reorder-folders": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.billing.create": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.duplicate-note": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.version-health": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.create-folder": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.delete-folder": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.rename-folder": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.ai-generate": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.create-note": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.delete-note": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.pin-contact": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.update-note": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.plan-usage": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.db-health": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.move-note": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.contacts": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.pin-note": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.health": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/auth.login": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/auth.$": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/_index": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/app.notion-editor-demo": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/app.debug-mentions": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/app.additional": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/app.dashboard": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/app.contacts": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/app.settings": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/app.settings.billing.success": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/app._index": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/$": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0"
+    },
+    "routes": {
+      "root": {
+        "path": "",
+        "id": "root",
+        "file": "app/root.jsx",
+        "config": {}
+      },
+      "routes/api.delete-all-contact-folders": {
+        "id": "routes/api.delete-all-contact-folders",
+        "parentId": "root",
+        "file": "app/routes/api.delete-all-contact-folders.jsx",
+        "path": "api/delete-all-contact-folders",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/webhooks.app.scopes_update": {
+        "id": "routes/webhooks.app.scopes_update",
+        "parentId": "root",
+        "file": "app/routes/webhooks.app.scopes_update.jsx",
+        "path": "webhooks/app/scopes_update",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.compare-note-versions": {
+        "id": "routes/api.compare-note-versions",
+        "parentId": "root",
+        "file": "app/routes/api.compare-note-versions.jsx",
+        "path": "api/compare-note-versions",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.reorder-folders-drag": {
+        "id": "routes/api.reorder-folders-drag",
+        "parentId": "root",
+        "file": "app/routes/api.reorder-folders-drag.jsx",
+        "path": "api/reorder-folders-drag",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.restore-note-version": {
+        "id": "routes/api.restore-note-version",
+        "parentId": "root",
+        "file": "app/routes/api.restore-note-version.jsx",
+        "path": "api/restore-note-version",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/webhooks.app.uninstalled": {
+        "id": "routes/webhooks.app.uninstalled",
+        "parentId": "root",
+        "file": "app/routes/webhooks.app.uninstalled.jsx",
+        "path": "webhooks/app/uninstalled",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.create-note-version": {
+        "id": "routes/api.create-note-version",
+        "parentId": "root",
+        "file": "app/routes/api.create-note-version.jsx",
+        "path": "api/create-note-version",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.delete-all-contacts": {
+        "id": "routes/api.delete-all-contacts",
+        "parentId": "root",
+        "file": "app/routes/api.delete-all-contacts.jsx",
+        "path": "api/delete-all-contacts",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.delete-note-version": {
+        "id": "routes/api.delete-note-version",
+        "parentId": "root",
+        "file": "app/routes/api.delete-note-version.jsx",
+        "path": "api/delete-note-version",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.update-note-version": {
+        "id": "routes/api.update-note-version",
+        "parentId": "root",
+        "file": "app/routes/api.update-note-version.jsx",
+        "path": "api/update-note-version",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.delete-all-content": {
+        "id": "routes/api.delete-all-content",
+        "parentId": "root",
+        "file": "app/routes/api.delete-all-content.jsx",
+        "path": "api/delete-all-content",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.delete-all-folders": {
+        "id": "routes/api.delete-all-folders",
+        "parentId": "root",
+        "file": "app/routes/api.delete-all-folders.jsx",
+        "path": "api/delete-all-folders",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.update-folder-icon": {
+        "id": "routes/api.update-folder-icon",
+        "parentId": "root",
+        "file": "app/routes/api.update-folder-icon.jsx",
+        "path": "api/update-folder-icon",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.get-note-versions": {
+        "id": "routes/api.get-note-versions",
+        "parentId": "root",
+        "file": "app/routes/api.get-note-versions.jsx",
+        "path": "api/get-note-versions",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.delete-all-notes": {
+        "id": "routes/api.delete-all-notes",
+        "parentId": "root",
+        "file": "app/routes/api.delete-all-notes.jsx",
+        "path": "api/delete-all-notes",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.shopify-entities": {
+        "id": "routes/api.shopify-entities",
+        "parentId": "root",
+        "file": "app/routes/api.shopify-entities.jsx",
+        "path": "api/shopify-entities",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.update-note-tags": {
+        "id": "routes/api.update-note-tags",
+        "parentId": "root",
+        "file": "app/routes/api.update-note-tags.jsx",
+        "path": "api/update-note-tags",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.version-selftest": {
+        "id": "routes/api.version-selftest",
+        "parentId": "root",
+        "file": "app/routes/api.version-selftest.jsx",
+        "path": "api/version-selftest",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.apply-migration": {
+        "id": "routes/api.apply-migration",
+        "parentId": "root",
+        "file": "app/routes/api.apply-migration.jsx",
+        "path": "api/apply-migration",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.billing.confirm": {
+        "id": "routes/api.billing.confirm",
+        "parentId": "root",
+        "file": "app/routes/api.billing.confirm.ts",
+        "path": "api/billing/confirm",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.contact-folders": {
+        "id": "routes/api.contact-folders",
+        "parentId": "root",
+        "file": "app/routes/api.contact-folders.jsx",
+        "path": "api/contact-folders",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.custom-mentions": {
+        "id": "routes/api.custom-mentions",
+        "parentId": "root",
+        "file": "app/routes/api.custom-mentions.jsx",
+        "path": "api/custom-mentions",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.reorder-folders": {
+        "id": "routes/api.reorder-folders",
+        "parentId": "root",
+        "file": "app/routes/api.reorder-folders.jsx",
+        "path": "api/reorder-folders",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.billing.create": {
+        "id": "routes/api.billing.create",
+        "parentId": "root",
+        "file": "app/routes/api.billing.create.ts",
+        "path": "api/billing/create",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.duplicate-note": {
+        "id": "routes/api.duplicate-note",
+        "parentId": "root",
+        "file": "app/routes/api.duplicate-note.jsx",
+        "path": "api/duplicate-note",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.version-health": {
+        "id": "routes/api.version-health",
+        "parentId": "root",
+        "file": "app/routes/api.version-health.ts",
+        "path": "api/version-health",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.create-folder": {
+        "id": "routes/api.create-folder",
+        "parentId": "root",
+        "file": "app/routes/api.create-folder.jsx",
+        "path": "api/create-folder",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.delete-folder": {
+        "id": "routes/api.delete-folder",
+        "parentId": "root",
+        "file": "app/routes/api.delete-folder.jsx",
+        "path": "api/delete-folder",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.rename-folder": {
+        "id": "routes/api.rename-folder",
+        "parentId": "root",
+        "file": "app/routes/api.rename-folder.jsx",
+        "path": "api/rename-folder",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.ai-generate": {
+        "id": "routes/api.ai-generate",
+        "parentId": "root",
+        "file": "app/routes/api.ai-generate.jsx",
+        "path": "api/ai-generate",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.create-note": {
+        "id": "routes/api.create-note",
+        "parentId": "root",
+        "file": "app/routes/api.create-note.jsx",
+        "path": "api/create-note",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.delete-note": {
+        "id": "routes/api.delete-note",
+        "parentId": "root",
+        "file": "app/routes/api.delete-note.jsx",
+        "path": "api/delete-note",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.pin-contact": {
+        "id": "routes/api.pin-contact",
+        "parentId": "root",
+        "file": "app/routes/api.pin-contact.jsx",
+        "path": "api/pin-contact",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.update-note": {
+        "id": "routes/api.update-note",
+        "parentId": "root",
+        "file": "app/routes/api.update-note.jsx",
+        "path": "api/update-note",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.plan-usage": {
+        "id": "routes/api.plan-usage",
+        "parentId": "root",
+        "file": "app/routes/api.plan-usage.jsx",
+        "path": "api/plan-usage",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.db-health": {
+        "id": "routes/api.db-health",
+        "parentId": "root",
+        "file": "app/routes/api.db-health.jsx",
+        "path": "api/db-health",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.move-note": {
+        "id": "routes/api.move-note",
+        "parentId": "root",
+        "file": "app/routes/api.move-note.jsx",
+        "path": "api/move-note",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.contacts": {
+        "id": "routes/api.contacts",
+        "parentId": "root",
+        "file": "app/routes/api.contacts.jsx",
+        "path": "api/contacts",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.pin-note": {
+        "id": "routes/api.pin-note",
+        "parentId": "root",
+        "file": "app/routes/api.pin-note.jsx",
+        "path": "api/pin-note",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/api.health": {
+        "id": "routes/api.health",
+        "parentId": "root",
+        "file": "app/routes/api.health.ts",
+        "path": "api/health",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/auth.login": {
+        "id": "routes/auth.login",
+        "parentId": "root",
+        "file": "app/routes/auth.login/route.jsx",
+        "path": "auth/login",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/auth.$": {
+        "id": "routes/auth.$",
+        "parentId": "root",
+        "file": "app/routes/auth.$.jsx",
+        "path": "auth/*",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/_index": {
+        "id": "routes/_index",
+        "parentId": "root",
+        "file": "app/routes/_index/route.jsx",
+        "index": true,
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/app": {
+        "id": "routes/app",
+        "parentId": "root",
+        "file": "app/routes/app.jsx",
+        "path": "app",
+        "config": {}
+      },
+      "routes/app.notion-editor-demo": {
+        "id": "routes/app.notion-editor-demo",
+        "parentId": "routes/app",
+        "file": "app/routes/app.notion-editor-demo.jsx",
+        "path": "notion-editor-demo",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/app.debug-mentions": {
+        "id": "routes/app.debug-mentions",
+        "parentId": "routes/app",
+        "file": "app/routes/app.debug-mentions.jsx",
+        "path": "debug-mentions",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/app.additional": {
+        "id": "routes/app.additional",
+        "parentId": "routes/app",
+        "file": "app/routes/app.additional.jsx",
+        "path": "additional",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/app.dashboard": {
+        "id": "routes/app.dashboard",
+        "parentId": "routes/app",
+        "file": "app/routes/app.dashboard.jsx",
+        "path": "dashboard",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/app.contacts": {
+        "id": "routes/app.contacts",
+        "parentId": "routes/app",
+        "file": "app/routes/app.contacts.jsx",
+        "path": "contacts",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/app.settings": {
+        "id": "routes/app.settings",
+        "parentId": "routes/app",
+        "file": "app/routes/app.settings.jsx",
+        "path": "settings",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/app.settings.billing.success": {
+        "id": "routes/app.settings.billing.success",
+        "parentId": "routes/app.settings",
+        "file": "app/routes/app.settings.billing.success.jsx",
+        "path": "billing/success",
+        "config": {}
+      },
+      "routes/app._index": {
+        "id": "routes/app._index",
+        "parentId": "routes/app",
+        "file": "app/routes/app._index.jsx",
+        "index": true,
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/$": {
+        "id": "routes/$",
+        "parentId": "root",
+        "file": "app/routes/$.jsx",
+        "path": "*",
+        "config": {
+          "runtime": "nodejs"
+        }
+      }
+    }
+  },
+  "remixConfig": {
+    "appDirectory": "C:\\Users\\dylan\\scriberr\\app",
+    "basename": "/",
+    "buildDirectory": "C:\\Users\\dylan\\scriberr\\build",
+    "future": {
+      "v3_fetcherPersist": true,
+      "v3_relativeSplatPath": true,
+      "v3_throwAbortReason": true,
+      "v3_routeConfig": true,
+      "v3_singleFetch": false,
+      "v3_lazyRouteDiscovery": true,
+      "unstable_optimizeDeps": false
+    },
+    "manifest": false,
+    "publicPath": "/",
+    "routes": {
+      "root": {
+        "path": "",
+        "id": "root",
+        "file": "root.jsx"
+      },
+      "routes/api.delete-all-contact-folders": {
+        "id": "routes/api.delete-all-contact-folders",
+        "parentId": "root",
+        "file": "routes/api.delete-all-contact-folders.jsx",
+        "path": "api/delete-all-contact-folders"
+      },
+      "routes/webhooks.app.scopes_update": {
+        "id": "routes/webhooks.app.scopes_update",
+        "parentId": "root",
+        "file": "routes/webhooks.app.scopes_update.jsx",
+        "path": "webhooks/app/scopes_update"
+      },
+      "routes/api.compare-note-versions": {
+        "id": "routes/api.compare-note-versions",
+        "parentId": "root",
+        "file": "routes/api.compare-note-versions.jsx",
+        "path": "api/compare-note-versions"
+      },
+      "routes/api.reorder-folders-drag": {
+        "id": "routes/api.reorder-folders-drag",
+        "parentId": "root",
+        "file": "routes/api.reorder-folders-drag.jsx",
+        "path": "api/reorder-folders-drag"
+      },
+      "routes/api.restore-note-version": {
+        "id": "routes/api.restore-note-version",
+        "parentId": "root",
+        "file": "routes/api.restore-note-version.jsx",
+        "path": "api/restore-note-version"
+      },
+      "routes/webhooks.app.uninstalled": {
+        "id": "routes/webhooks.app.uninstalled",
+        "parentId": "root",
+        "file": "routes/webhooks.app.uninstalled.jsx",
+        "path": "webhooks/app/uninstalled"
+      },
+      "routes/api.create-note-version": {
+        "id": "routes/api.create-note-version",
+        "parentId": "root",
+        "file": "routes/api.create-note-version.jsx",
+        "path": "api/create-note-version"
+      },
+      "routes/api.delete-all-contacts": {
+        "id": "routes/api.delete-all-contacts",
+        "parentId": "root",
+        "file": "routes/api.delete-all-contacts.jsx",
+        "path": "api/delete-all-contacts"
+      },
+      "routes/api.delete-note-version": {
+        "id": "routes/api.delete-note-version",
+        "parentId": "root",
+        "file": "routes/api.delete-note-version.jsx",
+        "path": "api/delete-note-version"
+      },
+      "routes/api.update-note-version": {
+        "id": "routes/api.update-note-version",
+        "parentId": "root",
+        "file": "routes/api.update-note-version.jsx",
+        "path": "api/update-note-version"
+      },
+      "routes/api.delete-all-content": {
+        "id": "routes/api.delete-all-content",
+        "parentId": "root",
+        "file": "routes/api.delete-all-content.jsx",
+        "path": "api/delete-all-content"
+      },
+      "routes/api.delete-all-folders": {
+        "id": "routes/api.delete-all-folders",
+        "parentId": "root",
+        "file": "routes/api.delete-all-folders.jsx",
+        "path": "api/delete-all-folders"
+      },
+      "routes/api.update-folder-icon": {
+        "id": "routes/api.update-folder-icon",
+        "parentId": "root",
+        "file": "routes/api.update-folder-icon.jsx",
+        "path": "api/update-folder-icon"
+      },
+      "routes/api.get-note-versions": {
+        "id": "routes/api.get-note-versions",
+        "parentId": "root",
+        "file": "routes/api.get-note-versions.jsx",
+        "path": "api/get-note-versions"
+      },
+      "routes/api.delete-all-notes": {
+        "id": "routes/api.delete-all-notes",
+        "parentId": "root",
+        "file": "routes/api.delete-all-notes.jsx",
+        "path": "api/delete-all-notes"
+      },
+      "routes/api.shopify-entities": {
+        "id": "routes/api.shopify-entities",
+        "parentId": "root",
+        "file": "routes/api.shopify-entities.jsx",
+        "path": "api/shopify-entities"
+      },
+      "routes/api.update-note-tags": {
+        "id": "routes/api.update-note-tags",
+        "parentId": "root",
+        "file": "routes/api.update-note-tags.jsx",
+        "path": "api/update-note-tags"
+      },
+      "routes/api.version-selftest": {
+        "id": "routes/api.version-selftest",
+        "parentId": "root",
+        "file": "routes/api.version-selftest.jsx",
+        "path": "api/version-selftest"
+      },
+      "routes/api.apply-migration": {
+        "id": "routes/api.apply-migration",
+        "parentId": "root",
+        "file": "routes/api.apply-migration.jsx",
+        "path": "api/apply-migration"
+      },
+      "routes/api.billing.confirm": {
+        "id": "routes/api.billing.confirm",
+        "parentId": "root",
+        "file": "routes/api.billing.confirm.ts",
+        "path": "api/billing/confirm"
+      },
+      "routes/api.contact-folders": {
+        "id": "routes/api.contact-folders",
+        "parentId": "root",
+        "file": "routes/api.contact-folders.jsx",
+        "path": "api/contact-folders"
+      },
+      "routes/api.custom-mentions": {
+        "id": "routes/api.custom-mentions",
+        "parentId": "root",
+        "file": "routes/api.custom-mentions.jsx",
+        "path": "api/custom-mentions"
+      },
+      "routes/api.reorder-folders": {
+        "id": "routes/api.reorder-folders",
+        "parentId": "root",
+        "file": "routes/api.reorder-folders.jsx",
+        "path": "api/reorder-folders"
+      },
+      "routes/api.billing.create": {
+        "id": "routes/api.billing.create",
+        "parentId": "root",
+        "file": "routes/api.billing.create.ts",
+        "path": "api/billing/create"
+      },
+      "routes/api.duplicate-note": {
+        "id": "routes/api.duplicate-note",
+        "parentId": "root",
+        "file": "routes/api.duplicate-note.jsx",
+        "path": "api/duplicate-note"
+      },
+      "routes/api.version-health": {
+        "id": "routes/api.version-health",
+        "parentId": "root",
+        "file": "routes/api.version-health.ts",
+        "path": "api/version-health"
+      },
+      "routes/api.create-folder": {
+        "id": "routes/api.create-folder",
+        "parentId": "root",
+        "file": "routes/api.create-folder.jsx",
+        "path": "api/create-folder"
+      },
+      "routes/api.delete-folder": {
+        "id": "routes/api.delete-folder",
+        "parentId": "root",
+        "file": "routes/api.delete-folder.jsx",
+        "path": "api/delete-folder"
+      },
+      "routes/api.rename-folder": {
+        "id": "routes/api.rename-folder",
+        "parentId": "root",
+        "file": "routes/api.rename-folder.jsx",
+        "path": "api/rename-folder"
+      },
+      "routes/api.ai-generate": {
+        "id": "routes/api.ai-generate",
+        "parentId": "root",
+        "file": "routes/api.ai-generate.jsx",
+        "path": "api/ai-generate"
+      },
+      "routes/api.create-note": {
+        "id": "routes/api.create-note",
+        "parentId": "root",
+        "file": "routes/api.create-note.jsx",
+        "path": "api/create-note"
+      },
+      "routes/api.delete-note": {
+        "id": "routes/api.delete-note",
+        "parentId": "root",
+        "file": "routes/api.delete-note.jsx",
+        "path": "api/delete-note"
+      },
+      "routes/api.pin-contact": {
+        "id": "routes/api.pin-contact",
+        "parentId": "root",
+        "file": "routes/api.pin-contact.jsx",
+        "path": "api/pin-contact"
+      },
+      "routes/api.update-note": {
+        "id": "routes/api.update-note",
+        "parentId": "root",
+        "file": "routes/api.update-note.jsx",
+        "path": "api/update-note"
+      },
+      "routes/api.plan-usage": {
+        "id": "routes/api.plan-usage",
+        "parentId": "root",
+        "file": "routes/api.plan-usage.jsx",
+        "path": "api/plan-usage"
+      },
+      "routes/api.db-health": {
+        "id": "routes/api.db-health",
+        "parentId": "root",
+        "file": "routes/api.db-health.jsx",
+        "path": "api/db-health"
+      },
+      "routes/api.move-note": {
+        "id": "routes/api.move-note",
+        "parentId": "root",
+        "file": "routes/api.move-note.jsx",
+        "path": "api/move-note"
+      },
+      "routes/api.contacts": {
+        "id": "routes/api.contacts",
+        "parentId": "root",
+        "file": "routes/api.contacts.jsx",
+        "path": "api/contacts"
+      },
+      "routes/api.pin-note": {
+        "id": "routes/api.pin-note",
+        "parentId": "root",
+        "file": "routes/api.pin-note.jsx",
+        "path": "api/pin-note"
+      },
+      "routes/api.health": {
+        "id": "routes/api.health",
+        "parentId": "root",
+        "file": "routes/api.health.ts",
+        "path": "api/health"
+      },
+      "routes/auth.login": {
+        "id": "routes/auth.login",
+        "parentId": "root",
+        "file": "routes/auth.login/route.jsx",
+        "path": "auth/login"
+      },
+      "routes/auth.$": {
+        "id": "routes/auth.$",
+        "parentId": "root",
+        "file": "routes/auth.$.jsx",
+        "path": "auth/*"
+      },
+      "routes/_index": {
+        "id": "routes/_index",
+        "parentId": "root",
+        "file": "routes/_index/route.jsx",
+        "index": true
+      },
+      "routes/app": {
+        "id": "routes/app",
+        "parentId": "root",
+        "file": "routes/app.jsx",
+        "path": "app"
+      },
+      "routes/app.notion-editor-demo": {
+        "id": "routes/app.notion-editor-demo",
+        "parentId": "routes/app",
+        "file": "routes/app.notion-editor-demo.jsx",
+        "path": "notion-editor-demo"
+      },
+      "routes/app.debug-mentions": {
+        "id": "routes/app.debug-mentions",
+        "parentId": "routes/app",
+        "file": "routes/app.debug-mentions.jsx",
+        "path": "debug-mentions"
+      },
+      "routes/app.additional": {
+        "id": "routes/app.additional",
+        "parentId": "routes/app",
+        "file": "routes/app.additional.jsx",
+        "path": "additional"
+      },
+      "routes/app.dashboard": {
+        "id": "routes/app.dashboard",
+        "parentId": "routes/app",
+        "file": "routes/app.dashboard.jsx",
+        "path": "dashboard"
+      },
+      "routes/app.contacts": {
+        "id": "routes/app.contacts",
+        "parentId": "routes/app",
+        "file": "routes/app.contacts.jsx",
+        "path": "contacts"
+      },
+      "routes/app.settings": {
+        "id": "routes/app.settings",
+        "parentId": "routes/app",
+        "file": "routes/app.settings.jsx",
+        "path": "settings"
+      },
+      "routes/app.settings.billing.success": {
+        "id": "routes/app.settings.billing.success",
+        "parentId": "routes/app.settings",
+        "file": "routes/app.settings.billing.success.jsx",
+        "path": "billing/success"
+      },
+      "routes/app._index": {
+        "id": "routes/app._index",
+        "parentId": "routes/app",
+        "file": "routes/app._index.jsx",
+        "index": true
+      },
+      "routes/$": {
+        "id": "routes/$",
+        "parentId": "root",
+        "file": "routes/$.jsx",
+        "path": "*"
+      }
+    },
+    "serverBuildFile": "index.js",
+    "serverModuleFormat": "esm",
+    "ssr": true
+  },
+  "viteConfig": {
+    "build": {
+      "assetsDir": "assets"
+    }
+  }
+}

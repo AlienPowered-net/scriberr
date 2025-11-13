@@ -39,61 +39,85 @@ if (host === "localhost") {
   };
 }
 
-export default defineConfig({
-  server: {
-    allowedHosts: [host],
-    cors: {
-      preflightContinue: true,
-    },
-    port: Number(process.env.PORT || 3000),
-    hmr: hmrConfig,
-    fs: {
-      // See https://vitejs.dev/config/server-options.html#server-fs-allow for more information
-      allow: ["app", "node_modules"],
-    },
-  },
-  plugins: [
-    remix({
-      ignoredRouteFiles: ["**/.*"],
-      future: {
-        v3_fetcherPersist: true,
-        v3_relativeSplatPath: true,
-        v3_throwAbortReason: true,
-        v3_lazyRouteDiscovery: true,
-        v3_singleFetch: false,
-        v3_routeConfig: true,
+export default defineConfig((env) => {
+  const isClient = !env.isSsrBuild;
+
+  // Only define manualChunks for the client bundle.
+  // IMPORTANT: Do NOT include "react" or "react-dom" here.
+  const clientManualChunks = isClient
+    ? {
+        vendor_polaris: ["@shopify/polaris"],
+        vendor_tiptap: ["@tiptap/react"],
+        // add other heavy libs if used (non-core React):
+        // vendor_mantine: ["@mantine/core", "@mantine/hooks"],
+      }
+    : undefined;
+
+  const baseConfig = {
+    server: {
+      allowedHosts: [host],
+      cors: {
+        preflightContinue: true,
       },
-      presets: [vercelPreset()],
-    }),
-    tsconfigPaths(),
-  ],
-  resolve: {
-    alias: [
-      // Support both "~" and "~/" imports for *server* and *client* builds
-      { find: "~",  replacement: path.resolve(process.cwd(), "app") },
-      { find: "~/", replacement: path.resolve(process.cwd(), "app") + "/" },
+      port: Number(process.env.PORT || 3000),
+      hmr: hmrConfig,
+      fs: {
+        // See https://vitejs.dev/config/server-options.html#server-fs-allow for more information
+        allow: ["app", "node_modules"],
+      },
+    },
+    plugins: [
+      remix({
+        ignoredRouteFiles: ["**/.*"],
+        future: {
+          v3_fetcherPersist: true,
+          v3_relativeSplatPath: true,
+          v3_throwAbortReason: true,
+          v3_lazyRouteDiscovery: true,
+          v3_singleFetch: false,
+          v3_routeConfig: true,
+        },
+        presets: [vercelPreset()],
+      }),
+      tsconfigPaths(),
     ],
-  },
-  // Not required, but helps keep JSON import behavior consistent across plugins
-  json: {
-    namedExports: true,
-  },
-  build: {
-    assetsInlineLimit: 0,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: [
-            "react",
-            "react-dom",
-            "@shopify/polaris",
-            "@tiptap/react",
-          ],
+    resolve: {
+      alias: [
+        // Support both "~" and "~/" imports for *server* and *client* builds
+        { find: "~",  replacement: path.resolve(process.cwd(), "app") },
+        { find: "~/", replacement: path.resolve(process.cwd(), "app") + "/" },
+      ],
+    },
+    // Not required, but helps keep JSON import behavior consistent across plugins
+    json: {
+      namedExports: true,
+    },
+    optimizeDeps: {
+      include: ["@shopify/app-bridge-react", "@shopify/polaris"],
+    },
+  };
+
+  // If there is an existing build block in our current config,
+  // merge rollupOptions.output.manualChunks into it, but only for the client.
+  if (isClient) {
+    return {
+      ...baseConfig,
+      build: {
+        assetsInlineLimit: 0,
+        rollupOptions: {
+          output: {
+            manualChunks: clientManualChunks,
+          },
         },
       },
+    };
+  }
+
+  // SSR build: no manualChunks, React remains external.
+  return {
+    ...baseConfig,
+    build: {
+      assetsInlineLimit: 0,
     },
-  },
-  optimizeDeps: {
-    include: ["@shopify/app-bridge-react", "@shopify/polaris"],
-  },
+  };
 });
