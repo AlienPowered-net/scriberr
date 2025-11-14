@@ -186,6 +186,8 @@ const getMetadataPreview = (type, metadata) => {
 };
 
 const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobileProp = false, onFullscreenChange, noteId, onVersionCreated, onRestorationInfoChange }) => {
+  // Ref to track if editor is being updated from user input (prevents race condition with useEffect)
+  const isUpdatingFromUserInput = useRef(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -895,7 +897,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     content: value || '',
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
+      // Mark that we're updating from user input to prevent useEffect from resetting content
+      isUpdatingFromUserInput.current = true;
       onChange(html);
+      // Reset flag after a short delay to allow React state to update
+      setTimeout(() => {
+        isUpdatingFromUserInput.current = false;
+      }, 0);
     },
     editorProps: {
       attributes: {
@@ -966,21 +974,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             target: event.target.tagName
           });
           
-          // Special handling for space characters to ensure immediate visual feedback
-          // This fixes the bug where spaces don't appear visually until the next character is typed
-          if (event.inputType === 'insertText' && event.data === ' ') {
-            const { state } = view;
-            const { from, to } = state.selection;
-            
-            // Insert space immediately and dispatch transaction to ensure DOM update
-            const tr = state.tr.insertText(' ', from, to);
-            view.dispatch(tr);
-            
-            // Prevent default to use our manual insertion which ensures immediate visual feedback
-            event.preventDefault();
-            return true;
-          }
-          
           // If inserting text and cursor is at end boundary (nodeAtCursor is undefined)
           // and there's a text node before (likely the space after mention)
           if (event.inputType === 'insertText' && event.data && !nodeAt && nodeBefore?.type.name === 'text') {
@@ -1005,7 +998,14 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value || '');
+      // Only sync content if:
+      // 1. Editor is not currently focused/being edited, AND
+      // 2. We're not in the middle of a user input update cycle
+      // This prevents race conditions where typing triggers onUpdate -> onChange -> value change -> setContent
+      // which can cause input to disappear (especially spaces)
+      if (!editor.isFocused && !isUpdatingFromUserInput.current) {
+        editor.commands.setContent(value || '');
+      }
     }
   }, [value, editor]);
 
