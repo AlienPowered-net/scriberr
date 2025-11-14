@@ -1029,8 +1029,19 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             
             // Manually insert the text at the current position
             const { state } = view;
-            const tr = state.tr.insertText(event.data, state.selection.from);
+            const from = state.selection.from;
+            const tr = state.tr.insertText(event.data, from);
             view.dispatch(tr);
+            
+            // CRITICAL FIX for spaces: Force immediate DOM synchronization
+            // When inserting a space at boundary, the DOM update may be deferred.
+            // Force immediate sync to make the space visible right away.
+            if (event.data === ' ') {
+              console.log('[AdvancedRTE beforeinput] Space at boundary - forcing immediate DOM sync');
+              const domPos = view.domAtPos(from + 1);
+              // Force browser reflow by reading layout property - makes space visible immediately
+              void domPos.node.offsetHeight;
+            }
             
             // Prevent default
             event.preventDefault();
