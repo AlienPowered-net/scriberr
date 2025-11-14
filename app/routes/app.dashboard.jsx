@@ -6208,6 +6208,7 @@ export default function Index() {
             flex: 1,
             overflowY: 'auto',
             padding: '16px',
+            paddingBottom: '80px',
             WebkitOverflowScrolling: 'touch'
           }}>
             {/* Notes Section Content */}
@@ -6509,7 +6510,7 @@ export default function Index() {
                             fontSize: '14px',
                             lineHeight: '1.4',
                             display: '-webkit-box',
-                            WebkitLineClamp: 4,
+                            WebkitLineClamp: 3,
                             WebkitBoxOrient: 'vertical',
                             overflow: 'hidden'
                           }}>
@@ -6561,10 +6562,12 @@ export default function Index() {
                           alignItems: 'center',
                           borderTop: '1px solid #f1f3f4',
                           paddingTop: '8px',
-                          marginTop: '8px'
+                          marginTop: '8px',
+                          position: 'relative',
+                          zIndex: 10
                         }}>
                           {/* Date Information - Left Side */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', pointerEvents: 'none' }}>
                             <span style={{ fontSize: '12px', color: '#8C9196', fontWeight: '500' }}>
                               <strong>Created:</strong> {createdAt}
                             </span>
@@ -6576,7 +6579,7 @@ export default function Index() {
                           </div>
                           
                           {/* Action Buttons - Right Side */}
-                          <div className="mobile-note-actions" style={{ display: 'flex', gap: '4px', position: 'relative', zIndex: 2 }}>
+                          <div className="mobile-note-actions" style={{ display: 'flex', gap: '4px', position: 'relative', zIndex: 11, pointerEvents: 'auto' }}>
                             {/* Select Button */}
                             <Button
                               size="slim"
@@ -6637,7 +6640,7 @@ export default function Index() {
                           </div>
                         </div>
                         
-                        {/* Click to Edit Overlay */}
+                        {/* Click to Edit Overlay - covers entire card except action buttons */}
                         <div
                           style={{
                             position: 'absolute',
@@ -6646,11 +6649,42 @@ export default function Index() {
                             right: 0,
                             bottom: 0,
                             cursor: 'pointer',
-                            zIndex: 1
+                            zIndex: 1,
+                            touchAction: 'manipulation',
+                            pointerEvents: 'auto'
                           }}
-                          onClick={() => {
-                            handleEditNote(note);
-                            setMobileActiveSection('editor');
+                          onClick={(e) => {
+                            // Don't handle clicks on action buttons - they have higher z-index and stopPropagation
+                            const target = e.target;
+                            const clickedOnButton = target.closest('.mobile-note-actions') || 
+                                                    target.closest('button') ||
+                                                    target.tagName === 'BUTTON';
+                            
+                            if (!clickedOnButton) {
+                              handleEditNote(note);
+                              setMobileActiveSection('editor');
+                            }
+                          }}
+                          onTouchStart={(e) => {
+                            // Provide visual feedback on touch, but not on action buttons
+                            const target = e.target;
+                            const clickedOnButton = target.closest('.mobile-note-actions') || 
+                                                    target.closest('button') ||
+                                                    target.tagName === 'BUTTON';
+                            
+                            if (!clickedOnButton && e.currentTarget) {
+                              e.currentTarget.style.opacity = '0.95';
+                            }
+                          }}
+                          onTouchEnd={(e) => {
+                            const target = e.target;
+                            const clickedOnButton = target.closest('.mobile-note-actions') || 
+                                                    target.closest('button') ||
+                                                    target.tagName === 'BUTTON';
+                            
+                            if (!clickedOnButton && e.currentTarget) {
+                              e.currentTarget.style.opacity = '1';
+                            }
                           }}
                         />
                       </div>
@@ -7974,13 +8008,14 @@ export default function Index() {
             backgroundColor: "#f8f9fa",
             borderTop: "1px solid #e1e3e5",
             padding: "12px 24px",
-            marginTop: "10px",
+            marginTop: "auto",
             fontSize: "14px",
             color: "#6d7175",
             zIndex: 100,
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center"
+            alignItems: "center",
+            flexShrink: 0
           }}>
             <div>
               © 2025, Scriberr Powered by{" "}

@@ -966,6 +966,21 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             target: event.target.tagName
           });
           
+          // Special handling for space characters to ensure immediate visual feedback
+          // This fixes the bug where spaces don't appear visually until the next character is typed
+          if (event.inputType === 'insertText' && event.data === ' ') {
+            const { state } = view;
+            const { from, to } = state.selection;
+            
+            // Insert space immediately and dispatch transaction to ensure DOM update
+            const tr = state.tr.insertText(' ', from, to);
+            view.dispatch(tr);
+            
+            // Prevent default to use our manual insertion which ensures immediate visual feedback
+            event.preventDefault();
+            return true;
+          }
+          
           // If inserting text and cursor is at end boundary (nodeAtCursor is undefined)
           // and there's a text node before (likely the space after mention)
           if (event.inputType === 'insertText' && event.data && !nodeAt && nodeBefore?.type.name === 'text') {
