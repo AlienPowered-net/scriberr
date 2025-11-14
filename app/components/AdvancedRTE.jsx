@@ -927,6 +927,20 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           return false; // Let modal handle its own keyboard input
         }
         
+        // Special handling for spacebar to ensure immediate visual feedback
+        if (event.key === ' ' || event.keyCode === 32) {
+          console.log('[AdvancedRTE handleKeyDown] Spacebar pressed, ensuring immediate DOM update', {
+            selectionFrom: view.state.selection.from,
+            selectionTo: view.state.selection.to,
+            nodeAtCursor: view.state.doc.nodeAt(view.state.selection.from)?.type.name,
+            docSize: view.state.doc.content.size
+          });
+          
+          // Don't prevent default - let ProseMirror handle it normally
+          // But we'll use handleTextInput to ensure DOM updates immediately
+          return false;
+        }
+        
         // Debug keyboard events
         console.log('[AdvancedRTE handleKeyDown] Key pressed:', event.key, {
           selectionFrom: view.state.selection.from,
@@ -937,6 +951,40 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         });
         
         // Allow normal keyboard navigation and editing
+        return false;
+      },
+      handleTextInput: (view, from, to, text) => {
+        // Special handling for space characters to ensure immediate visual feedback
+        // Root cause: ProseMirror inserts the space into document state immediately,
+        // but the DOM update can be delayed/batched, especially at text node boundaries.
+        // When typing at cursor position (end of text), the space exists in state but
+        // isn't visible in DOM until the next character triggers a full re-render.
+        if (text === ' ') {
+          console.log('[AdvancedRTE handleTextInput] Space character - forcing immediate DOM update', {
+            from,
+            to,
+            docSizeBefore: view.state.doc.content.size
+          });
+          
+          // Create transaction and dispatch - this updates document state
+          const tr = view.state.tr.insertText(' ', from, to);
+          view.dispatch(tr);
+          
+          // CRITICAL FIX: Force immediate DOM synchronization
+          // ProseMirror's dispatch updates state, but DOM update may be deferred.
+          // By accessing the DOM position immediately after dispatch, we force
+          // ProseMirror to synchronize the DOM right away, making the space visible.
+          const domPos = view.domAtPos(from + 1);
+          // Force browser reflow by reading layout property - this makes space visible immediately
+          void domPos.node.offsetHeight;
+          
+          console.log('[AdvancedRTE handleTextInput] DOM forced to sync - space should be visible now');
+          
+          // Return true to prevent ProseMirror from processing this input again
+          return true;
+        }
+        
+        // Let ProseMirror handle other text input normally
         return false;
       },
       handleDOMEvents: {
