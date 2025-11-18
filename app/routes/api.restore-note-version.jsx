@@ -6,27 +6,25 @@ export const action = async ({ request }) => {
     { prisma },
     {
       INLINE_ALERTS,
-      PlanError,
+      buildVersionLimitPlanError,
       buildVersionsMeta,
       getVisibleCount,
-      hasFiveAllManual,
+      hasAllManualAtLimit,
       hideOldestVisibleAuto,
       isPlanError,
       listVisibleVersions,
       serializePlanError,
       withPlanContext,
     },
-    { PLAN },
   ] = await Promise.all([
     import("../utils/db.server"),
     import("../utils/ensurePlan.server"),
-    import("../../src/lib/plan"),
   ]);
 
   // Wrap handler with plan context
   const handler = withPlanContext(async ({ request, planContext }) => {
     try {
-      const { shopId, plan } = planContext;
+      const { shopId, plan, versionLimit } = planContext;
       const { noteId, versionId, preserveCurrentChanges = false } =
         await request.json();
 
@@ -51,8 +49,8 @@ export const action = async ({ request }) => {
       const result = await prisma.$transaction(async (tx) => {
         if (plan === "FREE") {
           const visibleCount = await getVisibleCount(noteId, tx);
-          if (visibleCount >= PLAN.FREE.NOTE_VERSIONS_MAX) {
-            throw new PlanError("LIMIT_VERSIONS");
+          if (visibleCount >= versionLimit) {
+            throw await buildVersionLimitPlanError(planContext, tx);
           }
         }
 
@@ -62,8 +60,12 @@ export const action = async ({ request }) => {
           let freeVisible = true;
           if (plan === "FREE") {
             const visibleCount = await getVisibleCount(noteId, tx);
-            if (visibleCount >= PLAN.FREE.NOTE_VERSIONS_MAX) {
-              const allManual = await hasFiveAllManual(noteId, tx);
+            if (visibleCount >= versionLimit) {
+              const allManual = await hasAllManualAtLimit(
+                noteId,
+                versionLimit,
+                tx,
+              );
               if (allManual) {
                 freeVisible = false;
                 inlineAlert = INLINE_ALERTS.NO_ROOM_DUE_TO_MANUALS;
@@ -98,7 +100,7 @@ export const action = async ({ request }) => {
 
         const [versions, meta] = await Promise.all([
           listVisibleVersions(noteId, plan, tx),
-          buildVersionsMeta(noteId, plan, tx, inlineAlert),
+          buildVersionsMeta(noteId, plan, tx, inlineAlert, versionLimit),
         ]);
 
         return {

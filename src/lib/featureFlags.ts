@@ -1,12 +1,21 @@
 import type { PlanKey } from "./plan";
 
-export function flagsFor(plan: PlanKey) {
+type FlagOverrides = {
+  versionLimit?: number;
+};
+
+export function flagsFor(plan: PlanKey, overrides: FlagOverrides = {}) {
+  const isFree = plan === "FREE";
+  const versionCap = isFree
+    ? overrides.versionLimit ?? 5
+    : Infinity;
+
   return {
     contactsEnabled: plan === "PRO",
     noteTagsEnabled: plan === "PRO",
-    noteLimit: plan === "FREE" ? 25 : Infinity,
-    folderLimit: plan === "FREE" ? 3 : Infinity,
-    versionCap: plan === "FREE" ? 5 : Infinity,
+    noteLimit: isFree ? 25 : Infinity,
+    folderLimit: isFree ? 3 : Infinity,
+    versionCap,
   } as const;
 }
 

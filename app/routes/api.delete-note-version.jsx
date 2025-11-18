@@ -18,7 +18,7 @@ export const action = async ({ request }) => {
   // Wrap handler with plan context
   const handler = withPlanContext(async ({ request, planContext }) => {
     try {
-      const { shopId, plan } = planContext;
+      const { shopId, plan, versionLimit } = planContext;
       const { noteId, versionId } = await request.json();
 
       console.log("Deleting version", { noteId, versionId, shopId });
@@ -52,7 +52,7 @@ export const action = async ({ request }) => {
 
         const [versions, meta] = await Promise.all([
           listVisibleVersions(noteId, plan, tx),
-          buildVersionsMeta(noteId, plan, tx),
+          buildVersionsMeta(noteId, plan, tx, null, versionLimit),
         ]);
 
         return { versions, meta };

@@ -6,10 +6,10 @@ export const action = async ({ request }) => {
     { prisma },
     {
       INLINE_ALERTS,
-      PlanError,
+      buildVersionLimitPlanError,
       buildVersionsMeta,
       getVisibleCount,
-      hasFiveAllManual,
+      hasAllManualAtLimit,
       hideOldestVisibleAuto,
       isPlanError,
       listVisibleVersions,
@@ -17,11 +17,9 @@ export const action = async ({ request }) => {
       serializePlanError,
       withPlanContext,
     },
-    { PLAN },
   ] = await Promise.all([
     import("../utils/db.server"),
     import("../utils/ensurePlan.server"),
-    import("../../src/lib/plan"),
   ]);
 
   // Wrap handler with plan context
@@ -29,7 +27,7 @@ export const action = async ({ request }) => {
     const DEBUG_VERSIONS = process.env.DEBUG_VERSIONS === "1";
     
     try {
-      const { shopId, plan } = planContext;
+      const { shopId, plan, versionLimit } = planContext;
       
       const { noteId, title, content, versionTitle, snapshot, isAuto = false } =
         await request.json();
@@ -63,29 +61,30 @@ export const action = async ({ request }) => {
       if (!isAuto && plan === "FREE") {
         const visibleCount = await getVisibleCount(noteId);
         if (DEBUG_VERSIONS) {
-          console.log("[DEBUG_VERSIONS] Manual save check:", { visibleCount, limit: PLAN.FREE.NOTE_VERSIONS_MAX });
+          console.log("[DEBUG_VERSIONS] Manual save check:", { visibleCount, limit: versionLimit });
         }
-        if (visibleCount >= PLAN.FREE.NOTE_VERSIONS_MAX) {
+        if (visibleCount >= versionLimit) {
           action = "block-upgrade";
           result = "blocked";
           errorCode = "UPGRADE_REQUIRED";
           if (DEBUG_VERSIONS) {
             console.log("[DEBUG_VERSIONS] Manual save blocked:", { visibleCount });
           }
-          return json(serializePlanError(new PlanError("LIMIT_VERSIONS")), { status: 403 });
+          const error = await buildVersionLimitPlanError(planContext);
+          return json(serializePlanError(error), { status: 403 });
         }
       }
 
       // Auto-save logic (FREE plan only)
       if (isAuto && plan === "FREE") {
         const visibleCount = await getVisibleCount(noteId);
-        const hasAllManual = await hasFiveAllManual(noteId);
+        const hasAllManual = await hasAllManualAtLimit(noteId, versionLimit);
 
         if (DEBUG_VERSIONS) {
-          console.log("[DEBUG_VERSIONS] Auto-save check:", { visibleCount, hasAllManual });
+          console.log("[DEBUG_VERSIONS] Auto-save check:", { visibleCount, hasAllManual, limit: versionLimit });
         }
 
-        if (visibleCount >= PLAN.FREE.NOTE_VERSIONS_MAX) {
+        if (visibleCount >= versionLimit) {
           if (hasAllManual) {
             // All 5 are manual - store hidden, show inline alert
             freeVisible = false;
@@ -113,7 +112,7 @@ export const action = async ({ request }) => {
               // Fetch updated versions and meta
               const [versions, meta] = await Promise.all([
                 listVisibleVersions(noteId, plan),
-                buildVersionsMeta(noteId, plan, prisma, null),
+                buildVersionsMeta(noteId, plan, prisma, null, versionLimit),
               ]);
               
               const debugPayload = DEBUG_VERSIONS ? {
@@ -162,7 +161,7 @@ export const action = async ({ request }) => {
 
       const [versions, meta] = await Promise.all([
         listVisibleVersions(noteId, plan),
-        buildVersionsMeta(noteId, plan, prisma, inlineAlert),
+        buildVersionsMeta(noteId, plan, prisma, inlineAlert, versionLimit),
       ]);
 
       if (DEBUG_VERSIONS) {

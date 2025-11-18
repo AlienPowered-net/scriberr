@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock Shopify server before importing guards
-vi.mock("../../../app/shopify.server.js", () => ({
+vi.mock("~/shopify.server.js", () => ({
   default: {
     authenticate: {
       admin: vi.fn(),
@@ -10,10 +10,11 @@ vi.mock("../../../app/shopify.server.js", () => ({
 }));
 
 // Mock Prisma
-vi.mock("../../../app/utils/db.server", () => ({
+vi.mock("~/utils/db.server", () => ({
   prisma: {
     shop: {
       upsert: vi.fn(),
+      update: vi.fn(),
     },
   },
 }));
@@ -29,7 +30,10 @@ import {
   surfaceNewestHiddenAuto,
   listVisibleVersions,
   buildVersionsMeta,
-} from "../server/guards/ensurePlan";
+  getVersionLimit,
+  isWithinVersionPromptCooldown,
+  buildVersionLimitPlanError,
+} from "~/utils/ensurePlan.server";
 import { mapSubscriptionStatus } from "../lib/shopify/billing";
 
 describe("plan guards", () => {
@@ -358,6 +362,92 @@ describe("plan guards", () => {
       );
       expect(result.lastActionInlineAlert).toBe("NO_ROOM_DUE_TO_MANUALS");
     });
+  });
+});
+
+describe("version limit helpers", () => {
+  it("computes per-plan version limits with extra allowances", () => {
+    expect(getVersionLimit("FREE")).toBe(5);
+    expect(
+      getVersionLimit("FREE", {
+        extraFreeVersions: 10,
+      } as any),
+    ).toBe(15);
+    expect(getVersionLimit("PRO")).toBe(Infinity);
+  });
+
+  it("detects cooldown windows for upgrade prompts", () => {
+    const now = Date.now();
+    expect(
+      isWithinVersionPromptCooldown(
+        { versionLimitPromptedAt: new Date(now - 60 * 60 * 1000) } as any,
+        now,
+      ),
+    ).toBe(true);
+    expect(
+      isWithinVersionPromptCooldown(
+        { versionLimitPromptedAt: new Date(now - 49 * 60 * 60 * 1000) } as any,
+        now,
+      ),
+    ).toBe(false);
+  });
+
+  it("builds throttled plan errors and marks prompt timestamps", async () => {
+    const ctx = {
+      shop: {
+        extraFreeVersions: 0,
+        versionLimitPromptedAt: null,
+      },
+      plan: "FREE",
+      shopId: "shop-123",
+      subscriptionStatus: "NONE",
+      session: {} as any,
+      versionLimit: 5,
+    };
+    const db = {
+      shop: {
+        update: vi.fn(),
+      },
+    };
+    const now = new Date("2025-01-01T00:00:00.000Z");
+
+    const error = await buildVersionLimitPlanError(ctx as any, db as any, now);
+
+    expect(error).toBeInstanceOf(PlanError);
+    expect(error.upgradeHint).toBe(true);
+    expect(db.shop.update).toHaveBeenCalledWith({
+      where: { id: "shop-123" },
+      data: { versionLimitPromptedAt: now },
+    });
+    expect(ctx.shop.versionLimitPromptedAt).toBe(now);
+  });
+
+  it("suppresses upgrade hints when within cooldown", async () => {
+    const timestamp = new Date("2025-01-01T00:00:00.000Z");
+    const ctx = {
+      shop: {
+        extraFreeVersions: 0,
+        versionLimitPromptedAt: timestamp,
+      },
+      plan: "FREE",
+      shopId: "shop-123",
+      subscriptionStatus: "NONE",
+      session: {} as any,
+      versionLimit: 5,
+    };
+    const db = {
+      shop: {
+        update: vi.fn(),
+      },
+    };
+
+    const later = new Date(timestamp.getTime() + 60 * 60 * 1000); // 1 hour later
+    const error = await buildVersionLimitPlanError(ctx as any, db as any, later);
+
+    expect(error).toBeInstanceOf(PlanError);
+    expect(error.upgradeHint).toBe(false);
+    expect(db.shop.update).not.toHaveBeenCalled();
+    expect(ctx.shop.versionLimitPromptedAt).toBe(timestamp);
   });
 });
 

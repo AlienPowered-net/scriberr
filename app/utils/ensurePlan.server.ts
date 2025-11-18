@@ -64,6 +64,7 @@ export interface PlanContext {
   shopId: string;
   subscriptionStatus: SubscriptionStatus;
   session: Session;
+  versionLimit: number;
 }
 
 export function getPlan(shop: Shop | PlanContext): PlanKey {
@@ -166,7 +167,59 @@ export function ensureNoteTagsEnabled(plan: PlanKey) {
   }
 }
 
-const VERSION_LIMIT = PLAN.FREE.NOTE_VERSIONS_MAX;
+const BASE_FREE_VERSION_LIMIT = PLAN.FREE.NOTE_VERSIONS_MAX;
+export const VERSION_PROMPT_COOLDOWN_MS = 48 * 60 * 60 * 1000; // 48 hours
+type ShopVersionMeta = Pick<Shop, "extraFreeVersions" | "versionLimitPromptedAt">;
+
+export function getExtraFreeVersions(shop?: ShopVersionMeta) {
+  const extra = shop?.extraFreeVersions ?? 0;
+  return extra > 0 ? extra : 0;
+}
+
+export function getVersionLimit(plan: PlanKey, shop?: ShopVersionMeta) {
+  if (plan === "PRO") {
+    return Infinity;
+  }
+  return BASE_FREE_VERSION_LIMIT + getExtraFreeVersions(shop);
+}
+
+export function isWithinVersionPromptCooldown(
+  shop?: ShopVersionMeta,
+  now = Date.now(),
+) {
+  if (!shop?.versionLimitPromptedAt) {
+    return false;
+  }
+  const lastShown = new Date(shop.versionLimitPromptedAt).getTime();
+  return Number.isFinite(lastShown) && now - lastShown < VERSION_PROMPT_COOLDOWN_MS;
+}
+
+export async function markVersionPrompted(
+  shopId: string,
+  timestamp: Date = new Date(),
+  db: PrismaTransaction = prisma,
+) {
+  await db.shop.update({
+    where: { id: shopId },
+    data: { versionLimitPromptedAt: timestamp },
+  });
+}
+
+export async function buildVersionLimitPlanError(
+  ctx: PlanContext,
+  db: PrismaTransaction = prisma,
+  now = new Date(),
+) {
+  const shouldShowUpgrade = !isWithinVersionPromptCooldown(ctx.shop, now.getTime());
+
+  if (shouldShowUpgrade) {
+    await markVersionPrompted(ctx.shopId, now, db);
+    ctx.shop.versionLimitPromptedAt = now;
+  }
+
+  return new PlanError("LIMIT_VERSIONS", undefined, shouldShowUpgrade);
+}
+
 const ORDER_DESC = [
   { createdAt: "desc" as const },
   { id: "desc" as const },
@@ -190,10 +243,15 @@ export async function getVisibleCount(
   });
 }
 
-export async function hasFiveAllManual(
+export async function hasAllManualAtLimit(
   noteId: string,
+  versionLimit: number,
   db: PrismaTransaction = prisma,
 ): Promise<boolean> {
+  if (!Number.isFinite(versionLimit)) {
+    return false;
+  }
+
   const [visibleCount, manualVisibleCount] = await Promise.all([
     getVisibleCount(noteId, db),
     db.noteVersion.count({
@@ -205,8 +263,13 @@ export async function hasFiveAllManual(
     }),
   ]);
 
-  return visibleCount >= VERSION_LIMIT && visibleCount === manualVisibleCount;
+  return visibleCount >= versionLimit && visibleCount === manualVisibleCount;
 }
+
+export const hasFiveAllManual = (
+  noteId: string,
+  db: PrismaTransaction = prisma,
+) => hasAllManualAtLimit(noteId, BASE_FREE_VERSION_LIMIT, db);
 
 export async function hideOldestVisibleAuto(
   noteId: string,
@@ -358,7 +421,12 @@ export async function buildVersionsMeta(
   plan: PlanKey,
   db: PrismaTransaction = prisma,
   lastActionInlineAlert: InlineAlertCode | null = null,
+  versionLimit?: number,
 ) {
+  const resolvedLimit =
+    versionLimit ??
+    (plan === "PRO" ? Infinity : BASE_FREE_VERSION_LIMIT);
+
   if (plan === "PRO") {
     const visibleCount = await db.noteVersion.count({
       where: { noteId },
@@ -383,7 +451,9 @@ export async function buildVersionsMeta(
   ]);
 
   const hasAllManualVisible =
-    visibleCount >= VERSION_LIMIT && visibleCount === manualVisibleCount;
+    Number.isFinite(resolvedLimit) &&
+    visibleCount >= resolvedLimit &&
+    visibleCount === manualVisibleCount;
 
   return {
     plan,
@@ -434,13 +504,15 @@ export function withPlanContext<T extends { request: Request }>(
   return async (args: T) => {
     const auth = await shopify.authenticate.admin(args.request);
     const merchant = await getMerchantByShop(auth.session);
+    const plan = (merchant.plan ?? "FREE") as PlanKey;
 
     const planContext: PlanContext = {
       shop: merchant,
-      plan: (merchant.plan ?? "FREE") as PlanKey,
+      plan,
       shopId: merchant.id,
       subscriptionStatus: merchant.subscription?.status ?? "NONE",
       session: auth.session,
+      versionLimit: getVersionLimit(plan, merchant),
     };
 
     return handler({ ...args, auth, planContext });

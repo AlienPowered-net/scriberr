@@ -16,7 +16,9 @@ export const loader = async ({ request }) => {
       return {
         apiKey: process.env.SHOPIFY_API_KEY || "",
         plan: planContext.plan,
-        flags: flagsFor(planContext.plan),
+        flags: flagsFor(planContext.plan, {
+          versionLimit: planContext.versionLimit,
+        }),
       };
     });
 

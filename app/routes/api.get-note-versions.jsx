@@ -17,7 +17,7 @@ export const loader = async ({ request }) => {
   // Wrap handler with plan context
   const handler = withPlanContext(async ({ request, planContext }) => {
     try {
-      const { shopId, plan } = planContext;
+      const { shopId, plan, versionLimit } = planContext;
       const url = new URL(request.url);
       const noteId = url.searchParams.get("noteId");
 
@@ -42,7 +42,7 @@ export const loader = async ({ request }) => {
 
       const [versions, meta] = await Promise.all([
         listVisibleVersions(noteId, plan, prisma),
-        buildVersionsMeta(noteId, plan, prisma),
+        buildVersionsMeta(noteId, plan, prisma, null, versionLimit),
       ]);
 
       console.log(
