@@ -2410,7 +2410,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           opacity: (showImageModal || showVideoModal || showLinkModal) ? '0.3' : '1'
         }}>
           <EditorContent 
-            editor={editor} 
+            editor={editor}
+            className="advanced-rte-content"
             style={{
               height: "100%",
               minHeight: "100%",
@@ -2624,10 +2625,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           
           /* Prevent all parent containers from scrolling when editor is fullscreen */
           body.editor-fullscreen-active {
-            overflow: hidden !important;
-          }
-          
-          body.editor-fullscreen-active * {
             overflow: hidden !important;
           }
           
