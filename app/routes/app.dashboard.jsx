@@ -3008,24 +3008,6 @@ export default function Index() {
       });
 
       if (response.ok) {
-        // Create a version snapshot
-        try {
-          await fetch('/api/create-note-version', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              noteId: editingNoteId,
-              title: title,
-              content: body,
-              versionTitle: `Auto-Saved ${new Date().toLocaleTimeString()}`
-            }),
-          });
-        } catch (versionError) {
-          console.error('Failed to create version:', versionError);
-        }
-
         // Update local notes to reflect the saved changes
         setLocalNotes(prevNotes =>
           prevNotes.map(note =>
@@ -3070,7 +3052,8 @@ export default function Index() {
           noteId: editingNoteId,
           title: title,
           content: body,
-          versionTitle: `Auto-snapshot ${new Date().toLocaleTimeString()}`
+          versionTitle: `Auto-snapshot ${new Date().toLocaleTimeString()}`,
+          isAuto: true,
         }),
       });
     } catch (error) {
