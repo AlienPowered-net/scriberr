@@ -188,7 +188,7 @@ const getMetadataPreview = (type, metadata) => {
 const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobileProp = false, onFullscreenChange, noteId, onVersionCreated, onRestorationInfoChange }) => {
   // Ref to track if editor is being updated from user input (prevents race condition with useEffect)
   const isUpdatingFromUserInput = useRef(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
@@ -1628,120 +1628,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     }
   }, [noteId]);
 
-  // Auto-versioning functionality - creates a version every 30 seconds if content has changed
-  useEffect(() => {
-    console.log('[AdvancedRTE] Auto-versioning effect triggered', { 
-      hasEditor: !!editor, 
-      noteId 
-    });
-    
-    if (!editor) {
-      console.log('[AdvancedRTE] Auto-versioning: editor not ready');
-      return;
-    }
-    
-    if (!noteId) {
-      console.log('[AdvancedRTE] Auto-versioning: noteId not set');
-      return;
-    }
-
-    console.log('[AdvancedRTE] Starting auto-versioning timer for noteId:', noteId);
-
-    const INTERVAL_MS = 30000; // 30 seconds
-    const lastContentRef = { current: editor.getHTML() }; // Initialize with current content
-
-    const timer = setInterval(async () => {
-      console.log('[AdvancedRTE] Auto-version timer fired');
-      try {
-        if (editor && noteId) {
-          const currentContent = editor.getHTML();
-          console.log('[AdvancedRTE] Current content length:', currentContent.length);
-          console.log('[AdvancedRTE] Last content length:', lastContentRef.current.length);
-          
-          // Only create version if content has actually changed
-          if (currentContent !== lastContentRef.current) {
-            console.log('[AdvancedRTE] Content changed, creating auto-version');
-            lastContentRef.current = currentContent;
-            
-            const snapshot = editor.getJSON();
-            const res = await fetch('/api/create-note-version', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                noteId: noteId,
-                title: `Auto-Saved ${new Date().toLocaleTimeString()}`,
-                content: currentContent,
-                snapshot: JSON.stringify(snapshot),
-                isAuto: true
-              })
-            });
-
-            console.log('[AdvancedRTE] Auto-version response status:', res.status);
-
-            if (res.ok) {
-              const result = await res.json();
-              const createdVersion = synchronizeVersionsState(result, {
-                selectCreated: Boolean(result?.version?.freeVisible),
-              });
-
-              setLastAutoVersion(new Date());
-              setHasUnsavedChanges(false);
-              const alertCode =
-                result.inlineAlert ??
-                result?.meta?.lastActionInlineAlert ??
-                null;
-              setDebugInfo((prev) => ({
-                ...prev,
-                lastVersion:
-                  alertCode === 'NO_ROOM_DUE_TO_MANUALS'
-                    ? 'Hidden (manual limit reached)'
-                    : new Date().toLocaleTimeString(),
-              }));
-
-              if (createdVersion) {
-                console.log('[AdvancedRTE] Auto-version created successfully:', createdVersion);
-              }
-            } else {
-              const errorData = await res.json();
-              console.error('[AdvancedRTE] Auto-version failed:', errorData);
-            }
-          } else {
-            console.log('[AdvancedRTE] Content unchanged, skipping auto-version');
-          }
-        }
-      } catch (err) {
-        console.error('[AdvancedRTE] Auto-version error:', err);
-      }
-    }, INTERVAL_MS);
-
-    return () => {
-      console.log('[AdvancedRTE] Clearing auto-versioning timer');
-      clearInterval(timer);
-    };
-  }, [editor, noteId]);
-
-  const toggleExpanded = () => {
-    const newExpandedState = !isExpanded;
-    setIsExpanded(newExpandedState);
-    
-    // Prevent body and html scrolling when in fullscreen mode
-    if (newExpandedState) {
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-      document.body.classList.add('editor-fullscreen-active');
-    } else {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-      document.body.classList.remove('editor-fullscreen-active');
-    }
-    
-    // Notify parent component about fullscreen state change
-    if (onFullscreenChange) {
-      console.log('AdvancedRTE: Notifying parent of fullscreen state change:', newExpandedState);
-      onFullscreenChange(newExpandedState);
-    }
-  };
-
   // Debug modal state changes
   useEffect(() => {
     console.log('[AdvancedRTE] Modal states changed:', {
@@ -1798,28 +1684,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         backgroundColor: "#f8f9fa", 
         position: "relative"
       }}>
-        {/* Fullscreen Button - Top Right */}
-        <button
-          onClick={toggleExpanded}
-          style={{
-            position: "absolute",
-            top: "6px",
-            right: "8px",
-            padding: "6px 8px",
-            border: "1px solid #dee2e6",
-            borderRadius: "4px",
-            backgroundColor: "white",
-            color: "#495057",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            fontSize: "12px",
-            zIndex: 10
-          }}
-          title="Exit Fullscreen"
-        >
-          <i className="fas fa-compress"></i>
-        </button>
-        
         <div style={{ 
           display: "flex", 
           gap: "4px", 
@@ -2682,28 +2546,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
         borderRadius: isMobileProp ? "0px" : "8px 8px 0 0", 
         position: "relative"
       }}>
-        {/* Fullscreen Button - Top Right */}
-        <button
-          onClick={toggleExpanded}
-          style={{
-            position: "absolute",
-            top: "6px",
-            right: "8px",
-            padding: "6px 8px",
-            border: "1px solid #dee2e6",
-            borderRadius: "4px",
-            backgroundColor: "white",
-            color: "#495057",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            fontSize: "12px",
-            zIndex: 10
-          }}
-          title={isExpanded ? "Exit Fullscreen" : "Enter Fullscreen"}
-        >
-          <i className={`fas ${isExpanded ? 'fa-compress' : 'fa-expand'}`}></i>
-        </button>
-        
         <div style={{ 
           display: "flex", 
           gap: "4px", 

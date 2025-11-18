@@ -3039,11 +3039,37 @@ export default function Index() {
   }, [editingNoteId, title, body, folderId, noteTags, setLocalNotes]);
 
   // Function to create auto-snapshots (separate from auto-save)
+  const autoSnapshotStateRef = useRef({ signature: null, inFlight: false });
+
+  useEffect(() => {
+    autoSnapshotStateRef.current.signature = null;
+    autoSnapshotStateRef.current.inFlight = false;
+  }, [editingNoteId]);
+
+  useEffect(() => {
+    if (!hasBeenSavedOnce) {
+      autoSnapshotStateRef.current.signature = null;
+    }
+  }, [hasBeenSavedOnce]);
+
   const handleAutoSnapshot = useCallback(async () => {
     if (!editingNoteId || !hasBeenSavedOnce) return;
 
+    const signature = `${editingNoteId}:::${title}:::${body}`;
+    const snapshotState = autoSnapshotStateRef.current;
+
+    if (snapshotState.inFlight) {
+      return;
+    }
+
+    if (snapshotState.signature === signature) {
+      return;
+    }
+
+    snapshotState.inFlight = true;
+
     try {
-      await fetch('/api/create-note-version', {
+      const response = await fetch('/api/create-note-version', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3056,8 +3082,14 @@ export default function Index() {
           isAuto: true,
         }),
       });
+
+      if (response.ok) {
+        snapshotState.signature = signature;
+      }
     } catch (error) {
       console.error('Auto-snapshot failed:', error);
+    } finally {
+      snapshotState.inFlight = false;
     }
   }, [editingNoteId, title, body, hasBeenSavedOnce]);
 
