@@ -926,65 +926,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           console.log('[AdvancedRTE handleKeyDown] Ignoring key event from modal input:', event.key);
           return false; // Let modal handle its own keyboard input
         }
-        
-        // Special handling for spacebar to ensure immediate visual feedback
-        if (event.key === ' ' || event.keyCode === 32) {
-          console.log('[AdvancedRTE handleKeyDown] Spacebar pressed, ensuring immediate DOM update', {
-            selectionFrom: view.state.selection.from,
-            selectionTo: view.state.selection.to,
-            nodeAtCursor: view.state.doc.nodeAt(view.state.selection.from)?.type.name,
-            docSize: view.state.doc.content.size
-          });
-          
-          // Don't prevent default - let ProseMirror handle it normally
-          // But we'll use handleTextInput to ensure DOM updates immediately
-          return false;
-        }
-        
-        // Debug keyboard events
-        console.log('[AdvancedRTE handleKeyDown] Key pressed:', event.key, {
-          selectionFrom: view.state.selection.from,
-          selectionTo: view.state.selection.to,
-          isEmpty: view.state.selection.empty,
-          nodeAtCursor: view.state.selection.$from.parent.type.name,
-          target: event.target.tagName
-        });
-        
-        // Allow normal keyboard navigation and editing
-        return false;
-      },
-      handleTextInput: (view, from, to, text) => {
-        // Special handling for space characters to ensure immediate visual feedback
-        // Root cause: ProseMirror inserts the space into document state immediately,
-        // but the DOM update can be delayed/batched, especially at text node boundaries.
-        // When typing at cursor position (end of text), the space exists in state but
-        // isn't visible in DOM until the next character triggers a full re-render.
-        if (text === ' ') {
-          console.log('[AdvancedRTE handleTextInput] Space character - forcing immediate DOM update', {
-            from,
-            to,
-            docSizeBefore: view.state.doc.content.size
-          });
-          
-          // Create transaction and dispatch - this updates document state
-          const tr = view.state.tr.insertText(' ', from, to);
-          view.dispatch(tr);
-          
-          // CRITICAL FIX: Force immediate DOM synchronization
-          // ProseMirror's dispatch updates state, but DOM update may be deferred.
-          // By accessing the DOM position immediately after dispatch, we force
-          // ProseMirror to synchronize the DOM right away, making the space visible.
-          const domPos = view.domAtPos(from + 1);
-          // Force browser reflow by reading layout property - this makes space visible immediately
-          void domPos.node.offsetHeight;
-          
-          console.log('[AdvancedRTE handleTextInput] DOM forced to sync - space should be visible now');
-          
-          // Return true to prevent ProseMirror from processing this input again
-          return true;
-        }
-        
-        // Let ProseMirror handle other text input normally
+
         return false;
       },
       handleDOMEvents: {
@@ -993,62 +935,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
           if (!view.hasFocus()) {
             view.focus();
           }
-          return false;
-        },
-        beforeinput: (view, event) => {
-          // Check if the event is coming from a modal input field
-          const target = event.target;
-          const isModalInput = target && (
-            target.closest('[data-modal-input]') || 
-            target.matches('input[type="text"]') && target.closest('div[style*="position: fixed"]')
-          );
-          
-          if (isModalInput) {
-            console.log('[AdvancedRTE beforeinput] Ignoring event from modal input');
-            return false; // Let modal handle its own input
-          }
-          
-          const nodeAt = view.state.doc.nodeAt(view.state.selection.from);
-          const nodeBefore = view.state.doc.nodeAt(view.state.selection.from - 1);
-          
-          console.log('[AdvancedRTE beforeinput] Event:', event.inputType, {
-            data: event.data,
-            selectionFrom: view.state.selection.from,
-            selectionTo: view.state.selection.to,
-            nodeAtCursor: nodeAt?.type.name,
-            nodeBefore: nodeBefore?.type.name,
-            parentNode: view.state.selection.$from.parent.type.name,
-            editable: view.editable,
-            target: event.target.tagName
-          });
-          
-          // If inserting text and cursor is at end boundary (nodeAtCursor is undefined)
-          // and there's a text node before (likely the space after mention)
-          if (event.inputType === 'insertText' && event.data && !nodeAt && nodeBefore?.type.name === 'text') {
-            console.log('[AdvancedRTE beforeinput] Cursor at boundary, manually inserting text');
-            
-            // Manually insert the text at the current position
-            const { state } = view;
-            const from = state.selection.from;
-            const tr = state.tr.insertText(event.data, from);
-            view.dispatch(tr);
-            
-            // CRITICAL FIX for spaces: Force immediate DOM synchronization
-            // When inserting a space at boundary, the DOM update may be deferred.
-            // Force immediate sync to make the space visible right away.
-            if (event.data === ' ') {
-              console.log('[AdvancedRTE beforeinput] Space at boundary - forcing immediate DOM sync');
-              const domPos = view.domAtPos(from + 1);
-              // Force browser reflow by reading layout property - makes space visible immediately
-              void domPos.node.offsetHeight;
-            }
-            
-            // Prevent default
-            event.preventDefault();
-            return true;
-          }
-          
-          // Don't block input
           return false;
         },
       },
