@@ -897,13 +897,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     content: value || '',
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
-      // Mark that we're updating from user input to prevent useEffect from resetting content
+      // Mark that we're updating from user input to prevent sync effect from overriding local edits
       isUpdatingFromUserInput.current = true;
       onChange(html);
-      // Reset flag after a short delay to allow React state to update
-      setTimeout(() => {
-        isUpdatingFromUserInput.current = false;
-      }, 0);
     },
     editorProps: {
       attributes: {
@@ -942,15 +938,20 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   });
 
   useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
-      // Only sync content if:
-      // 1. Editor is not currently focused/being edited, AND
-      // 2. We're not in the middle of a user input update cycle
-      // This prevents race conditions where typing triggers onUpdate -> onChange -> value change -> setContent
-      // which can cause input to disappear (especially spaces)
-      if (!editor.isFocused && !isUpdatingFromUserInput.current) {
-        editor.commands.setContent(value || '');
-      }
+    if (!editor) {
+      return;
+    }
+
+    // If this effect was triggered by the editor's own onUpdate cycle,
+    // skip syncing and simply clear the flag.
+    if (isUpdatingFromUserInput.current) {
+      isUpdatingFromUserInput.current = false;
+      return;
+    }
+
+    const currentHtml = editor.getHTML();
+    if (value !== currentHtml) {
+      editor.commands.setContent(value || '');
     }
   }, [value, editor]);
 
