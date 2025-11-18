@@ -293,6 +293,28 @@ export async function hideOldestVisibleAuto(
   return oldestAuto.id;
 }
 
+export async function hideOldestVisibleVersion(
+  noteId: string,
+  db: PrismaTransaction = prisma,
+): Promise<string | null> {
+  const oldestVersion = await db.noteVersion.findFirst({
+    where: { noteId, freeVisible: true },
+    orderBy: ORDER_ASC,
+    select: { id: true },
+  });
+
+  if (!oldestVersion) {
+    return null;
+  }
+
+  await db.noteVersion.update({
+    where: { id: oldestVersion.id },
+    data: { freeVisible: false },
+  });
+
+  return oldestVersion.id;
+}
+
 /**
  * Atomically hides the oldest visible AUTO version and inserts a new visible AUTO version.
  * Uses a single SQL CTE to avoid PgBouncer transaction issues.
@@ -436,6 +458,7 @@ export async function buildVersionsMeta(
       visibleCount,
       hasAllManualVisible: false,
       lastActionInlineAlert,
+      versionLimit: null,
     };
   }
 
@@ -460,6 +483,7 @@ export async function buildVersionsMeta(
     visibleCount,
     hasAllManualVisible,
     lastActionInlineAlert,
+    versionLimit: Number.isFinite(resolvedLimit) ? resolvedLimit : null,
   };
 }
 

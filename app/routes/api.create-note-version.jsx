@@ -6,11 +6,11 @@ export const action = async ({ request }) => {
     { prisma },
     {
       INLINE_ALERTS,
-      buildVersionLimitPlanError,
       buildVersionsMeta,
       getVisibleCount,
       hasAllManualAtLimit,
       hideOldestVisibleAuto,
+      hideOldestVisibleVersion,
       isPlanError,
       listVisibleVersions,
       rotateAutoAndInsertVisible,
@@ -55,8 +55,6 @@ export const action = async ({ request }) => {
       let freeVisible = true;
       let action = "insert-visible";
       let result = "ok";
-      let errorCode = null;
-
       // Manual save gating (FREE plan only)
       if (!isAuto && plan === "FREE") {
         const visibleCount = await getVisibleCount(noteId);
@@ -64,14 +62,12 @@ export const action = async ({ request }) => {
           console.log("[DEBUG_VERSIONS] Manual save check:", { visibleCount, limit: versionLimit });
         }
         if (visibleCount >= versionLimit) {
-          action = "block-upgrade";
-          result = "blocked";
-          errorCode = "UPGRADE_REQUIRED";
+          action = "manual-rotate-oldest";
+          result = "rotated";
+          await hideOldestVisibleVersion(noteId);
           if (DEBUG_VERSIONS) {
-            console.log("[DEBUG_VERSIONS] Manual save blocked:", { visibleCount });
+            console.log("[DEBUG_VERSIONS] Manual save rotated oldest visible version due to limit");
           }
-          const error = await buildVersionLimitPlanError(planContext);
-          return json(serializePlanError(error), { status: 403 });
         }
       }
 
@@ -199,7 +195,7 @@ export const action = async ({ request }) => {
       const DEBUG_VERSIONS = process.env.DEBUG_VERSIONS === "1";
       
       if (isPlanError(error)) {
-        // Only manual saves trigger PlanError (upgrade modal)
+        // Surface upgrade hints for any plan guard violations
         if (DEBUG_VERSIONS) {
           console.log("[DEBUG_VERSIONS] PlanError:", { code: error.code, status: error.status });
         }

@@ -27,8 +27,9 @@ import CharacterCount from '@tiptap/extension-character-count';
 import { LineHeight } from './LineHeightExtension';
 import TiptapDragHandle from './TiptapDragHandle';
 import ContactCard from './ContactCard';
+import { usePlanContext } from "../hooks/usePlanContext";
 import { createLowlight } from 'lowlight';
-import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, SkeletonDisplayText, Icon, Popover, ActionList, Tooltip, ButtonGroup, Badge, Banner } from '@shopify/polaris';
+import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, SkeletonDisplayText, Icon, Popover, ActionList, Tooltip, ButtonGroup, Badge, Banner, ProgressBar } from '@shopify/polaris';
 import { 
   CheckboxIcon,
   SmileyHappyIcon,
@@ -199,10 +200,11 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [versionNameInput, setVersionNameInput] = useState('');
   const [versions, setVersions] = useState([]);
   const [versionsMeta, setVersionsMeta] = useState({
-    plan: null,
+    plan: "FREE",
     visibleCount: 0,
     hasAllManualVisible: false,
     lastActionInlineAlert: null,
+    versionLimit: null,
   });
   const [inlineAlertCode, setInlineAlertCode] = useState(null);
   const [compareMode, setCompareMode] = useState(false);
@@ -211,7 +213,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [lastAutoVersion, setLastAutoVersion] = useState(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [debugInfo, setDebugInfo] = useState({ lastChange: null, lastVersion: null });
-  const autoVersionIntervalRef = useRef(null);
   const [deletingVersionId, setDeletingVersionId] = useState(null);
   const [restoringVersionId, setRestoringVersionId] = useState(null);
   const [restorationInfo, setRestorationInfo] = useState(null);
@@ -260,6 +261,83 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [hoverTimeout, setHoverTimeout] = useState(null);
   
   const editorRef = useRef(null);
+  const { plan: planTierFromContext, flags: planFlags, openUpgradeModal } = usePlanContext();
+
+  const planTier = versionsMeta.plan ?? planTierFromContext ?? "FREE";
+  const versionLimitFromMeta =
+    typeof versionsMeta.versionLimit === "number" ? versionsMeta.versionLimit : null;
+  const fallbackVersionLimit =
+    planFlags && Number.isFinite(planFlags.versionCap) ? planFlags.versionCap : null;
+  const resolvedVersionLimit = versionLimitFromMeta ?? fallbackVersionLimit;
+  const usedVersionCount = versionsMeta.visibleCount ?? versions.length;
+  const showVersionProgress =
+    planTier === "FREE" &&
+    typeof resolvedVersionLimit === "number" &&
+    Number.isFinite(resolvedVersionLimit);
+  const versionUsagePercent = showVersionProgress
+    ? Math.min((usedVersionCount / resolvedVersionLimit) * 100, 100)
+    : 0;
+
+  const handleUpgradeClick = useCallback(() => {
+    if (typeof openUpgradeModal === "function") {
+      openUpgradeModal({
+        code: "LIMIT_VERSIONS",
+        message:
+          "Upgrade to Scriberr Pro for unlimited version history and smarter note management.",
+      });
+    }
+  }, [openUpgradeModal]);
+
+  const renderVersionUsageBar = useCallback(() => {
+    if (!showVersionProgress) {
+      return null;
+    }
+
+    return (
+      <div
+        style={{
+          border: '1px solid #e5e7eb',
+          backgroundColor: '#f9fafb',
+          borderRadius: '10px',
+          padding: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: '12px',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+          }}
+        >
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>
+              Version slots
+            </div>
+            <div style={{ fontSize: '13px', color: '#6b7280' }}>
+              {usedVersionCount} of {resolvedVersionLimit} used
+            </div>
+          </div>
+          <Button
+            size="slim"
+            variant="primary"
+            tone="success"
+            onClick={handleUpgradeClick}
+          >
+            Upgrade to Pro
+          </Button>
+        </div>
+        <ProgressBar progress={Math.round(versionUsagePercent)} size="small" />
+        <div style={{ fontSize: '12px', color: '#6b7280' }}>
+          Unlock unlimited version history with Scriberr Pro.
+        </div>
+      </div>
+    );
+  }, [showVersionProgress, usedVersionCount, resolvedVersionLimit, versionUsagePercent, handleUpgradeClick]);
 
   const synchronizeVersionsState = useCallback(
     (payload, { selectCreated = false } = {}) => {
@@ -1417,6 +1495,24 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       setDeletingVersionId(version.id);
       console.log('[AdvancedRTE] Setting deletingVersionId to:', version.id);
 
+      const previousVersions = versions;
+      const previousMeta = versionsMeta;
+      const optimisticCountBase =
+        typeof previousMeta?.visibleCount === 'number'
+          ? previousMeta.visibleCount
+          : previousVersions.length;
+
+      setVersions((current) => current.filter((entry) => entry.id !== version.id));
+      setVersionsMeta((current) => ({
+        ...current,
+        visibleCount: Math.max(
+          (typeof current?.visibleCount === 'number'
+            ? current.visibleCount
+            : optimisticCountBase) - 1,
+          0,
+        ),
+      }));
+
       const response = await fetch('/api/delete-note-version', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1433,9 +1529,13 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
       } else {
         const errorData = await response.json();
         console.error('[AdvancedRTE] Failed to delete version:', errorData);
+        setVersions(previousVersions);
+        setVersionsMeta(previousMeta);
       }
     } catch (error) {
       console.error('[AdvancedRTE] Failed to delete version:', error);
+      setVersions(previousVersions);
+      setVersionsMeta(previousMeta);
     } finally {
       setDeletingVersionId(null);
     }
@@ -1552,32 +1652,52 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
     
     const versionIdsToDelete = Array.from(selectedVersionIds);
     setDeletingVersionId('bulk'); // Use 'bulk' to indicate bulk operation
+    const selectedIdSet = new Set(versionIdsToDelete);
+    const previousVersions = versions;
+    const previousMeta = versionsMeta;
+    const optimisticCountBase =
+      typeof previousMeta?.visibleCount === 'number'
+        ? previousMeta.visibleCount
+        : previousVersions.length;
+
+    setVersions((current) => current.filter((entry) => !selectedIdSet.has(entry.id)));
+    setVersionsMeta((current) => ({
+      ...current,
+      visibleCount: Math.max(
+        (typeof current?.visibleCount === 'number'
+          ? current.visibleCount
+          : optimisticCountBase) - versionIdsToDelete.length,
+        0,
+      ),
+    }));
+    setSelectedVersionIds(new Set());
+    setMultiSelectMode(false);
     
     try {
-      let latestPayload = null;
-      for (const versionId of versionIdsToDelete) {
-        const response = await fetch('/api/delete-note-version', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ noteId, versionId })
-        });
-        if (response.ok) {
-          latestPayload = await response.json();
-        } else {
-          const errorData = await response.json();
-          console.error('[AdvancedRTE] Failed to delete version during bulk operation:', errorData);
-        }
-      }
+      await Promise.all(
+        versionIdsToDelete.map(async (versionId) => {
+          try {
+            const response = await fetch('/api/delete-note-version', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ noteId, versionId })
+            });
 
-      if (latestPayload) {
-        synchronizeVersionsState(latestPayload, { selectCreated: false });
-      } else {
-        await loadVersions();
-      }
-      setSelectedVersionIds(new Set());
-      setMultiSelectMode(false);
+            if (!response.ok) {
+              const errorData = await response.json();
+              console.error('[AdvancedRTE] Failed to delete version during bulk operation:', errorData);
+            }
+          } catch (error) {
+            console.error('[AdvancedRTE] Bulk delete request failed:', error);
+          }
+        })
+      );
+
+      await loadVersions();
     } catch (error) {
       console.error('Error during bulk delete:', error);
+      setVersions(previousVersions);
+      setVersionsMeta(previousMeta);
     } finally {
       setDeletingVersionId(null);
     }
@@ -2699,6 +2819,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 })
               }}>
                 {inlineAlertCode === 'NO_ROOM_DUE_TO_MANUALS' && renderVersionInlineAlert()}
+                {renderVersionUsageBar()}
                 
                 {comparisonResult ? (
                   <div>
@@ -5808,7 +5929,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                   ×
                 </button>
               </div>
-              <div style={{ padding: '20px', maxHeight: '70vh', overflowY: 'auto' }}>
+            <div style={{ padding: '20px', maxHeight: '70vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {renderVersionUsageBar()}
                 {/* Show comparison result if available, otherwise show version list */}
                 {comparisonResult ? (
                   // Comparison View

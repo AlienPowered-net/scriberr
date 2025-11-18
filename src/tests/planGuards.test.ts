@@ -27,6 +27,7 @@ import {
   getVisibleCount,
   hasFiveAllManual,
   hideOldestVisibleAuto,
+  hideOldestVisibleVersion,
   surfaceNewestHiddenAuto,
   listVisibleVersions,
   buildVersionsMeta,
@@ -208,6 +209,31 @@ describe("plan guards", () => {
 
       const result = await hideOldestVisibleAuto("note-123", stubDb as any);
       expect(result).toBeNull();
+    });
+
+    it("hides the oldest visible version when rotating manual slots", async () => {
+      const oldestVersion = { id: "visible-oldest" };
+      const stubDb = {
+        noteVersion: {
+          findFirst: vi.fn().mockResolvedValue(oldestVersion),
+          update: vi.fn(),
+        },
+      };
+
+      const result = await hideOldestVisibleVersion("note-123", stubDb as any);
+      expect(result).toBe("visible-oldest");
+      expect(stubDb.noteVersion.findFirst).toHaveBeenCalledWith({
+        where: { noteId: "note-123", freeVisible: true },
+        orderBy: [
+          { createdAt: "asc" },
+          { id: "asc" },
+        ],
+        select: { id: true },
+      });
+      expect(stubDb.noteVersion.update).toHaveBeenCalledWith({
+        where: { id: "visible-oldest" },
+        data: { freeVisible: false },
+      });
     });
 
     it("surfaces newest hidden auto version", async () => {
