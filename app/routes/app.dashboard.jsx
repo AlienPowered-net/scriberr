@@ -4783,7 +4783,12 @@ export default function Index() {
                     }}
                   />
                 </div>
-                <div>
+                <div
+                  style={{
+                    overflow: "visible",
+                    paddingBottom: isMobile ? "24px" : "0"
+                  }}
+                >
                   <label style={{ display: "block", marginBottom: "4px", fontWeight: "500" }}>
                     Body
                   </label>
@@ -6743,6 +6748,7 @@ export default function Index() {
             flex: 1,
             overflowY: 'auto',
             padding: '16px',
+            paddingBottom: '140px',
             WebkitOverflowScrolling: 'touch',
             position: 'relative',
             zIndex: 1
@@ -6927,9 +6933,10 @@ export default function Index() {
                 minHeight: "250px",
                 border: "none",
                 borderRadius: "8px",
-                overflow: "hidden"
+                overflow: "visible",
+                paddingBottom: "32px"
               }}>
-                <div style={{ height: "100%" }}>
+                <div style={{ height: "100%", overflow: "visible" }}>
                   {isMobile ? (
                     <MobileEditorButton
                       value={body}

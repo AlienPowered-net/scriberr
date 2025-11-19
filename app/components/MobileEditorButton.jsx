@@ -32,6 +32,13 @@ const MobileEditorButton = ({
     setShowEditorModal(false);
   };
 
+  const handleCardKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openEditor(e);
+    }
+  };
+
   // If not mobile, return null (desktop should use normal editor)
   if (!isMobile) {
     return null;
@@ -126,6 +133,12 @@ const MobileEditorButton = ({
       {/* Mobile Note Card */}
       <div 
         className="mobile-note-card"
+        role="button"
+        tabIndex={0}
+        aria-haspopup="dialog"
+        aria-label={hasContent ? 'Open editor for this note' : 'Start writing a new note'}
+        onClick={openEditor}
+        onKeyDown={handleCardKeyDown}
         style={{
           width: '100%',
           minHeight: '160px',
@@ -136,7 +149,7 @@ const MobileEditorButton = ({
           border: '1px solid #e1e3e5',
           borderRadius: '8px',
           backgroundColor: '#ffffff',
-          margin: '0'
+          margin: '0 0 24px 0'
         }}
       >
           {/* Header with title and save status pill */}
@@ -211,7 +224,7 @@ const MobileEditorButton = ({
                 console.log('Button clicked!');
                 e.preventDefault();
                 e.stopPropagation();
-                openEditor();
+                openEditor(e);
               }}
               style={{
                 width: '100%',
@@ -303,7 +316,7 @@ const MobileEditorButton = ({
             -webkit-tap-highlight-color: transparent;
             pointer-events: auto;
             z-index: 1;
-            margin: 0 !important;
+            margin: 0 0 24px 0 !important;
             padding: 20px !important;
             box-sizing: border-box;
           }
@@ -320,7 +333,7 @@ const MobileEditorButton = ({
           
           .mobile-note-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 0 0 1px #007bff;
             border-color: #007bff;
           }
           
@@ -349,7 +362,7 @@ const MobileEditorButton = ({
           
           /* Ensure no extra margins or padding */
           .mobile-note-card {
-            margin: 0 !important;
+            margin: 0 0 24px 0 !important;
             padding: 20px !important;
             border: 1px solid #e1e3e5 !important;
             border-radius: 8px !important;
