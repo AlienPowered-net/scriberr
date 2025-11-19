@@ -1,14 +1,6 @@
-import {
-  Badge,
-  BlockStack,
-  Box,
-  Button,
-  Divider,
-  InlineGrid,
-  Modal,
-  Text,
-} from "@shopify/polaris";
+import { BlockStack, Divider, InlineGrid, Modal, Text } from "@shopify/polaris";
 import type { ReactNode } from "react";
+import { PricingTierCard, pricingTiers } from "./PricingTierCard";
 
 interface UpgradeModalProps {
   open: boolean;
@@ -42,79 +34,36 @@ export function UpgradeModal({
         },
       ]}
     >
-      <Modal.Section>
-        <BlockStack gap="400">
-          {headline ? (
-            typeof headline === "string" ? (
-              <Text as="p" variant="bodyMd">
-                {headline}
-              </Text>
+        <Modal.Section>
+          <BlockStack gap="400">
+            {headline ? (
+              typeof headline === "string" ? (
+                <Text as="p" variant="bodyMd">
+                  {headline}
+                </Text>
+              ) : (
+                headline
+              )
             ) : (
-              headline
-            )
-          ) : (
-            <Text as="p" variant="bodyMd">
-              Go beyond the Free plan limits and unlock the complete Scriberr workspace.
-            </Text>
-          )}
+              <Text as="p" variant="bodyMd">
+                Go beyond the Free plan limits and unlock the complete Scriberr workspace.
+              </Text>
+            )}
 
-          <Divider />
+            <Divider />
 
-          <BlockStack gap="300">
-            <Text as="h2" variant="headingMd">
-              Free vs Pro
-            </Text>
-            <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
-              <PlanColumn
-                tone="critical"
-                title="FREE"
-                items={[
-                  "Up to 25 notes total",
-                  "Up to 3 note folders",
-                  "No Contacts section",
-                  "No Note Tags",
-                  "Version history shows latest 5 versions per note",
-                ]}
-              />
-              <PlanColumn
-                tone="success"
-                title="PRO — $5/mo"
-                items={[
-                  "Unlimited notes & folders",
-                  "Contacts section unlocked (unlimited contacts, folders, tags)",
-                  "Note Tags unlocked (unlimited)",
-                  "Unlimited version history",
-                  "Extra niceties: rearrange contact folders, set icons & colors",
-                ]}
-              />
-            </InlineGrid>
+            <BlockStack gap="300">
+              <Text as="h2" variant="headingMd">
+                Compare plans
+              </Text>
+              <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
+                {pricingTiers.map((tier) => (
+                  <PricingTierCard key={tier.id} tier={tier} />
+                ))}
+              </InlineGrid>
+            </BlockStack>
           </BlockStack>
-        </BlockStack>
-      </Modal.Section>
+        </Modal.Section>
     </Modal>
   );
 }
-
-interface PlanColumnProps {
-  tone: "critical" | "success";
-  title: string;
-  items: string[];
-}
-
-function PlanColumn({ tone, title, items }: PlanColumnProps) {
-  return (
-    <Box padding="400" background="bg-surface-secondary" borderRadius="300">
-      <BlockStack gap="200">
-        <Badge tone={tone}>{title}</Badge>
-        <BlockStack gap="150">
-          {items.map((item) => (
-            <Text key={item} as="span" variant="bodySm">
-              • {item}
-            </Text>
-          ))}
-        </BlockStack>
-      </BlockStack>
-    </Box>
-  );
-}
-
