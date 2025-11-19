@@ -4792,7 +4792,7 @@ export default function Index() {
                           }),
                       }}
                     >
-                      <p>Tags help organize notes, and they’re unlocked with the Pro plan.</p>
+                      <p>Tags make organizing your notes effortless. Unlock tagging with Scriberr Pro.</p>
                     </Banner>
                   )}
                 </div>
@@ -6943,7 +6943,7 @@ export default function Index() {
                           }),
                       }}
                     >
-                      <p>Tags help organize notes, and they’re unlocked with the Pro plan.</p>
+                        <p>Tags make organizing your notes effortless. Unlock tagging with Scriberr Pro.</p>
                     </Banner>
                   )}
                   {noteTags.length > 0 && (
