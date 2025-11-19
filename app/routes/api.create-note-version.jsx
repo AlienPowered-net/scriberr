@@ -6,14 +6,11 @@ export const action = async ({ request }) => {
     { prisma },
     {
       INLINE_ALERTS,
+      buildVersionLimitPlanError,
       buildVersionsMeta,
-      getVisibleCount,
-      hasAllManualAtLimit,
-      hideOldestVisibleAuto,
-      hideOldestVisibleVersion,
+      getVersionLimitStatus,
       isPlanError,
       listVisibleVersions,
-      rotateAutoAndInsertVisible,
       serializePlanError,
       withPlanContext,
     },
@@ -55,89 +52,44 @@ export const action = async ({ request }) => {
       let freeVisible = true;
       let action = "insert-visible";
       let result = "ok";
+
+      const isFreePlan = plan === "FREE" && Number.isFinite(versionLimit);
+      let versionLimitStatus = null;
+
       // Manual save gating (FREE plan only)
-      if (!isAuto && plan === "FREE") {
-        const visibleCount = await getVisibleCount(noteId);
+      if (!isAuto && isFreePlan) {
+        versionLimitStatus = await getVersionLimitStatus(noteId, versionLimit);
         if (DEBUG_VERSIONS) {
-          console.log("[DEBUG_VERSIONS] Manual save check:", { visibleCount, limit: versionLimit });
+          console.log("[DEBUG_VERSIONS] Manual save check:", { visibleCount: versionLimitStatus.visibleCount, limit: versionLimit });
         }
-        if (visibleCount >= versionLimit) {
-          action = "manual-rotate-oldest";
-          result = "rotated";
-          await hideOldestVisibleVersion(noteId);
-          if (DEBUG_VERSIONS) {
-            console.log("[DEBUG_VERSIONS] Manual save rotated oldest visible version due to limit");
-          }
+        if (versionLimitStatus.atLimit) {
+          action = "block-upgrade";
+          result = "blocked";
+          const error = await buildVersionLimitPlanError(planContext);
+          return json(serializePlanError(error), { status: 403 });
         }
       }
 
       // Auto-save logic (FREE plan only)
-      if (isAuto && plan === "FREE") {
-        const visibleCount = await getVisibleCount(noteId);
-        const hasAllManual = await hasAllManualAtLimit(noteId, versionLimit);
-
+      if (isAuto && isFreePlan) {
+        if (!versionLimitStatus) {
+          versionLimitStatus = await getVersionLimitStatus(noteId, versionLimit);
+        }
         if (DEBUG_VERSIONS) {
-          console.log("[DEBUG_VERSIONS] Auto-save check:", { visibleCount, hasAllManual, limit: versionLimit });
+          console.log("[DEBUG_VERSIONS] Auto-save check:", { visibleCount: versionLimitStatus.visibleCount, limit: versionLimit });
         }
 
-        if (visibleCount >= versionLimit) {
-          if (hasAllManual) {
-            // All 5 are manual - store hidden, show inline alert
-            freeVisible = false;
-            inlineAlert = INLINE_ALERTS.NO_ROOM_DUE_TO_MANUALS;
-            action = "insert-hidden";
-            if (DEBUG_VERSIONS) {
-              console.log("[DEBUG_VERSIONS] All manual - inserting hidden:", { visibleCount });
-            }
-          } else {
-            // At least one visible AUTO - use CTE rotation
-            action = "rotate";
-            const rotated = await rotateAutoAndInsertVisible(
-              noteId,
-              title,
-              content,
-              versionTitle,
-              snapshot ? JSON.parse(snapshot) : null,
-              prisma
-            );
-            
-            if (rotated) {
-              if (DEBUG_VERSIONS) {
-                console.log("[DEBUG_VERSIONS] CTE rotation succeeded:", { newId: rotated.id });
-              }
-              // Fetch updated versions and meta
-              const [versions, meta] = await Promise.all([
-                listVisibleVersions(noteId, plan),
-                buildVersionsMeta(noteId, plan, prisma, null, versionLimit),
-              ]);
-              
-              const debugPayload = DEBUG_VERSIONS ? {
-                plan,
-                noteId,
-                op,
-                visibleCount,
-                hasAllManual,
-                action,
-                result: "ok",
-              } : undefined;
-
-              return json({
-                version: { id: rotated.id },
-                versions,
-                meta,
-                inlineAlert: null,
-                ...(debugPayload && { debug: debugPayload }),
-              });
-            } else {
-              // Fallback: no visible AUTO found (shouldn't happen, but handle gracefully)
-              if (DEBUG_VERSIONS) {
-                console.warn("[DEBUG_VERSIONS] CTE rotation returned null, falling back");
-              }
-              freeVisible = false;
-              inlineAlert = INLINE_ALERTS.NO_ROOM_DUE_TO_MANUALS;
-              action = "insert-hidden";
-            }
+        if (versionLimitStatus.atLimit) {
+          inlineAlert = INLINE_ALERTS.NO_ROOM_DUE_TO_MANUALS;
+          const meta = await buildVersionsMeta(noteId, plan, prisma, inlineAlert, versionLimit);
+          if (DEBUG_VERSIONS) {
+            console.log("[DEBUG_VERSIONS] Auto-save skipped due to limit");
           }
+          return json({
+            skipped: true,
+            inlineAlert,
+            meta,
+          });
         }
       }
 

@@ -29,7 +29,7 @@ import TiptapDragHandle from './TiptapDragHandle';
 import ContactCard from './ContactCard';
 import { usePlanContext } from "../hooks/usePlanContext";
 import { createLowlight } from 'lowlight';
-import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, SkeletonDisplayText, Icon, Popover, ActionList, Tooltip, ButtonGroup, Badge, Banner, ProgressBar } from '@shopify/polaris';
+import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, SkeletonDisplayText, Icon, Popover, ActionList, Tooltip, ButtonGroup, Badge, Banner } from '@shopify/polaris';
 import { 
   CheckboxIcon,
   SmileyHappyIcon,
@@ -186,7 +186,18 @@ const getMetadataPreview = (type, metadata) => {
   }
 };
 
-const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobileProp = false, onFullscreenChange, noteId, onVersionCreated, onRestorationInfoChange }) => {
+const AdvancedRTE = ({
+  value,
+  onChange,
+  placeholder = "Start writing...",
+  isMobileProp = false,
+  onFullscreenChange,
+  noteId,
+  onVersionCreated,
+  onRestorationInfoChange,
+  onVersionsMetaChange,
+}) => {
+  const { plan: planTierFromContext, flags: planFlags, openUpgradeModal } = usePlanContext();
   // Ref to track if editor is being updated from user input (prevents race condition with useEffect)
   const isUpdatingFromUserInput = useRef(false);
   const [isExpanded] = useState(false);
@@ -200,7 +211,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [versionNameInput, setVersionNameInput] = useState('');
   const [versions, setVersions] = useState([]);
   const [versionsMeta, setVersionsMeta] = useState({
-    plan: "FREE",
+    plan: planTierFromContext ?? "FREE",
     visibleCount: 0,
     hasAllManualVisible: false,
     lastActionInlineAlert: null,
@@ -261,7 +272,6 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const [hoverTimeout, setHoverTimeout] = useState(null);
   
   const editorRef = useRef(null);
-  const { plan: planTierFromContext, flags: planFlags, openUpgradeModal } = usePlanContext();
 
   const planTier = versionsMeta.plan ?? planTierFromContext ?? "FREE";
   const versionLimitFromMeta =
@@ -277,6 +287,12 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
   const versionUsagePercent = showVersionProgress
     ? Math.min((usedVersionCount / resolvedVersionLimit) * 100, 100)
     : 0;
+  const limitReached =
+    showVersionProgress &&
+    typeof resolvedVersionLimit === "number" &&
+    usedVersionCount >= resolvedVersionLimit;
+  const progressBarColor = limitReached ? "#dc2626" : "#047857";
+  const disableCreateVersion = planTier === "FREE" && limitReached;
 
   const handleUpgradeClick = useCallback(() => {
     if (typeof openUpgradeModal === "function") {
@@ -331,13 +347,48 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
             Upgrade to Pro
           </Button>
         </div>
-        <ProgressBar progress={Math.round(versionUsagePercent)} size="small" />
-        <div style={{ fontSize: '12px', color: '#6b7280' }}>
-          Unlock unlimited version history with Scriberr Pro.
+        <div
+          style={{
+            height: '10px',
+            width: '100%',
+            borderRadius: '999px',
+            backgroundColor: '#e5e7eb',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              width: `${Math.min(100, Math.max(0, versionUsagePercent))}%`,
+              backgroundColor: progressBarColor,
+              height: '100%',
+              transition: 'width 150ms ease',
+            }}
+          />
         </div>
+        {limitReached ? (
+          <Banner
+            tone="critical"
+            title="Version limit reached"
+            action={{ content: 'Upgrade to Pro', onAction: handleUpgradeClick }}
+          >
+            Delete older versions or upgrade to Scriberr Pro to keep creating new versions.
+          </Banner>
+        ) : (
+          <div style={{ fontSize: '12px', color: '#6b7280' }}>
+            Delete older versions or upgrade anytime for unlimited history.
+          </div>
+        )}
       </div>
     );
-  }, [showVersionProgress, usedVersionCount, resolvedVersionLimit, versionUsagePercent, handleUpgradeClick]);
+  }, [
+    showVersionProgress,
+    usedVersionCount,
+    resolvedVersionLimit,
+    versionUsagePercent,
+    progressBarColor,
+    limitReached,
+    handleUpgradeClick,
+  ]);
 
   const synchronizeVersionsState = useCallback(
     (payload, { selectCreated = false } = {}) => {
@@ -354,6 +405,9 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
       if (meta) {
         setVersionsMeta(meta);
+        if (onVersionsMetaChange) {
+          onVersionsMetaChange(meta);
+        }
         const metaAlert =
           Object.prototype.hasOwnProperty.call(meta, 'lastActionInlineAlert')
             ? meta.lastActionInlineAlert
@@ -391,7 +445,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
 
       return createdVersion ?? null;
     },
-    [setVersions, setVersionsMeta, setInlineAlertCode, setCurrentVersionId],
+    [setVersions, setVersionsMeta, setInlineAlertCode, setCurrentVersionId, onVersionsMetaChange],
   );
 
   const renderVersionInlineAlert = useCallback(() => {
@@ -2756,7 +2810,8 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                 setTimeout(() => {
                   setShowVersionNameModal(true);
                 }, 50);
-              }
+              },
+              disabled: disableCreateVersion,
             }}
             secondaryActions={[
               {
@@ -5851,6 +5906,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                     setShowVersionNameModal(false);
                     setVersionNameInput('');
                   }}
+                  disabled={disableCreateVersion}
                 >
                   Create Version
                 </Button>
@@ -6000,6 +6056,7 @@ const AdvancedRTE = ({ value, onChange, placeholder = "Start writing...", isMobi
                           }, 50);
                         }}
                         style={{ minHeight: 'unset', height: 'auto' }}
+                        disabled={disableCreateVersion}
                       >
                         Create New Version
                       </Button>

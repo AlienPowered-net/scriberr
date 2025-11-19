@@ -418,6 +418,7 @@ export async function action({ request }) {
 export default function Index() {
   const { folders, notes, version, folderId: initialFolderId, noteId: initialNoteId, isMobileParam } = useLoaderData();
   const { flags, openUpgradeModal } = usePlanContext();
+  const [versionStats, setVersionStats] = useState(null);
   const [localNotes, setLocalNotes] = useState(notes);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -3042,6 +3043,10 @@ export default function Index() {
   const autoSnapshotStateRef = useRef({ signature: null, inFlight: false });
 
   useEffect(() => {
+    setVersionStats(null);
+  }, [editingNoteId]);
+
+  useEffect(() => {
     autoSnapshotStateRef.current.signature = null;
     autoSnapshotStateRef.current.inFlight = false;
   }, [editingNoteId]);
@@ -3054,6 +3059,15 @@ export default function Index() {
 
   const handleAutoSnapshot = useCallback(async () => {
     if (!editingNoteId || !hasBeenSavedOnce) return;
+
+    const limitReached =
+      versionStats &&
+      typeof versionStats.versionLimit === 'number' &&
+      versionStats.visibleCount >= versionStats.versionLimit;
+
+    if (limitReached) {
+      return;
+    }
 
     const signature = `${editingNoteId}:::${title}:::${body}`;
     const snapshotState = autoSnapshotStateRef.current;
@@ -3091,7 +3105,7 @@ export default function Index() {
     } finally {
       snapshotState.inFlight = false;
     }
-  }, [editingNoteId, title, body, hasBeenSavedOnce]);
+  }, [editingNoteId, title, body, hasBeenSavedOnce, versionStats]);
 
   // Auto-save note every 10 seconds
   useEffect(() => {
@@ -4786,6 +4800,7 @@ export default function Index() {
                       wasJustSaved={wasJustSaved}
                       isNewlyCreated={isNewlyCreated}
                       onFullscreenChange={setIsEditorFullscreen}
+                      onVersionsMetaChange={setVersionStats}
                     />
                   ) : (
                     <AdvancedRTE
@@ -4795,6 +4810,7 @@ export default function Index() {
                       onFullscreenChange={setIsEditorFullscreen}
                       noteId={editingNoteId}
                       onRestorationInfoChange={setRestorationInfo}
+                      onVersionsMetaChange={setVersionStats}
                     />
                   )}
                 </div>

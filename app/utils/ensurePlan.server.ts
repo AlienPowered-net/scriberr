@@ -1,7 +1,7 @@
 // app/utils/ensurePlan.server.ts
 // Server-only: uses Prisma/Shopify - DO NOT import in client code
 
-import type { Prisma, PrismaClient, Shop, SubscriptionStatus } from "@prisma/client";
+import type { Prisma, PrismaClient, Shop, Subscription, SubscriptionStatus } from "@prisma/client";
 import type { Session } from "@shopify/shopify-api";
 import shopify from "~/shopify.server";
 import { prisma } from "~/utils/db.server";
@@ -67,9 +67,11 @@ export interface PlanContext {
   versionLimit: number;
 }
 
-export function getPlan(shop: Shop | PlanContext): PlanKey {
-  const plan = "plan" in shop ? shop.plan : shop.shop.plan;
-  return (plan ?? "FREE") as PlanKey;
+export function getPlan(shopOrContext: Shop | PlanContext): PlanKey {
+  if ("shop" in shopOrContext) {
+    return (shopOrContext.shop.plan ?? "FREE") as PlanKey;
+  }
+  return (shopOrContext.plan ?? "FREE") as PlanKey;
 }
 
 export async function getMerchantByShop(sessionOrShop: Session | string) {
@@ -293,26 +295,19 @@ export async function hideOldestVisibleAuto(
   return oldestAuto.id;
 }
 
-export async function hideOldestVisibleVersion(
+export async function getVersionLimitStatus(
   noteId: string,
+  versionLimit: number,
   db: PrismaTransaction = prisma,
-): Promise<string | null> {
-  const oldestVersion = await db.noteVersion.findFirst({
-    where: { noteId, freeVisible: true },
-    orderBy: ORDER_ASC,
-    select: { id: true },
-  });
-
-  if (!oldestVersion) {
-    return null;
+): Promise<{ visibleCount: number; atLimit: boolean }> {
+  const visibleCount = await getVisibleCount(noteId, db);
+  if (!Number.isFinite(versionLimit)) {
+    return { visibleCount, atLimit: false };
   }
-
-  await db.noteVersion.update({
-    where: { id: oldestVersion.id },
-    data: { freeVisible: false },
-  });
-
-  return oldestVersion.id;
+  return {
+    visibleCount,
+    atLimit: visibleCount >= versionLimit,
+  };
 }
 
 /**
@@ -527,7 +522,9 @@ export function withPlanContext<T extends { request: Request }>(
 ) {
   return async (args: T) => {
     const auth = await shopify.authenticate.admin(args.request);
-    const merchant = await getMerchantByShop(auth.session);
+    const merchant = (await getMerchantByShop(auth.session)) as Shop & {
+      subscription?: Subscription | null;
+    };
     const plan = (merchant.plan ?? "FREE") as PlanKey;
 
     const planContext: PlanContext = {
@@ -545,11 +542,14 @@ export function withPlanContext<T extends { request: Request }>(
 
 // Simple helper functions matching user's requirements
 export async function getPlanStatus(request: Request): Promise<PlanStatus> {
-  const { session, admin } = await shopify.authenticate.admin(request);
-  const shop = session.shop;
-  const tier = session.plan?.toUpperCase() === "PRO" ? "PRO" : "FREE";
+  const { session } = await shopify.authenticate.admin(request);
+  const typedSession = session as Session & { plan?: string; shopId?: string };
+  const shop = typedSession.shop;
+  const tier = typedSession.plan?.toUpperCase() === "PRO" ? "PRO" : "FREE";
 
-  const noteCount = await prisma.note.count({ where: { shopId: session.shopId } });
+  const noteCount = typedSession.shopId
+    ? await prisma.note.count({ where: { shopId: typedSession.shopId } })
+    : 0;
   return { shop, tier, noteCount, maxNotes: tier === "FREE" ? 25 : undefined };
 }
 

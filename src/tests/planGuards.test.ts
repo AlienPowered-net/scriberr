@@ -27,13 +27,13 @@ import {
   getVisibleCount,
   hasFiveAllManual,
   hideOldestVisibleAuto,
-  hideOldestVisibleVersion,
   surfaceNewestHiddenAuto,
   listVisibleVersions,
   buildVersionsMeta,
   getVersionLimit,
   isWithinVersionPromptCooldown,
   buildVersionLimitPlanError,
+  getVersionLimitStatus,
 } from "~/utils/ensurePlan.server";
 import { mapSubscriptionStatus } from "../lib/shopify/billing";
 
@@ -211,31 +211,6 @@ describe("plan guards", () => {
       expect(result).toBeNull();
     });
 
-    it("hides the oldest visible version when rotating manual slots", async () => {
-      const oldestVersion = { id: "visible-oldest" };
-      const stubDb = {
-        noteVersion: {
-          findFirst: vi.fn().mockResolvedValue(oldestVersion),
-          update: vi.fn(),
-        },
-      };
-
-      const result = await hideOldestVisibleVersion("note-123", stubDb as any);
-      expect(result).toBe("visible-oldest");
-      expect(stubDb.noteVersion.findFirst).toHaveBeenCalledWith({
-        where: { noteId: "note-123", freeVisible: true },
-        orderBy: [
-          { createdAt: "asc" },
-          { id: "asc" },
-        ],
-        select: { id: true },
-      });
-      expect(stubDb.noteVersion.update).toHaveBeenCalledWith({
-        where: { id: "visible-oldest" },
-        data: { freeVisible: false },
-      });
-    });
-
     it("surfaces newest hidden auto version", async () => {
       const newestHiddenAuto = { id: "hidden-auto-1" };
       const stubDb = {
@@ -270,6 +245,28 @@ describe("plan guards", () => {
 
       const result = await surfaceNewestHiddenAuto("note-123", stubDb as any);
       expect(result).toBeNull();
+    });
+
+    it("detects when version limit is reached", async () => {
+      const stubDb = {
+        noteVersion: {
+          count: vi.fn().mockResolvedValue(5),
+        },
+      };
+
+      const status = await getVersionLimitStatus("note-123", 5, stubDb as any);
+      expect(status).toEqual({ visibleCount: 5, atLimit: true });
+    });
+
+    it("detects when version limit is not reached", async () => {
+      const stubDb = {
+        noteVersion: {
+          count: vi.fn().mockResolvedValue(3),
+        },
+      };
+
+      const status = await getVersionLimitStatus("note-123", 5, stubDb as any);
+      expect(status).toEqual({ visibleCount: 3, atLimit: false });
     });
 
     it("lists visible versions for FREE plan", async () => {
