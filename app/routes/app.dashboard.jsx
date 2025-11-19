@@ -3158,6 +3158,47 @@ export default function Index() {
       console.error('Error auto-saving tags:', error);
     }
   };
+  
+  const handleMobileTagInputSubmit = () => {
+    if (!newTagInput.trim()) {
+      return;
+    }
+
+    const inputTags = newTagInput
+      .split(',')
+      .map((tag) => removeEmojis(tag.trim()))
+      .filter(Boolean);
+
+    if (inputTags.length === 0) {
+      setNewTagInput("");
+      return;
+    }
+
+    const tooLongTag = inputTags.find((tag) => tag.length > 32);
+    if (tooLongTag) {
+      setAlertMessage('Tag cannot exceed 32 characters');
+      setAlertType('error');
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+
+    let hasChanges = false;
+    const updatedTags = [...noteTags];
+
+    inputTags.forEach((tag) => {
+      if (!updatedTags.includes(tag)) {
+        updatedTags.push(tag);
+        hasChanges = true;
+      }
+    });
+
+    if (hasChanges) {
+      setNoteTags(updatedTags);
+      handleAutoSaveTags(updatedTags);
+    }
+
+    setNewTagInput("");
+  };
 
   // Handle creating a new note or updating existing note
   const handleCreateNote = async () => {
@@ -6856,76 +6897,96 @@ export default function Index() {
                 />
               </div>
 
-              {/* Tags Input */}
-              <div style={{ marginBottom: "12px" }}>
-                <label style={{ 
-                  display: "block", 
-                  fontSize: "12px", 
-                  fontWeight: "600", 
-                  color: "#374151", 
-                  marginBottom: "4px" 
-                }}>
-                  Tags
-                </label>
-                <input
-                  type="text"
-                  placeholder="Add tags (comma separated)..."
-                  value={newTagInput}
-                  onChange={(e) => setNewTagInput(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      const tags = newTagInput.split(',').map(tag => tag.trim()).filter(tag => tag);
-                      setNoteTags([...noteTags, ...tags]);
-                      setNewTagInput('');
-                    }
-                  }}
-                  style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    border: "1px solid #e1e3e5",
-                    borderRadius: "6px",
-                    fontSize: "13px",
-                    backgroundColor: "white"
-                  }}
-                />
-                {noteTags.length > 0 && (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "8px" }}>
-                    {noteTags.map((tag, index) => (
-                      <span
-                        key={index}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "4px",
-                          backgroundColor: "#008060",
-                          color: "white",
-                          padding: "4px 8px",
-                          borderRadius: "12px",
-                          fontSize: "12px"
-                        }}
-                      >
-                        {tag}
-                        <button
+                {/* Tags Input */}
+                <div style={{ marginBottom: "12px" }}>
+                  <label style={{ 
+                    display: "block", 
+                    fontSize: "12px", 
+                    fontWeight: "600", 
+                    color: "#374151", 
+                    marginBottom: "4px" 
+                  }}>
+                    Tags
+                  </label>
+                  {flags.noteTagsEnabled ? (
+                    <input
+                      type="text"
+                      placeholder="Add tags (comma separated)..."
+                      value={newTagInput}
+                      onChange={(e) => setNewTagInput(removeEmojis(e.target.value))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleMobileTagInputSubmit();
+                        }
+                      }}
+                      style={{
+                        width: "100%",
+                        padding: "10px 12px",
+                        border: "1px solid #e1e3e5",
+                        borderRadius: "6px",
+                        fontSize: "13px",
+                        backgroundColor: "white"
+                      }}
+                    />
+                  ) : (
+                    <Banner
+                      tone="info"
+                      title="Upgrade to add tags"
+                      action={{
+                        content: "Upgrade to PRO – $5/mo",
+                        onAction: () =>
+                          openUpgradeModal({
+                            code: "FEATURE_NOTE_TAGS_DISABLED",
+                            message:
+                              "Unlock unlimited note tags and advanced organization with Scriberr Pro.",
+                          }),
+                      }}
+                    >
+                      <p>Tags help organize notes, and they’re unlocked with the Pro plan.</p>
+                    </Banner>
+                  )}
+                  {noteTags.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "8px" }}>
+                      {noteTags.map((tag, index) => (
+                        <span
+                          key={index}
                           style={{
-                            background: "none",
-                            border: "none",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            backgroundColor: "#008060",
                             color: "white",
-                            cursor: "pointer",
-                            padding: "0",
-                            marginLeft: "4px"
-                          }}
-                          onClick={() => {
-                            const newTags = noteTags.filter((_, i) => i !== index);
-                            setNoteTags(newTags);
+                            padding: "4px 8px",
+                            borderRadius: "12px",
+                            fontSize: "12px"
                           }}
                         >
-                          <i className="fas fa-times" style={{ fontSize: "10px" }}></i>
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
+                          {tag}
+                          {flags.noteTagsEnabled && (
+                            <button
+                              style={{
+                                background: "none",
+                                border: "none",
+                                color: "white",
+                                cursor: "pointer",
+                                padding: "0",
+                                marginLeft: "4px"
+                              }}
+                              onClick={() => {
+                                const newTags = noteTags.filter((_, i) => i !== index);
+                                setNoteTags(newTags);
+                                handleAutoSaveTags(newTags);
+                              }}
+                            >
+                              <i className="fas fa-times" style={{ fontSize: "10px" }}></i>
+                            </button>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
               {/* Rich Text Editor */}
               <div style={{ 
