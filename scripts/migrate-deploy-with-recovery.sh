@@ -4,6 +4,11 @@ set -euo pipefail
 
 echo "Starting migration deployment…"
 
+# extend Prisma advisory lock timeout to avoid Neon slowdowns
+: "${PRISMA_MIGRATION_ENGINE_ADVISORY_LOCK_TIMEOUT:=45000}"
+export PRISMA_MIGRATION_ENGINE_ADVISORY_LOCK_TIMEOUT
+: "${MIGRATION_ADVISORY_LOCK_BACKOFF:=5}"
+
 # --- Ensure DIRECT_URL (non-pooled Neon) ---
 if [ -z "${DIRECT_URL:-}" ] && [ -n "${NEON_DIRECT_URL:-}" ]; then
   export DIRECT_URL="$NEON_DIRECT_URL"
@@ -70,6 +75,9 @@ get_failed_from_log () {
 has_duplicate_column_error () { grep -qE 'already exists' "$log"; }
 has_missing_relation_error () { grep -qE 'relation "public\.Session" does not exist' "$log"; }
 has_folder_position_error () { grep -qE 'column "position" .* "Folder" already exists' "$log"; }
+has_advisory_lock_timeout () {
+  grep -q 'pg_advisory_lock' "$log" && grep -q 'Timed out' "$log"
+}
 
 # Mark a migration as applied/rolled back by exact local dir
 resolve_migration () {
@@ -113,13 +121,13 @@ pass=1
 rc=1
 while [ $pass -le 3 ]; do
   echo "=== Deploy attempt $pass ===" | tee -a "$log"
-  
+
   # Run deploy with log capture
   set +e
   log_run npx prisma migrate deploy --schema prisma/schema.prisma
   deploy_rc=${PIPESTATUS[0]}
   set -e
-  
+
   if [ $deploy_rc -eq 0 ]; then
     rc=0
     echo "Migration deployment completed on attempt $pass." | tee -a "$log"
@@ -127,6 +135,11 @@ while [ $pass -le 3 ]; do
   fi
 
   echo "Deploy attempt $pass failed. Resolving…" | tee -a "$log"
+
+  if has_advisory_lock_timeout; then
+    echo "⚠️  Advisory lock timeout detected. Sleeping ${MIGRATION_ADVISORY_LOCK_BACKOFF}s before retry…" | tee -a "$log"
+    sleep "$MIGRATION_ADVISORY_LOCK_BACKOFF"
+  fi
 
   # If a duplicate column error, mark as APPLIED
   if has_folder_position_error || has_duplicate_column_error; then
