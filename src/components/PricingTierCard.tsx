@@ -7,7 +7,7 @@ import {
   InlineStack,
   Text,
 } from "@shopify/polaris";
-import { CheckSmallIcon, SparklesIcon } from "@shopify/polaris-icons";
+import { CheckSmallIcon } from "@shopify/polaris-icons";
 
 export interface PricingTierFeature {
   label: string;
@@ -158,7 +158,18 @@ export function PricingTierCard({ tier, action, isActive }: PricingTierCardProps
           <InlineStack align="space-between" blockAlign="center">
             <BlockStack gap="050">
               <InlineStack gap="150" blockAlign="center">
-                {tier.highlight ? <Icon source={SparklesIcon} tone="success" /> : null}
+                {tier.highlight ? (
+                  <Box
+                    as="span"
+                    style={{
+                      width: "10px",
+                      height: "10px",
+                      borderRadius: "50%",
+                      backgroundColor: accentColor,
+                      display: "inline-block",
+                    }}
+                  />
+                ) : null}
                 <Text as="h3" variant="headingMd" fontWeight="bold">
                   {tier.name}
                 </Text>
