@@ -7,7 +7,7 @@ import {
   InlineStack,
   Text,
 } from "@shopify/polaris";
-import { CheckSmallIcon } from "@shopify/polaris-icons";
+import { CheckSmallIcon, SparklesIcon } from "@shopify/polaris-icons";
 
 export interface PricingTierFeature {
   label: string;
@@ -22,6 +22,9 @@ export interface PricingTier {
   priceDisplay: string;
   priceCaption?: string;
   highlight?: boolean;
+  accentColor?: string;
+  headerGradient?: string;
+  headerTextColor?: string;
   badge?: {
     content: string;
     tone?: "success" | "info" | "subdued";
@@ -37,6 +40,9 @@ export const pricingTiers: PricingTier[] = [
     description: "Capture up to 25 notes and keep 3 folders tidy as you explore Scriberr.",
     priceDisplay: "Free",
     priceCaption: "Includes 25 notes & 3 folders",
+    accentColor: "#A0A4A8",
+    headerGradient: "linear-gradient(135deg, #FDFDFD, #F4F6F8)",
+    headerTextColor: "#111213",
     features: [
       {
         label: "Up to 25 total notes",
@@ -68,6 +74,9 @@ export const pricingTiers: PricingTier[] = [
     priceDisplay: "$5/mo",
     priceCaption: "USD • billed monthly",
     highlight: true,
+    accentColor: "#00A47A",
+    headerGradient: "linear-gradient(135deg, #E5FFF5, #F2FFFB)",
+    headerTextColor: "#002E1A",
     badge: {
       content: "Most popular",
       tone: "success",
@@ -112,37 +121,48 @@ interface PricingTierCardProps {
 }
 
 export function PricingTierCard({ tier, action, isActive }: PricingTierCardProps) {
-  const borderColor = tier.highlight
-    ? "var(--p-color-border-success, #008060)"
-    : isActive
-    ? "var(--p-color-border-strong, #6d7175)"
-    : "var(--p-color-border-subdued, #c9cccf)";
-
-  const boxShadow = tier.highlight
-    ? "0 12px 30px rgba(0, 128, 96, 0.18)"
-    : "0 4px 18px rgba(17, 24, 39, 0.08)";
+  const accentColor =
+    tier.accentColor ?? (tier.highlight ? "#008060" : "var(--p-color-border-subdued, #c9cccf)");
+  const headerGradient =
+    tier.headerGradient ??
+    (tier.highlight ? "linear-gradient(135deg, #D2FFF0, #F5FFFA)" : "linear-gradient(135deg, #FFFFFF, #F7F8FA)");
+  const headerTextColor = tier.headerTextColor ?? "#111213";
+  const glowShadow = tier.highlight
+    ? "0 10px 25px rgba(0, 164, 122, 0.25)"
+    : "0 6px 20px rgba(18, 23, 36, 0.08)";
 
   return (
     <Box
-      padding={{ xs: "400", sm: "500" }}
-      background={tier.highlight ? "bg-surface-success-subdued" : "bg-surface"}
-      borderRadius="400"
+      background="bg-surface"
+      borderRadius="500"
+      shadow="card"
       style={{
-        border: `${tier.highlight || isActive ? 2 : 1}px solid ${borderColor}`,
-        boxShadow,
+        border: `1.5px solid ${
+          isActive || tier.highlight ? accentColor : "var(--p-color-border, #d9dbdd)"
+        }`,
+        boxShadow: glowShadow,
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between",
+        overflow: "hidden",
       }}
     >
-      <BlockStack gap="400">
+      <Box
+        padding={{ xs: "400", sm: "500" }}
+        style={{
+          background: headerGradient,
+          color: headerTextColor,
+        }}
+      >
         <BlockStack gap="200">
-          <InlineStack align="space-between" blockAlign="start">
+          <InlineStack align="space-between" blockAlign="center">
             <BlockStack gap="050">
-              <Text as="h3" variant="headingMd">
-                {tier.name}
-              </Text>
+              <InlineStack gap="150" blockAlign="center">
+                {tier.highlight ? <Icon source={SparklesIcon} tone="success" /> : null}
+                <Text as="h3" variant="headingMd" fontWeight="bold">
+                  {tier.name}
+                </Text>
+              </InlineStack>
               <Text as="p" variant="bodyMd" tone="subdued">
                 {tier.tagline}
               </Text>
@@ -155,7 +175,7 @@ export function PricingTierCard({ tier, action, isActive }: PricingTierCardProps
           </InlineStack>
 
           <BlockStack gap="050">
-            <Text as="p" variant="heading2xl">
+            <Text as="p" variant="heading2xl" fontWeight="bold">
               {tier.priceDisplay}
             </Text>
             {tier.priceCaption ? (
@@ -169,17 +189,45 @@ export function PricingTierCard({ tier, action, isActive }: PricingTierCardProps
             {tier.description}
           </Text>
         </BlockStack>
+      </Box>
 
-        <FeatureList
-          features={tier.features}
-          iconTone={tier.highlight ? "success" : "subdued"}
-        />
-      </BlockStack>
+      <Box padding={{ xs: "400", sm: "500" }} background="bg-surface">
+        <BlockStack gap="300">
+          <InlineStack gap="150" blockAlign="center" align="space-between">
+            <Box
+              as="span"
+              style={{
+                flex: 1,
+                height: "1px",
+                background: "var(--p-color-border-subdued, #d2d5d8)",
+                borderRadius: "999px",
+              }}
+            />
+            <Text as="span" variant="bodySm" tone="subdued">
+              What’s included
+            </Text>
+            <Box
+              as="span"
+              style={{
+                flex: 1,
+                height: "1px",
+                background: "var(--p-color-border-subdued, #d2d5d8)",
+                borderRadius: "999px",
+              }}
+            />
+          </InlineStack>
+          <FeatureList
+            features={tier.features}
+            iconTone={tier.highlight ? "success" : "subdued"}
+          />
+        </BlockStack>
+      </Box>
 
       {action ? (
-        <Box paddingBlockStart="400">
+        <Box padding={{ xs: "400", sm: "500" }} background="bg-surface-tertiary">
           <Button
             fullWidth
+            tone={tier.highlight ? "success" : undefined}
             variant={action.variant ?? (tier.highlight ? "primary" : "secondary")}
             onClick={action.onAction}
             loading={action.loading}
