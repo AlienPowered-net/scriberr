@@ -7,18 +7,16 @@ import {
   ButtonGroup,
   Divider,
   Banner,
-  List,
+  InlineGrid,
   InlineStack,
-  Badge,
   Modal,
   TextField,
   Checkbox,
-  Icon,
   Box,
 } from "@shopify/polaris";
-import { DeleteIcon, CheckSmallIcon } from "@shopify/polaris-icons";
 import { useState, useEffect } from "react";
 import packageJson from "../../package.json" with { type: "json" };
+import { PricingTierCard, pricingTiers } from "../../src/components/PricingTierCard";
 
 export default function Settings() {
   const [selectedSubscription, setSelectedSubscription] = useState("free");
@@ -198,48 +196,6 @@ export default function Settings() {
     fetchUsage();
   }, [selectedSubscription]);
 
-  const subscriptionPlans = [
-    {
-      id: "free",
-      name: "Free Plan",
-      price: "Free",
-      features: [
-        "25 notes max",
-        "3 folders max",
-        "Basic note editing",
-        "Basic folder organization",
-        "Standard support"
-      ]
-    },
-    {
-      id: "pro",
-      name: "Pro Plan",
-      price: "$5/mo",
-      features: [
-        "Everything in Free",
-        "Unlimited notes",
-        "Unlimited folders",
-        "Tags",
-        "Contacts",
-        "Advanced features"
-      ]
-    },
-    {
-      id: "business",
-      name: "Business Plan",
-      price: "$20/mo",
-      comingSoon: true,
-      features: [
-        "Everything in Pro",
-        "Team collaboration",
-        "Advanced analytics",
-        "Priority support",
-        "Custom integrations",
-        "API access"
-      ]
-    }
-  ];
-
   return (
     <>
     <Page title="Settings">
@@ -248,114 +204,44 @@ export default function Settings() {
         {/* Subscription Management Section */}
         <Card>
           <div style={{ padding: "16px" }}>
-            <BlockStack gap="400">
-              <Text as="h2" variant="headingMd">
-                Subscription Management
-              </Text>
-              <Text as="p" variant="bodyMd" tone="subdued">
-                Choose the subscription plan that best fits your needs.
-              </Text>
-
-              <InlineStack gap="400" align="stretch">
-                {subscriptionPlans.map((plan) => {
-                  const isSelected = selectedSubscription === plan.id;
-                  const isPro = plan.id === "pro";
-                  const isFree = plan.id === "free";
-                  const isBusiness = plan.id === "business";
-                  const isComingSoon = plan.comingSoon === true;
-                  
-                  // Determine styling based on plan type and selection state
-                  let cardStyle = {
-                    flex: 1,
-                  };
-
-                  let innerCardStyle = {
-                    borderRadius: '8px',
-                    padding: '24px',
-                    height: '100%',
-                    boxShadow: isSelected 
-                      ? (isPro ? '0 2px 8px rgba(0, 128, 96, 0.15)' : '0 2px 8px rgba(109, 113, 117, 0.15)')
-                      : (isPro ? '0 1px 3px rgba(0, 128, 96, 0.1)' : '0 1px 3px rgba(0, 0, 0, 0.1)'),
-                  };
-                  
-                  if (isFree) {
-                    // Free Plan: Gray theme
-                    innerCardStyle = {
-                      ...innerCardStyle,
-                      border: isSelected ? '2px solid #6d7175' : '1px solid #e1e3e5',
-                      backgroundColor: isSelected ? '#f6f6f7' : '#ffffff',
-                    };
-                  } else if (isPro) {
-                    // Pro Plan: Green theme
-                    innerCardStyle = {
-                      ...innerCardStyle,
-                      border: '2px solid #008060',
-                      backgroundColor: isSelected ? '#f0f9f4' : '#ffffff',
-                    };
-                  } else if (isBusiness) {
-                    // Business Plan: Blue theme for coming soon
-                    innerCardStyle = {
-                      ...innerCardStyle,
-                      border: '2px solid #5c6ac4',
-                      backgroundColor: '#f6f7f9',
-                      opacity: isComingSoon ? 0.9 : 1,
-                    };
-                  }
-
-                  return (
-                    <Box key={plan.id} style={cardStyle}>
-                      <Box style={innerCardStyle}>
-                        <BlockStack gap="400">
-                          <BlockStack gap="100">
-                            <InlineStack gap="200" align="start" wrap={false}>
-                              <Text as="h3" variant="headingMd" fontWeight="semibold">
-                                {plan.name}
-                              </Text>
-                              {isSelected && !isComingSoon && (
-                                <Badge tone="success" size="small">Current Plan</Badge>
-                              )}
-                              {isComingSoon && (
-                                <Badge tone="info" size="small">COMING SOON</Badge>
-                              )}
-                            </InlineStack>
-                            <Text as="p" variant="headingLg" tone={isPro ? "success" : isBusiness ? "info" : "subdued"} fontWeight="bold">
-                              {plan.price}
-                            </Text>
-                          </BlockStack>
-                          
-                          <BlockStack gap="200" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
-                            {plan.features.map((feature, index) => (
-                              <InlineStack key={index} gap="200" align="start" blockAlign="start" wrap={false} style={{ width: '100%', justifyContent: 'flex-start' }}>
-                                <Icon source={CheckSmallIcon} tone={isComingSoon ? "subdued" : "success"} />
-                                <Text as="span" variant="bodyMd" style={{ textAlign: 'left' }}>
-                                  {isComingSoon ? "COMING SOON" : feature}
-                                </Text>
-                              </InlineStack>
-                            ))}
-                          </BlockStack>
-
-                          <Button
-                            variant={isSelected ? "primary" : "secondary"}
-                            onClick={() => !isComingSoon && setSelectedSubscription(plan.id)}
-                            fullWidth
-                            size="large"
-                            disabled={isComingSoon}
-                          >
-                            {isComingSoon ? "COMING SOON" : isSelected ? "Current Plan" : "Select Plan"}
-                          </Button>
-                        </BlockStack>
-                      </Box>
-                    </Box>
-                  );
-                })}
-              </InlineStack>
-
-              <Banner tone="info">
-                <Text as="p" variant="bodyMd">
-                  Note: This is a demo implementation. In a real application, you would integrate with a payment processor and subscription management system.
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingMd">
+                  Subscription Management
                 </Text>
-              </Banner>
-            </BlockStack>
+                <Text as="p" variant="bodyMd" tone="subdued">
+                  Choose the subscription plan that best fits your needs.
+                </Text>
+
+                <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
+                  {pricingTiers.map((tier) => {
+                    const isCurrent = selectedSubscription === tier.id;
+                    const actionLabel = isCurrent
+                      ? "Current plan"
+                      : tier.id === "pro"
+                      ? "Upgrade to Pro"
+                      : "Switch to Free";
+
+                    return (
+                      <PricingTierCard
+                        key={tier.id}
+                        tier={tier}
+                        isActive={isCurrent}
+                        action={{
+                          label: actionLabel,
+                          onAction: () => setSelectedSubscription(tier.id),
+                          disabled: isCurrent,
+                        }}
+                      />
+                    );
+                  })}
+                </InlineGrid>
+
+                <Banner tone="info">
+                  <Text as="p" variant="bodyMd">
+                    Note: This is a demo implementation. In a real application, you would integrate with a payment processor and subscription management system.
+                  </Text>
+                </Banner>
+              </BlockStack>
           </div>
         </Card>
 
