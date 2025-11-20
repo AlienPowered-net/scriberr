@@ -36,6 +36,16 @@ const PRO_FEATURES = [
   "Contact tags (unlimited)",
 ];
 
+// Slightly larger, less-rounded plan pills for FOREVER / PRO badges
+const planPillBaseStyle = {
+  padding: "5px 14px",
+  borderRadius: "9px", // Less rounded, more rectangular than full pill shape
+  fontSize: "13px",
+  fontWeight: "600" as const,
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.5px",
+};
+
 export function SubscriptionPlans({
   currentPlan = "FREE",
   onUpgrade,
@@ -90,14 +100,9 @@ export function SubscriptionPlans({
               <InlineStack align="start" blockAlign="start" gap="200">
                 <div
                   style={{
+                    ...planPillBaseStyle,
                     backgroundColor: "#6D7175",
                     color: "#FFFFFF",
-                    padding: "4px 12px",
-                    borderRadius: "12px",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
                   }}
                 >
                   FOREVER
@@ -184,14 +189,9 @@ export function SubscriptionPlans({
               <InlineStack align="start" blockAlign="start" gap="200">
                 <div
                   style={{
+                    ...planPillBaseStyle,
                     backgroundColor: "#FFD800",
                     color: "#000000",
-                    padding: "4px 12px",
-                    borderRadius: "12px",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
                   }}
                 >
                   PRO
