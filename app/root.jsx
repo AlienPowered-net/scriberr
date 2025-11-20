@@ -32,6 +32,23 @@ export default function App() {
       <head>
         <Meta />
         <Links />
+        {/* Crisp Chat Widget */}
+        <script
+          type="text/javascript"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.$crisp=[];
+              window.CRISP_WEBSITE_ID="64c8450a-43c0-4c5b-bb7a-0e8ccc92f5d8";
+              (function(){
+                d=document;
+                s=d.createElement("script");
+                s.src="https://client.crisp.chat/l.js";
+                s.async=1;
+                d.getElementsByTagName("head")[0].appendChild(s);
+              })();
+            `,
+          }}
+        />
       </head>
       <body>
         <AppProvider i18n={en}>
