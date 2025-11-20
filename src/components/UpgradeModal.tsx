@@ -1,6 +1,7 @@
-import { BlockStack, Divider, InlineGrid, Modal, Text } from "@shopify/polaris";
+import { BlockStack, Divider, Modal, Text } from "@shopify/polaris";
 import type { ReactNode } from "react";
-import { PricingTierCard, pricingTiers } from "./PricingTierCard";
+import { SubscriptionPlans } from "./SubscriptionPlans";
+import { usePlanContext } from "../../app/hooks/usePlanContext";
 
 interface UpgradeModalProps {
   open: boolean;
@@ -17,16 +18,13 @@ export function UpgradeModal({
   isSubmitting = false,
   headline,
 }: UpgradeModalProps) {
+  const { plan } = usePlanContext();
+
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title="Unlock Scriberr Pro"
-      primaryAction={{
-        content: "Upgrade to PRO – $5/mo",
-        onAction: onUpgrade,
-        loading: isSubmitting,
-      }}
+      title="Choose a plan"
       secondaryActions={[
         {
           content: "Maybe later",
@@ -50,18 +48,11 @@ export function UpgradeModal({
               </Text>
             )}
 
-            <Divider />
-
-            <BlockStack gap="300">
-              <Text as="h2" variant="headingMd">
-                Compare plans
-              </Text>
-              <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
-                {pricingTiers.map((tier) => (
-                  <PricingTierCard key={tier.id} tier={tier} />
-                ))}
-              </InlineGrid>
-            </BlockStack>
+            <SubscriptionPlans
+              currentPlan={plan}
+              onUpgrade={onUpgrade}
+              isSubmitting={isSubmitting}
+            />
           </BlockStack>
         </Modal.Section>
     </Modal>

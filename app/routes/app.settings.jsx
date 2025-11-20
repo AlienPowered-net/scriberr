@@ -14,12 +14,15 @@ import {
   Checkbox,
   Box,
 } from "@shopify/polaris";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import packageJson from "../../package.json" with { type: "json" };
-import { PricingTierCard, pricingTiers } from "../../src/components/PricingTierCard";
+import { SubscriptionPlans } from "../../src/components/SubscriptionPlans";
+import { usePlanContext } from "../hooks/usePlanContext";
 
 export default function Settings() {
-  const [selectedSubscription, setSelectedSubscription] = useState("free");
+  const { plan, openUpgradeModal } = usePlanContext();
+  const [selectedSubscription, setSelectedSubscription] = useState(plan === "PRO" ? "pro" : "free");
+  const [isUpgrading, setIsUpgrading] = useState(false);
   const version = packageJson.version;
   
   // Plan usage state (for free plan)
@@ -196,6 +199,31 @@ export default function Settings() {
     fetchUsage();
   }, [selectedSubscription]);
 
+  const handleUpgrade = useCallback(async () => {
+    try {
+      setIsUpgrading(true);
+      const response = await fetch("/api/billing/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to initiate upgrade");
+      }
+
+      const payload = await response.json();
+      if (payload?.confirmationUrl) {
+        const target = window.top ?? window;
+        target.location.assign(payload.confirmationUrl);
+      } else {
+        throw new Error("Missing confirmation URL");
+      }
+    } catch (error) {
+      console.error("Upgrade initiation failed", error);
+      setIsUpgrading(false);
+    }
+  }, []);
+
   return (
     <>
     <Page title="Settings">
@@ -212,35 +240,11 @@ export default function Settings() {
                   Choose the subscription plan that best fits your needs.
                 </Text>
 
-                <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
-                  {pricingTiers.map((tier) => {
-                    const isCurrent = selectedSubscription === tier.id;
-                    const actionLabel = isCurrent
-                      ? "Current plan"
-                      : tier.id === "pro"
-                      ? "Upgrade to Pro"
-                      : "Switch to Free";
-
-                    return (
-                      <PricingTierCard
-                        key={tier.id}
-                        tier={tier}
-                        isActive={isCurrent}
-                        action={{
-                          label: actionLabel,
-                          onAction: () => setSelectedSubscription(tier.id),
-                          disabled: isCurrent,
-                        }}
-                      />
-                    );
-                  })}
-                </InlineGrid>
-
-                <Banner tone="info">
-                  <Text as="p" variant="bodyMd">
-                    Note: This is a demo implementation. In a real application, you would integrate with a payment processor and subscription management system.
-                  </Text>
-                </Banner>
+                <SubscriptionPlans
+                  currentPlan={plan}
+                  onUpgrade={handleUpgrade}
+                  isSubmitting={isUpgrading}
+                />
               </BlockStack>
           </div>
         </Card>
