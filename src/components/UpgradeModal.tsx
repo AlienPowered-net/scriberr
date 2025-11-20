@@ -1,7 +1,6 @@
 import { BlockStack, Divider, Modal, Text } from "@shopify/polaris";
 import type { ReactNode } from "react";
 import { SubscriptionPlans } from "./SubscriptionPlans";
-import { usePlanContext } from "../../app/hooks/usePlanContext";
 
 interface UpgradeModalProps {
   open: boolean;
@@ -9,6 +8,7 @@ interface UpgradeModalProps {
   onUpgrade: () => void | Promise<void>;
   isSubmitting?: boolean;
   headline?: ReactNode;
+  currentPlan?: "FREE" | "PRO";
 }
 
 export function UpgradeModal({
@@ -17,8 +17,8 @@ export function UpgradeModal({
   onUpgrade,
   isSubmitting = false,
   headline,
+  currentPlan = "FREE",
 }: UpgradeModalProps) {
-  const { plan } = usePlanContext();
 
   return (
     <Modal
@@ -49,7 +49,7 @@ export function UpgradeModal({
             )}
 
             <SubscriptionPlans
-              currentPlan={plan}
+              currentPlan={currentPlan}
               onUpgrade={onUpgrade}
               isSubmitting={isSubmitting}
             />

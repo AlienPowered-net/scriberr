@@ -173,6 +173,7 @@ export default function App() {
         onUpgrade={handleUpgrade}
         isSubmitting={upgradeSubmitting}
         headline={modalHeadline}
+        currentPlan={plan}
       />
     </AppProvider>
   );
