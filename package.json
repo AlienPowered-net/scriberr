@@ -1,6 +1,6 @@
 {
   "name": "scriberr",
-  "version": "v.a369",
+  "version": "v.a370",
   "private": true,
   "scripts": {
     "vercel-build": "prisma generate && npm run migrate-deploy && node scripts/init-database.js && node scripts/create-contacts-tables.js && node scripts/add-contact-fields-migration.js && npm run build",

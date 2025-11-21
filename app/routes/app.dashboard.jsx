@@ -1852,6 +1852,11 @@ export default function Index() {
         setSelectedFolder(folderObject);
       }
     }
+    // On mobile, always switch to editor section when opening a note
+    // This ensures consistent state and prevents the editor from getting stuck
+    if (isMobile) {
+      setMobileActiveSection('editor');
+    }
   };
 
   // Remove emoji characters from input
@@ -1971,6 +1976,17 @@ export default function Index() {
       setAlertType('error');
       setTimeout(() => setAlertMessage(''), 3000);
     }
+  };
+
+  // Handle mobile Done - saves note and navigates back to notes list
+  // This ensures the Done button always saves and returns to a safe state
+  const handleMobileDone = async () => {
+    // Save the note first
+    await handleMobileSave();
+    // Navigate back to notes list after a brief delay to show save confirmation
+    setTimeout(() => {
+      setMobileActiveSection('notes');
+    }, 500);
   };
 
   // Handle saving note changes
@@ -5848,28 +5864,34 @@ export default function Index() {
               )}
               {editingNoteId && mobileActiveSection === 'editor' && (
                 <>
+                  {/* Primary Done button - always visible when editing */}
                   <Button
-                    variant="secondary"
+                    variant="primary"
                     size="slim"
-                    onClick={() => setMobileActiveSection('folders')}
-                    className={animateBackToFolders ? 'back-to-folders-animate' : ''}
+                    onClick={handleMobileDone}
                     style={{ 
                       fontSize: '14px', 
-                      fontWeight: '500', 
-                      backgroundColor: '#000000', 
-                      color: '#ffffff', 
-                      borderColor: '#000000'
+                      fontWeight: '500',
+                      backgroundColor: '#008060',
+                      borderColor: '#008060'
                     }}
                   >
-                    Back to Folders
+                    Done
                   </Button>
+                  {/* Secondary back button - optional navigation */}
                   <Button
                     variant="secondary"
                     size="slim"
                     onClick={() => setMobileActiveSection('notes')}
-                    style={{ fontSize: '14px', fontWeight: '500', backgroundColor: '#000000', color: '#ffffff', borderColor: '#000000' }}
+                    style={{ 
+                      fontSize: '14px', 
+                      fontWeight: '500', 
+                      backgroundColor: '#f6f6f7', 
+                      color: '#202223', 
+                      borderColor: '#d1d3d4'
+                    }}
                   >
-                    Back to Notes
+                    Back
                   </Button>
                 </>
               )}
@@ -6995,10 +7017,30 @@ export default function Index() {
                 border: "none",
                 borderRadius: "8px",
                 overflow: "visible",
-                paddingBottom: "32px"
+                paddingBottom: "32px",
+                pointerEvents: "auto",
+                position: "relative",
+                zIndex: 1
               }}>
-                <div style={{ height: "100%", overflow: "visible" }}>
-                  {isMobile ? (
+                <div style={{ 
+                  height: "100%", 
+                  overflow: "visible",
+                  pointerEvents: "auto"
+                }}>
+                  {isMobile && mobileActiveSection === 'editor' ? (
+                    // When editor section is active on mobile, render AdvancedRTE directly
+                    // This ensures the editor is immediately focusable and typeable
+                    <AdvancedRTE
+                      value={body}
+                      onChange={setBody}
+                      placeholder="Type your note here..."
+                      onFullscreenChange={setIsEditorFullscreen}
+                      noteId={editingNoteId}
+                      onRestorationInfoChange={setRestorationInfo}
+                      isMobileProp={true}
+                    />
+                  ) : isMobile ? (
+                    // Mobile preview card (only shown when not in editor section)
                     <MobileEditorButton
                       value={body}
                       onChange={setBody}
@@ -7013,6 +7055,7 @@ export default function Index() {
                       onFullscreenChange={setIsEditorFullscreen}
                     />
                   ) : (
+                    // Desktop editor
                     <AdvancedRTE
                       value={body}
                       onChange={setBody}
