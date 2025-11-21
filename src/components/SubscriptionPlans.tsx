@@ -84,7 +84,7 @@ export function SubscriptionPlans({
 
   return (
     <div style={{ width: "100%" }}>
-      <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
+      <InlineGrid columns={{ xs: 1, sm: 1, md: 2 }} gap="400">
         {/* FREE Plan Card */}
         <Card>
           <div
@@ -161,7 +161,7 @@ export function SubscriptionPlans({
               </BlockStack>
 
               {/* Current Plan Button */}
-              <Box paddingBlockStart="400" style={{ marginTop: "auto" }}>
+              <div style={{ marginTop: "auto", paddingTop: "16px" }}>
                 {isFree ? (
                   <Button fullWidth disabled={true} variant="secondary">
                     Your current plan
@@ -169,7 +169,7 @@ export function SubscriptionPlans({
                 ) : (
                   <div style={{ height: "36px" }} />
                 )}
-              </Box>
+              </div>
             </BlockStack>
           </div>
         </Card>
@@ -250,7 +250,7 @@ export function SubscriptionPlans({
               </BlockStack>
 
               {/* Upgrade Button */}
-              <Box paddingBlockStart="400" style={{ marginTop: "auto" }}>
+              <div style={{ marginTop: "auto", paddingTop: "16px" }}>
                 {isPro ? (
                   <Button fullWidth disabled={true} variant="secondary">
                     Your current plan
@@ -276,7 +276,7 @@ export function SubscriptionPlans({
                     {isSubmitting ? "Processing..." : "Upgrade now"}
                   </button>
                 )}
-              </Box>
+              </div>
             </BlockStack>
           </div>
         </Card>
