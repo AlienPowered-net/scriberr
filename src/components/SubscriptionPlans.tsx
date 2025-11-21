@@ -124,7 +124,14 @@ export function SubscriptionPlans({
               {/* Features List */}
               <BlockStack gap="300">
                 {FREE_FEATURES.map((feature) => (
-                  <InlineStack key={feature} gap="200" align="start" blockAlign="start">
+                  <div
+                    key={feature}
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "8px",
+                    }}
+                  >
                     <div
                       style={{
                         display: "flex",
@@ -133,8 +140,8 @@ export function SubscriptionPlans({
                         width: "20px",
                         height: "20px",
                         flexShrink: 0,
-                        marginTop: "2px",
                         color: "#000000",
+                        marginTop: "2px",
                       }}
                     >
                       <svg
@@ -153,10 +160,12 @@ export function SubscriptionPlans({
                         />
                       </svg>
                     </div>
-                    <Text as="span" variant="bodyMd">
-                      {feature}
-                    </Text>
-                  </InlineStack>
+                    <div style={{ lineHeight: "20px", flex: 1 }}>
+                      <Text as="span" variant="bodyMd">
+                        {feature}
+                      </Text>
+                    </div>
+                  </div>
                 ))}
               </BlockStack>
 
@@ -213,7 +222,14 @@ export function SubscriptionPlans({
               {/* Features List */}
               <BlockStack gap="300">
                 {PRO_FEATURES.map((feature) => (
-                  <InlineStack key={feature} gap="200" align="start" blockAlign="start">
+                  <div
+                    key={feature}
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "8px",
+                    }}
+                  >
                     <div
                       style={{
                         display: "flex",
@@ -222,8 +238,8 @@ export function SubscriptionPlans({
                         width: "20px",
                         height: "20px",
                         flexShrink: 0,
-                        marginTop: "2px",
                         color: "#000000",
+                        marginTop: "2px",
                       }}
                     >
                       <svg
@@ -242,10 +258,12 @@ export function SubscriptionPlans({
                         />
                       </svg>
                     </div>
-                    <Text as="span" variant="bodyMd">
-                      {feature}
-                    </Text>
-                  </InlineStack>
+                    <div style={{ lineHeight: "20px", flex: 1 }}>
+                      <Text as="span" variant="bodyMd">
+                        {feature}
+                      </Text>
+                    </div>
+                  </div>
                 ))}
               </BlockStack>
 
