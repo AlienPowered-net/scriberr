@@ -295,13 +295,18 @@ const AdvancedRTE = ({
   const disableCreateVersion = planTier === "FREE" && limitReached;
 
   const handleUpgradeClick = useCallback(() => {
-    if (typeof openUpgradeModal === "function") {
-      openUpgradeModal({
-        code: "LIMIT_VERSIONS",
-        message:
-          "Upgrade to Scriberr Pro for unlimited version history and smarter note management.",
-      });
-    }
+    // Close the Version History modal first
+    setShowVersionPopover(false);
+    // Then open the upgrade modal after a brief delay to ensure smooth transition
+    setTimeout(() => {
+      if (typeof openUpgradeModal === "function") {
+        openUpgradeModal({
+          code: "LIMIT_VERSIONS",
+          message:
+            "Upgrade to Scriberr Pro for unlimited version history and smarter note management.",
+        });
+      }
+    }, 100);
   }, [openUpgradeModal]);
 
   const renderVersionUsageBar = useCallback(() => {
