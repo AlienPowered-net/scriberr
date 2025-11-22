@@ -212,62 +212,65 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
                     onClick={() => toggleStep(stepKey)}
                     verticalAlignment="leading"
                   >
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', width: '100%' }}>
-                      {/* Left Side - Icon and Content */}
-                      <InlineStack gap="300" align="start">
-                        <Box padding="100">
-                          {step.completed ? (
-                            <Icon source={CheckIcon} tone="success" />
-                          ) : (
-                            <Box 
-                              padding="100"
-                              background="bg-surface-secondary"
-                              borderRadius="100"
-                              style={{ width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                            >
-                              <Text variant="bodySm" tone="subdued" style={{ fontSize: '10px' }}>○</Text>
-                            </Box>
-                          )}
-                        </Box>
-                        <BlockStack gap="0" style={{ flex: 1, minWidth: 0 }}>
-                          <Text variant="bodyMd" fontWeight="medium">
+                    <BlockStack gap="0">
+                      {/* Title Row - Icon and Title on same row */}
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', width: '100%' }}>
+                        <InlineStack gap="300" align="start" blockAlign="start">
+                          <Box padding="100" style={{ flexShrink: 0 }}>
+                            {step.completed ? (
+                              <Icon source={CheckIcon} tone="success" />
+                            ) : (
+                              <Box 
+                                padding="100"
+                                background="bg-surface-secondary"
+                                borderRadius="100"
+                                style={{ width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                              >
+                                <Text variant="bodySm" tone="subdued" style={{ fontSize: '10px' }}>○</Text>
+                              </Box>
+                            )}
+                          </Box>
+                          <Text variant="bodyMd" fontWeight="medium" style={{ flex: 1, minWidth: 0 }}>
                             {step.title}
                           </Text>
-                          {/* Collapsible Content */}
-                          <Collapsible
-                            open={isStepOpen}
-                            id={`step-${step.id}-collapsible`}
-                            transition={{ duration: '200ms', timingFunction: 'ease-in-out' }}
-                          >
-                            <BlockStack gap="300" style={{ marginTop: '12px' }}>
-                              <Text variant="bodySm" tone="subdued">
-                                {step.description}
-                              </Text>
-                              {step.action && (
-                                <InlineStack align="start">
-                                  <Button
-                                    variant="primary"
-                                    tone="success"
-                                    size="slim"
-                                    url={step.actionUrl}
-                                  >
-                                    {step.action}
-                                  </Button>
-                                </InlineStack>
-                              )}
-                            </BlockStack>
-                          </Collapsible>
-                        </BlockStack>
-                      </InlineStack>
-                      
-                      {/* Right Side - Chevron Icon */}
-                      <div style={{ marginLeft: 'auto', paddingLeft: '16px', flexShrink: 0 }}>
-                        <Icon 
-                          source={isStepOpen ? ChevronUpIcon : ChevronDownIcon} 
-                          tone="subdued"
-                        />
+                        </InlineStack>
+                        
+                        {/* Right Side - Chevron Icon */}
+                        <div style={{ marginLeft: 'auto', paddingLeft: '16px', flexShrink: 0 }}>
+                          <Icon 
+                            source={isStepOpen ? ChevronUpIcon : ChevronDownIcon} 
+                            tone="subdued"
+                          />
+                        </div>
                       </div>
-                    </div>
+                      
+                      {/* Collapsible Content */}
+                      <Collapsible
+                        open={isStepOpen}
+                        id={`step-${step.id}-collapsible`}
+                        transition={{ duration: '200ms', timingFunction: 'ease-in-out' }}
+                      >
+                        <div style={{ paddingTop: '12px', paddingLeft: '40px' }}>
+                          <BlockStack gap="300">
+                            <Text variant="bodySm" tone="subdued">
+                              {step.description}
+                            </Text>
+                            {step.action && (
+                              <InlineStack align="start">
+                                <Button
+                                  variant="primary"
+                                  tone="success"
+                                  size="slim"
+                                  url={step.actionUrl}
+                                >
+                                  {step.action}
+                                </Button>
+                              </InlineStack>
+                            )}
+                          </BlockStack>
+                        </div>
+                      </Collapsible>
+                    </BlockStack>
                   </ResourceItem>
                 );
               }}
