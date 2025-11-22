@@ -360,6 +360,31 @@ export default function Settings() {
 
         <Divider />
 
+        {/* App Preferences Section */}
+        <Card>
+          <div style={{ padding: "16px" }}>
+            <BlockStack gap="400">
+              <Text as="h2" variant="headingMd">
+                App Preferences
+              </Text>
+              <Text as="p" variant="bodyMd" tone="subdued">
+                Customize your Scriberr experience with these preference settings.
+              </Text>
+              
+              <BlockStack gap="300">
+                <Checkbox
+                  label="Show Getting Started Guide"
+                  helpText="Display the onboarding guide on the homepage to help you get started with Scriberr"
+                  checked={showOnboardingGuide}
+                  onChange={handleOnboardingGuideToggle}
+                />
+              </BlockStack>
+            </BlockStack>
+          </div>
+        </Card>
+
+        <Divider />
+
         {/* Content Management Section */}
         <Card>
           <div style={{ padding: "16px" }}>
@@ -397,25 +422,27 @@ export default function Settings() {
                 </ButtonGroup>
               </BlockStack>
 
-              <BlockStack gap="300">
-                <Text as="h3" variant="headingSm">
-                  Contacts
-                </Text>
-                <ButtonGroup>
-                  <Button 
-                    tone="critical" 
-                    onClick={handleDeleteAllContacts}
-                  >
-                    Delete All Contacts
-                  </Button>
-                  <Button 
-                    tone="critical" 
-                    onClick={handleDeleteAllContactFolders}
-                  >
-                    Delete All Contact Folders
-                  </Button>
-                </ButtonGroup>
-              </BlockStack>
+              {plan === "PRO" && (
+                <BlockStack gap="300">
+                  <Text as="h3" variant="headingSm">
+                    Contacts
+                  </Text>
+                  <ButtonGroup>
+                    <Button 
+                      tone="critical" 
+                      onClick={handleDeleteAllContacts}
+                    >
+                      Delete All Contacts
+                    </Button>
+                    <Button 
+                      tone="critical" 
+                      onClick={handleDeleteAllContactFolders}
+                    >
+                      Delete All Contact Folders
+                    </Button>
+                  </ButtonGroup>
+                </BlockStack>
+              )}
 
               <BlockStack gap="300">
                 <Text as="h3" variant="headingSm">
@@ -429,31 +456,6 @@ export default function Settings() {
                     Delete All Content
                   </Button>
                 </ButtonGroup>
-              </BlockStack>
-            </BlockStack>
-          </div>
-        </Card>
-
-        <Divider />
-
-        {/* App Preferences Section */}
-        <Card>
-          <div style={{ padding: "16px" }}>
-            <BlockStack gap="400">
-              <Text as="h2" variant="headingMd">
-                App Preferences
-              </Text>
-              <Text as="p" variant="bodyMd" tone="subdued">
-                Customize your Scriberr experience with these preference settings.
-              </Text>
-              
-              <BlockStack gap="300">
-                <Checkbox
-                  label="Show Getting Started Guide"
-                  helpText="Display the onboarding guide on the homepage to help you get started with Scriberr"
-                  checked={showOnboardingGuide}
-                  onChange={handleOnboardingGuideToggle}
-                />
               </BlockStack>
             </BlockStack>
           </div>
