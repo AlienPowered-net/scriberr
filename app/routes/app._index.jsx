@@ -594,7 +594,7 @@ export default function HomePage() {
                           New
                         </Badge>
                         <Text variant="bodyMd" fontWeight="medium" as="h3">
-                          Scriberr v{version} Released
+                          Scriberr {version} Released
                         </Text>
                       </InlineStack>
                       <Text variant="bodySm" tone="subdued">
