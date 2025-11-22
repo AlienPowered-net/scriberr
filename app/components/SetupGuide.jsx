@@ -229,7 +229,7 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
                             </Box>
                           )}
                         </Box>
-                        <BlockStack gap="0">
+                        <BlockStack gap="0" style={{ flex: 1, minWidth: 0 }}>
                           <Text variant="bodyMd" fontWeight="medium">
                             {step.title}
                           </Text>
@@ -239,25 +239,23 @@ export default function SetupGuide({ totalFolders = 0, totalNotes = 0, pinnedNot
                             id={`step-${step.id}-collapsible`}
                             transition={{ duration: '200ms', timingFunction: 'ease-in-out' }}
                           >
-                            <Box paddingBlockStart="300">
-                              <BlockStack gap="300">
-                                <Text variant="bodySm" tone="subdued">
-                                  {step.description}
-                                </Text>
-                                {step.action && (
-                                  <InlineStack align="start">
-                                    <Button
-                                      variant="primary"
-                                      tone="success"
-                                      size="slim"
-                                      url={step.actionUrl}
-                                    >
-                                      {step.action}
-                                    </Button>
-                                  </InlineStack>
-                                )}
-                              </BlockStack>
-                            </Box>
+                            <BlockStack gap="300" style={{ marginTop: '12px' }}>
+                              <Text variant="bodySm" tone="subdued">
+                                {step.description}
+                              </Text>
+                              {step.action && (
+                                <InlineStack align="start">
+                                  <Button
+                                    variant="primary"
+                                    tone="success"
+                                    size="slim"
+                                    url={step.actionUrl}
+                                  >
+                                    {step.action}
+                                  </Button>
+                                </InlineStack>
+                              )}
+                            </BlockStack>
                           </Collapsible>
                         </BlockStack>
                       </InlineStack>
