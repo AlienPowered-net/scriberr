@@ -48,7 +48,6 @@ export const loader = async ({ request }: { request: Request }) => {
       // If admin authentication fails (common when returning from external redirect),
       // manually load the session from the database
       console.log("[Billing Confirm] Admin auth failed, loading session manually");
-      console.log("[Billing Confirm] Auth error:", authError?.message || authError);
       
       // Get shop from query param or try to find it from the charge_id
       let shop = shopFromQuery;
@@ -88,21 +87,12 @@ export const loader = async ({ request }: { request: Request }) => {
         );
       }
 
-      // Create admin GraphQL client directly from the session
-      try {
-        admin = shopify.clients.Graphql({ session });
-      } catch (clientError: any) {
-        console.error("[Billing Confirm] Failed to create GraphQL client:", clientError);
-        // Fallback: try lowercase if capitalized doesn't work
-        try {
-          admin = (shopify.clients as any).graphql({ session });
-        } catch (fallbackError: any) {
-          console.error("[Billing Confirm] Fallback also failed:", fallbackError);
-          throw new Error(
-            `Failed to create admin client from session: ${clientError?.message || clientError}`,
-          );
-        }
-      }
+      // Create admin GraphQL client using the new GraphQL client from shopify-api
+      const { GraphqlClient } = await import("@shopify/shopify-api");
+      
+      admin = new GraphqlClient({
+        session,
+      });
     }
 
     if (!session?.shop || !admin) {
