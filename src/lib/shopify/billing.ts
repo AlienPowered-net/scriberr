@@ -18,16 +18,14 @@ const APP_SUBSCRIPTION_CREATE_MUTATION = /* GraphQL */ `
   mutation AppSubscriptionCreate(
     $name: String!
     $returnUrl: URL!
-    $test: Boolean!
+    $test: Boolean
     $lineItems: [AppSubscriptionLineItemInput!]!
   ) {
     appSubscriptionCreate(
-      input: {
-        name: $name
-        test: $test
-        returnUrl: $returnUrl
-        lineItems: $lineItems
-      }
+      name: $name
+      returnUrl: $returnUrl
+      test: $test
+      lineItems: $lineItems
     ) {
       appSubscription {
         id
@@ -91,45 +89,71 @@ export async function createProSubscription(
     test = true,
     currency = "USD",
     amount = 5,
-    name = "Scriberr Pro Plan",
+    name = "Scriberr Pro – $5/month",
   }: CreateSubscriptionOptions = {},
 ) {
-  const response = await admin.graphql(APP_SUBSCRIPTION_CREATE_MUTATION, {
-    variables: {
-      name,
-      returnUrl,
-      test,
-      lineItems: [
-        {
-          plan: {
-            appRecurringPricingDetails: {
-              price: {
-                amount,
-                currencyCode: currency,
-              },
-              interval: "EVERY_30_DAYS",
+  // Ensure all variables are explicitly defined and properly typed
+  const variables = {
+    name: name || "Scriberr Pro – $5/month",
+    returnUrl: returnUrl,
+    test: Boolean(test), // Explicitly convert to boolean, default to true for test mode
+    lineItems: [
+      {
+        plan: {
+          appRecurringPricingDetails: {
+            price: {
+              amount: Number(amount),
+              currencyCode: currency || "USD",
             },
+            interval: "EVERY_30_DAYS",
           },
         },
-      ],
-    },
+      },
+    ],
+  };
+
+  console.log("[Billing] Creating subscription with variables:", {
+    name: variables.name,
+    returnUrl: variables.returnUrl,
+    test: variables.test,
+    amount: variables.lineItems[0].plan.appRecurringPricingDetails.price.amount,
+    currency: variables.lineItems[0].plan.appRecurringPricingDetails.price.currencyCode,
+  });
+
+  const response = await admin.graphql(APP_SUBSCRIPTION_CREATE_MUTATION, {
+    variables,
   });
 
   const payload = await response.json();
 
+  // Check for GraphQL errors first
+  if (payload?.errors && payload.errors.length > 0) {
+    const errorMessages = payload.errors
+      .map((err: any) => err.message || JSON.stringify(err))
+      .join(", ");
+    console.error("[Billing] GraphQL errors:", payload.errors);
+    throw new Error(`Shopify GraphQL error: ${errorMessages}`);
+  }
+
+  // Check for user errors from the mutation
   const errors = payload?.data?.appSubscriptionCreate?.userErrors ?? [];
   if (errors.length > 0) {
-    throw new Error(
-      `Failed to create subscription: ${errors
-        .map((err: { message: string }) => err.message)
-        .join(", ")}`,
-    );
+    const errorMessages = errors
+      .map((err: { message: string; field?: string[] }) => 
+        err.field ? `${err.field.join(".")}: ${err.message}` : err.message
+      )
+      .join(", ");
+    console.error("[Billing] User errors:", errors);
+    throw new Error(`Failed to create subscription: ${errorMessages}`);
   }
 
   const confirmationUrl = payload?.data?.appSubscriptionCreate?.confirmationUrl;
   if (!confirmationUrl) {
+    console.error("[Billing] No confirmation URL in response:", payload?.data);
     throw new Error("Shopify did not return a confirmation URL.");
   }
+
+  console.log("[Billing] Subscription created successfully, confirmationUrl:", confirmationUrl);
 
   return {
     confirmationUrl,

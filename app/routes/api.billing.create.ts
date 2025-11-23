@@ -35,13 +35,25 @@ export const action = async ({ request }: { request: Request }) => {
       );
     }
 
+    // For labs environment, ensure test mode is enabled unless explicitly disabled
+    // Test mode should be true for all non-production environments
     const testMode =
       process.env.SHOPIFY_BILLING_TEST_MODE !== "false" &&
       process.env.NODE_ENV !== "production";
 
+    console.log("[Billing Create] Environment:", {
+      NODE_ENV: process.env.NODE_ENV,
+      SHOPIFY_BILLING_TEST_MODE: process.env.SHOPIFY_BILLING_TEST_MODE,
+      testMode,
+      appUrl,
+      shop: session.shop,
+    });
+
     const returnUrl = new URL("/api/billing/confirm", appUrl).toString();
+    
     const { confirmationUrl } = await createProSubscription(admin, returnUrl, {
       test: testMode,
+      name: "Scriberr Pro – $5/month",
     });
 
     return json({ confirmationUrl });
