@@ -21,16 +21,34 @@ export const loader = async ({ request }: { request: Request }) => {
   try {
     const url = new URL(request.url);
     
+    // Log all incoming URL parameters for debugging
+    console.log("[Billing Confirm] Incoming request:", {
+      fullUrl: url.toString(),
+      allParams: Object.fromEntries(url.searchParams.entries()),
+    });
+    
     // Extract shop from query params (Shopify includes this in return URL)
     const shopFromQuery = url.searchParams.get("shop");
     
     // Extract charge_id/subscription from query params
+    // Note: Shopify sends different parameters depending on the API used:
+    // - appSubscriptionCreate (GraphQL): charge_id (numeric ID or full GID)
+    // - Some cases might use 'id' with full GID
     const chargeId =
-      url.searchParams.get("charge_id") ?? url.searchParams.get("subscription");
+      url.searchParams.get("charge_id") ?? 
+      url.searchParams.get("subscription") ??
+      url.searchParams.get("id");
 
     if (!chargeId) {
+      console.error("[Billing Confirm] Missing charge identifier in URL params");
       return json({ error: "Missing charge identifier" }, { status: 400 });
     }
+    
+    console.log("[Billing Confirm] Extracted parameters:", {
+      shop: shopFromQuery,
+      chargeId,
+      isGid: chargeId.startsWith("gid://"),
+    });
 
     let session;
     let admin;
@@ -101,14 +119,20 @@ export const loader = async ({ request }: { request: Request }) => {
       );
 
       admin = {
-        graphql: (query: string, options?: { variables?: Record<string, unknown> }) => {
+        graphql: async (query: string, options?: { variables?: Record<string, unknown> }) => {
           const endpoint = `https://${session.shop}/admin/api/${apiVersion}/graphql.json`;
           const body = {
             query,
             variables: options?.variables ?? undefined,
           };
 
-          return fetch(endpoint, {
+          console.log("[Billing Confirm] Making GraphQL request:", {
+            endpoint,
+            hasVariables: Boolean(options?.variables),
+            variables: options?.variables,
+          });
+
+          const response = await fetch(endpoint, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -116,6 +140,14 @@ export const loader = async ({ request }: { request: Request }) => {
             },
             body: JSON.stringify(body),
           });
+
+          console.log("[Billing Confirm] GraphQL response status:", {
+            status: response.status,
+            ok: response.ok,
+            statusText: response.statusText,
+          });
+
+          return response;
         },
       };
     }
@@ -132,8 +164,23 @@ export const loader = async ({ request }: { request: Request }) => {
     const subscriptionGid = chargeId.startsWith("gid://")
       ? chargeId
       : `gid://shopify/AppSubscription/${chargeId}`;
+    
+    console.log("[Billing Confirm] Fetching subscription:", {
+      originalChargeId: chargeId,
+      subscriptionGid,
+      shop: session.shop,
+    });
 
     const subscription = await fetchSubscription(admin, subscriptionGid);
+    
+    console.log("[Billing Confirm] Subscription fetched successfully:", {
+      id: subscription.id,
+      status: subscription.status,
+      name: subscription.name,
+      priceAmount: subscription.priceAmount,
+      currencyCode: subscription.currencyCode,
+      test: subscription.test,
+    });
 
     // Validate subscription is ACTIVE and matches Pro plan requirements
     const subscriptionStatus = mapSubscriptionStatus(subscription.status);

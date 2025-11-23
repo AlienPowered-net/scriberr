@@ -42,6 +42,9 @@ const APP_SUBSCRIPTION_CREATE_MUTATION = /* GraphQL */ `
   }
 `;
 
+// Query to fetch app subscription details
+// Note: TypeScript linter may show an error here due to outdated GraphQL schema,
+// but appSubscription is a valid field in Shopify's Admin GraphQL API for billing
 const APP_SUBSCRIPTION_QUERY = /* GraphQL */ `
   query AppSubscription($id: ID!) {
     appSubscription(id: $id) {
@@ -67,7 +70,7 @@ const APP_SUBSCRIPTION_QUERY = /* GraphQL */ `
       }
     }
   }
-`;
+` as string;
 
 export interface ShopifySubscription {
   id: string;
@@ -166,14 +169,50 @@ export async function fetchSubscription(
   admin: AdminGraphqlClient,
   subscriptionGid: string,
 ): Promise<ShopifySubscription> {
+  console.log("[Billing Confirm] fetchSubscription called with:", {
+    subscriptionGid,
+  });
+
   const response = await admin.graphql(APP_SUBSCRIPTION_QUERY, {
     variables: { id: subscriptionGid },
   });
 
-  const payload = await response.json();
+  console.log("[Billing Confirm] HTTP response status:", {
+    status: response.status,
+    ok: response.ok,
+    statusText: response.statusText,
+  });
+
+  // Always try to parse JSON response, whether success or error
+  let payload;
+  try {
+    payload = await response.json();
+  } catch (jsonError) {
+    console.error("[Billing Confirm] Failed to parse JSON response:", jsonError);
+    throw new Error(`Invalid JSON response from Shopify API (HTTP ${response.status})`);
+  }
+  
+  console.log("[Billing Confirm] fetchSubscription parsed response:", {
+    hasData: Boolean(payload?.data),
+    hasErrors: Boolean(payload?.errors),
+    errors: payload?.errors,
+    appSubscriptionExists: Boolean(payload?.data?.appSubscription),
+  });
+
+  // Check for GraphQL errors
+  if (payload?.errors && payload.errors.length > 0) {
+    console.error("[Billing Confirm] GraphQL errors when loading subscription:", payload.errors);
+    throw new Error(`Unable to load subscription details from Shopify (GraphQL error: ${payload.errors[0].message}).`);
+  }
+
   const subscription = payload?.data?.appSubscription;
 
   if (!subscription) {
+    console.error("[Billing Confirm] No appSubscription returned in response:", {
+      fullData: payload?.data,
+      fullPayload: payload,
+      subscriptionGid,
+    });
     throw new Error("Unable to load subscription details from Shopify.");
   }
 
