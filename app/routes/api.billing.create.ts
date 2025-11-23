@@ -53,7 +53,12 @@ export const action = async ({ request }: { request: Request }) => {
     const returnUrlObj = new URL("/api/billing/confirm", appUrl);
     returnUrlObj.searchParams.set("shop", session.shop);
     const returnUrl = returnUrlObj.toString();
-    
+
+    console.log("[Billing Create] Using returnUrl for subscription:", {
+      returnUrl,
+      shop: session.shop,
+    });
+
     const { confirmationUrl } = await createProSubscription(admin, returnUrl, {
       test: testMode,
       name: "Scriberr Pro – $5/month",

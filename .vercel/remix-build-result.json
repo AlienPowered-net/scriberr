@@ -10,6 +10,8 @@
       }
     },
     "routeIdToServerBundleId": {
+      "routes/webhooks.app_subscriptions.cancelled": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/webhooks.app_subscriptions.update": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/api.delete-all-contact-folders": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/webhooks.app.scopes_update": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/api.compare-note-versions": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
@@ -69,6 +71,24 @@
         "id": "root",
         "file": "app/root.jsx",
         "config": {}
+      },
+      "routes/webhooks.app_subscriptions.cancelled": {
+        "id": "routes/webhooks.app_subscriptions.cancelled",
+        "parentId": "root",
+        "file": "app/routes/webhooks.app_subscriptions.cancelled.ts",
+        "path": "webhooks/app_subscriptions/cancelled",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/webhooks.app_subscriptions.update": {
+        "id": "routes/webhooks.app_subscriptions.update",
+        "parentId": "root",
+        "file": "app/routes/webhooks.app_subscriptions.update.ts",
+        "path": "webhooks/app_subscriptions/update",
+        "config": {
+          "runtime": "nodejs"
+        }
       },
       "routes/api.delete-all-contact-folders": {
         "id": "routes/api.delete-all-contact-folders",
@@ -565,6 +585,18 @@
         "path": "",
         "id": "root",
         "file": "root.jsx"
+      },
+      "routes/webhooks.app_subscriptions.cancelled": {
+        "id": "routes/webhooks.app_subscriptions.cancelled",
+        "parentId": "root",
+        "file": "routes/webhooks.app_subscriptions.cancelled.ts",
+        "path": "webhooks/app_subscriptions/cancelled"
+      },
+      "routes/webhooks.app_subscriptions.update": {
+        "id": "routes/webhooks.app_subscriptions.update",
+        "parentId": "root",
+        "file": "routes/webhooks.app_subscriptions.update.ts",
+        "path": "webhooks/app_subscriptions/update"
       },
       "routes/api.delete-all-contact-folders": {
         "id": "routes/api.delete-all-contact-folders",

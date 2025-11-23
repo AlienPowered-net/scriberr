@@ -78,20 +78,32 @@ export const loader = async ({ request }: { request: Request }) => {
       // Load offline session from database
       const sessionId = `offline_${shop}`;
       session = await shopify.sessionStorage.loadSession(sessionId);
-      
+
       if (!session || !session.accessToken) {
-        console.error(`[Billing Confirm] No session or access token found for shop: ${shop}`);
-        return json(
-          { error: "Session not found. Please try logging in again." },
-          { status: 401 },
+        console.error(
+          `[Billing Confirm] No offline session or access token found for shop: ${shop}. Redirecting to auth.`,
         );
+        return redirect(`/auth?shop=${encodeURIComponent(shop)}`);
       }
 
       // Create admin GraphQL client using shopify app instance
-      admin = await shopify.clients.admin({ session });
+      try {
+        admin = new shopify.api.clients.Graphql({ session });
+      } catch (clientError) {
+        console.error(
+          "[Billing Confirm] Failed to construct admin client from offline session. Redirecting to auth.",
+          clientError,
+        );
+        return redirect(`/auth?shop=${encodeURIComponent(session.shop)}`);
+      }
     }
 
     if (!session?.shop || !admin) {
+      console.error("[Billing Confirm] Missing admin client or session.shop after authentication fallback", {
+        hasSession: Boolean(session),
+        hasAdmin: Boolean(admin),
+        shop: session?.shop ?? shopFromQuery,
+      });
       return json({ error: "Shop session not found" }, { status: 401 });
     }
 
