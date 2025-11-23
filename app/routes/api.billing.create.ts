@@ -49,7 +49,10 @@ export const action = async ({ request }: { request: Request }) => {
       shop: session.shop,
     });
 
-    const returnUrl = new URL("/api/billing/confirm", appUrl).toString();
+    // Include shop parameter in return URL to help with authentication
+    const returnUrlObj = new URL("/api/billing/confirm", appUrl);
+    returnUrlObj.searchParams.set("shop", session.shop);
+    const returnUrl = returnUrlObj.toString();
     
     const { confirmationUrl } = await createProSubscription(admin, returnUrl, {
       test: testMode,

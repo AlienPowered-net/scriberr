@@ -19,18 +19,94 @@ export const loader = async ({ request }: { request: Request }) => {
   const shopify = shopifyModule.default;
 
   try {
-    const { admin, session } = await shopify.authenticate.admin(request);
-
-    if (!session?.shop) {
-      return json({ error: "Shop session not found" }, { status: 401 });
-    }
-
     const url = new URL(request.url);
+    
+    // Extract shop from query params (Shopify includes this in return URL)
+    const shopFromQuery = url.searchParams.get("shop");
+    
+    // Extract charge_id/subscription from query params
     const chargeId =
       url.searchParams.get("charge_id") ?? url.searchParams.get("subscription");
 
     if (!chargeId) {
       return json({ error: "Missing charge identifier" }, { status: 400 });
+    }
+
+    let session;
+    let admin;
+
+    // Try to authenticate with admin first (works if session cookies are present)
+    try {
+      const authResult = await shopify.authenticate.admin(request);
+      session = authResult.session;
+      admin = authResult.admin;
+      
+      if (!session?.shop) {
+        throw new Error("No shop in authenticated session");
+      }
+    } catch (authError) {
+      // If admin authentication fails (common when returning from external redirect),
+      // manually load the session from the database
+      console.log("[Billing Confirm] Admin auth failed, loading session manually");
+      console.log("[Billing Confirm] Auth error:", authError?.message || authError);
+      
+      // Get shop from query param or try to find it from the charge_id
+      let shop = shopFromQuery;
+      
+      if (!shop) {
+        // If shop not in query params, try to find it from existing subscriptions in DB
+        const subscriptionGid = chargeId.startsWith("gid://")
+          ? chargeId
+          : `gid://shopify/AppSubscription/${chargeId}`;
+        
+        // Try to find shop from existing subscription record
+        const existingSub = await prisma.subscription.findFirst({
+          where: { shopifySubGid: subscriptionGid },
+          include: { shop: true },
+        });
+        
+        if (existingSub?.shop) {
+          shop = existingSub.shop.domain;
+        } else {
+          // Last resort: try to find any recent session or require shop param
+          return json(
+            { error: "Shop parameter required for billing confirmation. Please include ?shop=your-shop.myshopify.com in the URL." },
+            { status: 400 },
+          );
+        }
+      }
+
+      // Load offline session from database
+      const sessionId = `offline_${shop}`;
+      session = await shopify.sessionStorage.loadSession(sessionId);
+      
+      if (!session || !session.accessToken) {
+        console.error(`[Billing Confirm] No session or access token found for shop: ${shop}`);
+        return json(
+          { error: "Session not found. Please try logging in again." },
+          { status: 401 },
+        );
+      }
+
+      // Create admin GraphQL client directly from the session
+      try {
+        admin = shopify.clients.Graphql({ session });
+      } catch (clientError: any) {
+        console.error("[Billing Confirm] Failed to create GraphQL client:", clientError);
+        // Fallback: try lowercase if capitalized doesn't work
+        try {
+          admin = (shopify.clients as any).graphql({ session });
+        } catch (fallbackError: any) {
+          console.error("[Billing Confirm] Fallback also failed:", fallbackError);
+          throw new Error(
+            `Failed to create admin client from session: ${clientError?.message || clientError}`,
+          );
+        }
+      }
+    }
+
+    if (!session?.shop || !admin) {
+      return json({ error: "Shop session not found" }, { status: 401 });
     }
 
     const subscriptionGid = chargeId.startsWith("gid://")
