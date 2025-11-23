@@ -39,12 +39,26 @@ export const loader = async ({ request }: { request: Request }) => {
 
     const subscription = await fetchSubscription(admin, subscriptionGid);
 
+    // Validate subscription is ACTIVE and matches Pro plan requirements
+    const subscriptionStatus = mapSubscriptionStatus(subscription.status);
+    const isPro =
+      subscriptionStatus === "ACTIVE" &&
+      subscription.priceAmount === 5 &&
+      subscription.currencyCode === "USD" &&
+      subscription.billingInterval === "EVERY_30_DAYS";
+
+    if (!isPro) {
+      console.warn(
+        `Subscription not eligible for Pro plan upgrade. Status: ${subscription.status}, Amount: ${subscription.priceAmount}, Currency: ${subscription.currencyCode}`,
+      );
+    }
+
     await prisma.$transaction(async (tx) => {
       try {
         const shop = await tx.shop.upsert({
           where: { domain: session.shop },
-          update: { plan: "PRO" },
-          create: { domain: session.shop },
+          update: { plan: isPro ? "PRO" : "FREE" },
+          create: { domain: session.shop, plan: isPro ? "PRO" : "FREE" },
         });
 
         await tx.subscription.upsert({
