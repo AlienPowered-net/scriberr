@@ -87,12 +87,8 @@ export const loader = async ({ request }: { request: Request }) => {
         );
       }
 
-      // Create admin GraphQL client using the new GraphQL client from shopify-api
-      const { GraphqlClient } = await import("@shopify/shopify-api");
-      
-      admin = new GraphqlClient({
-        session,
-      });
+      // Create admin GraphQL client using shopify app instance
+      admin = await shopify.clients.admin({ session });
     }
 
     if (!session?.shop || !admin) {
