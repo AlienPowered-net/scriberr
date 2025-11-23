@@ -86,16 +86,38 @@ export const loader = async ({ request }: { request: Request }) => {
         return redirect(`/auth?shop=${encodeURIComponent(shop)}`);
       }
 
-      // Create admin GraphQL client using shopify app instance
-      try {
-        admin = new shopify.api.clients.Graphql({ session });
-      } catch (clientError) {
+      // Create a minimal Admin GraphQL client using the offline session
+      const apiVersion = shopifyModule.apiVersion;
+      if (!apiVersion) {
         console.error(
-          "[Billing Confirm] Failed to construct admin client from offline session. Redirecting to auth.",
-          clientError,
+          "[Billing Confirm] Missing apiVersion export from shopifyModule. Redirecting to auth.",
         );
         return redirect(`/auth?shop=${encodeURIComponent(session.shop)}`);
       }
+
+      console.log(
+        "[Billing Confirm] Using offline admin GraphQL client for billing confirmation",
+        { shop: session.shop, apiVersion },
+      );
+
+      admin = {
+        graphql: (query: string, options?: { variables?: Record<string, unknown> }) => {
+          const endpoint = `https://${session.shop}/admin/api/${apiVersion}/graphql.json`;
+          const body = {
+            query,
+            variables: options?.variables ?? undefined,
+          };
+
+          return fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Shopify-Access-Token": session.accessToken,
+            },
+            body: JSON.stringify(body),
+          });
+        },
+      };
     }
 
     if (!session?.shop || !admin) {
