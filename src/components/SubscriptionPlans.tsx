@@ -63,18 +63,34 @@ export function SubscriptionPlans({
         });
 
         if (!response.ok) {
-          throw new Error("Failed to initiate upgrade");
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || "Failed to initiate upgrade");
         }
 
         const payload = await response.json();
+        console.log("[SubscriptionPlans] Upgrade response:", payload);
+        
         if (payload?.confirmationUrl) {
-          const target = window.top ?? window;
-          target.location.assign(payload.confirmationUrl);
+          // For Shopify embedded apps, redirect the parent window to the confirmation URL
+          try {
+            // Try to redirect the parent window (for embedded apps)
+            if (window.top && window.top !== window) {
+              window.top.location.href = payload.confirmationUrl;
+            } else {
+              // Fallback to current window if not embedded
+              window.location.href = payload.confirmationUrl;
+            }
+          } catch (error) {
+            // If cross-origin restriction, open in new window
+            console.warn("[SubscriptionPlans] Cross-origin redirect blocked, opening in new window:", error);
+            window.open(payload.confirmationUrl, "_blank");
+          }
         } else {
+          console.error("[SubscriptionPlans] Missing confirmation URL in response:", payload);
           throw new Error("Missing confirmation URL");
         }
       } catch (error) {
-        console.error("Upgrade initiation failed", error);
+        console.error("[SubscriptionPlans] Upgrade initiation failed:", error);
       }
     }
   }, [onUpgrade]);

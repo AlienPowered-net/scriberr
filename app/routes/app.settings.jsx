@@ -208,19 +208,38 @@ export default function Settings() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to initiate upgrade");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to initiate upgrade");
       }
 
       const payload = await response.json();
+      console.log("[Settings] Upgrade response:", payload);
+      
       if (payload?.confirmationUrl) {
-        const target = window.top ?? window;
-        target.location.assign(payload.confirmationUrl);
+        // For Shopify embedded apps, redirect the parent window to the confirmation URL
+        // The confirmation URL is a Shopify admin page, so we need to navigate the top-level window
+        try {
+          // Try to redirect the parent window (for embedded apps)
+          if (window.top && window.top !== window) {
+            window.top.location.href = payload.confirmationUrl;
+          } else {
+            // Fallback to current window if not embedded
+            window.location.href = payload.confirmationUrl;
+          }
+        } catch (error) {
+          // If cross-origin restriction, open in new window
+          console.warn("[Settings] Cross-origin redirect blocked, opening in new window:", error);
+          window.open(payload.confirmationUrl, "_blank");
+        }
       } else {
+        console.error("[Settings] Missing confirmation URL in response:", payload);
         throw new Error("Missing confirmation URL");
       }
     } catch (error) {
-      console.error("Upgrade initiation failed", error);
+      console.error("[Settings] Upgrade initiation failed:", error);
       setIsUpgrading(false);
+      // Show error to user
+      setAlertMessage(error.message || "Failed to initiate upgrade. Please try again.");
     }
   }, []);
 
