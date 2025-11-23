@@ -20,6 +20,14 @@ api_version = "2025-07"
   topics = [ "app/scopes_update" ]
   uri = "/webhooks/app/scopes_update"
 
+  [[webhooks.subscriptions]]
+  topics = [ "app_subscriptions/update" ]
+  uri = "/webhooks/app_subscriptions/update"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app_subscriptions/cancelled" ]
+  uri = "/webhooks/app_subscriptions/cancelled"
+
 [access_scopes]
 # Scopes required for entity mentions (@mentions for products, orders, customers, etc.)
 scopes = "read_products,read_orders,read_customers,read_discounts,read_draft_orders"
