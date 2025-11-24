@@ -4,8 +4,6 @@ import {
   mapSubscriptionStatus,
 } from "../../src/lib/shopify/billing";
 
-const SUCCESS_REDIRECT_PATH = "/app/settings?billing=success";
-
 export const loader = async ({ request }: { request: Request }) => {
   // Dynamic imports for server-only modules
   const [
@@ -255,7 +253,18 @@ export const loader = async ({ request }: { request: Request }) => {
       }
     });
 
-    return redirect(SUCCESS_REDIRECT_PATH);
+    // Redirect to auth with shop param to seamlessly re-enter the embedded app
+    // The auth route will handle OAuth and redirect back into the embedded app
+    const shop = session?.shop ?? shopFromQuery;
+
+    if (!shop) {
+      console.error("[Billing Confirm] No shop available for redirect");
+      return json({ error: "Unable to redirect - missing shop information" }, { status: 500 });
+    }
+
+    console.log("[Billing Confirm] Redirecting to auth for embedded app re-entry:", { shop });
+
+    return redirect(`/auth?shop=${encodeURIComponent(shop)}`);
   } catch (error: any) {
     console.error("Failed to confirm billing subscription", error);
     return json(

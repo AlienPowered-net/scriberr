@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import { redirect } from "@remix-run/node";
 import {
   AppProvider as PolarisAppProvider,
   Button,
@@ -17,6 +18,16 @@ import { loginErrorMessage } from "./error.server";
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }) => {
+  const url = new URL(request.url);
+  const shop = url.searchParams.get("shop");
+
+  // If shop is provided, immediately redirect to auth to start OAuth
+  if (shop) {
+    console.log("[Auth Login] Shop param provided, redirecting to auth:", { shop });
+    return redirect(`/auth?shop=${encodeURIComponent(shop)}`);
+  }
+
+  // Otherwise, show the login form
   const errors = loginErrorMessage(await login(request));
 
   return { errors, polarisTranslations };
