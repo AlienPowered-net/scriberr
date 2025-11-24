@@ -27,11 +27,11 @@ export const loader = async ({ request }) => {
     hasShop: Boolean(shop),
   });
 
-  // If shop is provided, immediately redirect to auth/callback to start OAuth
-  // Using /auth/callback because it's whitelisted in Shopify app configuration
+  // If shop is provided, immediately redirect to /auth to start OAuth
+  // The /auth route will handle OAuth and redirect to /auth/callback with full params
   if (shop) {
-    console.log("[Auth Login] Shop param provided, redirecting to auth/callback:", { shop });
-    return redirect(`/auth/callback?shop=${encodeURIComponent(shop)}`);
+    console.log("[Auth Login] Shop param provided, redirecting to auth:", { shop });
+    return redirect(`/auth?shop=${encodeURIComponent(shop)}`);
   }
 
   // Otherwise, show the login form
