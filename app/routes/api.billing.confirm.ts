@@ -253,8 +253,9 @@ export const loader = async ({ request }: { request: Request }) => {
       }
     });
 
-    // Redirect to auth with shop param to seamlessly re-enter the embedded app
+    // Redirect to auth/callback with shop param to seamlessly re-enter the embedded app
     // The auth route will handle OAuth and redirect back into the embedded app
+    // Using /auth/callback because it's whitelisted in Shopify app configuration
     const shop = session?.shop ?? shopFromQuery;
 
     if (!shop) {
@@ -262,7 +263,7 @@ export const loader = async ({ request }: { request: Request }) => {
       return json({ error: "Unable to redirect - missing shop information" }, { status: 500 });
     }
 
-    const redirectUrl = `/auth?shop=${encodeURIComponent(shop)}`;
+    const redirectUrl = `/auth/callback?shop=${encodeURIComponent(shop)}`;
     
     console.log("[Billing Confirm] Final redirect decision", {
       shop,
