@@ -1,10 +1,10 @@
 import { json, redirect } from "@remix-run/node";
 import {
-  fetchSubscription,
+  fetchRecurringCharge,
   mapSubscriptionStatus,
 } from "../../src/lib/shopify/billing";
 
-const SUCCESS_REDIRECT_PATH = "/app/settings/billing/success";
+const SUCCESS_REDIRECT_PATH = "/app/settings?billing=success";
 
 export const loader = async ({ request }: { request: Request }) => {
   // Dynamic imports for server-only modules
@@ -149,6 +149,31 @@ export const loader = async ({ request }: { request: Request }) => {
 
           return response;
         },
+        rest: {
+          get: async ({ path }: { path: string }) => {
+            const endpoint = `https://${session.shop}/admin/api/${apiVersion}/${path}`;
+            
+            console.log("[Billing Confirm] Making REST GET request:", {
+              endpoint,
+              path,
+            });
+
+            const response = await fetch(endpoint, {
+              method: "GET",
+              headers: {
+                "X-Shopify-Access-Token": session.accessToken,
+              },
+            });
+
+            console.log("[Billing Confirm] REST response status:", {
+              status: response.status,
+              ok: response.ok,
+            });
+
+            const body = await response.json();
+            return { status: response.status, body };
+          },
+        },
       };
     }
 
@@ -161,73 +186,62 @@ export const loader = async ({ request }: { request: Request }) => {
       return json({ error: "Shop session not found" }, { status: 401 });
     }
 
-    const subscriptionGid = chargeId.startsWith("gid://")
-      ? chargeId
-      : `gid://shopify/AppSubscription/${chargeId}`;
-    
-    console.log("[Billing Confirm] Fetching subscription:", {
-      originalChargeId: chargeId,
-      subscriptionGid,
+    console.log("[Billing Confirm] Fetching recurring charge:", {
+      chargeId,
       shop: session.shop,
     });
 
-    const subscription = await fetchSubscription(admin, subscriptionGid);
-    
-    console.log("[Billing Confirm] Subscription fetched successfully:", {
-      id: subscription.id,
-      status: subscription.status,
-      name: subscription.name,
-      priceAmount: subscription.priceAmount,
-      currencyCode: subscription.currencyCode,
-      test: subscription.test,
-    });
+    const charge = await fetchRecurringCharge(admin, chargeId);
 
-    // Validate subscription is ACTIVE and matches Pro plan requirements
-    const subscriptionStatus = mapSubscriptionStatus(subscription.status);
-    const isPro =
-      subscriptionStatus === "ACTIVE" &&
-      subscription.priceAmount === 5 &&
-      subscription.currencyCode === "USD" &&
-      subscription.billingInterval === "EVERY_30_DAYS";
-
-    if (!isPro) {
-      console.warn(
-        `Subscription not eligible for Pro plan upgrade. Status: ${subscription.status}, Amount: ${subscription.priceAmount}, Currency: ${subscription.currencyCode}`,
+    // Check if charge is active
+    if (charge.status !== "active") {
+      console.error("[Billing Confirm] Charge not active:", {
+        id: charge.id,
+        status: charge.status,
+        name: charge.name,
+      });
+      
+      return json(
+        { 
+          error: `Subscription is not active. Status: ${charge.status}`,
+          status: charge.status,
+        },
+        { status: 400 }
       );
     }
+
+    console.log("[Billing Confirm] Charge is active, marking shop as Pro");
+
+    const isPro = true; // Already validated charge.status === "active"
 
     await prisma.$transaction(async (tx) => {
       try {
         const shop = await tx.shop.upsert({
           where: { domain: session.shop },
-          update: { plan: isPro ? "PRO" : "FREE" },
-          create: { domain: session.shop, plan: isPro ? "PRO" : "FREE" },
+          update: { plan: "PRO" },
+          create: { domain: session.shop, plan: "PRO" },
         });
 
         await tx.subscription.upsert({
           where: { shopId: shop.id },
           create: {
             shopId: shop.id,
-            status: mapSubscriptionStatus(subscription.status),
-            shopifySubGid: subscription.id,
-            name: subscription.name,
-            priceAmount: subscription.priceAmount,
-            currency: subscription.currencyCode,
-            testMode: subscription.test,
-            trialEndsAt: subscription.trialEndsAt
-              ? new Date(subscription.trialEndsAt)
-              : null,
+            status: "ACTIVE",
+            shopifySubGid: `gid://shopify/RecurringApplicationCharge/${charge.id}`,
+            name: charge.name,
+            priceAmount: parseFloat(charge.price),
+            currency: charge.currency_code || "USD",
+            testMode: charge.test,
+            trialEndsAt: charge.trial_ends_on ? new Date(charge.trial_ends_on) : null,
           },
           update: {
-            status: mapSubscriptionStatus(subscription.status),
-            shopifySubGid: subscription.id,
-            name: subscription.name,
-            priceAmount: subscription.priceAmount,
-            currency: subscription.currencyCode,
-            testMode: subscription.test,
-            trialEndsAt: subscription.trialEndsAt
-              ? new Date(subscription.trialEndsAt)
-              : null,
+            status: "ACTIVE",
+            shopifySubGid: `gid://shopify/RecurringApplicationCharge/${charge.id}`,
+            name: charge.name,
+            priceAmount: parseFloat(charge.price),
+            currency: charge.currency_code || "USD",
+            testMode: charge.test,
+            trialEndsAt: charge.trial_ends_on ? new Date(charge.trial_ends_on) : null,
           },
         });
       } catch (error: any) {

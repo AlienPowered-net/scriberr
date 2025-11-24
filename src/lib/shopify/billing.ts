@@ -7,6 +7,28 @@ type AdminGraphqlClient = {
   ) => Promise<Response>;
 };
 
+type AdminRestClient = {
+  rest: {
+    get: (options: { path: string }) => Promise<{ 
+      status: number; 
+      body: any;
+    }>;
+  };
+};
+
+export interface RecurringCharge {
+  id: number;
+  name: string;
+  status: string;
+  test: boolean;
+  price: string;
+  currency_code: string;
+  billing_on: string | null;
+  activated_on: string | null;
+  trial_ends_on: string | null;
+  created_at: string;
+}
+
 export interface CreateSubscriptionOptions {
   test?: boolean;
   currency?: string;
@@ -238,6 +260,52 @@ export async function fetchSubscription(
     currencyCode: recurring.currencyCode,
     billingInterval: recurring.interval,
   };
+}
+
+export async function fetchRecurringCharge(
+  admin: AdminRestClient,
+  chargeId: string,
+): Promise<RecurringCharge> {
+  console.log("[Billing Confirm] fetchRecurringCharge called with:", {
+    chargeId,
+  });
+
+  const response = await admin.rest.get({
+    path: `recurring_application_charges/${chargeId}.json`,
+  });
+
+  console.log("[Billing Confirm] fetchRecurringCharge response:", {
+    status: response.status,
+    hasBody: Boolean(response.body),
+    hasCharge: Boolean(response.body?.recurring_application_charge),
+  });
+
+  if (response.status !== 200) {
+    console.error("[Billing Confirm] Failed to fetch recurring charge:", {
+      status: response.status,
+      body: response.body,
+    });
+    throw new Error(`Failed to fetch recurring charge: HTTP ${response.status}`);
+  }
+
+  const charge = response.body?.recurring_application_charge;
+
+  if (!charge) {
+    console.error("[Billing Confirm] No recurring_application_charge in response:", {
+      body: response.body,
+    });
+    throw new Error("Unable to load recurring application charge from Shopify.");
+  }
+
+  console.log("[Billing Confirm] Loaded recurring charge:", {
+    id: charge.id,
+    status: charge.status,
+    name: charge.name,
+    price: charge.price,
+    test: charge.test,
+  });
+
+  return charge;
 }
 
 export function mapSubscriptionStatus(
