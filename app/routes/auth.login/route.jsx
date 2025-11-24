@@ -21,6 +21,12 @@ export const loader = async ({ request }) => {
   const url = new URL(request.url);
   const shop = url.searchParams.get("shop");
 
+  console.log("[Auth Login] Incoming request", {
+    url: request.url,
+    shop,
+    hasShop: Boolean(shop),
+  });
+
   // If shop is provided, immediately redirect to auth to start OAuth
   if (shop) {
     console.log("[Auth Login] Shop param provided, redirecting to auth:", { shop });
@@ -28,6 +34,7 @@ export const loader = async ({ request }) => {
   }
 
   // Otherwise, show the login form
+  console.log("[Auth Login] No shop param, showing login form");
   const errors = loginErrorMessage(await login(request));
 
   return { errors, polarisTranslations };

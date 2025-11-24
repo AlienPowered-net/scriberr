@@ -262,9 +262,16 @@ export const loader = async ({ request }: { request: Request }) => {
       return json({ error: "Unable to redirect - missing shop information" }, { status: 500 });
     }
 
-    console.log("[Billing Confirm] Redirecting to auth for embedded app re-entry:", { shop });
+    const redirectUrl = `/auth?shop=${encodeURIComponent(shop)}`;
+    
+    console.log("[Billing Confirm] Final redirect decision", {
+      shop,
+      redirectUrl,
+      sessionShop: session?.shop,
+      shopFromQuery,
+    });
 
-    return redirect(`/auth?shop=${encodeURIComponent(shop)}`);
+    return redirect(redirectUrl);
   } catch (error: any) {
     console.error("Failed to confirm billing subscription", error);
     return json(
