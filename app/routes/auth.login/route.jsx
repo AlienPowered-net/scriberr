@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
-import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import {
   AppProvider as PolarisAppProvider,
   Button,
@@ -17,7 +17,7 @@ import { loginErrorMessage } from "./error.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async ({ request }) => {
   const url = new URL(request.url);
   const shop = url.searchParams.get("shop");
 
@@ -29,7 +29,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   // If shop param exists, immediately redirect into OAuth
   if (shop) {
-    console.info("[Auth Login] Shop param provided, redirecting to /auth", { shop });
+    console.log("[Auth Login] Shop param provided, redirecting to /auth:", { shop });
     return redirect(`/auth?shop=${encodeURIComponent(shop)}`);
   }
 
