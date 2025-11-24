@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
-import { redirect } from "@remix-run/node";
+import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import {
   AppProvider as PolarisAppProvider,
   Button,
@@ -17,25 +17,24 @@ import { loginErrorMessage } from "./error.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
-export const loader = async ({ request }) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const shop = url.searchParams.get("shop");
 
-  console.log("[Auth Login] Incoming request", {
+  console.info("[Auth Login] Incoming request", {
     url: request.url,
     shop,
-    hasShop: Boolean(shop),
+    hasShop: !!shop,
   });
 
-  // If shop is provided, immediately redirect to /auth to start OAuth
-  // The /auth route will handle OAuth and redirect to /auth/callback with full params
+  // If shop param exists, immediately redirect into OAuth
   if (shop) {
-    console.log("[Auth Login] Shop param provided, redirecting to auth:", { shop });
+    console.info("[Auth Login] Shop param provided, redirecting to /auth", { shop });
     return redirect(`/auth?shop=${encodeURIComponent(shop)}`);
   }
 
   // Otherwise, show the login form
-  console.log("[Auth Login] No shop param, showing login form");
+  console.info("[Auth Login] No shop param, showing login form");
   const errors = loginErrorMessage(await login(request));
 
   return { errors, polarisTranslations };

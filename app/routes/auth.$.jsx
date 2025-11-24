@@ -1,18 +1,20 @@
-import { authenticate } from "../shopify.server";
+import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
+import shopify from "../shopify.server";
 
-export const loader = async ({ request }) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const shop = url.searchParams.get("shop");
-  
-  console.log("[Auth] Incoming request", {
+
+  console.info("[Auth] Incoming request", {
     url: request.url,
     shop,
-    hasShop: Boolean(shop),
+    hasShop: !!shop,
   });
 
-  await authenticate.admin(request);
+  if (!shop) {
+    console.info("[Auth] No shop param, redirecting to /auth/login");
+    return redirect("/auth/login");
+  }
 
-  console.log("[Auth] Authentication successful, continuing");
-
-  return null;
+  return shopify.authenticate.admin(request);
 };
