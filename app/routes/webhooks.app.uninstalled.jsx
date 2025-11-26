@@ -1,18 +1,19 @@
 import { authenticate } from "../shopify.server";
+import { downgradeShopToFreeByDomain } from "~/lib/plan.server";
 
 // IMPORTANT: no default export, no meta/links/components here
 
 export const action = async ({ request }) => {
-  // Load server‑only code inside the server handler
-  const { prisma } = await import("../utils/db.server");
-
   // This authenticates the webhook and gives you topic/shop/payload
   const { shop, topic, payload } = await authenticate.webhook(request);
 
-  // Handle the uninstall (example: clean up tenant rows)
-  // await prisma.store.delete({ where: { domain: shop } });
-  // await prisma.folder.deleteMany({ where: { shopId: ... } });
-  // await prisma.note.deleteMany({ where: { shopId: ... } });
+  // Downgrade shop to FREE plan and mark subscriptions as CANCELED
+  // Shopify cancels RAC automatically on uninstall, so we reflect that in our DB
+  if (!shop) {
+    console.error("[App Uninstalled] Missing shop domain in webhook");
+  } else {
+    await downgradeShopToFreeByDomain(shop);
+  }
 
   return new Response("OK");
 };

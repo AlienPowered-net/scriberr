@@ -525,6 +525,30 @@ export function withPlanContext<T extends { request: Request }>(
     const merchant = (await getMerchantByShop(auth.session)) as Shop & {
       subscription?: Subscription | null;
     };
+
+    // Safety guard: Ensure PRO shops have an active subscription
+    // If not, downgrade to FREE (catches missed webhooks, stale data, reinstalls without re-subscribing)
+    const hasActiveSub = merchant.subscription?.status === "ACTIVE";
+    if (merchant.plan === "PRO" && !hasActiveSub) {
+      console.info(
+        "[Plan Guard] Downgrading PRO → FREE due to missing active subscription",
+        {
+          shopId: merchant.id,
+          shopDomain: merchant.domain,
+          currentPlan: merchant.plan,
+          subscriptionStatus: merchant.subscription?.status ?? null,
+        },
+      );
+
+      await prisma.shop.update({
+        where: { id: merchant.id },
+        data: { plan: "FREE" },
+      });
+
+      // Update merchant object to reflect the change
+      merchant.plan = "FREE";
+    }
+
     const plan = (merchant.plan ?? "FREE") as PlanKey;
 
     const planContext: PlanContext = {
