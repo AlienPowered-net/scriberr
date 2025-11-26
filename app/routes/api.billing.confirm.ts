@@ -97,18 +97,24 @@ export const loader = async ({ request }: { request: Request }) => {
 
       if (!session || !session.accessToken) {
         console.error(
-          `[Billing Confirm] No offline session or access token found for shop: ${shop}. Redirecting to auth.`,
+          `[Billing Confirm] No offline session or access token found for shop: ${shop}`,
         );
-        return redirect(`/auth?shop=${encodeURIComponent(shop)}`);
+        return json(
+          { error: "No offline session or access token found. Please reinstall the app." },
+          { status: 401 },
+        );
       }
 
       // Create a minimal Admin GraphQL client using the offline session
       const apiVersion = shopifyModule.apiVersion;
       if (!apiVersion) {
         console.error(
-          "[Billing Confirm] Missing apiVersion export from shopifyModule. Redirecting to auth.",
+          "[Billing Confirm] Missing apiVersion export from shopifyModule",
         );
-        return redirect(`/auth?shop=${encodeURIComponent(session.shop)}`);
+        return json(
+          { error: "Missing apiVersion configuration. Please contact support." },
+          { status: 500 },
+        );
       }
 
       console.log(
@@ -253,23 +259,32 @@ export const loader = async ({ request }: { request: Request }) => {
       }
     });
 
-    // Redirect to /auth with shop param to start OAuth flow
-    // The /auth route will handle OAuth and redirect to /auth/callback with full params
-    // After OAuth completes, user will be logged into the embedded app
-    const shop = session?.shop ?? shopFromQuery;
+    // Redirect back to the embedded app in Shopify Admin
+    // This lets the normal embedded auth flow handle sessions
+    const shopDomain = session?.shop ?? shopFromQuery;
 
-    if (!shop) {
+    if (!shopDomain) {
       console.error("[Billing Confirm] No shop available for redirect");
-      return json({ error: "Unable to redirect - missing shop information" }, { status: 500 });
+      return json(
+        { error: "Unable to redirect - missing shop information" },
+        { status: 500 },
+      );
     }
 
-    const redirectUrl = `/auth?shop=${encodeURIComponent(shop)}`;
-    
-    console.info("[Billing Confirm] Final redirect decision", {
-      shop,
+    // shopDomain is like "dev-alienpowered.myshopify.com"
+    const storeSlug = shopDomain.replace(".myshopify.com", "");
+
+    // App handle as it appears in Shopify Admin URL
+    // e.g. https://admin.shopify.com/store/dev-alienpowered/apps/scriberr-labs
+    const appHandle = "scriberr-labs";
+
+    const redirectUrl = `https://admin.shopify.com/store/${storeSlug}/apps/${appHandle}`;
+
+    console.info("[Billing Confirm] Redirecting back to embedded app", {
+      shop: shopDomain,
+      storeSlug,
+      appHandle,
       redirectUrl,
-      sessionShop: session?.shop,
-      shopFromQuery,
     });
 
     return redirect(redirectUrl);
