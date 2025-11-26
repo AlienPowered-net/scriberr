@@ -28,7 +28,11 @@ export const EntityMention = Node.create({
             range.to += 1;
           }
 
-          // Insert the mention and a space after it, then position cursor correctly
+          // Store the cursor position before insertion
+          // After insertion: mention node (1) + space (1) = cursor at range.from + 2
+          const cursorPos = range.from + 2;
+
+          // Insert the mention and a space after it
           editor
             .chain()
             .focus()
@@ -42,13 +46,17 @@ export const EntityMention = Node.create({
                 text: ' ',
               },
             ])
-            .command(({ tr }) => {
-              // Position cursor after the mention (1) + space (1) = 2 positions from range.from
-              const newPos = range.from + 2;
-              tr.setSelection(TextSelection.create(tr.doc, newPos));
-              return true;
-            })
             .run();
+
+          // Position cursor after insertion completes and DOM updates
+          // Using requestAnimationFrame ensures focus is restored after dropdown closes
+          requestAnimationFrame(() => {
+            editor
+              .chain()
+              .focus()
+              .setTextSelection(cursorPos)
+              .run();
+          });
         },
         allow: ({ state, range }) => {
           const $from = state.doc.resolve(range.from);
