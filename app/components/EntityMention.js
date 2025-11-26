@@ -28,7 +28,7 @@ export const EntityMention = Node.create({
             range.to += 1;
           }
 
-          // Insert the mention and a space after it
+          // Insert the mention and a space after it, then position cursor correctly
           editor
             .chain()
             .focus()
@@ -42,34 +42,13 @@ export const EntityMention = Node.create({
                 text: ' ',
               },
             ])
+            .command(({ tr }) => {
+              // Position cursor after the mention (1) + space (1) = 2 positions from range.from
+              const newPos = range.from + 2;
+              tr.setSelection(TextSelection.create(tr.doc, newPos));
+              return true;
+            })
             .run();
-
-          // Debug: Log the insertion
-          console.log('[EntityMention] Inserted mention at range:', range);
-          console.log('[EntityMention] Mention attrs:', props);
-
-          // DON'T move the cursor - let Tiptap position it naturally after the insertion
-          // The cursor should automatically be positioned after the space we just inserted
-          window.requestAnimationFrame(() => {
-            const { state, view } = editor;
-            
-            console.log('[EntityMention] Natural cursor position after insert:', {
-              selectionFrom: state.selection.from,
-              selectionTo: state.selection.to,
-              docSize: state.doc.content.size,
-              rangeFrom: range.from
-            });
-            
-            const nodeAt = state.doc.nodeAt(state.selection.from);
-            const nodeBefore = state.selection.from > 0 ? state.doc.nodeAt(state.selection.from - 1) : null;
-            
-            console.log('[EntityMention] Node info at natural position:', {
-              nodeAtCursor: nodeAt?.type.name,
-              nodeBefore: nodeBefore?.type.name,
-              editable: view.editable,
-              parentNode: state.selection.$from.parent.type.name
-            });
-          });
         },
         allow: ({ state, range }) => {
           const $from = state.doc.resolve(range.from);
