@@ -208,6 +208,7 @@ model Subscription {
   testMode      Boolean            @default(true)
   trialEndsAt   DateTime?
   accessUntil   DateTime?          // When PRO access ends after cancellation
+  cancelReason  String?            // Last cancellation reason for analytics
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 }

@@ -19,6 +19,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const apiVersion = shopifyModule.apiVersion;
 
   try {
+    // Read the cancellation reason from form data (optional)
+    const formData = await request.formData();
+    const rawReason = formData.get("reason");
+    const cancelReason =
+      typeof rawReason === "string" && rawReason.trim().length > 0
+        ? rawReason.trim()
+        : null;
+
     const { session } = await shopify.authenticate.admin(request);
 
     if (!session?.shop) {
@@ -27,7 +35,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     const shopDomain = session.shop;
 
-    console.log("[Billing Cancel] Cancellation requested", { shopDomain });
+    console.log("[Billing Cancel] Cancellation requested", { 
+      shopDomain,
+      cancelReason,
+    });
 
     // Find the shop and its subscription
     const shop = await prisma.shop.findUnique({
@@ -157,11 +168,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     // Update subscription in database
     // Mark as CANCELED but set accessUntil so they keep PRO access until then
+    // Also store the cancellation reason for analytics
     await prisma.subscription.update({
       where: { id: subscription.id },
       data: {
         status: "CANCELED",
         accessUntil,
+        cancelReason,
       },
     });
 
@@ -173,6 +186,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       shopId: shop.id,
       subscriptionId: subscription.id,
       accessUntil: accessUntil.toISOString(),
+      cancelReason,
     });
 
     return json({

@@ -13,12 +13,69 @@ import {
   TextField,
   Checkbox,
   Box,
+  Select,
 } from "@shopify/polaris";
 import { useState, useEffect, useCallback } from "react";
 import { useFetcher } from "@remix-run/react";
 import packageJson from "../../package.json" with { type: "json" };
 import { SubscriptionPlans } from "../../src/components/SubscriptionPlans";
 import { usePlanContext } from "../hooks/usePlanContext";
+
+// Free plan limits
+const FREE_LIMITS = {
+  notes: 25,
+  folders: 3,
+};
+
+// Cancel reason options
+const CANCEL_REASON_OPTIONS = [
+  { label: "Select a reason (optional)", value: "" },
+  { label: "It's too expensive", value: "too_expensive" },
+  { label: "I'm missing features I need", value: "missing_features" },
+  { label: "I don't need the app anymore", value: "no_longer_needed" },
+  { label: "I was just testing it", value: "just_testing" },
+  { label: "I found a better alternative", value: "found_alternative" },
+  { label: "Other", value: "other" },
+];
+
+// Build downgrade warning messages based on current usage
+function buildDowngradeMessages(usage) {
+  const messages = [];
+
+  // Notes warning
+  if (usage.notes > FREE_LIMITS.notes) {
+    messages.push({
+      type: "warning",
+      text: `You currently have ${usage.notes} notes. On the Free plan, you can keep all your existing notes, but you won't be able to create new ones until you're back under the ${FREE_LIMITS.notes}-note limit.`,
+    });
+  }
+
+  // Folders warning
+  if (usage.folders > FREE_LIMITS.folders) {
+    messages.push({
+      type: "warning",
+      text: `You're using ${usage.folders} folders. The Free plan includes up to ${FREE_LIMITS.folders} folders. You'll need to delete folders if you want to create new ones.`,
+    });
+  }
+
+  // Tags warning (Pro-only feature)
+  if (usage.notesWithTags > 0) {
+    messages.push({
+      type: "info",
+      text: `Tags are a Pro feature. Your existing tags will remain visible, but you won't be able to create new tags or add tags to notes on the Free plan.`,
+    });
+  }
+
+  // Contacts warning (Pro-only feature)
+  if (usage.contacts > 0) {
+    messages.push({
+      type: "info",
+      text: `You have ${usage.contacts} contact${usage.contacts !== 1 ? 's' : ''}. Contacts are a Pro feature. Your existing contacts will be preserved, but adding or editing contacts will be disabled on the Free plan.`,
+    });
+  }
+
+  return messages;
+}
 
 export default function Settings() {
   const { plan, openUpgradeModal, subscriptionStatus, accessUntil } = usePlanContext();
@@ -31,6 +88,14 @@ export default function Settings() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelSuccessMessage, setCancelSuccessMessage] = useState("");
   const [localAccessUntil, setLocalAccessUntil] = useState(accessUntil);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelUsage, setCancelUsage] = useState({
+    notes: 0,
+    folders: 0,
+    notesWithTags: 0,
+    contacts: 0,
+    loading: false,
+  });
   
   // Determine if subscription is already scheduled for cancellation
   const isCanceled = subscriptionStatus === "CANCELED";
@@ -42,8 +107,35 @@ export default function Settings() {
       setCancelSuccessMessage(cancelFetcher.data.message || "Your subscription has been canceled.");
       setLocalAccessUntil(cancelFetcher.data.accessUntil);
       setShowCancelModal(false);
+      setCancelReason(""); // Reset reason after successful cancel
     }
   }, [cancelFetcher.data]);
+  
+  // Fetch usage data when cancel modal opens
+  useEffect(() => {
+    if (showCancelModal && plan === "PRO") {
+      const fetchCancelUsage = async () => {
+        setCancelUsage(prev => ({ ...prev, loading: true }));
+        try {
+          const response = await fetch("/api/plan-usage?includeAll=true");
+          if (response.ok) {
+            const data = await response.json();
+            setCancelUsage({
+              notes: data.notesUsed || 0,
+              folders: data.foldersUsed || 0,
+              notesWithTags: data.notesWithTags || 0,
+              contacts: data.contactsUsed || 0,
+              loading: false,
+            });
+          }
+        } catch (error) {
+          console.error("Failed to fetch cancel usage:", error);
+          setCancelUsage(prev => ({ ...prev, loading: false }));
+        }
+      };
+      fetchCancelUsage();
+    }
+  }, [showCancelModal, plan]);
   
   // Format date for display
   const formatAccessUntilDate = (dateString) => {
@@ -65,11 +157,18 @@ export default function Settings() {
   }, []);
   
   const confirmCancelSubscription = useCallback(() => {
-    cancelFetcher.submit(null, {
+    const formData = new FormData();
+    if (cancelReason) {
+      formData.append("reason", cancelReason);
+    }
+    cancelFetcher.submit(formData, {
       method: "POST",
       action: "/api/billing/cancel",
     });
-  }, [cancelFetcher]);
+  }, [cancelFetcher, cancelReason]);
+  
+  // Get downgrade messages based on current usage
+  const downgradeMessages = buildDowngradeMessages(cancelUsage);
   
   // Plan usage state (for free plan)
   const [planUsage, setPlanUsage] = useState({
@@ -789,10 +888,13 @@ export default function Settings() {
       {/* Cancel Subscription Confirmation Modal */}
       <Modal
         open={showCancelModal}
-        onClose={() => setShowCancelModal(false)}
-        title="Cancel Subscription"
+        onClose={() => {
+          setShowCancelModal(false);
+          setCancelReason("");
+        }}
+        title="Cancel your Scriberr Pro subscription?"
         primaryAction={{
-          content: 'Yes, cancel my subscription',
+          content: isCanceling ? 'Canceling...' : 'Confirm cancellation',
           onAction: confirmCancelSubscription,
           destructive: true,
           loading: isCanceling,
@@ -800,8 +902,11 @@ export default function Settings() {
         }}
         secondaryActions={[
           {
-            content: 'Keep my subscription',
-            onAction: () => setShowCancelModal(false),
+            content: 'Keep Pro',
+            onAction: () => {
+              setShowCancelModal(false);
+              setCancelReason("");
+            },
             disabled: isCanceling
           },
         ]}
@@ -809,25 +914,46 @@ export default function Settings() {
         <Modal.Section>
           <BlockStack gap="400">
             <Text as="p" variant="bodyMd">
-              Are you sure you want to cancel your Pro subscription?
+              You&apos;ll keep access to Scriberr Pro until the end of your current billing period. 
+              After that, your workspace will move back to the Free plan.
             </Text>
             
-            <Banner tone="info">
-              <BlockStack gap="200">
-                <Text as="p" variant="bodyMd">
-                  <strong>What happens when you cancel:</strong>
+            {/* Usage-based warnings */}
+            {cancelUsage.loading ? (
+              <Text as="p" variant="bodySm" tone="subdued">
+                Loading your usage data...
+              </Text>
+            ) : downgradeMessages.length > 0 ? (
+              <BlockStack gap="300">
+                <Text as="h3" variant="headingSm">
+                  What to expect on the Free plan:
                 </Text>
-                <Text as="p" variant="bodyMd">
-                  • You&apos;ll keep access to Pro features until the end of your current billing period
-                </Text>
-                <Text as="p" variant="bodyMd">
-                  • You won&apos;t be charged again
-                </Text>
-                <Text as="p" variant="bodyMd">
-                  • After your access ends, you&apos;ll be switched to the Free plan
-                </Text>
+                {downgradeMessages.map((msg, index) => (
+                  <Banner key={index} tone={msg.type === "warning" ? "warning" : "info"}>
+                    <Text as="p" variant="bodyMd">
+                      {msg.text}
+                    </Text>
+                  </Banner>
+                ))}
               </BlockStack>
-            </Banner>
+            ) : (
+              <Banner tone="info">
+                <Text as="p" variant="bodyMd">
+                  Your current usage is within Free plan limits. You&apos;ll be able to continue using Scriberr with some feature limitations.
+                </Text>
+              </Banner>
+            )}
+            
+            {/* Reason dropdown */}
+            <div style={{ maxWidth: 400 }}>
+              <Select
+                label="Why are you canceling?"
+                options={CANCEL_REASON_OPTIONS}
+                value={cancelReason}
+                onChange={setCancelReason}
+                helpText="This is optional but helps us improve Scriberr"
+              />
+            </div>
           </BlockStack>
         </Modal.Section>
       </Modal>
