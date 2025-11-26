@@ -15,6 +15,11 @@ interface SubscriptionPlansProps {
   currentPlan?: "FREE" | "PRO";
   onUpgrade?: () => void | Promise<void>;
   isSubmitting?: boolean;
+  // Cancel subscription props
+  onCancel?: () => void;
+  isCanceling?: boolean;
+  subscriptionStatus?: "NONE" | "ACTIVE" | "CANCELED" | "PAST_DUE";
+  accessUntil?: string | null;
 }
 
 const FREE_FEATURES = [
@@ -50,7 +55,28 @@ export function SubscriptionPlans({
   currentPlan = "FREE",
   onUpgrade,
   isSubmitting = false,
+  onCancel,
+  isCanceling = false,
+  subscriptionStatus,
+  accessUntil,
 }: SubscriptionPlansProps) {
+  // Format date for display
+  const formatAccessUntilDate = (dateString: string | null | undefined) => {
+    if (!dateString) return null;
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch {
+      return null;
+    }
+  };
+
+  const isCanceled = subscriptionStatus === "CANCELED";
+  const showCancelButton = currentPlan === "PRO" && subscriptionStatus === "ACTIVE" && onCancel;
   const handleUpgrade = useCallback(async () => {
     if (onUpgrade) {
       await onUpgrade();
@@ -286,9 +312,31 @@ export function SubscriptionPlans({
               {/* Upgrade Button */}
               <div style={{ marginTop: "auto", paddingTop: "16px" }}>
                 {isPro ? (
-                  <Button fullWidth disabled={true} variant="secondary">
-                    Your current plan
-                  </Button>
+                  <BlockStack gap="300">
+                    <Button fullWidth disabled={true} variant="secondary">
+                      Your current plan
+                    </Button>
+                    
+                    {/* Show scheduled cancellation notice */}
+                    {isCanceled && accessUntil && (
+                      <Text as="p" variant="bodySm" tone="subdued" alignment="center">
+                        Access ends {formatAccessUntilDate(accessUntil)}
+                      </Text>
+                    )}
+                    
+                    {/* Cancel subscription button */}
+                    {showCancelButton && (
+                      <Button
+                        fullWidth
+                        tone="critical"
+                        onClick={onCancel}
+                        disabled={isCanceling}
+                        loading={isCanceling}
+                      >
+                        {isCanceling ? "Canceling..." : "Cancel subscription"}
+                      </Button>
+                    )}
+                  </BlockStack>
                 ) : (
                   <button
                     onClick={handleUpgrade}

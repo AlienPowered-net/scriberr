@@ -309,6 +309,10 @@ export default function Settings() {
                   currentPlan={plan}
                   onUpgrade={handleUpgrade}
                   isSubmitting={isUpgrading}
+                  onCancel={handleCancelSubscription}
+                  isCanceling={isCanceling}
+                  subscriptionStatus={subscriptionStatus}
+                  accessUntil={localAccessUntil || accessUntil}
                 />
 
                 {/* Cancel subscription success message */}
@@ -330,31 +334,6 @@ export default function Settings() {
                       {cancelFetcher.data.error}
                     </Text>
                   </Banner>
-                )}
-
-                {/* Scheduled cancellation notice */}
-                {plan === "PRO" && isCanceled && (localAccessUntil || accessUntil) && (
-                  <Banner tone="warning">
-                    <Text as="p" variant="bodyMd">
-                      Your Pro subscription is scheduled to end on{" "}
-                      <strong>{formatAccessUntilDate(localAccessUntil || accessUntil)}</strong>.
-                      You'll keep access to Pro features until then.
-                    </Text>
-                  </Banner>
-                )}
-
-                {/* Cancel subscription button - only show for active PRO subscriptions */}
-                {plan === "PRO" && subscriptionStatus === "ACTIVE" && !isCanceled && (
-                  <div style={{ marginTop: "8px" }}>
-                    <Button
-                      tone="critical"
-                      onClick={handleCancelSubscription}
-                      disabled={isCanceling}
-                      loading={isCanceling}
-                    >
-                      {isCanceling ? "Canceling..." : "Cancel subscription"}
-                    </Button>
-                  </div>
                 )}
               </BlockStack>
           </div>
