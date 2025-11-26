@@ -65,6 +65,7 @@ export interface PlanContext {
   subscriptionStatus: SubscriptionStatus;
   session: Session;
   versionLimit: number;
+  accessUntil: Date | null; // When PRO access ends (for canceled subscriptions in grace period)
 }
 
 export function getPlan(shopOrContext: Shop | PlanContext): PlanKey {
@@ -526,17 +527,22 @@ export function withPlanContext<T extends { request: Request }>(
       subscription?: Subscription | null;
     };
 
-    // Safety guard: Ensure PRO shops have an active subscription
-    // If not, downgrade to FREE (catches missed webhooks, stale data, reinstalls without re-subscribing)
-    const hasActiveSub = merchant.subscription?.status === "ACTIVE";
-    if (merchant.plan === "PRO" && !hasActiveSub) {
+    // Import hasProAccess dynamically to avoid circular dependency
+    const { hasProAccess } = await import("~/lib/plan.server");
+
+    // Safety guard: Ensure PRO shops have valid PRO access
+    // PRO access = ACTIVE subscription OR CANCELED with accessUntil in the future
+    // If not, downgrade to FREE (catches missed webhooks, stale data, expired grace periods)
+    const proAccess = hasProAccess(merchant.subscription);
+    if (merchant.plan === "PRO" && !proAccess) {
       console.info(
-        "[Plan Guard] Downgrading PRO → FREE due to missing active subscription",
+        "[Plan Guard] Downgrading PRO → FREE due to no valid PRO access",
         {
           shopId: merchant.id,
           shopDomain: merchant.domain,
           currentPlan: merchant.plan,
           subscriptionStatus: merchant.subscription?.status ?? null,
+          accessUntil: merchant.subscription?.accessUntil ?? null,
         },
       );
 
@@ -551,6 +557,11 @@ export function withPlanContext<T extends { request: Request }>(
 
     const plan = (merchant.plan ?? "FREE") as PlanKey;
 
+    // Get accessUntil from subscription if it exists
+    const accessUntil = merchant.subscription?.accessUntil
+      ? new Date(merchant.subscription.accessUntil)
+      : null;
+
     const planContext: PlanContext = {
       shop: merchant,
       plan,
@@ -558,6 +569,7 @@ export function withPlanContext<T extends { request: Request }>(
       subscriptionStatus: merchant.subscription?.status ?? "NONE",
       session: auth.session,
       versionLimit: getVersionLimit(plan, merchant),
+      accessUntil,
     };
 
     return handler({ ...args, auth, planContext });

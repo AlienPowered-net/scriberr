@@ -207,6 +207,7 @@ model Subscription {
   currency      String?
   testMode      Boolean            @default(true)
   trialEndsAt   DateTime?
+  accessUntil   DateTime?          // When PRO access ends after cancellation
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 }

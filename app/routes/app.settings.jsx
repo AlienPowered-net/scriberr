@@ -15,15 +15,61 @@ import {
   Box,
 } from "@shopify/polaris";
 import { useState, useEffect, useCallback } from "react";
+import { useFetcher } from "@remix-run/react";
 import packageJson from "../../package.json" with { type: "json" };
 import { SubscriptionPlans } from "../../src/components/SubscriptionPlans";
 import { usePlanContext } from "../hooks/usePlanContext";
 
 export default function Settings() {
-  const { plan, openUpgradeModal } = usePlanContext();
+  const { plan, openUpgradeModal, subscriptionStatus, accessUntil } = usePlanContext();
   const [selectedSubscription, setSelectedSubscription] = useState(plan === "PRO" ? "pro" : "free");
   const [isUpgrading, setIsUpgrading] = useState(false);
   const version = packageJson.version;
+  
+  // Cancel subscription state
+  const cancelFetcher = useFetcher();
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelSuccessMessage, setCancelSuccessMessage] = useState("");
+  const [localAccessUntil, setLocalAccessUntil] = useState(accessUntil);
+  
+  // Determine if subscription is already scheduled for cancellation
+  const isCanceled = subscriptionStatus === "CANCELED";
+  const isCanceling = cancelFetcher.state === "submitting" || cancelFetcher.state === "loading";
+  
+  // Handle cancel fetcher result
+  useEffect(() => {
+    if (cancelFetcher.data?.ok) {
+      setCancelSuccessMessage(cancelFetcher.data.message || "Your subscription has been canceled.");
+      setLocalAccessUntil(cancelFetcher.data.accessUntil);
+      setShowCancelModal(false);
+    }
+  }, [cancelFetcher.data]);
+  
+  // Format date for display
+  const formatAccessUntilDate = (dateString) => {
+    if (!dateString) return null;
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch {
+      return null;
+    }
+  };
+  
+  const handleCancelSubscription = useCallback(() => {
+    setShowCancelModal(true);
+  }, []);
+  
+  const confirmCancelSubscription = useCallback(() => {
+    cancelFetcher.submit(null, {
+      method: "POST",
+      action: "/api/billing/cancel",
+    });
+  }, [cancelFetcher]);
   
   // Plan usage state (for free plan)
   const [planUsage, setPlanUsage] = useState({
@@ -264,6 +310,52 @@ export default function Settings() {
                   onUpgrade={handleUpgrade}
                   isSubmitting={isUpgrading}
                 />
+
+                {/* Cancel subscription success message */}
+                {cancelSuccessMessage && (
+                  <Banner
+                    tone="success"
+                    onDismiss={() => setCancelSuccessMessage("")}
+                  >
+                    <Text as="p" variant="bodyMd">
+                      {cancelSuccessMessage}
+                    </Text>
+                  </Banner>
+                )}
+
+                {/* Cancel subscription error message */}
+                {cancelFetcher.data?.error && (
+                  <Banner tone="critical">
+                    <Text as="p" variant="bodyMd">
+                      {cancelFetcher.data.error}
+                    </Text>
+                  </Banner>
+                )}
+
+                {/* Scheduled cancellation notice */}
+                {plan === "PRO" && isCanceled && (localAccessUntil || accessUntil) && (
+                  <Banner tone="warning">
+                    <Text as="p" variant="bodyMd">
+                      Your Pro subscription is scheduled to end on{" "}
+                      <strong>{formatAccessUntilDate(localAccessUntil || accessUntil)}</strong>.
+                      You'll keep access to Pro features until then.
+                    </Text>
+                  </Banner>
+                )}
+
+                {/* Cancel subscription button - only show for active PRO subscriptions */}
+                {plan === "PRO" && subscriptionStatus === "ACTIVE" && !isCanceled && (
+                  <div style={{ marginTop: "8px" }}>
+                    <Button
+                      tone="critical"
+                      onClick={handleCancelSubscription}
+                      disabled={isCanceling}
+                      loading={isCanceling}
+                    >
+                      {isCanceling ? "Canceling..." : "Cancel subscription"}
+                    </Button>
+                  </div>
+                )}
               </BlockStack>
           </div>
         </Card>
@@ -711,6 +803,52 @@ export default function Settings() {
               placeholder="Type DELETE to confirm"
               autoComplete="off"
             />
+          </BlockStack>
+        </Modal.Section>
+      </Modal>
+
+      {/* Cancel Subscription Confirmation Modal */}
+      <Modal
+        open={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        title="Cancel Subscription"
+        primaryAction={{
+          content: 'Yes, cancel my subscription',
+          onAction: confirmCancelSubscription,
+          destructive: true,
+          loading: isCanceling,
+          disabled: isCanceling
+        }}
+        secondaryActions={[
+          {
+            content: 'Keep my subscription',
+            onAction: () => setShowCancelModal(false),
+            disabled: isCanceling
+          },
+        ]}
+      >
+        <Modal.Section>
+          <BlockStack gap="400">
+            <Text as="p" variant="bodyMd">
+              Are you sure you want to cancel your Pro subscription?
+            </Text>
+            
+            <Banner tone="info">
+              <BlockStack gap="200">
+                <Text as="p" variant="bodyMd">
+                  <strong>What happens when you cancel:</strong>
+                </Text>
+                <Text as="p" variant="bodyMd">
+                  • You&apos;ll keep access to Pro features until the end of your current billing period
+                </Text>
+                <Text as="p" variant="bodyMd">
+                  • You won&apos;t be charged again
+                </Text>
+                <Text as="p" variant="bodyMd">
+                  • After your access ends, you&apos;ll be switched to the Free plan
+                </Text>
+              </BlockStack>
+            </Banner>
           </BlockStack>
         </Modal.Section>
       </Modal>

@@ -19,6 +19,8 @@ export const loader = async ({ request }) => {
         flags: flagsFor(planContext.plan, {
           versionLimit: planContext.versionLimit,
         }),
+        subscriptionStatus: planContext.subscriptionStatus,
+        accessUntil: planContext.accessUntil?.toISOString() ?? null,
       };
     });
 
@@ -48,7 +50,7 @@ export const loader = async ({ request }) => {
 };
 
 export default function App() {
-  const { apiKey, flags, plan } = useLoaderData();
+  const { apiKey, flags, plan, subscriptionStatus, accessUntil } = useLoaderData();
   const [upgradePrompt, setUpgradePrompt] = useState(null);
   const [upgradeSubmitting, setUpgradeSubmitting] = useState(false);
 
@@ -183,7 +185,7 @@ export default function App() {
         ) : null}
         <Link to="/app/settings">Settings</Link>
       </ui-nav-menu>
-      <Outlet context={{ plan, flags, openUpgradeModal }} />
+      <Outlet context={{ plan, flags, openUpgradeModal, subscriptionStatus, accessUntil }} />
       <UpgradeModal
         open={Boolean(upgradePrompt)}
         onClose={() => setUpgradePrompt(null)}
