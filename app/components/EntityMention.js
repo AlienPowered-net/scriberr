@@ -28,35 +28,36 @@ export const EntityMention = Node.create({
             range.to += 1;
           }
 
-          // Store the cursor position before insertion
-          // After insertion: mention node (1) + space (1) = cursor at range.from + 2
-          const cursorPos = range.from + 2;
+          // Use transaction API for precise control over insertion and cursor position
+          const mentionNodeType = editor.schema.nodes[this.name];
+          
+          editor.commands.command(({ tr, state }) => {
+            // Create the mention node
+            const mentionNode = mentionNodeType.create(props);
+            // Create a space + zero-width space to break style inheritance
+            // The zero-width space (U+200B) helps prevent contenteditable from
+            // inheriting styles from the preceding mention element
+            const spaceNode = state.schema.text(' \u200B');
+            
+            // Replace the trigger text with mention + space
+            tr.replaceWith(range.from, range.to, [mentionNode, spaceNode]);
+            
+            // Position cursor after mention (1) + space + zero-width space (2) = range.from + 3
+            const cursorPos = range.from + 3;
+            tr.setSelection(TextSelection.create(tr.doc, cursorPos));
+            
+            return true;
+          });
 
-          // Insert the mention and a space after it
-          editor
-            .chain()
-            .focus()
-            .insertContentAt(range, [
-              {
-                type: this.name,
-                attrs: props,
-              },
-              {
-                type: 'text',
-                text: ' ',
-              },
-            ])
-            .run();
-
-          // Position cursor after insertion completes and DOM updates
-          // Using requestAnimationFrame ensures focus is restored after dropdown closes
-          requestAnimationFrame(() => {
+          // Ensure focus and clear any inherited formatting
+          // Use setTimeout to ensure dropdown is fully closed first
+          setTimeout(() => {
             editor
               .chain()
               .focus()
-              .setTextSelection(cursorPos)
+              .unsetAllMarks()
               .run();
-          });
+          }, 10);
         },
         allow: ({ state, range }) => {
           const $from = state.doc.resolve(range.from);
