@@ -980,16 +980,8 @@ const AdvancedRTE = ({
                   }
                 });
                 
-                // Reset editor key handling state by blurring and refocusing
-                // This fixes the "frozen input" bug where the Suggestion plugin
-                // continues to intercept key events after mention insertion
-                if (props?.editor?.view) {
-                  const { view } = props.editor;
-                  view.dom.blur();
-                  setTimeout(() => {
-                    view.focus();
-                  }, 0);
-                }
+                // NOTE: Removed blur/focus hack - it was causing issues with ProseMirror state
+                // The real fix needs to be in how we handle input after mention insertion
               }
             };
           }
@@ -1119,6 +1111,24 @@ const AdvancedRTE = ({
     },
   });
 
+  // DEBUG: Add transaction listener to trace what's happening
+  useEffect(() => {
+    if (!editor) return;
+    
+    const handleTransaction = ({ transaction }) => {
+      if (transaction.docChanged) {
+        console.log('[AdvancedRTE TRANSACTION] Doc changed:', {
+          selectionFrom: transaction.selection.from,
+          selectionTo: transaction.selection.to,
+          steps: transaction.steps.length,
+        });
+      }
+    };
+    
+    editor.on('transaction', handleTransaction);
+    return () => editor.off('transaction', handleTransaction);
+  }, [editor]);
+
   useEffect(() => {
     if (!editor) {
       return;
@@ -1133,6 +1143,7 @@ const AdvancedRTE = ({
 
     const currentHtml = editor.getHTML();
     if (value !== currentHtml) {
+      console.log('[AdvancedRTE] Syncing content from value prop');
       editor.commands.setContent(value || '');
     }
   }, [value, editor]);

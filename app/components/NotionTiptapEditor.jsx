@@ -806,16 +806,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                   }
                 });
                 
-                // Reset editor key handling state by blurring and refocusing
-                // This fixes the "frozen input" bug where the Suggestion plugin
-                // continues to intercept key events after mention insertion
-                if (props?.editor?.view) {
-                  const { view } = props.editor;
-                  view.dom.blur();
-                  setTimeout(() => {
-                    view.focus();
-                  }, 0);
-                }
+                // NOTE: Removed blur/focus hack - it was causing issues with ProseMirror state
               }
             };
           }
