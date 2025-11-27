@@ -964,7 +964,7 @@ const AdvancedRTE = ({
 
                 return false;
               },
-              onExit() {
+              onExit(props) {
                 console.log('[Mention Suggestion] onExit called - cleaning up component');
                 if (component) {
                   component.remove();
@@ -978,6 +978,17 @@ const AdvancedRTE = ({
                     el.remove();
                   }
                 });
+                
+                // Reset editor key handling state by blurring and refocusing
+                // This fixes the "frozen input" bug where the Suggestion plugin
+                // continues to intercept key events after mention insertion
+                if (props?.editor?.view) {
+                  const { view } = props.editor;
+                  view.dom.blur();
+                  setTimeout(() => {
+                    view.focus();
+                  }, 0);
+                }
               }
             };
           }
