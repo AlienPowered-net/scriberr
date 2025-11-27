@@ -267,22 +267,32 @@
   background-color: #d4d6d9;
 }
 
-/* Entity Mentions - Default fallback style */
-/* NOTE: Using inline-block instead of inline-flex to avoid breaking 
-   contenteditable input after the mention node */
+/* Entity Mentions - Base styles (works in any editor context) */
+/* CRITICAL: Must use inline or inline-block, NOT inline-flex
+   inline-flex breaks contenteditable input after the mention node */
+.entity-mention {
+  display: inline;
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.95em;
+  border: 1px solid;
+}
+
+/* Entity Mentions - Default fallback style for notion-editor */
 .notion-editor .entity-mention {
-  display: inline-block;
+  display: inline;
   vertical-align: baseline;
   border-radius: 6px;
   padding: 3px 8px;
   color: #37352f;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease;
   text-decoration: none;
   font-size: 0.95em;
-  white-space: nowrap;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid;
 }
 
 .notion-editor .entity-mention:hover {

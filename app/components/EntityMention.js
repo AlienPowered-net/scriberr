@@ -195,44 +195,24 @@ export const EntityMention = Node.create({
   },
 
   renderHTML({ node, HTMLAttributes }) {
-    const attrs = mergeAttributes(
-      { 'data-type': this.name },
-      this.options.HTMLAttributes,
-      HTMLAttributes
-    );
-
-    // Get entity type for styling
+    // SIMPLIFIED: Match stock Mention renderHTML pattern
+    // All styling moved to CSS to avoid breaking contenteditable behavior
     const entityType = node.attrs.type || 'person';
-    const label = node.attrs.label || node.attrs.id;
-    const url = node.attrs.url;
-
-    // Entity-specific colors
-    const entityColors = {
-      product: { bg: '#e3f2fd', border: '#90caf9', text: '#1565c0' },
-      variant: { bg: '#f3e5f5', border: '#ce93d8', text: '#6a1b9a' },
-      order: { bg: '#fff3e0', border: '#ffcc80', text: '#e65100' },
-      customer: { bg: '#e8f5e9', border: '#a5d6a7', text: '#2e7d32' },
-      collection: { bg: '#fce4ec', border: '#f48fb1', text: '#c2185b' },
-      discount: { bg: '#fff9c4', border: '#fff176', text: '#f57f17' },
-      draftOrder: { bg: '#f1f8e9', border: '#c5e1a5', text: '#558b2f' },
-      person: { bg: '#e0f2f1', border: '#80cbc4', text: '#00695c' },
-    };
-
-    const colors = entityColors[entityType] || { bg: '#f0f0f0', border: '#ddd', text: '#333' };
-
-    // Add entity type class for styling
-    attrs.class = `entity-mention entity-mention-${entityType}`;
-    // NOTE: Using display: inline-block instead of inline-flex
-    // inline-flex was breaking contenteditable input after the mention node
-    attrs.style = `cursor: pointer; font-weight: 700; background-color: ${colors.bg}; border: 1px solid ${colors.border}; color: ${colors.text}; padding: 3px 8px; border-radius: 6px; display: inline-block; vertical-align: baseline; font-size: 0.95em; white-space: nowrap; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);`;
-    attrs.title = url ? `Click to open ${label} in Shopify Admin` : label;
     
-    // Note: Click handler is now added via React useEffect in the editor components
-    // This ensures it works for both new and saved mentions
-
     return [
       'span',
-      attrs,
+      mergeAttributes(
+        { 
+          'data-type': this.name,
+          'data-entity-type': entityType,
+          'data-id': node.attrs.id,
+          'data-label': node.attrs.label,
+          'data-url': node.attrs.url || '',
+          class: `entity-mention entity-mention-${entityType}`,
+        },
+        this.options.HTMLAttributes,
+        HTMLAttributes
+      ),
       this.options.renderLabel({
         options: this.options,
         node,

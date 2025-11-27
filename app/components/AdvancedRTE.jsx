@@ -17,6 +17,8 @@ import Blockquote from '@tiptap/extension-blockquote';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { Emoji } from '@tiptap/extension-emoji';
 import { EntityMention } from './EntityMention';
+// Import shared editor CSS for entity mention styles
+import './NotionTiptapEditor.css';
 import { FontFamily } from '@tiptap/extension-font-family';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import TaskList from '@tiptap/extension-task-list';
