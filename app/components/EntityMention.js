@@ -27,12 +27,13 @@ export const EntityMention = Node.create({
             range.to += 1;
           }
 
-          // Delete the trigger text first, then insert mention + space
+          // Use insertContentAt for atomic insertion with proper cursor positioning
+          // This replaces the trigger text (@query) with the mention node + a trailing space
+          // The space ensures the user can continue typing normally after the mention
           editor
             .chain()
             .focus()
-            .deleteRange(range)
-            .insertContent([
+            .insertContentAt(range, [
               {
                 type: this.name,
                 attrs: props,
@@ -233,37 +234,9 @@ export const EntityMention = Node.create({
     });
   },
 
-  addKeyboardShortcuts() {
-    return {
-      Backspace: ({ editor }) => {
-        const { selection, doc } = editor.state;
-        const { empty, anchor } = selection;
-
-        // Only handle if selection is empty (cursor, not selection)
-        if (!empty) {
-          return false;
-        }
-
-        // Check if there's a mention node directly before the cursor
-        const $pos = doc.resolve(anchor);
-        const nodeBefore = $pos.nodeBefore;
-
-        if (nodeBefore?.type.name === this.name) {
-          // Delete the mention and replace with @ to re-trigger suggestion
-          editor
-            .chain()
-            .focus()
-            .deleteRange({ from: anchor - nodeBefore.nodeSize, to: anchor })
-            .insertContent(this.options.suggestion.char || '@')
-            .run();
-          return true;
-        }
-
-        // Let default backspace behavior happen
-        return false;
-      },
-    };
-  },
+  // Removed custom Backspace handler that was re-triggering suggestions when deleting a mention.
+  // This was causing issues with normal typing/backspace after mention insertion.
+  // Default atom node deletion behavior now applies - users can re-type @ to change a mention.
 
   addProseMirrorPlugins() {
     return [
