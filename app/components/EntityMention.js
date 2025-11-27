@@ -27,24 +27,22 @@ export const EntityMention = Node.create({
             range.to += 1;
           }
 
-          // Use standard Tiptap insertContentAt approach
+          // Delete the trigger text first, then insert mention + space
           editor
             .chain()
             .focus()
-            .insertContentAt(range, [
+            .deleteRange(range)
+            .insertContent([
               {
                 type: this.name,
                 attrs: props,
               },
               {
                 type: 'text',
-                text: ' \u200B', // space + zero-width space for style isolation
+                text: ' ',
               },
             ])
             .run();
-
-          // Native browser API to collapse selection - fixes cursor positioning
-          window.getSelection()?.collapseToEnd();
         },
         allow: ({ state, range }) => {
           const $from = state.doc.resolve(range.from);
@@ -237,34 +235,33 @@ export const EntityMention = Node.create({
 
   addKeyboardShortcuts() {
     return {
-      Backspace: () =>
-        this.editor.commands.command(({ tr, state }) => {
-          console.log('[EntityMention Backspace] Triggered');
-          let isMention = false;
-          const { selection } = state;
-          const { empty, anchor } = selection;
+      Backspace: ({ editor }) => {
+        const { selection, doc } = editor.state;
+        const { empty, anchor } = selection;
 
-          if (!empty) {
-            console.log('[EntityMention Backspace] Selection not empty, allowing default');
-            return false;
-          }
+        // Only handle if selection is empty (cursor, not selection)
+        if (!empty) {
+          return false;
+        }
 
-          state.doc.nodesBetween(anchor - 1, anchor, (node, pos) => {
-            console.log('[EntityMention Backspace] Checking node:', node.type.name, 'at pos:', pos);
-            if (node.type.name === this.name) {
-              isMention = true;
-              tr.insertText(
-                this.options.suggestion.char || '',
-                pos,
-                pos + node.nodeSize
-              );
-              console.log('[EntityMention Backspace] Deleted mention, replacing with @');
-              return false;
-            }
-          });
+        // Check if there's a mention node directly before the cursor
+        const $pos = doc.resolve(anchor);
+        const nodeBefore = $pos.nodeBefore;
 
-          return isMention;
-        }),
+        if (nodeBefore?.type.name === this.name) {
+          // Delete the mention and replace with @ to re-trigger suggestion
+          editor
+            .chain()
+            .focus()
+            .deleteRange({ from: anchor - nodeBefore.nodeSize, to: anchor })
+            .insertContent(this.options.suggestion.char || '@')
+            .run();
+          return true;
+        }
+
+        // Let default backspace behavior happen
+        return false;
+      },
     };
   },
 
