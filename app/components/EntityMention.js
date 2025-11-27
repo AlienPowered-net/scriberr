@@ -222,7 +222,9 @@ export const EntityMention = Node.create({
 
     // Add entity type class for styling
     attrs.class = `entity-mention entity-mention-${entityType}`;
-    attrs.style = `cursor: pointer; font-weight: 700; background-color: ${colors.bg}; border: 1px solid ${colors.border}; color: ${colors.text}; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; font-size: 0.95em; white-space: nowrap; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);`;
+    // NOTE: Using display: inline-block instead of inline-flex
+    // inline-flex was breaking contenteditable input after the mention node
+    attrs.style = `cursor: pointer; font-weight: 700; background-color: ${colors.bg}; border: 1px solid ${colors.border}; color: ${colors.text}; padding: 3px 8px; border-radius: 6px; display: inline-block; vertical-align: baseline; font-size: 0.95em; white-space: nowrap; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);`;
     attrs.title = url ? `Click to open ${label} in Shopify Admin` : label;
     
     // Note: Click handler is now added via React useEffect in the editor components

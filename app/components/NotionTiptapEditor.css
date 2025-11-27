@@ -268,10 +268,11 @@
 }
 
 /* Entity Mentions - Default fallback style */
+/* NOTE: Using inline-block instead of inline-flex to avoid breaking 
+   contenteditable input after the mention node */
 .notion-editor .entity-mention {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  display: inline-block;
+  vertical-align: baseline;
   border-radius: 6px;
   padding: 3px 8px;
   color: #37352f;

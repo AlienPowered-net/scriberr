@@ -296,6 +296,8 @@ export default function MinimalMentionDebugEditor() {
   });
 
   const editor = useEditor({
+    // IMPORTANT: Set immediatelyRender to false to avoid SSR hydration issues
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       MentionExtension,
