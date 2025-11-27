@@ -28,36 +28,52 @@ export const EntityMention = Node.create({
             range.to += 1;
           }
 
-          // Use transaction API for precise control over insertion and cursor position
+          // Calculate cursor position: mention (1) + space + zero-width space (2) = 3
+          const cursorPos = range.from + 3;
           const mentionNodeType = editor.schema.nodes[this.name];
           
+          // Insert mention and space in a single transaction
           editor.commands.command(({ tr, state }) => {
-            // Create the mention node
             const mentionNode = mentionNodeType.create(props);
-            // Create a space + zero-width space to break style inheritance
-            // The zero-width space (U+200B) helps prevent contenteditable from
-            // inheriting styles from the preceding mention element
+            // Space + zero-width space to break style inheritance
             const spaceNode = state.schema.text(' \u200B');
             
-            // Replace the trigger text with mention + space
             tr.replaceWith(range.from, range.to, [mentionNode, spaceNode]);
-            
-            // Position cursor after mention (1) + space + zero-width space (2) = range.from + 3
-            const cursorPos = range.from + 3;
             tr.setSelection(TextSelection.create(tr.doc, cursorPos));
+            tr.scrollIntoView();
             
             return true;
           });
 
-          // Ensure focus and clear any inherited formatting
-          // Use setTimeout to ensure dropdown is fully closed first
-          setTimeout(() => {
-            editor
-              .chain()
-              .focus()
-              .unsetAllMarks()
-              .run();
-          }, 10);
+          // Function to force cursor position
+          const forceCursorPosition = () => {
+            try {
+              // Ensure we don't exceed document bounds
+              const maxPos = editor.state.doc.content.size;
+              const safePos = Math.min(cursorPos, maxPos);
+              
+              editor
+                .chain()
+                .focus()
+                .setTextSelection(safePos)
+                .run();
+              
+              // Also use native selection API as fallback
+              const { view } = editor;
+              if (view && view.dom) {
+                view.dom.focus();
+                view.focus();
+              }
+            } catch (e) {
+              console.warn('[EntityMention] Cursor position error:', e);
+            }
+          };
+
+          // Multiple attempts with increasing delays to handle dropdown cleanup
+          setTimeout(forceCursorPosition, 0);
+          setTimeout(forceCursorPosition, 20);
+          setTimeout(forceCursorPosition, 50);
+          setTimeout(forceCursorPosition, 100);
         },
         allow: ({ state, range }) => {
           const $from = state.doc.resolve(range.from);
