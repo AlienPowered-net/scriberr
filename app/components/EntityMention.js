@@ -1,6 +1,5 @@
 import { Node, mergeAttributes } from '@tiptap/core';
 import { PluginKey } from '@tiptap/pm/state';
-import { TextSelection } from '@tiptap/pm/state';
 import Suggestion from '@tiptap/suggestion';
 
 export const EntityMentionPluginKey = new PluginKey('entityMention');
@@ -28,52 +27,24 @@ export const EntityMention = Node.create({
             range.to += 1;
           }
 
-          // Calculate cursor position: mention (1) + space + zero-width space (2) = 3
-          const cursorPos = range.from + 3;
-          const mentionNodeType = editor.schema.nodes[this.name];
-          
-          // Insert mention and space in a single transaction
-          editor.commands.command(({ tr, state }) => {
-            const mentionNode = mentionNodeType.create(props);
-            // Space + zero-width space to break style inheritance
-            const spaceNode = state.schema.text(' \u200B');
-            
-            tr.replaceWith(range.from, range.to, [mentionNode, spaceNode]);
-            tr.setSelection(TextSelection.create(tr.doc, cursorPos));
-            tr.scrollIntoView();
-            
-            return true;
-          });
+          // Use standard Tiptap insertContentAt approach
+          editor
+            .chain()
+            .focus()
+            .insertContentAt(range, [
+              {
+                type: this.name,
+                attrs: props,
+              },
+              {
+                type: 'text',
+                text: ' \u200B', // space + zero-width space for style isolation
+              },
+            ])
+            .run();
 
-          // Function to force cursor position
-          const forceCursorPosition = () => {
-            try {
-              // Ensure we don't exceed document bounds
-              const maxPos = editor.state.doc.content.size;
-              const safePos = Math.min(cursorPos, maxPos);
-              
-              editor
-                .chain()
-                .focus()
-                .setTextSelection(safePos)
-                .run();
-              
-              // Also use native selection API as fallback
-              const { view } = editor;
-              if (view && view.dom) {
-                view.dom.focus();
-                view.focus();
-              }
-            } catch (e) {
-              console.warn('[EntityMention] Cursor position error:', e);
-            }
-          };
-
-          // Multiple attempts with increasing delays to handle dropdown cleanup
-          setTimeout(forceCursorPosition, 0);
-          setTimeout(forceCursorPosition, 20);
-          setTimeout(forceCursorPosition, 50);
-          setTimeout(forceCursorPosition, 100);
+          // Native browser API to collapse selection - fixes cursor positioning
+          window.getSelection()?.collapseToEnd();
         },
         allow: ({ state, range }) => {
           const $from = state.doc.resolve(range.from);
