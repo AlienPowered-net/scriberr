@@ -19,6 +19,8 @@ export const EntityMention = Node.create({
         allowSpaces: false,
         startOfLine: false,
         command: ({ editor, range, props }) => {
+          console.log('[EntityMention command] Called with:', { range, props });
+          
           // nodeAfter is the next node in document after current position
           const nodeAfter = editor.view.state.selection.$to.nodeAfter;
           const overrideSpace = nodeAfter?.text?.startsWith(' ');
@@ -26,6 +28,8 @@ export const EntityMention = Node.create({
           if (overrideSpace) {
             range.to += 1;
           }
+
+          console.log('[EntityMention command] Inserting mention at range:', range);
 
           // Use insertContentAt for atomic insertion with proper cursor positioning
           // This replaces the trigger text (@query) with the mention node + a trailing space
@@ -44,6 +48,13 @@ export const EntityMention = Node.create({
               },
             ])
             .run();
+            
+          // Log selection state after insertion
+          console.log('[EntityMention command] After insertion:', {
+            selectionFrom: editor.state.selection.from,
+            selectionTo: editor.state.selection.to,
+            editable: editor.isEditable,
+          });
         },
         allow: ({ state, range }) => {
           const $from = state.doc.resolve(range.from);

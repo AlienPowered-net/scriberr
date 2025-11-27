@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { useEditor, EditorContent } from '@tiptap/react';
+import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { BubbleMenu } from '@tiptap/extension-bubble-menu';
 import StarterKit from '@tiptap/starter-kit';
 import { diffWords, diffChars } from 'diff';
@@ -1059,6 +1060,21 @@ const AdvancedRTE = ({
         return false;
       },
       handleKeyDown: (view, event) => {
+        // DEBUG: Log ALL key events to trace frozen input issue
+        const nodeAt = view.state.doc.nodeAt(view.state.selection.from);
+        const nodeBefore = view.state.doc.nodeAt(view.state.selection.from - 1);
+        const nodeAfter = view.state.doc.nodeAt(view.state.selection.from);
+        
+        console.log('[AdvancedRTE handleKeyDown] Key:', event.key, {
+          code: event.code,
+          selectionFrom: view.state.selection.from,
+          selectionTo: view.state.selection.to,
+          nodeAt: nodeAt?.type.name,
+          nodeBefore: nodeBefore?.type.name,
+          editable: view.editable,
+          hasFocus: view.hasFocus(),
+        });
+        
         // Check if the event is coming from a modal input field
         const target = event.target;
         const isModalInput = target && (
@@ -1071,6 +1087,7 @@ const AdvancedRTE = ({
           return false; // Let modal handle its own keyboard input
         }
 
+        // IMPORTANT: Always return false to let Tiptap/ProseMirror handle the event
         return false;
       },
       handleDOMEvents: {
@@ -1079,6 +1096,23 @@ const AdvancedRTE = ({
           if (!view.hasFocus()) {
             view.focus();
           }
+          return false;
+        },
+        // DEBUG: Log beforeinput events to trace frozen input issue
+        beforeinput: (view, event) => {
+          const nodeAt = view.state.doc.nodeAt(view.state.selection.from);
+          const nodeBefore = view.state.doc.nodeAt(view.state.selection.from - 1);
+          
+          console.log('[AdvancedRTE beforeinput] Event:', event.inputType, {
+            data: event.data,
+            selectionFrom: view.state.selection.from,
+            selectionTo: view.state.selection.to,
+            nodeAt: nodeAt?.type.name,
+            nodeBefore: nodeBefore?.type.name,
+            editable: view.editable,
+          });
+          
+          // IMPORTANT: Always return false to let Tiptap/ProseMirror handle the event
           return false;
         },
       },
