@@ -20,15 +20,33 @@ export const loader = async ({ request }) => {
     try {
       await requireFeature("contacts")(planContext);
 
-      const contacts = await prisma.contact.findMany({
-        where: { shopId: planContext.shopId },
-        include: {
-          folder: true,
-        },
-        orderBy: { createdAt: "desc" },
-      });
+      const url = new URL(request.url);
+      const contactId = url.searchParams.get("id");
 
-      return json(contacts);
+      if (contactId) {
+        // Fetch a specific contact by ID
+        const contact = await prisma.contact.findUnique({
+          where: { id: contactId, shopId: planContext.shopId },
+          include: { folder: true },
+        });
+        
+        if (!contact) {
+          return json({ error: "Contact not found" }, { status: 404 });
+        }
+        
+        return json(contact);
+      } else {
+        // Return all contacts
+        const contacts = await prisma.contact.findMany({
+          where: { shopId: planContext.shopId },
+          include: {
+            folder: true,
+          },
+          orderBy: { createdAt: "desc" },
+        });
+
+        return json(contacts);
+      }
     } catch (error) {
       if (isPlanError(error)) {
         return json(serializePlanError(error), { status: error.status });
