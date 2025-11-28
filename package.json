@@ -1,6 +1,6 @@
 {
   "name": "scriberr",
-  "version": "v.a383",
+  "version": "v.a384",
   "private": true,
   "scripts": {
     "vercel-build": "prisma generate && npm run migrate-deploy && node scripts/init-database.js && node scripts/create-contacts-tables.js && node scripts/add-contact-fields-migration.js && npm run build",
@@ -53,6 +53,7 @@
     "@shopify/shopify-app-session-storage-prisma": "^6.0.0",
     "@tabler/icons-react": "^3.34.1",
     "@tinymce/tinymce-react": "^6.3.0",
+    "@tippyjs/react": "^4.2.6",
     "@tiptap/extension-blockquote": "^3.4.1",
     "@tiptap/extension-bubble-menu": "^3.4.1",
     "@tiptap/extension-bullet-list": "^3.6.2",
@@ -93,6 +94,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-quill": "^2.0.0",
+    "tippy.js": "^6.3.7",
     "vite-tsconfig-paths": "^5.0.1"
   },
   "devDependencies": {

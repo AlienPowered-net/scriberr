@@ -29,6 +29,7 @@ import CharacterCount from '@tiptap/extension-character-count';
 import TiptapDragHandle from './TiptapDragHandle';
 import { LineHeight } from './LineHeightExtension';
 import ContactCard from './ContactCard';
+import { useContactMentionPopover } from './useContactMentionPopover';
 import { createLowlight } from 'lowlight';
 import {
   Button,
@@ -257,6 +258,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   const editorRef = useRef(null);
   const slashMenuRef = useRef(null);
   const autoVersionIntervalRef = useRef(null);
+  
+  // Attach Tippy popovers to contact mentions
+  useContactMentionPopover(editorRef);
 
   const synchronizeVersionsState = useCallback(
     (payload, { selectCreated = false } = {}) => {
@@ -1044,11 +1048,13 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         const type = target.getAttribute('data-type');
         
         // Only handle person and business mentions (not Shopify entities)
+        // Note: Click handling for contacts is now done by Tippy popover via useContactMentionPopover
+        // We only handle hover tooltips here, not clicks
         if (type === 'person' || type === 'business') {
           if (event.type === 'click') {
-            event.preventDefault();
-            event.stopPropagation();
-            handleContactCardShow(contactId, 'modal', event);
+            // Let Tippy handle the click - don't prevent default or stop propagation
+            // This allows Tippy to show the popover
+            return;
           } else if (event.type === 'mouseenter') {
             // Clear any existing timeout
             if (hoverTimeout) {

@@ -30,6 +30,7 @@ import { LineHeight } from './LineHeightExtension';
 import TiptapDragHandle from './TiptapDragHandle';
 import ContactCard from './ContactCard';
 import { usePlanContext } from "../hooks/usePlanContext";
+import { useContactMentionPopover } from './useContactMentionPopover';
 import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, SkeletonDisplayText, Icon, Popover, ActionList, Tooltip, ButtonGroup, Badge, Banner } from '@shopify/polaris';
 import { 
@@ -274,6 +275,9 @@ const AdvancedRTE = ({
   const [hoverTimeout, setHoverTimeout] = useState(null);
   
   const editorRef = useRef(null);
+  
+  // Attach Tippy popovers to contact mentions
+  useContactMentionPopover(editorRef);
 
   const planTier = versionsMeta.plan ?? planTierFromContext ?? "FREE";
   const versionLimitFromMeta =
@@ -1167,11 +1171,13 @@ const AdvancedRTE = ({
         const type = target.getAttribute('data-type');
         
         // Only handle person and business mentions (not Shopify entities)
+        // Note: Click handling for contacts is now done by Tippy popover via useContactMentionPopover
+        // We only handle hover tooltips here, not clicks
         if (type === 'person' || type === 'business') {
           if (event.type === 'click') {
-            event.preventDefault();
-            event.stopPropagation();
-            handleContactCardShow(contactId, 'modal', event);
+            // Let Tippy handle the click - don't prevent default or stop propagation
+            // This allows Tippy to show the popover
+            return;
           } else if (event.type === 'mouseenter') {
             // Clear any existing timeout
             if (hoverTimeout) {
