@@ -42,10 +42,14 @@ export default function ContactPopoverContent({ contactId, contactType, onEdit }
       setError(null);
       try {
         const response = await fetch('/api/contacts');
-        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const contacts = await response.json();
         
-        if (result.success && result.contacts) {
-          const foundContact = result.contacts.find(c => c.id === contactId);
+        // API returns array directly, not wrapped in { success, contacts }
+        if (Array.isArray(contacts)) {
+          const foundContact = contacts.find(c => c.id === contactId);
           if (foundContact) {
             setContact(foundContact);
           } else {

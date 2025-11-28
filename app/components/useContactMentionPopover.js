@@ -47,25 +47,39 @@ export function useContactMentionPopover(editorRef) {
         return;
       }
 
-      // Create container for React content
-      const contentContainer = document.createElement('div');
-      const root = createRoot(contentContainer);
+      // Create container for React content - only create when needed
+      let contentContainer = null;
+      let root = null;
+      let tippyInstance = null;
       
-      // Render ContactPopoverContent
-      root.render(
-        React.createElement(ContactPopoverContent, {
-          contactId,
-          contactType,
-          onEdit: () => {
-            navigate(`/app/contacts?edit=${contactId}`);
-          }
-        })
-      );
+      // Function to create and render content (only called when popover shows)
+      const createContent = () => {
+        if (contentContainer) return contentContainer;
+        
+        contentContainer = document.createElement('div');
+        root = createRoot(contentContainer);
+        
+        // Render ContactPopoverContent
+        root.render(
+          React.createElement(ContactPopoverContent, {
+            contactId,
+            contactType,
+            onEdit: () => {
+              if (tippyInstance) {
+                tippyInstance.hide();
+              }
+              navigate(`/app/contacts?edit=${contactId}`);
+            }
+          })
+        );
+        
+        return contentContainer;
+      };
 
       // Create Tippy instance
-      const instance = tippy(element, {
-        content: contentContainer,
-        trigger: 'click',
+      tippyInstance = tippy(element, {
+        content: createContent, // Use function so content is only created when shown
+        trigger: 'manual', // Use manual trigger so we control it
         interactive: true,
         arrow: true,
         theme: 'light contact-popover',
@@ -73,6 +87,7 @@ export function useContactMentionPopover(editorRef) {
         hideOnClick: true,
         animation: 'scale-subtle',
         inertia: true,
+        appendTo: () => document.body, // Ensure popover is appended to body, not editor
         popperOptions: {
           modifiers: [
             {
@@ -92,14 +107,64 @@ export function useContactMentionPopover(editorRef) {
         onShow() {
           // Hide all other popovers when showing this one
           hideAll({ duration: 0 });
+          // Create content when showing
+          createContent();
+        },
+        onHide() {
+          // Cleanup content when hiding to prevent leaks
+          if (root) {
+            root.unmount();
+            root = null;
+            contentContainer = null;
+          }
         },
         onDestroy() {
           // Cleanup React root
-          root.unmount();
+          if (root) {
+            root.unmount();
+          }
         },
       });
+      
+      // Prevent editor from handling clicks on this element
+      const handleClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation(); // Prevent other handlers from running
+        
+        // Prevent editor from getting focus
+        if (document.activeElement) {
+          const activeElement = document.activeElement;
+          if (activeElement.closest && activeElement.closest('.ProseMirror')) {
+            activeElement.blur();
+          }
+        }
+        
+        // Toggle Tippy popover
+        if (tippyInstance.state.isVisible) {
+          tippyInstance.hide();
+        } else {
+          tippyInstance.show();
+        }
+      };
+      
+      element.addEventListener('click', handleClick, true);
+      
+      // Store cleanup function
+      const cleanup = () => {
+        element.removeEventListener('click', handleClick, true);
+      };
+      
+      // Override onDestroy to include cleanup
+      const originalOnDestroy = tippyInstance.props.onDestroy;
+      tippyInstance.setProps({
+        onDestroy() {
+          cleanup();
+          if (originalOnDestroy) originalOnDestroy();
+        }
+      });
 
-      tippyInstancesRef.current.set(element, instance);
+      tippyInstancesRef.current.set(element, tippyInstance);
     };
 
     // Function to find and attach Tippy to all contact mentions
