@@ -30,7 +30,6 @@ import { LineHeight } from './LineHeightExtension';
 import TiptapDragHandle from './TiptapDragHandle';
 import ContactCard from './ContactCard';
 import { usePlanContext } from "../hooks/usePlanContext";
-import { useContactMentionPopover } from './useContactMentionPopover';
 import { createLowlight } from 'lowlight';
 import { Button, Text, Modal, TextField, Card, InlineStack, BlockStack, Spinner, SkeletonBodyText, SkeletonDisplayText, Icon, Popover, ActionList, Tooltip, ButtonGroup, Badge, Banner } from '@shopify/polaris';
 import { 
@@ -273,11 +272,9 @@ const AdvancedRTE = ({
   const [contactCardVariant, setContactCardVariant] = useState('tooltip');
   const [contactCardPosition, setContactCardPosition] = useState({ x: 0, y: 0 });
   const [hoverTimeout, setHoverTimeout] = useState(null);
+  const [contactCardFromEditor, setContactCardFromEditor] = useState(false);
   
   const editorRef = useRef(null);
-  
-  // Attach Tippy popovers to contact mentions
-  useContactMentionPopover(editorRef);
 
   const planTier = versionsMeta.plan ?? planTierFromContext ?? "FREE";
   const versionLimitFromMeta =
@@ -1129,28 +1126,30 @@ const AdvancedRTE = ({
   }, [editor, showImageModal, showVideoModal, showLinkModal]);
 
   // Handle contact card display
-  const handleContactCardShow = async (contactId, variant, event) => {
+  const handleContactCardShow = async (contactId, variant, event, fromEditor = false) => {
     try {
-      // Fetch full contact details
-      const response = await fetch(`/api/contacts`);
-      const result = await response.json();
+      // Fetch full contact details by ID
+      const response = await fetch(`/api/contacts?id=${contactId}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
-      if (result.success) {
-        const contact = result.contacts.find(c => c.id === contactId);
-        if (contact) {
-          setContactCardContact(contact);
-          setContactCardVariant(variant);
-          
-          if (variant === 'tooltip' && event) {
-            const rect = event.target.getBoundingClientRect();
-            setContactCardPosition({
-              x: rect.right + 10,
-              y: rect.top
-            });
-          }
-          
-          setShowContactCard(true);
+      const contact = await response.json();
+      
+      if (contact && contact.id) {
+        setContactCardContact(contact);
+        setContactCardVariant(variant);
+        setContactCardFromEditor(fromEditor);
+        
+        if (variant === 'tooltip' && event) {
+          const rect = event.target.getBoundingClientRect();
+          setContactCardPosition({
+            x: rect.right + 10,
+            y: rect.top
+          });
         }
+        
+        setShowContactCard(true);
       }
     } catch (error) {
       console.error('Error fetching contact details:', error);
@@ -1160,6 +1159,7 @@ const AdvancedRTE = ({
   const handleContactCardClose = () => {
     setShowContactCard(false);
     setContactCardContact(null);
+    setContactCardFromEditor(false);
   };
 
   // Add global click and hover handlers for entity mentions
@@ -1171,12 +1171,12 @@ const AdvancedRTE = ({
         const type = target.getAttribute('data-type');
         
         // Only handle person and business mentions (not Shopify entities)
-        // Note: Click handling for contacts is now done by Tippy popover via useContactMentionPopover
-        // We only handle hover tooltips here, not clicks
         if (type === 'person' || type === 'business') {
           if (event.type === 'click') {
-            // Let Tippy handle the click - don't prevent default or stop propagation
-            // This allows Tippy to show the popover
+            // Open contact card modal when clicking on contact mention
+            event.preventDefault();
+            event.stopPropagation();
+            handleContactCardShow(contactId, 'modal', event, true);
             return;
           } else if (event.type === 'mouseenter') {
             // Clear any existing timeout
@@ -6527,6 +6527,12 @@ const AdvancedRTE = ({
           variant={contactCardVariant}
           isVisible={showContactCard}
           onClose={handleContactCardClose}
+          onEdit={contactCardFromEditor ? undefined : () => {
+            // Only allow editing when not triggered from editor
+            handleContactCardClose();
+            // Navigate to edit page if needed
+            window.location.href = `/app/contacts?edit=${contactCardContact.id}`;
+          }}
           position={contactCardPosition}
         />
       )}
