@@ -95,13 +95,22 @@ export function useContactMentionPopover(editorRef) {
             {
               name: 'flip',
               options: {
-                fallbackPlacements: ['right', 'bottom', 'left'],
+                fallbackPlacements: ['right', 'bottom', 'left', 'top'],
+                boundary: 'viewport',
               },
             },
             {
               name: 'preventOverflow',
               options: {
-                padding: 8,
+                boundary: 'viewport',
+                padding: 16,
+                rootBoundary: 'viewport',
+              },
+            },
+            {
+              name: 'offset',
+              options: {
+                offset: [0, 8],
               },
             },
           ],

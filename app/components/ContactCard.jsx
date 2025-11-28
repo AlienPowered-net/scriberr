@@ -149,18 +149,17 @@ const ContactCard = ({
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  padding: '4px 10px',
-                  borderRadius: '12px',
-                  backgroundColor: `${contact.folder.iconColor || '#f57c00'}15`,
-                  border: `1px solid ${contact.folder.iconColor || '#f57c00'}40`,
+                  padding: '2px 8px',
+                  borderRadius: '6px',
+                  backgroundColor: contact.folder.iconColor || '#f57c00',
                   fontSize: '12px',
                   fontWeight: '500',
-                  color: contact.folder.iconColor || '#f57c00',
+                  lineHeight: '16px',
+                  color: '#ffffff',
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
                 }}
               >
-                <i className={`far fa-${contact.folder.icon || 'folder'}`} style={{ fontSize: '12px' }}></i>
-                <span>{contact.folder.name}</span>
+                {contact.folder.name}
               </div>
             )}
             {contact.tags && contact.tags.length > 0 && contact.tags.map((tag, index) => (
