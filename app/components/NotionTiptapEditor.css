@@ -272,129 +272,116 @@
    inline-flex breaks contenteditable input after the mention node */
 .entity-mention {
   display: inline;
-  border-radius: 6px;
-  padding: 2px 6px;
+  border-radius: 12px;
+  padding: 2px 8px;
   font-weight: 600;
   text-decoration: none;
-  font-size: 0.95em;
-  border: 1px solid;
-}
-
-/* Entity Mentions - Default fallback style for notion-editor */
-.notion-editor .entity-mention {
-  display: inline;
-  vertical-align: baseline;
-  border-radius: 6px;
-  padding: 3px 8px;
-  color: #37352f;
-  font-weight: 700;
+  font-size: 0.9em;
+  color: white;
   cursor: pointer;
-  transition: background-color 0.15s ease;
-  text-decoration: none;
-  font-size: 0.95em;
-  border: 1px solid;
+  transition: filter 0.15s ease, box-shadow 0.15s ease;
 }
 
-.notion-editor .entity-mention:hover {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
+.entity-mention:hover {
+  filter: brightness(0.85);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Entity type specific styling */
+/* Entity type specific styling - New color scheme */
+/* Products: #44AF69 (Green) */
+.entity-mention-product,
 .notion-editor .entity-mention-product {
-  background-color: #e3f2fd;
-  color: #1565c0;
-  font-weight: 700;
-  border-color: #90caf9;
+  background-color: #44AF69;
+  color: white;
 }
 
+.entity-mention-product:hover,
 .notion-editor .entity-mention-product:hover {
-  background-color: #bbdefb;
-  border-color: #64b5f6;
+  background-color: #3a9a5c;
 }
 
+/* Product Variants: #33CC68 (Lighter Green) */
+.entity-mention-variant,
 .notion-editor .entity-mention-variant {
-  background-color: #f3e5f5;
-  color: #6a1b9a;
-  font-weight: 700;
-  border-color: #ce93d8;
+  background-color: #33CC68;
+  color: white;
 }
 
+.entity-mention-variant:hover,
 .notion-editor .entity-mention-variant:hover {
-  background-color: #e1bee7;
-  border-color: #ba68c8;
+  background-color: #2db35c;
 }
 
-.notion-editor .entity-mention-order {
-  background-color: #fff3e0;
-  color: #e65100;
-  font-weight: 700;
-  border-color: #ffcc80;
-}
-
-.notion-editor .entity-mention-order:hover {
-  background-color: #ffe0b2;
-  border-color: #ffb74d;
-}
-
-.notion-editor .entity-mention-customer {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-  font-weight: 700;
-  border-color: #a5d6a7;
-}
-
-.notion-editor .entity-mention-customer:hover {
-  background-color: #c8e6c9;
-  border-color: #81c784;
-}
-
+/* Collections: #FCAB10 (Orange/Yellow) */
+.entity-mention-collection,
 .notion-editor .entity-mention-collection {
-  background-color: #fce4ec;
-  color: #c2185b;
-  font-weight: 700;
-  border-color: #f48fb1;
+  background-color: #FCAB10;
+  color: white;
 }
 
+.entity-mention-collection:hover,
 .notion-editor .entity-mention-collection:hover {
-  background-color: #f8bbd0;
-  border-color: #f06292;
+  background-color: #e09a0e;
 }
 
+/* Discounts: #2B9EB3 (Teal) */
+.entity-mention-discount,
 .notion-editor .entity-mention-discount {
-  background-color: #fff9c4;
-  color: #f57f17;
-  font-weight: 700;
-  border-color: #fff176;
+  background-color: #2B9EB3;
+  color: white;
 }
 
+.entity-mention-discount:hover,
 .notion-editor .entity-mention-discount:hover {
-  background-color: #fff59d;
-  border-color: #ffee58;
+  background-color: #258a9c;
 }
 
-.notion-editor .entity-mention-draftOrder {
-  background-color: #f1f8e9;
-  color: #558b2f;
-  font-weight: 700;
-  border-color: #c5e1a5;
-}
-
-.notion-editor .entity-mention-draftOrder:hover {
-  background-color: #dcedc8;
-  border-color: #aed581;
-}
-
+/* Contacts/Person: #F8333C (Red) */
+.entity-mention-person,
 .notion-editor .entity-mention-person {
-  background-color: #e0f2f1;
-  color: #00695c;
-  font-weight: 700;
-  border-color: #80cbc4;
+  background-color: #F8333C;
+  color: white;
 }
 
+.entity-mention-person:hover,
 .notion-editor .entity-mention-person:hover {
-  background-color: #b2dfdb;
-  border-color: #4db6ac;
+  background-color: #dc2d35;
+}
+
+/* Orders: Keep a distinct color - Blue */
+.entity-mention-order,
+.notion-editor .entity-mention-order {
+  background-color: #3B82F6;
+  color: white;
+}
+
+.entity-mention-order:hover,
+.notion-editor .entity-mention-order:hover {
+  background-color: #2563EB;
+}
+
+/* Customers: Keep a distinct color - Purple */
+.entity-mention-customer,
+.notion-editor .entity-mention-customer {
+  background-color: #8B5CF6;
+  color: white;
+}
+
+.entity-mention-customer:hover,
+.notion-editor .entity-mention-customer:hover {
+  background-color: #7C3AED;
+}
+
+/* Draft Orders: Keep a distinct color - Slate */
+.entity-mention-draftOrder,
+.notion-editor .entity-mention-draftOrder {
+  background-color: #64748B;
+  color: white;
+}
+
+.entity-mention-draftOrder:hover,
+.notion-editor .entity-mention-draftOrder:hover {
+  background-color: #475569;
 }
 
 /* Entity Mention Suggestions Dropdown */

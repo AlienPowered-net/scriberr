@@ -792,7 +792,6 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 return false;
               },
               onExit(props) {
-                console.log('[Mention Suggestion] onExit called - cleaning up component');
                 if (component) {
                   component.remove();
                   component = null;
@@ -801,12 +800,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
                 const orphaned = document.querySelectorAll('.entity-mention-suggestions');
                 orphaned.forEach(el => {
                   if (el !== component) {
-                    console.log('[Mention Suggestion] Removing orphaned component');
                     el.remove();
                   }
                 });
-                
-                // NOTE: Removed blur/focus hack - it was causing issues with ProseMirror state
               }
             };
           }

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { useEditor, EditorContent } from '@tiptap/react';
-import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { BubbleMenu } from '@tiptap/extension-bubble-menu';
 import StarterKit from '@tiptap/starter-kit';
 import { diffWords, diffChars } from 'diff';
@@ -968,7 +967,6 @@ const AdvancedRTE = ({
                 return false;
               },
               onExit(props) {
-                console.log('[Mention Suggestion] onExit called - cleaning up component');
                 if (component) {
                   component.remove();
                   component = null;
@@ -977,13 +975,9 @@ const AdvancedRTE = ({
                 const orphaned = document.querySelectorAll('.entity-mention-suggestions');
                 orphaned.forEach(el => {
                   if (el !== component) {
-                    console.log('[Mention Suggestion] Removing orphaned component');
                     el.remove();
                   }
                 });
-                
-                // NOTE: Removed blur/focus hack - it was causing issues with ProseMirror state
-                // The real fix needs to be in how we handle input after mention insertion
               }
             };
           }
@@ -1054,21 +1048,6 @@ const AdvancedRTE = ({
         return false;
       },
       handleKeyDown: (view, event) => {
-        // DEBUG: Log ALL key events to trace frozen input issue
-        const nodeAt = view.state.doc.nodeAt(view.state.selection.from);
-        const nodeBefore = view.state.doc.nodeAt(view.state.selection.from - 1);
-        const nodeAfter = view.state.doc.nodeAt(view.state.selection.from);
-        
-        console.log('[AdvancedRTE handleKeyDown] Key:', event.key, {
-          code: event.code,
-          selectionFrom: view.state.selection.from,
-          selectionTo: view.state.selection.to,
-          nodeAt: nodeAt?.type.name,
-          nodeBefore: nodeBefore?.type.name,
-          editable: view.editable,
-          hasFocus: view.hasFocus(),
-        });
-        
         // Check if the event is coming from a modal input field
         const target = event.target;
         const isModalInput = target && (
@@ -1077,11 +1056,9 @@ const AdvancedRTE = ({
         );
         
         if (isModalInput) {
-          console.log('[AdvancedRTE handleKeyDown] Ignoring key event from modal input:', event.key);
           return false; // Let modal handle its own keyboard input
         }
 
-        // IMPORTANT: Always return false to let Tiptap/ProseMirror handle the event
         return false;
       },
       handleDOMEvents: {
@@ -1092,44 +1069,9 @@ const AdvancedRTE = ({
           }
           return false;
         },
-        // DEBUG: Log beforeinput events to trace frozen input issue
-        beforeinput: (view, event) => {
-          const nodeAt = view.state.doc.nodeAt(view.state.selection.from);
-          const nodeBefore = view.state.doc.nodeAt(view.state.selection.from - 1);
-          
-          console.log('[AdvancedRTE beforeinput] Event:', event.inputType, {
-            data: event.data,
-            selectionFrom: view.state.selection.from,
-            selectionTo: view.state.selection.to,
-            nodeAt: nodeAt?.type.name,
-            nodeBefore: nodeBefore?.type.name,
-            editable: view.editable,
-          });
-          
-          // IMPORTANT: Always return false to let Tiptap/ProseMirror handle the event
-          return false;
-        },
       },
     },
   });
-
-  // DEBUG: Add transaction listener to trace what's happening
-  useEffect(() => {
-    if (!editor) return;
-    
-    const handleTransaction = ({ transaction }) => {
-      if (transaction.docChanged) {
-        console.log('[AdvancedRTE TRANSACTION] Doc changed:', {
-          selectionFrom: transaction.selection.from,
-          selectionTo: transaction.selection.to,
-          steps: transaction.steps.length,
-        });
-      }
-    };
-    
-    editor.on('transaction', handleTransaction);
-    return () => editor.off('transaction', handleTransaction);
-  }, [editor]);
 
   useEffect(() => {
     if (!editor) {
@@ -1145,7 +1087,6 @@ const AdvancedRTE = ({
 
     const currentHtml = editor.getHTML();
     if (value !== currentHtml) {
-      console.log('[AdvancedRTE] Syncing content from value prop');
       editor.commands.setContent(value || '');
     }
   }, [value, editor]);
