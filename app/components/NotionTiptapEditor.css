@@ -268,10 +268,10 @@
 }
 
 /* Entity Mentions - Base styles (works in any editor context) */
-/* CRITICAL: Must use inline or inline-block, NOT inline-flex
-   inline-flex breaks contenteditable input after the mention node */
+/* CRITICAL: Using inline-block to prevent pills from breaking across lines
+   This ensures border-radius is maintained when wrapping */
 .entity-mention {
-  display: inline;
+  display: inline-block;
   border-radius: 12px;
   padding: 2px 8px;
   font-weight: 600;
@@ -279,12 +279,13 @@
   font-size: 0.9em;
   color: white;
   cursor: pointer;
-  transition: filter 0.15s ease, box-shadow 0.15s ease;
+  transition: filter 0.15s ease;
+  white-space: nowrap;
+  vertical-align: baseline;
 }
 
 .entity-mention:hover {
   filter: brightness(0.85);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Entity type specific styling - New color scheme */

@@ -151,14 +151,14 @@ const getEntityIconElement = (type) => {
 
 const getEntityColor = (type) => {
   const colors = {
-    product: '#e3f2fd',
-    variant: '#f3e5f5',
-    order: '#fff3e0',
-    customer: '#e8f5e9',
-    collection: '#fce4ec',
-    discount: '#fff9c4',
-    draftOrder: '#f1f8e9',
-    person: '#e0f2f1'
+    product: '#44AF69',
+    variant: '#33CC68',
+    order: '#3B82F6',
+    customer: '#8B5CF6',
+    collection: '#FCAB10',
+    discount: '#2B9EB3',
+    draftOrder: '#64748B',
+    person: '#F8333C'
   };
   return colors[type] || '#f5f5f5';
 };
@@ -889,9 +889,10 @@ const AdvancedRTE = ({
                   
                   // Add metadata if exists
                   const metadata = getMetadataPreview(item.type, item.metadata);
+                  let metadataDiv = null;
                   if (metadata) {
-                    const metadataDiv = document.createElement('div');
-                    metadataDiv.style.cssText = 'font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
+                    metadataDiv = document.createElement('div');
+                    metadataDiv.style.cssText = 'font-size: 11px; color: inherit; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
                     metadataDiv.textContent = metadata;
                     contentDiv.appendChild(metadataDiv);
                   }
@@ -899,17 +900,20 @@ const AdvancedRTE = ({
                   container.appendChild(contentDiv);
                   button.appendChild(container);
                   
+                  const isSelected = index === props.selectedIndex && !item.disabled;
+                  
                   button.style.cssText = `
                     display: block;
                     width: 100%;
                     text-align: left;
                     padding: 10px;
                     border: none;
-                    background: ${index === props.selectedIndex && !item.disabled ? bgColor : 'transparent'};
+                    background: ${isSelected ? bgColor : 'transparent'};
+                    color: ${isSelected ? 'white' : 'inherit'};
                     cursor: ${item.disabled ? 'not-allowed' : 'pointer'};
                     opacity: ${item.disabled ? '0.6' : '1'};
                     border-radius: 6px;
-                    transition: background 0.15s;
+                    transition: background 0.15s, color 0.15s;
                     font-size: 13px;
                   `;
                   
@@ -923,9 +927,20 @@ const AdvancedRTE = ({
                     }));
                     button.addEventListener('mouseenter', () => {
                       button.style.background = getEntityColor(item.type);
+                      button.style.color = 'white';
+                      if (metadataDiv) {
+                        metadataDiv.style.color = 'white';
+                        metadataDiv.style.opacity = '0.9';
+                      }
                     });
                     button.addEventListener('mouseleave', () => {
-                      button.style.background = index === props.selectedIndex ? getEntityColor(item.type) : 'transparent';
+                      const stillSelected = index === props.selectedIndex;
+                      button.style.background = stillSelected ? getEntityColor(item.type) : 'transparent';
+                      button.style.color = stillSelected ? 'white' : 'inherit';
+                      if (metadataDiv) {
+                        metadataDiv.style.color = stillSelected ? 'white' : '#666';
+                        metadataDiv.style.opacity = stillSelected ? '0.9' : '0.8';
+                      }
                     });
                   }
                   component.appendChild(button);
