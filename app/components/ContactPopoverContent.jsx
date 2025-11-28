@@ -167,8 +167,10 @@ export default function ContactPopoverContent({ contactId, contactType, onEdit }
       background: 'white',
       borderRadius: '12px',
       padding: '20px',
-      minWidth: '320px',
+      minWidth: '360px',
       maxWidth: '400px',
+      width: '100%',
+      boxSizing: 'border-box',
     }}>
       <BlockStack gap="400">
         {/* Header with avatar and name */}
@@ -196,9 +198,48 @@ export default function ContactPopoverContent({ contactId, contactType, onEdit }
             </div>
           </InlineStack>
           <div style={{ marginTop: '12px' }}>
-            <Badge tone={contact.type === 'PERSON' ? 'info' : 'success'}>
-              {contact.type === 'PERSON' ? 'Person' : 'Business'}
-            </Badge>
+            <InlineStack gap="200" wrap>
+              <Badge tone={contact.type === 'PERSON' ? 'info' : 'success'}>
+                {contact.type === 'PERSON' ? 'Person' : 'Business'}
+              </Badge>
+              {contact.folder && (
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '4px 10px',
+                    borderRadius: '12px',
+                    backgroundColor: `${contact.folder.iconColor || '#f57c00'}15`,
+                    border: `1px solid ${contact.folder.iconColor || '#f57c00'}40`,
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    color: contact.folder.iconColor || '#f57c00',
+                  }}
+                >
+                  <i className={`far fa-${contact.folder.icon || 'folder'}`} style={{ fontSize: '12px' }}></i>
+                  <span>{contact.folder.name}</span>
+                </div>
+              )}
+              {contact.tags && contact.tags.length > 0 && contact.tags.map((tag, index) => (
+                <div
+                  key={index}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '4px 10px',
+                    borderRadius: '12px',
+                    backgroundColor: '#f6f6f7',
+                    border: '1px solid #e1e3e5',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    color: '#6d7175',
+                  }}
+                >
+                  {tag}
+                </div>
+              ))}
+            </InlineStack>
           </div>
         </div>
 

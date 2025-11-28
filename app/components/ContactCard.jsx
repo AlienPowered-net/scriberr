@@ -29,7 +29,10 @@ const ContactCard = ({
   isVisible = false,
   onClose,
   onEdit,
-  position = { x: 0, y: 0 }
+  position = { x: 0, y: 0 },
+  tooltipRef,
+  onTooltipMouseEnter,
+  onTooltipMouseLeave
 }) => {
   const [copiedField, setCopiedField] = useState(null);
   const cardRef = useRef(null);
@@ -137,9 +140,48 @@ const ContactCard = ({
           </div>
         </InlineStack>
         <div style={{ marginTop: '12px' }}>
-          <Badge tone={getTypeColor()}>
-            {contact.type === 'PERSON' ? 'Person' : 'Business'}
-          </Badge>
+          <InlineStack gap="200" wrap>
+            <Badge tone={getTypeColor()}>
+              {contact.type === 'PERSON' ? 'Person' : 'Business'}
+            </Badge>
+            {contact.folder && (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 10px',
+                  borderRadius: '12px',
+                  backgroundColor: `${contact.folder.iconColor || '#f57c00'}15`,
+                  border: `1px solid ${contact.folder.iconColor || '#f57c00'}40`,
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  color: contact.folder.iconColor || '#f57c00',
+                }}
+              >
+                <i className={`far fa-${contact.folder.icon || 'folder'}`} style={{ fontSize: '12px' }}></i>
+                <span>{contact.folder.name}</span>
+              </div>
+            )}
+            {contact.tags && contact.tags.length > 0 && contact.tags.map((tag, index) => (
+              <div
+                key={index}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '4px 10px',
+                  borderRadius: '12px',
+                  backgroundColor: '#f6f6f7',
+                  border: '1px solid #e1e3e5',
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  color: '#6d7175',
+                }}
+              >
+                {tag}
+              </div>
+            ))}
+          </InlineStack>
         </div>
       </div>
 
@@ -149,22 +191,32 @@ const ContactCard = ({
           <Text as="h3" variant="headingSm" fontWeight="semibold" style={{ color: '#202223', marginBottom: '12px' }}>
             Company Information
           </Text>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <Icon source={CollectionIcon} tone="subdued" />
-            <Text as="span" variant="bodyMd" style={{ color: '#6d7175' }}>Company</Text>
-            <Text as="span" variant="bodyMd" style={{ color: '#202223', marginLeft: '8px' }}>
-              {contact.company}
-            </Text>
-          </div>
-          {contact.role && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <Icon source={PersonIcon} tone="subdued" />
-              <Text as="span" variant="bodyMd" style={{ color: '#6d7175' }}>Role</Text>
-              <Text as="span" variant="bodyMd" style={{ color: '#202223', marginLeft: '8px' }}>
-                {contact.role}
-              </Text>
+          <BlockStack gap="200">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Icon source={CollectionIcon} tone="subdued" />
+                <Text as="span" variant="bodyMd" style={{ color: '#202223' }}>
+                  {contact.company}
+                </Text>
+              </div>
+              {variant === 'modal' && (
+                <CopyButton text={contact.company} fieldName="company" />
+              )}
             </div>
-          )}
+            {contact.role && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Icon source={PersonIcon} tone="subdued" />
+                  <Text as="span" variant="bodyMd" style={{ color: '#202223' }}>
+                    {contact.role}
+                  </Text>
+                </div>
+                {variant === 'modal' && (
+                  <CopyButton text={contact.role} fieldName="role" />
+                )}
+              </div>
+            )}
+          </BlockStack>
         </div>
       )}
 
@@ -294,6 +346,13 @@ const ContactCard = ({
     </div>
   );
 
+  // Set tooltip ref when component mounts/updates
+  useEffect(() => {
+    if (variant === 'tooltip' && tooltipRef && cardRef.current) {
+      tooltipRef.current = cardRef.current;
+    }
+  }, [variant, isVisible, tooltipRef]);
+
   // Tooltip variant
   if (variant === 'tooltip') {
     if (!isVisible || !contact) return null;
@@ -301,6 +360,18 @@ const ContactCard = ({
     return (
       <div
         ref={cardRef}
+        onMouseEnter={() => {
+          // Keep tooltip open when mouse enters it - clear any hide timeouts
+          if (onTooltipMouseEnter) {
+            onTooltipMouseEnter();
+          }
+        }}
+        onMouseLeave={() => {
+          // Tooltip will close via the hide timeout in parent component
+          if (onTooltipMouseLeave) {
+            onTooltipMouseLeave();
+          }
+        }}
         style={{
           position: 'fixed',
           left: position.x,
@@ -312,7 +383,7 @@ const ContactCard = ({
           borderRadius: '8px',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
           padding: '16px',
-          pointerEvents: 'none'
+          pointerEvents: 'auto'
         }}
       >
         <Card sectioned>

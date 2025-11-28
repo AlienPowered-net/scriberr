@@ -87,6 +87,8 @@ export function useContactMentionPopover(editorRef) {
         hideOnClick: true,
         animation: 'scale-subtle',
         inertia: true,
+        delay: [150, 400], // [showDelay, hideDelay] in milliseconds
+        moveTransition: 'transform 0.2s ease-out', // Smooth transition when moving
         appendTo: () => document.body, // Ensure popover is appended to body, not editor
         popperOptions: {
           modifiers: [

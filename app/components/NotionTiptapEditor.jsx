@@ -253,7 +253,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
   const [contactCardVariant, setContactCardVariant] = useState('tooltip');
   const [contactCardPosition, setContactCardPosition] = useState({ x: 0, y: 0 });
   const [hoverTimeout, setHoverTimeout] = useState(null);
+  const [hideTimeout, setHideTimeout] = useState(null);
   const [contactCardFromEditor, setContactCardFromEditor] = useState(false);
+  const tooltipRef = useRef(null);
   
   const editorRef = useRef(null);
   const slashMenuRef = useRef(null);
@@ -1039,6 +1041,25 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     setContactCardFromEditor(false);
   };
 
+  // Handle tooltip mouse enter - keep tooltip open
+  const handleTooltipMouseEnter = () => {
+    if (hideTimeout) {
+      clearTimeout(hideTimeout);
+      setHideTimeout(null);
+    }
+  };
+
+  // Handle tooltip mouse leave - start hide timeout
+  const handleTooltipMouseLeave = () => {
+    const hideTimeoutId = setTimeout(() => {
+      if (contactCardVariant === 'tooltip') {
+        setShowContactCard(false);
+        setContactCardContact(null);
+      }
+    }, 400);
+    setHideTimeout(hideTimeoutId);
+  };
+
   // Add global click and hover handlers for entity mentions
   useEffect(() => {
     const handleMentionInteraction = (event) => {
@@ -1056,15 +1077,22 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             handleContactCardShow(contactId, 'modal', event, true);
             return;
           } else if (event.type === 'mouseenter') {
-            // Clear any existing timeout
-            if (hoverTimeout) {
-              clearTimeout(hoverTimeout);
+            // Clear any existing hide timeout
+            if (hideTimeout) {
+              clearTimeout(hideTimeout);
+              setHideTimeout(null);
             }
             
-            // Set timeout for hover tooltip
+            // Clear any existing show timeout
+            if (hoverTimeout) {
+              clearTimeout(hoverTimeout);
+              setHoverTimeout(null);
+            }
+            
+            // Set timeout for hover tooltip (reduced from 500ms to 150ms)
             const timeout = setTimeout(() => {
               handleContactCardShow(contactId, 'tooltip', event);
-            }, 500); // 500ms delay
+            }, 150);
             
             setHoverTimeout(timeout);
           } else if (event.type === 'mouseleave') {
@@ -1074,13 +1102,32 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
               setHoverTimeout(null);
             }
             
-            // Hide tooltip after a short delay
-            setTimeout(() => {
-              if (contactCardVariant === 'tooltip') {
+            // Hide tooltip after a delay (increased from 200ms to 400ms)
+            const hideTimeoutId = setTimeout(() => {
+              // Only hide if mouse is not over the tooltip
+              if (contactCardVariant === 'tooltip' && tooltipRef.current) {
+                const tooltipElement = tooltipRef.current;
+                const rect = tooltipElement.getBoundingClientRect();
+                const mouseX = event.clientX || 0;
+                const mouseY = event.clientY || 0;
+                
+                // Check if mouse is still within tooltip bounds
+                if (
+                  mouseX < rect.left ||
+                  mouseX > rect.right ||
+                  mouseY < rect.top ||
+                  mouseY > rect.bottom
+                ) {
+                  setShowContactCard(false);
+                  setContactCardContact(null);
+                }
+              } else if (contactCardVariant === 'tooltip') {
                 setShowContactCard(false);
                 setContactCardContact(null);
               }
-            }, 200);
+            }, 400);
+            
+            setHideTimeout(hideTimeoutId);
           }
         } else {
           // Handle Shopify entity mentions (existing behavior)
@@ -1107,7 +1154,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
         editorElement.removeEventListener('mouseleave', handleMentionInteraction, true);
       };
     }
-  }, [editor, hoverTimeout, contactCardVariant]);
+  }, [editor, hoverTimeout, hideTimeout, contactCardVariant]);
 
   // Cleanup orphaned suggestion components on unmount
   useEffect(() => {
@@ -4419,6 +4466,9 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
             window.location.href = `/app/contacts?edit=${contactCardContact.id}`;
           }}
           position={contactCardPosition}
+          tooltipRef={tooltipRef}
+          onTooltipMouseEnter={handleTooltipMouseEnter}
+          onTooltipMouseLeave={handleTooltipMouseLeave}
         />
       )}
     </div>

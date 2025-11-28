@@ -792,3 +792,16 @@ body > .Polaris-Portal {
 .ProseMirror-toolbar button:not([style*="background"]) {
   background: white !important;
 }
+
+/* Contact Popover Theme Styles */
+.tippy-box[data-theme~='contact-popover'] {
+  min-width: 360px !important;
+  max-width: 400px !important;
+}
+
+@media (max-width: 480px) {
+  .tippy-box[data-theme~='contact-popover'] {
+    min-width: 280px !important;
+    max-width: 90vw !important;
+  }
+}
