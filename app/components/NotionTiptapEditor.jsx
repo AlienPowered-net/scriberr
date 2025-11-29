@@ -1029,26 +1029,38 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     setContactCardFromEditor(false);
   };
 
-  // Add global click handlers for entity mentions (works on both desktop and mobile)
+  // Add global click handlers for entity mentions (desktop only, disabled on mobile)
   useEffect(() => {
     const handleMentionInteraction = (event) => {
       // Find the closest entity-mention element (in case click is on child element)
       const mentionElement = event.target.closest('.entity-mention');
       if (!mentionElement) return;
 
+      // Check if we're on mobile
+      const isMobile = window.innerWidth <= 1024 || ('ontouchstart' in window);
+      
+      if (isMobile) {
+        // On mobile, prevent default behavior and show alert
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        alert('Mention interactions are only available on desktop. Please use a desktop device to view contact details.');
+        return;
+      }
+
       const contactId = mentionElement.getAttribute('data-id');
       const type = mentionElement.getAttribute('data-type');
       
       // Only handle person and business mentions (not Shopify entities)
       if (type === 'person' || type === 'business') {
-        // Open contact card modal when clicking/tapping on contact mention
+        // Open contact card modal when clicking on contact mention (desktop only)
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
         handleContactCardShow(contactId, 'modal', event, true);
         return;
       } else {
-        // Handle Shopify entity mentions (existing behavior)
+        // Handle Shopify entity mentions (existing behavior, desktop only)
         const url = mentionElement.getAttribute('data-url');
         if (url) {
           event.preventDefault();
@@ -1059,7 +1071,7 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
       }
     };
 
-    // Add event listeners to editor (click works on both desktop and mobile)
+    // Add event listeners to editor
     const editorElement = editorRef.current;
     if (editorElement) {
       // Use capture phase to catch events before they reach the editor
