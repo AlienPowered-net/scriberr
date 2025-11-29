@@ -163,16 +163,15 @@ export default function ContactPopoverContent({ contactId, contactType, onEdit }
   }
 
   return (
-    <div style={{
+    <BlockStack gap="400" style={{
       background: 'white',
       borderRadius: '12px',
       padding: '20px',
-      minWidth: '420px',
-      maxWidth: '480px',
+      minWidth: '500px',
+      maxWidth: '560px',
       width: '100%',
       boxSizing: 'border-box',
     }}>
-      <BlockStack gap="400">
         {/* Header with avatar and name */}
         <div>
           <InlineStack gap="300" blockAlign="center">
@@ -366,8 +365,7 @@ export default function ContactPopoverContent({ contactId, contactType, onEdit }
             Edit contact
           </Button>
         </div>
-      </BlockStack>
-    </div>
+    </BlockStack>
   );
 }
 

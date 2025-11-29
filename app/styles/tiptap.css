@@ -795,8 +795,13 @@ body > .Polaris-Portal {
 
 /* Contact Popover Theme Styles */
 .tippy-box[data-theme~='contact-popover'] {
-  min-width: 420px !important;
-  max-width: 480px !important;
+  min-width: 500px !important;
+  max-width: 560px !important;
+}
+
+.tippy-box[data-theme~='contact-popover'] .tippy-content {
+  padding: 0 !important;
+  background: transparent !important;
 }
 
 @media (max-width: 480px) {
