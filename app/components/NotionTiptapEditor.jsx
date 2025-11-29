@@ -1029,69 +1029,44 @@ const NotionTiptapEditor = ({ value, onChange, placeholder = "Press '/' for comm
     setContactCardFromEditor(false);
   };
 
-  // Add global click and touch handlers for entity mentions
+  // Add global click handlers for entity mentions (works on both desktop and mobile)
   useEffect(() => {
-    let touchStartTarget = null;
-    let touchStartTime = null;
-
     const handleMentionInteraction = (event) => {
-      const target = event.target;
-      if (target && target.classList && target.classList.contains('entity-mention')) {
-        const contactId = target.getAttribute('data-id');
-        const type = target.getAttribute('data-type');
-        
-        // Only handle person and business mentions (not Shopify entities)
-        if (type === 'person' || type === 'business') {
-          if (event.type === 'click' || event.type === 'touchend') {
-            // Open contact card modal when clicking/tapping on contact mention
-            event.preventDefault();
-            event.stopPropagation();
-            handleContactCardShow(contactId, 'modal', event, true);
-            return;
-          }
-        } else {
-          // Handle Shopify entity mentions (existing behavior)
-          const url = target.getAttribute('data-url');
-          if (url && (event.type === 'click' || event.type === 'touchend')) {
-            event.preventDefault();
-            event.stopPropagation();
-            window.open(url, '_blank', 'noopener,noreferrer');
-          }
+      // Find the closest entity-mention element (in case click is on child element)
+      const mentionElement = event.target.closest('.entity-mention');
+      if (!mentionElement) return;
+
+      const contactId = mentionElement.getAttribute('data-id');
+      const type = mentionElement.getAttribute('data-type');
+      
+      // Only handle person and business mentions (not Shopify entities)
+      if (type === 'person' || type === 'business') {
+        // Open contact card modal when clicking/tapping on contact mention
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        handleContactCardShow(contactId, 'modal', event, true);
+        return;
+      } else {
+        // Handle Shopify entity mentions (existing behavior)
+        const url = mentionElement.getAttribute('data-url');
+        if (url) {
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+          window.open(url, '_blank', 'noopener,noreferrer');
         }
       }
     };
 
-    const handleTouchStart = (event) => {
-      const target = event.target;
-      if (target && target.classList && target.classList.contains('entity-mention')) {
-        touchStartTarget = target;
-        touchStartTime = Date.now();
-      }
-    };
-
-    const handleTouchEnd = (event) => {
-      if (touchStartTarget && touchStartTarget === event.target) {
-        const touchDuration = Date.now() - touchStartTime;
-        // Only trigger if it was a quick tap (not a long press or swipe)
-        if (touchDuration < 300) {
-          handleMentionInteraction(event);
-        }
-        touchStartTarget = null;
-        touchStartTime = null;
-      }
-    };
-
-    // Add event listeners to editor (click for desktop, touch for mobile)
+    // Add event listeners to editor (click works on both desktop and mobile)
     const editorElement = editorRef.current;
     if (editorElement) {
-      editorElement.addEventListener('click', handleMentionInteraction);
-      editorElement.addEventListener('touchstart', handleTouchStart, { passive: true });
-      editorElement.addEventListener('touchend', handleTouchEnd);
+      // Use capture phase to catch events before they reach the editor
+      editorElement.addEventListener('click', handleMentionInteraction, true);
       
       return () => {
-        editorElement.removeEventListener('click', handleMentionInteraction);
-        editorElement.removeEventListener('touchstart', handleTouchStart);
-        editorElement.removeEventListener('touchend', handleTouchEnd);
+        editorElement.removeEventListener('click', handleMentionInteraction, true);
       };
     }
   }, [editor]);
