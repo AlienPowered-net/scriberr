@@ -271,6 +271,7 @@ const AdvancedRTE = ({
   const [contactCardContact, setContactCardContact] = useState(null);
   const [contactCardVariant, setContactCardVariant] = useState('modal');
   const [contactCardFromEditor, setContactCardFromEditor] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
   
   const editorRef = useRef(null);
 
@@ -1163,11 +1164,13 @@ const AdvancedRTE = ({
       const isMobile = window.innerWidth <= 1024 || ('ontouchstart' in window);
       
       if (isMobile) {
-        // On mobile, prevent default behavior and show alert
+        // On mobile, prevent default behavior and show toast
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
-        alert('Mention interactions are only available on desktop. Please use a desktop device to view contact details.');
+        setToastMessage('Mention interactions are only available on desktop. Please use a desktop device to view contact details.');
+        // Auto-dismiss after 4 seconds
+        setTimeout(() => setToastMessage(null), 4000);
         return;
       }
 
@@ -6510,6 +6513,42 @@ const AdvancedRTE = ({
         />
       )}
 
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            padding: '16px 20px',
+            borderRadius: '8px',
+            backgroundColor: '#d82c0d',
+            color: 'white',
+            fontSize: '14px',
+            fontWeight: '600',
+            zIndex: 10002,
+            maxWidth: '400px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
+            animation: 'slideInToast 0.3s ease-out',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+          }}
+        >
+          {toastMessage}
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideInToast {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </>
   );
 };
