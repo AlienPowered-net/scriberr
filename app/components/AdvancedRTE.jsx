@@ -269,11 +269,7 @@ const AdvancedRTE = ({
   // Contact card state
   const [showContactCard, setShowContactCard] = useState(false);
   const [contactCardContact, setContactCardContact] = useState(null);
-  const [contactCardVariant, setContactCardVariant] = useState('tooltip');
-  const [contactCardPosition, setContactCardPosition] = useState({ x: 0, y: 0 });
-  const [hoverTimeout, setHoverTimeout] = useState(null);
-  const [hideTimeout, setHideTimeout] = useState(null);
-  const tooltipRef = useRef(null);
+  const [contactCardVariant, setContactCardVariant] = useState('modal');
   const [contactCardFromEditor, setContactCardFromEditor] = useState(false);
   
   const editorRef = useRef(null);
@@ -1143,14 +1139,6 @@ const AdvancedRTE = ({
         setContactCardVariant(variant);
         setContactCardFromEditor(fromEditor);
         
-        if (variant === 'tooltip' && event) {
-          const rect = event.target.getBoundingClientRect();
-          setContactCardPosition({
-            x: rect.right + 10,
-            y: rect.top
-          });
-        }
-        
         setShowContactCard(true);
       }
     } catch (error) {
@@ -1164,26 +1152,7 @@ const AdvancedRTE = ({
     setContactCardFromEditor(false);
   };
 
-  // Handle tooltip mouse enter - keep tooltip open
-  const handleTooltipMouseEnter = () => {
-    if (hideTimeout) {
-      clearTimeout(hideTimeout);
-      setHideTimeout(null);
-    }
-  };
-
-  // Handle tooltip mouse leave - start hide timeout
-  const handleTooltipMouseLeave = () => {
-    const hideTimeoutId = setTimeout(() => {
-      if (contactCardVariant === 'tooltip') {
-        setShowContactCard(false);
-        setContactCardContact(null);
-      }
-    }, 400);
-    setHideTimeout(hideTimeoutId);
-  };
-
-  // Add global click and hover handlers for entity mentions
+  // Add global click handlers for entity mentions
   useEffect(() => {
     const handleMentionInteraction = (event) => {
       const target = event.target;
@@ -1199,58 +1168,6 @@ const AdvancedRTE = ({
             event.stopPropagation();
             handleContactCardShow(contactId, 'modal', event, true);
             return;
-          } else if (event.type === 'mouseenter') {
-            // Clear any existing hide timeout
-            if (hideTimeout) {
-              clearTimeout(hideTimeout);
-              setHideTimeout(null);
-            }
-            
-            // Clear any existing show timeout
-            if (hoverTimeout) {
-              clearTimeout(hoverTimeout);
-              setHoverTimeout(null);
-            }
-            
-            // Set timeout for hover tooltip (reduced from 500ms to 150ms)
-            const timeout = setTimeout(() => {
-              handleContactCardShow(contactId, 'tooltip', event);
-            }, 150);
-            
-            setHoverTimeout(timeout);
-          } else if (event.type === 'mouseleave') {
-            // Clear hover timeout
-            if (hoverTimeout) {
-              clearTimeout(hoverTimeout);
-              setHoverTimeout(null);
-            }
-            
-            // Hide tooltip after a delay (increased from 200ms to 400ms)
-            const hideTimeoutId = setTimeout(() => {
-              // Only hide if mouse is not over the tooltip
-              if (contactCardVariant === 'tooltip' && tooltipRef.current) {
-                const tooltipElement = tooltipRef.current;
-                const rect = tooltipElement.getBoundingClientRect();
-                const mouseX = event.clientX || 0;
-                const mouseY = event.clientY || 0;
-                
-                // Check if mouse is still within tooltip bounds
-                if (
-                  mouseX < rect.left ||
-                  mouseX > rect.right ||
-                  mouseY < rect.top ||
-                  mouseY > rect.bottom
-                ) {
-                  setShowContactCard(false);
-                  setContactCardContact(null);
-                }
-              } else if (contactCardVariant === 'tooltip') {
-                setShowContactCard(false);
-                setContactCardContact(null);
-              }
-            }, 400);
-            
-            setHideTimeout(hideTimeoutId);
           }
         } else {
           // Handle Shopify entity mentions (existing behavior)
@@ -1264,20 +1181,16 @@ const AdvancedRTE = ({
       }
     };
 
-    // Add event listeners to editor
+    // Add event listeners to editor (only click, no hover)
     const editorElement = editorRef.current;
     if (editorElement) {
       editorElement.addEventListener('click', handleMentionInteraction);
-      editorElement.addEventListener('mouseenter', handleMentionInteraction, true);
-      editorElement.addEventListener('mouseleave', handleMentionInteraction, true);
       
       return () => {
         editorElement.removeEventListener('click', handleMentionInteraction);
-        editorElement.removeEventListener('mouseenter', handleMentionInteraction, true);
-        editorElement.removeEventListener('mouseleave', handleMentionInteraction, true);
       };
     }
-  }, [editor, hoverTimeout, hideTimeout, contactCardVariant]);
+  }, [editor]);
 
   // Cleanup orphaned suggestion components on unmount
   useEffect(() => {
@@ -6580,10 +6493,6 @@ const AdvancedRTE = ({
             // Navigate to edit page if needed
             window.location.href = `/app/contacts?edit=${contactCardContact.id}`;
           }}
-          position={contactCardPosition}
-          tooltipRef={tooltipRef}
-          onTooltipMouseEnter={handleTooltipMouseEnter}
-          onTooltipMouseLeave={handleTooltipMouseLeave}
         />
       )}
 
