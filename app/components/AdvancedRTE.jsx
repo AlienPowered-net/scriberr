@@ -1152,8 +1152,11 @@ const AdvancedRTE = ({
     setContactCardFromEditor(false);
   };
 
-  // Add global click handlers for entity mentions
+  // Add global click and touch handlers for entity mentions
   useEffect(() => {
+    let touchStartTarget = null;
+    let touchStartTime = null;
+
     const handleMentionInteraction = (event) => {
       const target = event.target;
       if (target && target.classList && target.classList.contains('entity-mention')) {
@@ -1162,8 +1165,8 @@ const AdvancedRTE = ({
         
         // Only handle person and business mentions (not Shopify entities)
         if (type === 'person' || type === 'business') {
-          if (event.type === 'click') {
-            // Open contact card modal when clicking on contact mention
+          if (event.type === 'click' || event.type === 'touchend') {
+            // Open contact card modal when clicking/tapping on contact mention
             event.preventDefault();
             event.stopPropagation();
             handleContactCardShow(contactId, 'modal', event, true);
@@ -1172,7 +1175,7 @@ const AdvancedRTE = ({
         } else {
           // Handle Shopify entity mentions (existing behavior)
           const url = target.getAttribute('data-url');
-          if (url && event.type === 'click') {
+          if (url && (event.type === 'click' || event.type === 'touchend')) {
             event.preventDefault();
             event.stopPropagation();
             window.open(url, '_blank', 'noopener,noreferrer');
@@ -1181,13 +1184,37 @@ const AdvancedRTE = ({
       }
     };
 
-    // Add event listeners to editor (only click, no hover)
+    const handleTouchStart = (event) => {
+      const target = event.target;
+      if (target && target.classList && target.classList.contains('entity-mention')) {
+        touchStartTarget = target;
+        touchStartTime = Date.now();
+      }
+    };
+
+    const handleTouchEnd = (event) => {
+      if (touchStartTarget && touchStartTarget === event.target) {
+        const touchDuration = Date.now() - touchStartTime;
+        // Only trigger if it was a quick tap (not a long press or swipe)
+        if (touchDuration < 300) {
+          handleMentionInteraction(event);
+        }
+        touchStartTarget = null;
+        touchStartTime = null;
+      }
+    };
+
+    // Add event listeners to editor (click for desktop, touch for mobile)
     const editorElement = editorRef.current;
     if (editorElement) {
       editorElement.addEventListener('click', handleMentionInteraction);
+      editorElement.addEventListener('touchstart', handleTouchStart, { passive: true });
+      editorElement.addEventListener('touchend', handleTouchEnd);
       
       return () => {
         editorElement.removeEventListener('click', handleMentionInteraction);
+        editorElement.removeEventListener('touchstart', handleTouchStart);
+        editorElement.removeEventListener('touchend', handleTouchEnd);
       };
     }
   }, [editor]);

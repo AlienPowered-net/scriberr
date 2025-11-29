@@ -282,6 +282,10 @@
   transition: filter 0.15s ease;
   white-space: nowrap;
   vertical-align: baseline;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .entity-mention:hover {
