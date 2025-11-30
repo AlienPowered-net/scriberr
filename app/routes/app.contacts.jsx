@@ -3210,20 +3210,24 @@ export default function ContactsPage() {
                     marginTop: '8px', 
                     display: 'flex', 
                     flexWrap: 'wrap', 
-                    gap: '6px' 
+                    gap: '8px' 
                   }}>
                     {formData.tags.map((tag, index) => (
                       <div
                         key={index}
                         style={{
-                          display: 'inline-flex',
+                          display: 'flex',
                           alignItems: 'center',
-                          gap: '4px'
+                          gap: '6px',
+                          padding: '4px 8px',
+                          backgroundColor: '#f6fff8',
+                          border: '1px solid #008060',
+                          borderRadius: '16px',
+                          fontSize: '12px',
+                          color: '#008060'
                         }}
                       >
-                        <Badge tone="default">
-                          {tag}
-                        </Badge>
+                        <span>{tag}</span>
                         <button
                           onClick={() => {
                             setFormData(prev => ({
@@ -3234,14 +3238,13 @@ export default function ContactsPage() {
                           style={{
                             background: 'none',
                             border: 'none',
-                            color: '#008060',
                             cursor: 'pointer',
-                            padding: '0 4px',
+                            fontSize: '14px',
+                            color: 'rgba(199, 10, 36, 1)',
+                            padding: '0',
                             display: 'flex',
                             alignItems: 'center',
-                            fontSize: '16px',
-                            fontWeight: 'bold',
-                            lineHeight: '1'
+                            fontWeight: 'bold'
                           }}
                           aria-label={`Remove tag ${tag}`}
                         >
