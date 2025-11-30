@@ -113,10 +113,23 @@ export const action = async ({ request }) => {
             return json({ error: "Business name is required for business contacts" }, { status: 400 });
           }
 
+          if (!folderId) {
+            return json({ error: "Folder is required to create a contact" }, { status: 400 });
+          }
+
+          // Verify folder exists and belongs to shop
+          const folder = await prisma.contactFolder.findFirst({
+            where: { id: folderId, shopId: planContext.shopId }
+          });
+
+          if (!folder) {
+            return json({ error: "Invalid folder or folder does not belong to your shop" }, { status: 400 });
+          }
+
           const contactData = {
             shopId: planContext.shopId,
             type,
-            folderId: folderId || null,
+            folderId: folderId,
             ...(firstName && { firstName }),
             ...(lastName && { lastName }),
             ...(businessName && { businessName }),
@@ -166,6 +179,22 @@ export const action = async ({ request }) => {
             return json({ error: "Contact not found" }, { status: 404 });
           }
 
+          // Validate folderId if provided
+          if (folderId !== null) {
+            if (!folderId) {
+              return json({ error: "Folder is required for contacts" }, { status: 400 });
+            }
+
+            // Verify folder exists and belongs to shop
+            const folder = await prisma.contactFolder.findFirst({
+              where: { id: folderId, shopId: planContext.shopId }
+            });
+
+            if (!folder) {
+              return json({ error: "Invalid folder or folder does not belong to your shop" }, { status: 400 });
+            }
+          }
+
           const updateData = {
             ...(type && { type }),
             ...(firstName !== null && { firstName }),
@@ -178,7 +207,7 @@ export const action = async ({ request }) => {
             ...(role !== null && { role }),
             ...(memo !== null && { memo }),
             ...(address !== null && { address }),
-            ...(folderId !== null && { folderId: folderId || null }),
+            ...(folderId !== null && folderId && { folderId }),
             ...(pointsOfContact && { pointsOfContact: JSON.parse(pointsOfContact) }),
             ...(tags && { tags: JSON.parse(tags) }),
             ...(avatarColor && { avatarColor })

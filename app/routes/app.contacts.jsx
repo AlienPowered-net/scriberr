@@ -772,7 +772,7 @@ export default function ContactsPage() {
       role: '',
       memo: '',
       address: '',
-      folderId: selectedFolder?.id || null,
+      folderId: selectedFolder?.id,
       pointsOfContact: [{ name: '', phone: '', email: '' }],
       tags: [],
       avatarColor: '#10b981'
@@ -1124,8 +1124,8 @@ export default function ContactsPage() {
 
   // Handle new contact on mobile
   const handleNewContact = () => {
-    if (!selectedFolder) {
-      setAlertMessage("Please select a folder to create a contact");
+    if (folders.length === 0 || !selectedFolder) {
+      setAlertMessage("Create or select a folder first before adding a contact.");
       setAlertType("error");
       setTimeout(() => setAlertMessage(''), 3000);
       return;
@@ -1540,8 +1540,8 @@ export default function ContactsPage() {
     console.log('🚀 handleSubmit called', { editingContact: !!editingContact, showNewContactForm, formData });
     
     // Validate required fields
-    if (!selectedFolder) {
-      setAlertMessage('Please select a folder to create a contact');
+    if (folders.length === 0 || !selectedFolder || !formData.folderId) {
+      setAlertMessage('Please create or select a folder first before adding a contact.');
       setAlertType('error');
       setTimeout(() => setAlertMessage(''), 3000);
       return;
@@ -2232,7 +2232,7 @@ export default function ContactsPage() {
                           <Button
                             onClick={handleNewContact}
                             variant="primary"
-                            disabled={!selectedFolder}
+                            disabled={!selectedFolder || folders.length === 0}
                           >
                             Add new contact
                           </Button>
@@ -2674,7 +2674,7 @@ export default function ContactsPage() {
                             heading="No contacts yet"
                             action={{
                               content: "Create your first contact",
-                              onAction: () => setShowNewContactForm(true),
+                              onAction: handleNewContact,
                             }}
                             image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
                           >
@@ -3159,10 +3159,7 @@ export default function ContactsPage() {
 
               <Select
                 label="Folder"
-                options={[
-                  { label: 'No folder', value: null },
-                  ...folders.map(folder => ({ label: folder.name, value: folder.id }))
-                ]}
+                options={folders.map(folder => ({ label: folder.name, value: folder.id }))}
                 value={formData.folderId}
                 onChange={(value) => setFormData({ ...formData, folderId: value })}
               />
@@ -3425,6 +3422,7 @@ export default function ContactsPage() {
                     variant="primary"
                     size="slim"
                     onClick={handleNewContact}
+                    disabled={!selectedFolder || folders.length === 0}
                     style={{ fontSize: '14px', fontWeight: '500' }}
                   >
                     Add Contact
@@ -3986,7 +3984,7 @@ export default function ContactsPage() {
                     heading="No contacts yet"
                     action={{
                       content: "Create your first contact",
-                      onAction: () => setShowNewContactForm(true),
+                      onAction: handleNewContact,
                     }}
                     image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
                   >
@@ -4514,10 +4512,7 @@ export default function ContactsPage() {
                     Folder
                   </label>
                   <Select
-                    options={[
-                      { label: 'No folder', value: null },
-                      ...folders.map(folder => ({ label: folder.name, value: folder.id }))
-                    ]}
+                    options={folders.map(folder => ({ label: folder.name, value: folder.id }))}
                     value={formData.folderId}
                     onChange={(value) => setFormData(prev => ({ ...prev, folderId: value }))}
                   />
