@@ -2990,6 +2990,7 @@ export default function ContactsPage() {
               setEditingContact(null);
               setShowNewContactForm(false);
               setFormData(getInitialFormData());
+              setTagsInputValue('');
             }}
             title={editingContact ? 'Edit Contact' : 'Add new contact'}
             primaryAction={{
@@ -3002,6 +3003,7 @@ export default function ContactsPage() {
                 setEditingContact(null);
                 setShowNewContactForm(false);
                 setFormData(getInitialFormData());
+                setTagsInputValue('');
               }
             }]}
           >
@@ -3163,6 +3165,93 @@ export default function ContactsPage() {
                 value={formData.folderId}
                 onChange={(value) => setFormData({ ...formData, folderId: value })}
               />
+
+              {/* Tags Field */}
+              <div>
+                <TextField
+                  label="Tags"
+                  placeholder="e.g., client, vip, important (press Enter or comma)"
+                  value={tagsInputValue}
+                  onChange={(value) => {
+                    // Check if user typed a comma
+                    if (value.includes(',')) {
+                      // Process all complete tags (before commas)
+                      const parts = value.split(',');
+                      const completeTags = parts.slice(0, -1).map(tag => tag.trim()).filter(tag => tag.length > 0);
+                      
+                      if (completeTags.length > 0) {
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          tags: [...(prev.tags || []), ...completeTags]
+                        }));
+                      }
+                      
+                      // Keep the text after the last comma
+                      setTagsInputValue(parts[parts.length - 1]);
+                    } else {
+                      setTagsInputValue(value);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && tagsInputValue.trim()) {
+                      e.preventDefault();
+                      // Add the current tag
+                      const newTag = tagsInputValue.trim();
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        tags: [...(prev.tags || []), newTag]
+                      }));
+                      setTagsInputValue('');
+                    }
+                  }}
+                />
+                {formData.tags && formData.tags.length > 0 && (
+                  <div style={{ 
+                    marginTop: '8px', 
+                    display: 'flex', 
+                    flexWrap: 'wrap', 
+                    gap: '6px' 
+                  }}>
+                    {formData.tags.map((tag, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <Badge tone="default">
+                          {tag}
+                        </Badge>
+                        <button
+                          onClick={() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tags: prev.tags.filter((_, i) => i !== index)
+                            }));
+                          }}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#008060',
+                            cursor: 'pointer',
+                            padding: '0 4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            fontSize: '16px',
+                            fontWeight: 'bold',
+                            lineHeight: '1'
+                          }}
+                          aria-label={`Remove tag ${tag}`}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </Modal.Section>
         </Modal>
