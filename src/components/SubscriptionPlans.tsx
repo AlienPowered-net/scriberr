@@ -127,104 +127,6 @@ export function SubscriptionPlans({
   return (
     <div style={{ width: "100%" }}>
       <InlineGrid columns={{ xs: 1, sm: 1, md: 2 }} gap="400">
-        {/* FREE Plan Card */}
-        <Card>
-          <div
-            style={{
-              padding: "24px",
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <BlockStack gap="400">
-              {/* Header with FOREVER pill */}
-              <InlineStack align="start" blockAlign="start" gap="200">
-                <div
-                  style={{
-                    ...planPillBaseStyle,
-                    backgroundColor: "#6D7175",
-                    color: "#FFFFFF",
-                  }}
-                >
-                  FOREVER
-                </div>
-              </InlineStack>
-
-              {/* Plan Name */}
-              <Text as="h2" variant="heading2xl" fontWeight="bold">
-                Free
-              </Text>
-
-              {/* Summary */}
-              <Text as="p" variant="bodyMd" tone="subdued">
-                Stay organized with up to 25 notes and 3 folders
-              </Text>
-
-              <Divider />
-
-              {/* Features List */}
-              <BlockStack gap="300">
-                {FREE_FEATURES.map((feature) => (
-                  <div
-                    key={feature}
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: "8px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: "20px",
-                        height: "20px",
-                        flexShrink: 0,
-                        color: "#000000",
-                        marginTop: "2px",
-                      }}
-                    >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M13.3333 4L6 11.3333L2.66667 8"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-                    <div style={{ lineHeight: "20px", flex: 1 }}>
-                      <Text as="span" variant="bodyMd">
-                        {feature}
-                      </Text>
-                    </div>
-                  </div>
-                ))}
-              </BlockStack>
-
-              {/* Current Plan Button */}
-              <div style={{ marginTop: "auto", paddingTop: "16px" }}>
-                {isFree ? (
-                  <Button fullWidth disabled={true} variant="secondary">
-                    Your current plan
-                  </Button>
-                ) : (
-                  <div style={{ height: "36px" }} />
-                )}
-              </div>
-            </BlockStack>
-          </div>
-        </Card>
-
         {/* PRO Plan Card */}
         <Card>
           <div
@@ -357,6 +259,104 @@ export function SubscriptionPlans({
                   >
                     {isSubmitting ? "Processing..." : "Upgrade now"}
                   </button>
+                )}
+              </div>
+            </BlockStack>
+          </div>
+        </Card>
+
+        {/* FREE Plan Card */}
+        <Card>
+          <div
+            style={{
+              padding: "24px",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <BlockStack gap="400">
+              {/* Header with FOREVER pill */}
+              <InlineStack align="start" blockAlign="start" gap="200">
+                <div
+                  style={{
+                    ...planPillBaseStyle,
+                    backgroundColor: "#6D7175",
+                    color: "#FFFFFF",
+                  }}
+                >
+                  FOREVER
+                </div>
+              </InlineStack>
+
+              {/* Plan Name */}
+              <Text as="h2" variant="heading2xl" fontWeight="bold">
+                Free
+              </Text>
+
+              {/* Summary */}
+              <Text as="p" variant="bodyMd" tone="subdued">
+                Stay organized with up to 25 notes and 3 folders
+              </Text>
+
+              <Divider />
+
+              {/* Features List */}
+              <BlockStack gap="300">
+                {FREE_FEATURES.map((feature) => (
+                  <div
+                    key={feature}
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "20px",
+                        height: "20px",
+                        flexShrink: 0,
+                        color: "#000000",
+                        marginTop: "2px",
+                      }}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M13.3333 4L6 11.3333L2.66667 8"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                    <div style={{ lineHeight: "20px", flex: 1 }}>
+                      <Text as="span" variant="bodyMd">
+                        {feature}
+                      </Text>
+                    </div>
+                  </div>
+                ))}
+              </BlockStack>
+
+              {/* Current Plan Button */}
+              <div style={{ marginTop: "auto", paddingTop: "16px" }}>
+                {isFree ? (
+                  <Button fullWidth disabled={true} variant="secondary">
+                    Your current plan
+                  </Button>
+                ) : (
+                  <div style={{ height: "36px" }} />
                 )}
               </div>
             </BlockStack>
