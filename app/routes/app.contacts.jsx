@@ -3008,6 +3008,18 @@ export default function ContactsPage() {
               }
             }]}
           >
+          <style>{`
+            .folder-tags-row {
+              display: grid;
+              grid-template-columns: 1fr 2fr;
+              gap: 16px;
+            }
+            @media (max-width: 768px) {
+              .folder-tags-row {
+                grid-template-columns: 1fr;
+              }
+            }
+          `}</style>
           <Modal.Section>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
               {/* Section 1: Basic Identity */}
@@ -3194,109 +3206,116 @@ export default function ContactsPage() {
                 </>
               )}
 
-              {/* Folder and Tags - Full Width */}
+              {/* Folder and Tags - Same Row on Desktop */}
               <div style={{ gridColumn: "1 / -1", marginTop: "8px" }}>
                 <Divider />
               </div>
-              <div style={{ gridColumn: "1 / -1" }}>
-                <Select
-                  label="Folder"
-                  options={folders.map(folder => ({ label: folder.name, value: folder.id }))}
-                  value={formData.folderId}
-                  onChange={(value) => setFormData({ ...formData, folderId: value })}
-                />
-              </div>
-
-              {/* Tags Field */}
-              <div style={{ gridColumn: "1 / -1" }}>
-                <div onKeyDown={(e) => {
-                  if (e.key === 'Enter' && tagsInputValue.trim()) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    // Add the current tag
-                    const newTag = tagsInputValue.trim();
-                    setFormData(prev => ({ 
-                      ...prev, 
-                      tags: [...(prev.tags || []), newTag]
-                    }));
-                    setTagsInputValue('');
-                  }
-                }}>
-                  <TextField
-                    label="Tags"
-                    placeholder="e.g., client, vip, important (press Enter or comma)"
-                    value={tagsInputValue}
-                    onChange={(value) => {
-                      // Check if user typed a comma
-                      if (value.includes(',')) {
-                        // Process all complete tags (before commas)
-                        const parts = value.split(',');
-                        const completeTags = parts.slice(0, -1).map(tag => tag.trim()).filter(tag => tag.length > 0);
-                        
-                        if (completeTags.length > 0) {
-                          setFormData(prev => ({ 
-                            ...prev, 
-                            tags: [...(prev.tags || []), ...completeTags]
-                          }));
-                        }
-                        
-                        // Keep the text after the last comma
-                        setTagsInputValue(parts[parts.length - 1]);
-                      } else {
-                        setTagsInputValue(value);
-                      }
-                    }}
+              <div style={{ 
+                gridColumn: "1 / -1",
+                display: "grid",
+                gridTemplateColumns: "1fr 2fr",
+                gap: "16px"
+              }} className="folder-tags-row">
+                <div>
+                  <Select
+                    label="Folder"
+                    options={folders.map(folder => ({ label: folder.name, value: folder.id }))}
+                    value={formData.folderId}
+                    onChange={(value) => setFormData({ ...formData, folderId: value })}
                   />
                 </div>
-                {formData.tags && formData.tags.length > 0 && (
-                  <div style={{ 
-                    marginTop: '8px', 
-                    display: 'flex', 
-                    flexWrap: 'wrap', 
-                    gap: '8px' 
+
+                {/* Tags Field */}
+                <div>
+                  <div onKeyDown={(e) => {
+                    if (e.key === 'Enter' && tagsInputValue.trim()) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      // Add the current tag
+                      const newTag = tagsInputValue.trim();
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        tags: [...(prev.tags || []), newTag]
+                      }));
+                      setTagsInputValue('');
+                    }
                   }}>
-                    {formData.tags.map((tag, index) => (
-                      <div
-                        key={index}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          padding: '4px 8px',
-                          backgroundColor: '#f6fff8',
-                          border: '1px solid #008060',
-                          borderRadius: '16px',
-                          fontSize: '12px',
-                          color: '#008060'
-                        }}
-                      >
-                        <span>{tag}</span>
-                        <button
-                          onClick={() => {
-                            setFormData(prev => ({
-                              ...prev,
-                              tags: prev.tags.filter((_, i) => i !== index)
+                    <TextField
+                      label="Tags"
+                      placeholder="e.g., client, vip, important (press Enter or comma)"
+                      value={tagsInputValue}
+                      onChange={(value) => {
+                        // Check if user typed a comma
+                        if (value.includes(',')) {
+                          // Process all complete tags (before commas)
+                          const parts = value.split(',');
+                          const completeTags = parts.slice(0, -1).map(tag => tag.trim()).filter(tag => tag.length > 0);
+                          
+                          if (completeTags.length > 0) {
+                            setFormData(prev => ({ 
+                              ...prev, 
+                              tags: [...(prev.tags || []), ...completeTags]
                             }));
-                          }}
+                          }
+                          
+                          // Keep the text after the last comma
+                          setTagsInputValue(parts[parts.length - 1]);
+                        } else {
+                          setTagsInputValue(value);
+                        }
+                      }}
+                    />
+                  </div>
+                  {formData.tags && formData.tags.length > 0 && (
+                    <div style={{ 
+                      marginTop: '8px', 
+                      display: 'flex', 
+                      flexWrap: 'wrap', 
+                      gap: '8px' 
+                    }}>
+                      {formData.tags.map((tag, index) => (
+                        <div
+                          key={index}
                           style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            fontSize: '14px',
-                            color: 'rgba(199, 10, 36, 1)',
-                            padding: '0',
                             display: 'flex',
                             alignItems: 'center',
-                            fontWeight: 'bold'
+                            gap: '6px',
+                            padding: '4px 8px',
+                            backgroundColor: '#f6fff8',
+                            border: '1px solid #008060',
+                            borderRadius: '16px',
+                            fontSize: '12px',
+                            color: '#008060'
                           }}
-                          aria-label={`Remove tag ${tag}`}
                         >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                          <span>{tag}</span>
+                          <button
+                            onClick={() => {
+                              setFormData(prev => ({
+                                ...prev,
+                                tags: prev.tags.filter((_, i) => i !== index)
+                              }));
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              fontSize: '14px',
+                              color: 'rgba(199, 10, 36, 1)',
+                              padding: '0',
+                              display: 'flex',
+                              alignItems: 'center',
+                              fontWeight: 'bold'
+                            }}
+                            aria-label={`Remove tag ${tag}`}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </Modal.Section>
