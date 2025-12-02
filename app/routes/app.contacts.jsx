@@ -1299,11 +1299,19 @@ export default function ContactsPage() {
         setContacts(prev => prev.filter(c => c.id !== contactId));
         // Remove from selection if it was selected
         setSelectedContacts(prev => prev.filter(id => id !== contactId));
+        setAlertMessage("Contact deleted successfully");
+        setAlertType("success");
+        setTimeout(() => setAlertMessage(''), 3000);
       } else {
-        console.error('Error deleting contact:', result.error);
+        setAlertMessage(result.error || "Failed to delete contact");
+        setAlertType("error");
+        setTimeout(() => setAlertMessage(''), 3000);
       }
     } catch (error) {
       console.error('Error deleting contact:', error);
+      setAlertMessage("Failed to delete contact");
+      setAlertType("error");
+      setTimeout(() => setAlertMessage(''), 3000);
     } finally {
       setIsLoading(false);
     }
@@ -5053,11 +5061,11 @@ export default function ContactsPage() {
         </div>
       )}
 
-      {/* Mobile Modals - Rendered outside mobile layout to avoid z-index conflicts */}
+      {/* Modals - Rendered outside layout to avoid z-index conflicts */}
       <div style={{ 
         position: 'relative', 
         zIndex: 100000000,
-        pointerEvents: isMobile && (showBulkMoveModal || showContactDeleteModal) ? 'auto' : 'none'
+        pointerEvents: (isMobile && showBulkMoveModal) || showContactDeleteModal ? 'auto' : 'none'
       }}>
         {isMobile && showBulkMoveModal && (
           <Modal
@@ -5143,8 +5151,8 @@ export default function ContactsPage() {
           </Modal>
         )}
 
-        {/* Mobile Contact Delete Modal - Rendered outside mobile layout */}
-        {isMobile && showContactDeleteModal && (
+        {/* Contact Delete Modal - Rendered outside layout */}
+        {showContactDeleteModal && (
           <Modal
             open={!!showContactDeleteModal}
             onClose={() => setShowContactDeleteModal(null)}
