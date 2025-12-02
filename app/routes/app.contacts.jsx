@@ -551,6 +551,7 @@ export default function ContactsPage() {
         gap: 4px;
       }
       
+      /* Mobile Layout (default) */
       .custom-contact-row {
         display: flex !important;
         align-items: center !important;
@@ -682,6 +683,91 @@ export default function ContactsPage() {
       
       .dropdown-item:hover {
         background-color: #f6f6f7;
+      }
+      
+      /* Desktop Layout - Grid alignment with header */
+      @media (min-width: 992px) {
+        .custom-contact-row {
+          display: grid !important;
+          grid-template-columns: 60px 200px 180px 120px 150px 150px;
+          column-gap: 16px;
+          align-items: center;
+          padding: 12px 16px !important;
+          border-bottom: 1px solid #e1e3e5 !important;
+          border-radius: 0 !important;
+          margin-bottom: 0 !important;
+          background-color: #ffffff !important;
+        }
+        
+        .custom-contact-row.pinned {
+          background-color: #f0f8ff !important;
+          border-bottom: 1px solid #007bff !important;
+        }
+        
+        .custom-contact-row.selected {
+          background-color: #fffbf8 !important;
+          border-bottom: 1px solid #ff8c00 !important;
+        }
+        
+        .custom-contact-row:hover {
+          background-color: #f1f1f1 !important;
+          border-bottom: 1px solid #dedede !important;
+          border-radius: 0 !important;
+        }
+        
+        .custom-contact-row.pinned:hover {
+          background-color: #d5ebff !important;
+          border-bottom: 1px solid #007bff !important;
+          border-radius: 0 !important;
+        }
+        
+        .custom-contact-row.selected:hover {
+          background-color: #ffe7d5 !important;
+          border-bottom: 1px solid #ff8c00 !important;
+          border-radius: 0 !important;
+        }
+        
+        /* Make contact-content children become grid items */
+        .custom-contact-row .contact-content {
+          display: contents;
+        }
+        
+        /* Center align columns (purple arrows) */
+        .custom-contact-row .contact-avatar {
+          justify-self: center;
+          margin-right: 0 !important;
+        }
+        
+        .custom-contact-row .contact-name {
+          justify-self: center;
+        }
+        
+        .custom-contact-row .contact-info {
+          justify-self: center;
+        }
+        
+        .custom-contact-row .contact-date {
+          justify-self: center;
+        }
+        
+        /* Tags column - center the group of tags */
+        .custom-contact-row .contact-tags {
+          justify-self: center;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 4px;
+          justify-content: center;
+        }
+        
+        /* Actions column - left aligned starting at anchor line */
+        .custom-contact-row .contact-actions {
+          justify-self: flex-start;
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          margin-left: 0;
+          width: auto;
+        }
       }
     `;
     document.head.appendChild(style);
