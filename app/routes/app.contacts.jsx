@@ -59,7 +59,8 @@ import {
   Select,
   Banner,
   Spinner,
-  Icon
+  Icon,
+  Divider
 } from "@shopify/polaris";
 import { 
   DeleteIcon,
@@ -3008,19 +3009,23 @@ export default function ContactsPage() {
             }]}
           >
           <Modal.Section>
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              <Select
-                label="Contact Type"
-                options={[
-                  { label: 'Person', value: 'PERSON' },
-                  { label: 'Business', value: 'BUSINESS' }
-                ]}
-                value={formData.type}
-                onChange={(value) => setFormData({ ...formData, type: value })}
-              />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              {/* Section 1: Basic Identity */}
+              <div style={{ gridColumn: "1 / -1" }}>
+                <Select
+                  label="Contact Type"
+                  options={[
+                    { label: 'Person', value: 'PERSON' },
+                    { label: 'Business', value: 'BUSINESS' }
+                  ]}
+                  value={formData.type}
+                  onChange={(value) => setFormData({ ...formData, type: value })}
+                />
+              </div>
 
               {formData.type === 'PERSON' ? (
                 <>
+                  {/* Section 1: Basic Identity - First/Last Name */}
                   <TextField
                     label="First Name"
                     value={formData.firstName}
@@ -3033,11 +3038,20 @@ export default function ContactsPage() {
                     onChange={(value) => setFormData({ ...formData, lastName: value })}
                     required
                   />
+
+                  {/* Section 2: Company / Role */}
                   <TextField
                     label="Company"
                     value={formData.company}
                     onChange={(value) => setFormData({ ...formData, company: value })}
                   />
+                  <TextField
+                    label="Role"
+                    value={formData.role}
+                    onChange={(value) => setFormData({ ...formData, role: value })}
+                  />
+
+                  {/* Section 3: Contact Info */}
                   <TextField
                     label="Phone"
                     value={formData.phone}
@@ -3048,31 +3062,40 @@ export default function ContactsPage() {
                     value={formData.mobile}
                     onChange={(value) => setFormData({ ...formData, mobile: value })}
                   />
-                  <TextField
-                    label="Role"
-                    value={formData.role}
-                    onChange={(value) => setFormData({ ...formData, role: value })}
-                  />
-                  <TextField
-                    label="Email"
-                    value={formData.email}
-                    onChange={(value) => setFormData({ ...formData, email: value })}
-                  />
-                  <TextField
-                    label="Memo"
-                    value={formData.memo}
-                    onChange={(value) => setFormData({ ...formData, memo: value })}
-                    multiline={3}
-                  />
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <TextField
+                      label="Email"
+                      value={formData.email}
+                      onChange={(value) => setFormData({ ...formData, email: value })}
+                    />
+                  </div>
+
+                  {/* Section 4: Additional */}
+                  <div style={{ gridColumn: "1 / -1", marginTop: "8px" }}>
+                    <Divider />
+                  </div>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <TextField
+                      label="Memo"
+                      value={formData.memo}
+                      onChange={(value) => setFormData({ ...formData, memo: value })}
+                      multiline={3}
+                    />
+                  </div>
                 </>
               ) : (
                 <>
-                  <TextField
-                    label="Business Name"
-                    value={formData.businessName}
-                    onChange={(value) => setFormData({ ...formData, businessName: value })}
-                    required
-                  />
+                  {/* Business Name - Full Width */}
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <TextField
+                      label="Business Name"
+                      value={formData.businessName}
+                      onChange={(value) => setFormData({ ...formData, businessName: value })}
+                      required
+                    />
+                  </div>
+
+                  {/* Section 3: Contact Info */}
                   <TextField
                     label="Business Phone"
                     value={formData.phone}
@@ -3083,19 +3106,31 @@ export default function ContactsPage() {
                     value={formData.email}
                     onChange={(value) => setFormData({ ...formData, email: value })}
                   />
-                  <TextField
-                    label="Role"
-                    value={formData.role}
-                    onChange={(value) => setFormData({ ...formData, role: value })}
-                  />
-                  <TextField
-                    label="Memo"
-                    value={formData.memo}
-                    onChange={(value) => setFormData({ ...formData, memo: value })}
-                    multiline={3}
-                  />
-                  
-                  <div>
+
+                  {/* Role - Full Width */}
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <TextField
+                      label="Role"
+                      value={formData.role}
+                      onChange={(value) => setFormData({ ...formData, role: value })}
+                    />
+                  </div>
+
+                  {/* Memo - Full Width */}
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <TextField
+                      label="Memo"
+                      value={formData.memo}
+                      onChange={(value) => setFormData({ ...formData, memo: value })}
+                      multiline={3}
+                    />
+                  </div>
+
+                  {/* Points of Contact - Full Width */}
+                  <div style={{ gridColumn: "1 / -1", marginTop: "8px" }}>
+                    <Divider />
+                  </div>
+                  <div style={{ gridColumn: "1 / -1" }}>
                     <Text as="h3" variant="headingMd" style={{ marginBottom: "12px" }}>
                       Points of Contact
                     </Text>
@@ -3159,15 +3194,21 @@ export default function ContactsPage() {
                 </>
               )}
 
-              <Select
-                label="Folder"
-                options={folders.map(folder => ({ label: folder.name, value: folder.id }))}
-                value={formData.folderId}
-                onChange={(value) => setFormData({ ...formData, folderId: value })}
-              />
+              {/* Folder and Tags - Full Width */}
+              <div style={{ gridColumn: "1 / -1", marginTop: "8px" }}>
+                <Divider />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <Select
+                  label="Folder"
+                  options={folders.map(folder => ({ label: folder.name, value: folder.id }))}
+                  value={formData.folderId}
+                  onChange={(value) => setFormData({ ...formData, folderId: value })}
+                />
+              </div>
 
               {/* Tags Field */}
-              <div>
+              <div style={{ gridColumn: "1 / -1" }}>
                 <div onKeyDown={(e) => {
                   if (e.key === 'Enter' && tagsInputValue.trim()) {
                     e.preventDefault();
