@@ -1635,11 +1635,26 @@ export default function ContactsPage() {
     console.log('🚀 handleSubmit called', { editingContact: !!editingContact, showNewContactForm, formData });
     
     // Validate required fields
-    if (folders.length === 0 || !selectedFolder || !formData.folderId) {
-      setAlertMessage('Please create or select a folder first before adding a contact.');
-      setAlertType('error');
-      setTimeout(() => setAlertMessage(''), 3000);
-      return;
+    // Folder validation: 
+    // - When creating: require folder (folders exist, selectedFolder exists, formData.folderId exists)
+    // - When editing: only require folder if both formData.folderId and existing contact's folderId are missing
+    if (!editingContact) {
+      // Creating new contact - folder is required
+      if (folders.length === 0 || !selectedFolder || !formData.folderId) {
+        setAlertMessage('Please create or select a folder first before adding a contact.');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+        return;
+      }
+    } else {
+      // Editing existing contact - only require folder if it's missing from both formData and existing contact
+      const hasFolderId = formData.folderId || editingContact.folderId;
+      if (!hasFolderId) {
+        setAlertMessage('Please select a folder for this contact.');
+        setAlertType('error');
+        setTimeout(() => setAlertMessage(''), 3000);
+        return;
+      }
     }
     
     if (formData.type === 'PERSON') {
@@ -1671,10 +1686,20 @@ export default function ContactsPage() {
         submitData.append('id', editingContact.id);
       }
       
+      // For folderId when editing: use formData value if provided, otherwise preserve existing contact's folderId
+      const folderIdToSubmit = editingContact && (!formData.folderId && editingContact.folderId) 
+        ? editingContact.folderId 
+        : formData.folderId;
+      
       // Add all form fields
       Object.keys(formData).forEach(key => {
         if (key === 'pointsOfContact' || key === 'tags') {
           submitData.append(key, JSON.stringify(formData[key]));
+        } else if (key === 'folderId') {
+          // Handle folderId separately to preserve existing value when editing
+          if (folderIdToSubmit) {
+            submitData.append(key, folderIdToSubmit);
+          }
         } else if (formData[key] !== null && formData[key] !== undefined) {
           submitData.append(key, formData[key]);
         }
@@ -2811,6 +2836,7 @@ export default function ContactsPage() {
               console.log('Edit button clicked in tooltip, contactCardContact:', contactCardContact);
               setShowContactCard(false);
               setShowNewContactForm(true);
+              setEditingContact(contactCardContact);
               setFormData({
                 type: contactCardContact.type,
                 firstName: contactCardContact.firstName || '',
@@ -2822,10 +2848,10 @@ export default function ContactsPage() {
                 company: contactCardContact.company || '',
                 role: contactCardContact.role || '',
                 memo: contactCardContact.memo || '',
+                folderId: contactCardContact.folderId || '',
                 tags: contactCardContact.tags || [],
                 pointsOfContact: contactCardContact.pointsOfContact || []
               });
-              setEditingContactId(contactCardContact.id);
               console.log('Form should be shown now, showNewContactForm:', true);
             }}
             position={contactCardPosition}
@@ -3518,6 +3544,7 @@ export default function ContactsPage() {
               console.log('Edit button clicked in main modal, selectedContact:', selectedContact);
               setShowContactDetails(false);
               setShowNewContactForm(true);
+              setEditingContact(selectedContact);
               setFormData({
                 type: selectedContact.type,
                 firstName: selectedContact.firstName || '',
@@ -3529,10 +3556,10 @@ export default function ContactsPage() {
                 company: selectedContact.company || '',
                 role: selectedContact.role || '',
                 memo: selectedContact.memo || '',
+                folderId: selectedContact.folderId || '',
                 tags: selectedContact.tags || [],
                 pointsOfContact: selectedContact.pointsOfContact || []
               });
-              setEditingContactId(selectedContact.id);
               console.log('Form should be shown now, showNewContactForm:', true);
             }}
           />
