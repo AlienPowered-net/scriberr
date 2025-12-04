@@ -48,6 +48,7 @@ import FolderIconPicker from "../components/FolderIconPicker";
 import NewFolderModal from "../components/NewFolderModal";
 import DraggableFolder from "../components/DraggableFolder";
 import NoteCard from "../components/NoteCard";
+import ScriberrFullPageLoader from "../components/ScriberrFullPageLoader";
 import "../styles/tiptap.css";
 import {
   DndContext,
@@ -3457,41 +3458,7 @@ export default function Index() {
 
   // Show loading page while content loads
   if (isLoading) {
-    return (
-      <Page title="Loading Scriberr...">
-        <div style={{ 
-          display: "flex", 
-          justifyContent: "center", 
-          alignItems: "center", 
-          height: "60vh",
-          flexDirection: "column",
-          gap: "20px"
-        }}>
-          <div style={{
-            width: "60px",
-            height: "60px",
-            border: "4px solid #e1e3e5",
-            borderTop: "4px solid #5c6ac4",
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite"
-          }}></div>
-          <Text variant="headingMd" tone="subdued">Loading Scriberr...</Text>
-          <Text variant="bodyMd" tone="subdued">Please wait while we prepare your workspace</Text>
-        </div>
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          
-          /* Ensure fullscreen editor appears above all other elements */
-          .advanced-rte-container.fixed {
-            z-index: 9999999 !important;
-            position: fixed !important;
-          }
-        `}</style>
-      </Page>
-    );
+    return <ScriberrFullPageLoader />;
   }
 
   return (

@@ -7,6 +7,7 @@ import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
 import packageJson from "../../package.json" with { type: "json" };
 import SetupGuide from "../components/SetupGuide";
+import ScriberrFullPageLoader from "../components/ScriberrFullPageLoader";
 import { usePlanContext } from "../hooks/usePlanContext";
 
 import {
@@ -86,6 +87,7 @@ export default function HomePage() {
   const { plan, openUpgradeModal } = usePlanContext();
   const isPro = plan === "PRO";
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(() => {
     if (typeof window !== 'undefined') {
       if (plan === "PRO") {
@@ -95,6 +97,15 @@ export default function HomePage() {
     }
     return plan !== "PRO";
   });
+
+  // Handle initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 800); // Show loader for 0.8 seconds
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (isPro) {
@@ -146,6 +157,11 @@ export default function HomePage() {
       navigate('/app/dashboard');
     }
   };
+
+  // Show loading page while content loads
+  if (isLoading) {
+    return <ScriberrFullPageLoader />;
+  }
 
   return (
     <>

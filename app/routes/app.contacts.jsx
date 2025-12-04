@@ -85,6 +85,7 @@ import FolderIconPicker from "../components/FolderIconPicker";
 import NewFolderModal from "../components/NewFolderModal";
 import DraggableFolder from "../components/DraggableFolder";
 import ContactCard from "../components/ContactCard";
+import ScriberrFullPageLoader from "../components/ScriberrFullPageLoader";
 import {
   DndContext,
   closestCenter,
@@ -535,6 +536,16 @@ function ContactForm({
 export default function ContactsPage() {
   const { folders: initialFolders, contacts: initialContacts, version } = useLoaderData();
   const { flags, openUpgradeModal } = usePlanContext();
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Handle initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 800); // Show loader for 0.8 seconds
+    
+    return () => clearTimeout(timer);
+  }, []);
   
   // Add CSS for custom contact list
   useEffect(() => {
@@ -778,6 +789,11 @@ export default function ContactsPage() {
       }
     };
   }, [flags.contactsEnabled]);
+  
+  // Show loading page while content loads
+  if (isLoading) {
+    return <ScriberrFullPageLoader />;
+  }
   
   if (!flags.contactsEnabled) {
     return (

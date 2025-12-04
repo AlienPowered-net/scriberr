@@ -19,6 +19,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useFetcher } from "@remix-run/react";
 import packageJson from "../../package.json" with { type: "json" };
 import { SubscriptionPlans } from "../../src/components/SubscriptionPlans";
+import ScriberrFullPageLoader from "../components/ScriberrFullPageLoader";
 import { usePlanContext } from "../hooks/usePlanContext";
 
 // Free plan limits
@@ -81,7 +82,17 @@ export default function Settings() {
   const { plan, openUpgradeModal, subscriptionStatus, accessUntil } = usePlanContext();
   const [selectedSubscription, setSelectedSubscription] = useState(plan === "PRO" ? "pro" : "free");
   const [isUpgrading, setIsUpgrading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const version = packageJson.version;
+  
+  // Handle initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 800); // Show loader for 0.8 seconds
+    
+    return () => clearTimeout(timer);
+  }, []);
   
   // Cancel subscription state
   const cancelFetcher = useFetcher();
@@ -387,6 +398,11 @@ export default function Settings() {
       setAlertMessage(error.message || "Failed to initiate upgrade. Please try again.");
     }
   }, []);
+
+  // Show loading page while content loads
+  if (isLoading) {
+    return <ScriberrFullPageLoader />;
+  }
 
   return (
     <>
