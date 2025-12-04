@@ -790,46 +790,32 @@ export default function ContactsPage() {
     };
   }, [flags.contactsEnabled]);
   
-  // Show loading page while content loads
-  if (isLoading) {
-    return <ScriberrFullPageLoader />;
+  // Helper function to get initial form data (must be defined before hooks that use it)
+  function getInitialFormData() {
+    return {
+      type: 'PERSON',
+      firstName: '',
+      lastName: '',
+      businessName: '',
+      company: '',
+      phone: '',
+      mobile: '',
+      email: '',
+      role: '',
+      memo: '',
+      address: '',
+      folderId: null,
+      pointsOfContact: [{ name: '', phone: '', email: '' }],
+      tags: [],
+      avatarColor: '#10b981'
+    };
   }
   
-  if (!flags.contactsEnabled) {
-    return (
-      <Page title="Contacts" subtitle={`Version ${version}`}>
-        <Layout>
-          <Layout.Section>
-            <Card>
-              <EmptyState
-                heading="Contacts are a Pro feature"
-                action={{
-                  content: "Upgrade to PRO – $5/mo",
-                  onAction: () =>
-                    openUpgradeModal({
-                      code: "FEATURE_CONTACTS_DISABLED",
-                      message:
-                        "Upgrade to Pro to unlock the Contacts workspace, unlimited contacts, and advanced organization tools.",
-                    }),
-                }}
-                image="https://cdn.shopify.com/s/files/1/2376/3307/articles/PolarisPlaceholders--product-features_480x480_crop_center.png?v=1623437273"
-              >
-                <p>
-                  Manage unlimited contacts, folders, and tags with Scriberr Pro. Upgrade to unlock the full CRM toolkit.
-                </p>
-              </EmptyState>
-            </Card>
-          </Layout.Section>
-        </Layout>
-      </Page>
-    );
-  }
-  
-  // State management
+  // State management - ALL hooks must be declared before any conditional returns
   const [folders, setFolders] = useState(initialFolders || []);
   const [contacts, setContacts] = useState(initialContacts || []);
   const [selectedFolder, setSelectedFolder] = useState(null);
-
+  
   // Fetch folders on mount to ensure they're loaded
   useEffect(() => {
     const fetchFolders = async () => {
@@ -860,27 +846,6 @@ export default function ContactsPage() {
   const [showContactDetails, setShowContactDetails] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
   const [formData, setFormData] = useState(getInitialFormData());
-
-  // Helper function to get initial form data
-  function getInitialFormData() {
-    return {
-      type: 'PERSON',
-      firstName: '',
-      lastName: '',
-      businessName: '',
-      company: '',
-      phone: '',
-      mobile: '',
-      email: '',
-      role: '',
-      memo: '',
-      address: '',
-      folderId: selectedFolder?.id,
-      pointsOfContact: [{ name: '', phone: '', email: '' }],
-      tags: [],
-      avatarColor: '#10b981'
-    };
-  }
 
   // Contact card state
   const [showContactCard, setShowContactCard] = useState(false);
@@ -943,6 +908,11 @@ export default function ContactsPage() {
     
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Helper function to close manage menu (must be defined before use)
+  const closeManageMenu = () => {
+    setManageMenuContact(null);
+  };
 
   // Close folder menu when clicking outside
   useEffect(() => {
@@ -1068,6 +1038,41 @@ export default function ContactsPage() {
       closeManageMenu();
     }
   }, [showBulkMoveModal]);
+
+  // Show loading page while content loads - MUST be after all hooks
+  if (isLoading) {
+    return <ScriberrFullPageLoader />;
+  }
+
+  if (!flags.contactsEnabled) {
+    return (
+      <Page title="Contacts" subtitle={`Version ${version}`}>
+        <Layout>
+          <Layout.Section>
+            <Card>
+              <EmptyState
+                heading="Contacts are a Pro feature"
+                action={{
+                  content: "Upgrade to PRO – $5/mo",
+                  onAction: () =>
+                    openUpgradeModal({
+                      code: "FEATURE_CONTACTS_DISABLED",
+                      message:
+                        "Upgrade to Pro to unlock the Contacts workspace, unlimited contacts, and advanced organization tools.",
+                    }),
+                }}
+                image="https://cdn.shopify.com/s/files/1/2376/3307/articles/PolarisPlaceholders--product-features_480x480_crop_center.png?v=1623437273"
+              >
+                <p>
+                  Manage unlimited contacts, folders, and tags with Scriberr Pro. Upgrade to unlock the full CRM toolkit.
+                </p>
+              </EmptyState>
+            </Card>
+          </Layout.Section>
+        </Layout>
+      </Page>
+    );
+  }
 
   // Filter contacts based on selected folder, search, and tags
   const filteredContacts = contacts.filter(contact => {
@@ -1705,10 +1710,6 @@ export default function ContactsPage() {
     
     setManageMenuContact(contact);
     setManageMenuPosition({ x, y });
-  };
-
-  const closeManageMenu = () => {
-    setManageMenuContact(null);
   };
 
   // Handle contact duplication
