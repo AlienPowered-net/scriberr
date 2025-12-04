@@ -50,17 +50,19 @@ const NewFolderModal = ({
       return;
     }
     
-    onCreateFolder({
+    const folderData = {
       name: folderName.trim(),
       icon: selectedIcon,
       color: selectedColor
-    });
+    };
     
-    // Reset form
+    // Reset form immediately for better UX
     setFolderName('');
     setSelectedIcon('folder');
     setSelectedColor('rgba(255, 184, 0, 1)');
-    onClose();
+    
+    // Call onCreateFolder - it will handle closing the modal after optimistic update
+    onCreateFolder(folderData);
   };
 
   const removeEmojis = (text) => {

@@ -11,6 +11,7 @@ const DraggableFolder = ({
   selectedFolder,
   openFolderMenu,
   setOpenFolderMenu,
+  isLoading = false,
   ...props 
 }) => {
   const {
@@ -29,12 +30,20 @@ const DraggableFolder = ({
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      data-folder-id={folder.id}
-      {...props}
-    >
+    <>
+      <style>{`
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
+      <div
+        ref={setNodeRef}
+        style={style}
+        data-folder-id={folder.id}
+        {...props}
+      >
       <div style={{ 
         padding: "12px 16px", 
         marginBottom: "8px",
@@ -97,7 +106,8 @@ const DraggableFolder = ({
               alignItems: "center", 
               gap: "8px",
               color: String(selectedFolder) === String(folder.id) ? "#008060" : "#374151",
-              fontSize: "14px"
+              fontSize: "14px",
+              opacity: isLoading ? 0.6 : 1
             }}>
               <i className={`far fa-${folder.icon || 'folder'}`} style={{ 
                 fontSize: "18px", 
@@ -106,8 +116,27 @@ const DraggableFolder = ({
               {folder.name}
             </span>
             
+            {/* Loading Spinner */}
+            {isLoading && (
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                marginLeft: '4px'
+              }}>
+                <span style={{
+                  display: 'inline-block',
+                  width: '12px',
+                  height: '12px',
+                  border: '2px solid #e1e3e5',
+                  borderTopColor: '#008060',
+                  borderRadius: '50%',
+                  animation: 'spin 0.6s linear infinite'
+                }}></span>
+              </div>
+            )}
+            
             {/* Active Badge */}
-            {String(selectedFolder) === String(folder.id) && (
+            {String(selectedFolder) === String(folder.id) && !isLoading && (
               <div style={{
                 padding: '2px 8px',
                 backgroundColor: '#f6fff8',
@@ -127,14 +156,18 @@ const DraggableFolder = ({
               data-mobile-folder-menu
               onClick={(e) => {
                 e.stopPropagation();
-                setOpenFolderMenu(openFolderMenu === folder.id ? null : folder.id);
+                if (!isLoading) {
+                  setOpenFolderMenu(openFolderMenu === folder.id ? null : folder.id);
+                }
               }}
+              disabled={isLoading}
               style={{
                 background: "none",
                 border: "none",
-                cursor: "pointer",
+                cursor: isLoading ? "not-allowed" : "pointer",
                 padding: "4px",
-                fontSize: "16px"
+                fontSize: "16px",
+                opacity: isLoading ? 0.5 : 1
               }}
             >
               <MenuHorizontalIcon style={{ width: '16px', height: '16px' }} />
@@ -143,7 +176,8 @@ const DraggableFolder = ({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

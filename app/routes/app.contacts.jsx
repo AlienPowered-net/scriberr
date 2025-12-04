@@ -882,6 +882,9 @@ export default function ContactsPage() {
   const [editingFolderName, setEditingFolderName] = useState('');
   const [showIconPicker, setShowIconPicker] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  
+  // Loading state for folder operations (optimistic updates)
+  const [loadingFolderIds, setLoadingFolderIds] = useState(new Set());
 
   // Toast notification state
   const [alertMessage, setAlertMessage] = useState("");
@@ -1151,11 +1154,39 @@ export default function ContactsPage() {
 
   // Handle folder menu actions
   const handleFolderRename = async (folderId, newName) => {
+    const trimmedName = newName.trim();
+    
+    // Find the folder and store original name for rollback
+    const folder = folders.find(f => f.id === folderId);
+    if (!folder) {
+      setAlertMessage("Folder not found");
+      setAlertType("error");
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+    
+    const originalName = folder.name;
+    
+    // Optimistically update folder name immediately
+    setFolders(prev => prev.map(f => 
+      f.id === folderId ? { ...f, name: trimmedName } : f
+    ));
+    setLoadingFolderIds(prev => new Set(prev).add(folderId));
+    
+    // Close modal immediately for instant feedback
+    setShowRenameFolderModal(null);
+    setOpenFolderMenu(null);
+    
+    // Show success toast immediately
+    setAlertMessage("Folder renamed successfully");
+    setAlertType("success");
+    setTimeout(() => setAlertMessage(''), 3000);
+    
     try {
       const formData = new FormData();
       formData.append('_action', 'rename');
       formData.append('id', folderId);
-      formData.append('name', newName);
+      formData.append('name', trimmedName);
       
       const response = await fetch('/api/contact-folders', {
         method: 'POST',
@@ -1165,26 +1196,52 @@ export default function ContactsPage() {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          // Refresh folders
-          const updatedFolders = await fetch('/api/contact-folders').then(r => r.json());
-          setFolders(updatedFolders);
-          setOpenFolderMenu(null);
-          setAlertMessage("Folder renamed successfully");
-          setAlertType("success");
-          setTimeout(() => setAlertMessage(''), 3000);
+          // Remove loading state - name already updated optimistically
+          setLoadingFolderIds(prev => {
+            const next = new Set(prev);
+            next.delete(folderId);
+            return next;
+          });
         } else {
+          // Revert optimistic update
+          setFolders(prev => prev.map(f => 
+            f.id === folderId ? { ...f, name: originalName } : f
+          ));
+          setLoadingFolderIds(prev => {
+            const next = new Set(prev);
+            next.delete(folderId);
+            return next;
+          });
           setAlertMessage(result.error || "Failed to rename folder");
           setAlertType("error");
           setTimeout(() => setAlertMessage(''), 3000);
         }
       } else {
         const result = await response.json();
+        // Revert optimistic update
+        setFolders(prev => prev.map(f => 
+          f.id === folderId ? { ...f, name: originalName } : f
+        ));
+        setLoadingFolderIds(prev => {
+          const next = new Set(prev);
+          next.delete(folderId);
+          return next;
+        });
         setAlertMessage(result.error || "Failed to rename folder");
         setAlertType("error");
         setTimeout(() => setAlertMessage(''), 3000);
       }
     } catch (error) {
       console.error('Error renaming folder:', error);
+      // Revert optimistic update
+      setFolders(prev => prev.map(f => 
+        f.id === folderId ? { ...f, name: originalName } : f
+      ));
+      setLoadingFolderIds(prev => {
+        const next = new Set(prev);
+        next.delete(folderId);
+        return next;
+      });
       setAlertMessage("Failed to rename folder");
       setAlertType("error");
       setTimeout(() => setAlertMessage(''), 3000);
@@ -1192,6 +1249,41 @@ export default function ContactsPage() {
   };
 
   const handleFolderDelete = async (folderId) => {
+    // Find the folder to delete for rollback
+    const folderToDelete = folders.find(f => f.id === folderId);
+    if (!folderToDelete) {
+      setAlertMessage("Folder not found");
+      setAlertType("error");
+      setTimeout(() => setAlertMessage(''), 3000);
+      return;
+    }
+    
+    // Store contacts that were in this folder for rollback
+    const contactsInFolder = contacts.filter(c => c.folderId === folderId);
+    
+    // Optimistically remove folder immediately
+    setFolders(prev => prev.filter(f => f.id !== folderId));
+    setLoadingFolderIds(prev => new Set(prev).add(folderId));
+    
+    // Update contacts optimistically (move to no folder by removing folderId)
+    setContacts(prev => prev.map(contact => 
+      contact.folderId === folderId ? { ...contact, folderId: null } : contact
+    ));
+    
+    // Clear selection if deleted folder was selected
+    if (selectedFolder?.id === folderId) {
+      setSelectedFolder(null);
+    }
+    
+    // Close modal and menu immediately for instant feedback
+    setShowDeleteConfirm(null);
+    setOpenFolderMenu(null);
+    
+    // Show success toast immediately
+    setAlertMessage("Folder deleted successfully");
+    setAlertType("success");
+    setTimeout(() => setAlertMessage(''), 3000);
+    
     try {
       const formData = new FormData();
       formData.append('_action', 'delete');
@@ -1205,35 +1297,67 @@ export default function ContactsPage() {
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
-          // Refresh folders and contacts
-          const updatedFolders = await fetch('/api/contact-folders').then(r => r.json());
-          setFolders(updatedFolders);
-          
-          // Update contacts by removing any that were in the deleted folder
-          setContacts(prev => prev.filter(contact => contact.folderId !== folderId));
-          setOpenFolderMenu(null);
-          
-          // Clear selection if deleted folder was selected
-          if (selectedFolder?.id === folderId) {
-            setSelectedFolder(null);
-          }
-          
-          setAlertMessage("Folder deleted successfully");
-          setAlertType("success");
-          setTimeout(() => setAlertMessage(''), 3000);
+          // Remove loading state - folder already deleted optimistically
+          setLoadingFolderIds(prev => {
+            const next = new Set(prev);
+            next.delete(folderId);
+            return next;
+          });
         } else {
+          // Revert optimistic update
+          setFolders(prev => [...prev, folderToDelete].sort((a, b) => (a.position || 0) - (b.position || 0)));
+          setContacts(prev => prev.map(contact => {
+            const wasInFolder = contactsInFolder.find(c => c.id === contact.id);
+            if (wasInFolder) {
+              return { ...contact, folderId: folderId };
+            }
+            return contact;
+          }));
+          setLoadingFolderIds(prev => {
+            const next = new Set(prev);
+            next.delete(folderId);
+            return next;
+          });
           setAlertMessage(result.error || "Failed to delete folder");
           setAlertType("error");
           setTimeout(() => setAlertMessage(''), 3000);
         }
       } else {
         const result = await response.json();
+        // Revert optimistic update
+        setFolders(prev => [...prev, folderToDelete].sort((a, b) => (a.position || 0) - (b.position || 0)));
+        setContacts(prev => prev.map(contact => {
+          const wasInFolder = contactsInFolder.find(c => c.id === contact.id);
+          if (wasInFolder) {
+            return { ...contact, folderId: folderId };
+          }
+          return contact;
+        }));
+        setLoadingFolderIds(prev => {
+          const next = new Set(prev);
+          next.delete(folderId);
+          return next;
+        });
         setAlertMessage(result.error || "Failed to delete folder");
         setAlertType("error");
         setTimeout(() => setAlertMessage(''), 3000);
       }
     } catch (error) {
       console.error('Error deleting folder:', error);
+      // Revert optimistic update
+      setFolders(prev => [...prev, folderToDelete].sort((a, b) => (a.position || 0) - (b.position || 0)));
+      setContacts(prev => prev.map(contact => {
+        const wasInFolder = contactsInFolder.find(c => c.id === contact.id);
+        if (wasInFolder) {
+          return { ...contact, folderId: folderId };
+        }
+        return contact;
+      }));
+      setLoadingFolderIds(prev => {
+        const next = new Set(prev);
+        next.delete(folderId);
+        return next;
+      });
       setAlertMessage("Failed to delete folder");
       setAlertType("error");
       setTimeout(() => setAlertMessage(''), 3000);
@@ -1867,14 +1991,40 @@ export default function ContactsPage() {
       return;
     }
     
-    setIsLoading(true);
+    // Optimistically add folder immediately with temporary ID
+    const tempId = `temp-${Date.now()}`;
+    const iconColor = folderData.color || folderData.iconColor || '#f57c00';
+    const optimisticFolder = {
+      id: tempId,
+      name: folderData.name.trim(),
+      icon: folderData.icon || 'folder',
+      iconColor: iconColor,
+      position: folders.length > 0 ? Math.max(...folders.map(f => f.position || 0)) + 1 : 0,
+      shopId: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isOptimistic: true,
+      _count: { contacts: 0 }
+    };
+    
+    // Add to folders list immediately
+    setFolders(prev => [...prev, optimisticFolder]);
+    setLoadingFolderIds(prev => new Set(prev).add(tempId));
+    
+    // Close modal immediately for instant feedback
+    setShowNewFolderModal(false);
+    
+    // Show success toast immediately (will be replaced if error occurs)
+    setAlertMessage("Folder created successfully");
+    setAlertType("success");
+    setTimeout(() => setAlertMessage(''), 3000);
     
     try {
       const submitData = new FormData();
       submitData.append('_action', 'create');
-      submitData.append('name', folderData.name);
+      submitData.append('name', folderData.name.trim());
       submitData.append('icon', folderData.icon || 'folder');
-      submitData.append('iconColor', folderData.color || folderData.iconColor || '#f57c00');
+      submitData.append('iconColor', iconColor);
       
       const response = await fetch('/api/contact-folders', {
         method: 'POST',
@@ -1883,15 +2033,24 @@ export default function ContactsPage() {
       
       if (response.ok) {
         const result = await response.json();
-        if (result.success) {
-          // Refresh folders
-          const updatedFolders = await fetch('/api/contact-folders').then(r => r.json());
-          setFolders(updatedFolders);
-          setShowNewFolderModal(false);
-          setAlertMessage("Folder created successfully");
-          setAlertType("success");
-          setTimeout(() => setAlertMessage(''), 3000);
+        if (result.success && result.folder) {
+          // Replace temporary folder with real folder from server
+          setFolders(prev => prev.map(f => 
+            f.id === tempId ? { ...result.folder, _count: { contacts: 0 } } : f
+          ));
+          setLoadingFolderIds(prev => {
+            const next = new Set(prev);
+            next.delete(tempId);
+            return next;
+          });
         } else {
+          // API call failed - revert optimistic update
+          setFolders(prev => prev.filter(f => f.id !== tempId));
+          setLoadingFolderIds(prev => {
+            const next = new Set(prev);
+            next.delete(tempId);
+            return next;
+          });
           setAlertMessage(result.error || "Failed to create folder");
           setAlertType("error");
           setTimeout(() => setAlertMessage(''), 3000);
@@ -1899,17 +2058,29 @@ export default function ContactsPage() {
       } else {
         const error = await response.json();
         console.error('Error creating folder:', error);
+        // Revert optimistic update
+        setFolders(prev => prev.filter(f => f.id !== tempId));
+        setLoadingFolderIds(prev => {
+          const next = new Set(prev);
+          next.delete(tempId);
+          return next;
+        });
         setAlertMessage(error.error || "Failed to create folder");
         setAlertType("error");
         setTimeout(() => setAlertMessage(''), 3000);
       }
     } catch (error) {
       console.error('Error creating folder:', error);
+      // Revert optimistic update
+      setFolders(prev => prev.filter(f => f.id !== tempId));
+      setLoadingFolderIds(prev => {
+        const next = new Set(prev);
+        next.delete(tempId);
+        return next;
+      });
       setAlertMessage("Failed to create folder");
       setAlertType("error");
       setTimeout(() => setAlertMessage(''), 3000);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -2308,6 +2479,7 @@ export default function ContactsPage() {
                                       openFolderMenu={openFolderMenu}
                                       setOpenFolderMenu={setOpenFolderMenu}
                                       onFolderClick={handleFolderSelect}
+                                      isLoading={loadingFolderIds.has(folder.id)}
                                     >
                                       {openFolderMenu === folder.id && (
                                         <div style={{ display: 'none' }}>
@@ -3047,23 +3219,32 @@ export default function ContactsPage() {
             {showRenameFolderModal && (
               <Modal
                 open={!!showRenameFolderModal}
-                onClose={() => setShowRenameFolderModal(null)}
-                title="Rename Folder"
-                primaryAction={{
-                  content: 'Save',
-                  onAction: async () => {
-                    if (editingFolderName.trim() && editingFolderName !== folders.find(f => f.id === showRenameFolderModal)?.name) {
-                      await handleFolderRename(showRenameFolderModal, editingFolderName.trim());
-                    }
+                onClose={() => {
+                  if (!loadingFolderIds.has(showRenameFolderModal)) {
                     setShowRenameFolderModal(null);
                     setEditingFolderName('');
                   }
                 }}
+                title="Rename Folder"
+                primaryAction={{
+                  content: 'Save',
+                  loading: loadingFolderIds.has(showRenameFolderModal),
+                  disabled: loadingFolderIds.has(showRenameFolderModal) || !editingFolderName.trim(),
+                  onAction: async () => {
+                    if (editingFolderName.trim() && editingFolderName !== folders.find(f => f.id === showRenameFolderModal)?.name) {
+                      await handleFolderRename(showRenameFolderModal, editingFolderName.trim());
+                      // Modal is closed in handleFolderRename for instant feedback
+                    }
+                  }
+                }}
                 secondaryActions={[{
                   content: 'Cancel',
+                  disabled: loadingFolderIds.has(showRenameFolderModal),
                   onAction: () => {
-                    setShowRenameFolderModal(null);
-                    setEditingFolderName('');
+                    if (!loadingFolderIds.has(showRenameFolderModal)) {
+                      setShowRenameFolderModal(null);
+                      setEditingFolderName('');
+                    }
                   }
                 }]}
               >
@@ -3073,6 +3254,7 @@ export default function ContactsPage() {
                     value={editingFolderName}
                     onChange={setEditingFolderName}
                     autoComplete="off"
+                    disabled={loadingFolderIds.has(showRenameFolderModal)}
                   />
                 </Modal.Section>
               </Modal>
@@ -3097,19 +3279,30 @@ export default function ContactsPage() {
             {showDeleteConfirm && (
               <Modal
                 open={!!showDeleteConfirm}
-                onClose={() => setShowDeleteConfirm(null)}
+                onClose={() => {
+                  if (!loadingFolderIds.has(showDeleteConfirm)) {
+                    setShowDeleteConfirm(null);
+                  }
+                }}
                 title="Delete Folder"
                 primaryAction={{
                   content: 'Delete',
                   destructive: true,
+                  loading: loadingFolderIds.has(showDeleteConfirm),
+                  disabled: loadingFolderIds.has(showDeleteConfirm),
                   onAction: async () => {
                     await handleFolderDelete(showDeleteConfirm);
-                    setShowDeleteConfirm(null);
+                    // Modal is closed in handleFolderDelete for instant feedback
                   }
                 }}
                 secondaryActions={[{
                   content: 'Cancel',
-                  onAction: () => setShowDeleteConfirm(null)
+                  disabled: loadingFolderIds.has(showDeleteConfirm),
+                  onAction: () => {
+                    if (!loadingFolderIds.has(showDeleteConfirm)) {
+                      setShowDeleteConfirm(null);
+                    }
+                  }
                 }]}
               >
                 <Modal.Section>
@@ -3990,6 +4183,7 @@ export default function ContactsPage() {
                           openFolderMenu={openFolderMenu}
                           setOpenFolderMenu={setOpenFolderMenu}
                           onFolderClick={handleFolderSelect}
+                          isLoading={loadingFolderIds.has(folder.id)}
                         >
                           {openFolderMenu === folder.id && (
                             <div style={{ display: 'none' }}>
@@ -4762,23 +4956,32 @@ export default function ContactsPage() {
               {showRenameFolderModal && (
                 <Modal
                   open={!!showRenameFolderModal}
-                  onClose={() => setShowRenameFolderModal(null)}
-                  title="Rename Folder"
-                  primaryAction={{
-                    content: 'Save',
-                    onAction: async () => {
-                      if (editingFolderName.trim() && editingFolderName !== folders.find(f => f.id === showRenameFolderModal)?.name) {
-                        await handleFolderRename(showRenameFolderModal, editingFolderName.trim());
-                      }
+                  onClose={() => {
+                    if (!loadingFolderIds.has(showRenameFolderModal)) {
                       setShowRenameFolderModal(null);
                       setEditingFolderName('');
                     }
                   }}
+                  title="Rename Folder"
+                  primaryAction={{
+                    content: 'Save',
+                    loading: loadingFolderIds.has(showRenameFolderModal),
+                    disabled: loadingFolderIds.has(showRenameFolderModal) || !editingFolderName.trim(),
+                    onAction: async () => {
+                      if (editingFolderName.trim() && editingFolderName !== folders.find(f => f.id === showRenameFolderModal)?.name) {
+                        await handleFolderRename(showRenameFolderModal, editingFolderName.trim());
+                        // Modal is closed in handleFolderRename for instant feedback
+                      }
+                    }
+                  }}
                   secondaryActions={[{
                     content: 'Cancel',
+                    disabled: loadingFolderIds.has(showRenameFolderModal),
                     onAction: () => {
-                      setShowRenameFolderModal(null);
-                      setEditingFolderName('');
+                      if (!loadingFolderIds.has(showRenameFolderModal)) {
+                        setShowRenameFolderModal(null);
+                        setEditingFolderName('');
+                      }
                     }
                   }]}
                 >
@@ -4788,6 +4991,7 @@ export default function ContactsPage() {
                       value={editingFolderName}
                       onChange={setEditingFolderName}
                       autoComplete="off"
+                      disabled={loadingFolderIds.has(showRenameFolderModal)}
                     />
                   </Modal.Section>
                 </Modal>
@@ -4812,19 +5016,30 @@ export default function ContactsPage() {
               {showDeleteConfirm && (
                 <Modal
                   open={!!showDeleteConfirm}
-                  onClose={() => setShowDeleteConfirm(null)}
+                  onClose={() => {
+                    if (!loadingFolderIds.has(showDeleteConfirm)) {
+                      setShowDeleteConfirm(null);
+                    }
+                  }}
                   title="Delete Folder"
                   primaryAction={{
                     content: 'Delete',
                     destructive: true,
+                    loading: loadingFolderIds.has(showDeleteConfirm),
+                    disabled: loadingFolderIds.has(showDeleteConfirm),
                     onAction: async () => {
                       await handleFolderDelete(showDeleteConfirm);
-                      setShowDeleteConfirm(null);
+                      // Modal is closed in handleFolderDelete for instant feedback
                     }
                   }}
                   secondaryActions={[{
                     content: 'Cancel',
-                    onAction: () => setShowDeleteConfirm(null)
+                    disabled: loadingFolderIds.has(showDeleteConfirm),
+                    onAction: () => {
+                      if (!loadingFolderIds.has(showDeleteConfirm)) {
+                        setShowDeleteConfirm(null);
+                      }
+                    }
                   }]}
                 >
                   <Modal.Section>
