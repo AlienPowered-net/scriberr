@@ -856,7 +856,7 @@ export default function ContactsPage() {
   const [showNewContactForm, setShowNewContactForm] = useState(false);
   const [showNewFolderModal, setShowNewFolderModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showContactDetails, setShowContactDetails] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
   const [formData, setFormData] = useState(getInitialFormData());
@@ -1471,7 +1471,7 @@ export default function ContactsPage() {
 
   // Handle contact save
   const handleContactSave = async (formData) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     
     try {
       const form = new FormData();
@@ -1512,7 +1512,7 @@ export default function ContactsPage() {
     } catch (error) {
       console.error('Error saving contact:', error);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -1522,7 +1522,7 @@ export default function ContactsPage() {
   };
 
   const confirmContactDelete = async (contactId) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     
     try {
       const form = new FormData();
@@ -1554,7 +1554,7 @@ export default function ContactsPage() {
       setAlertType("error");
       setTimeout(() => setAlertMessage(''), 3000);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -1571,7 +1571,7 @@ export default function ContactsPage() {
 
   // Handle contact pin/unpin
   const handleContactPin = async (contactId) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
       const response = await fetch('/api/pin-contact', {
         method: 'POST',
@@ -1605,13 +1605,13 @@ export default function ContactsPage() {
       setAlertType("error");
       setTimeout(() => setAlertMessage(''), 3000);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   // Handle tag deletion from all contacts
   const handleDeleteTag = async (tagName) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
       // Get all contacts that have this tag
       const contactsWithTag = contacts.filter(contact => 
@@ -1656,7 +1656,7 @@ export default function ContactsPage() {
       setAlertType("error");
       setTimeout(() => setAlertMessage(''), 3000);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
       setTagToDelete(null);
     }
   };
@@ -1713,7 +1713,7 @@ export default function ContactsPage() {
 
   // Handle contact duplication
   const handleContactDuplicate = async (contactId, targetFolderId) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
       const contactToDuplicate = contacts.find(c => c.id === contactId);
       if (!contactToDuplicate) return;
@@ -1724,7 +1724,7 @@ export default function ContactsPage() {
         setAlertMessage("Please select a folder to duplicate the contact to");
         setAlertType("error");
         setTimeout(() => setAlertMessage(''), 3000);
-        setIsLoading(false);
+        setIsSubmitting(false);
         return;
       }
 
@@ -1770,7 +1770,7 @@ export default function ContactsPage() {
       setAlertType("error");
       setTimeout(() => setAlertMessage(''), 3000);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -1778,7 +1778,7 @@ export default function ContactsPage() {
   const handleBulkMoveContacts = async () => {
     if (selectedContacts.length === 0 || !selectedFolderForMove) return;
 
-    setIsLoading(true);
+    setIsSubmitting(true);
     const targetFolderId = selectedFolderForMove;
     const actionType = bulkActionType;
     try {
@@ -1827,7 +1827,7 @@ export default function ContactsPage() {
       setAlertType("error");
       setTimeout(() => setAlertMessage(''), 3000);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -1914,7 +1914,7 @@ export default function ContactsPage() {
       }
     }
     
-    setIsLoading(true);
+    setIsSubmitting(true);
     
     try {
       const action = editingContact ? 'update' : 'create';
@@ -1992,7 +1992,7 @@ export default function ContactsPage() {
       setAlertType("error");
       setTimeout(() => setAlertMessage(''), 3000);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -2581,7 +2581,7 @@ export default function ContactsPage() {
                               tone="critical"
                               onClick={async () => {
                                 if (confirm(`Are you sure you want to delete ${selectedContacts.length} selected contact(s)?`)) {
-                                  setIsLoading(true);
+                                  setIsSubmitting(true);
                                   try {
                                     const form = new FormData();
                                     form.append('_action', 'bulk-delete');
@@ -2611,7 +2611,7 @@ export default function ContactsPage() {
                                     setAlertType("error");
                                     setTimeout(() => setAlertMessage(''), 3000);
                                   } finally {
-                                    setIsLoading(false);
+                                    setIsSubmitting(false);
                                   }
                                 }
                               }}
@@ -4249,7 +4249,7 @@ export default function ContactsPage() {
                   <button
                     onClick={async () => {
                       if (confirm(`Are you sure you want to delete ${selectedContacts.length} selected contact(s)?`)) {
-                        setIsLoading(true);
+                        setIsSubmitting(true);
                         try {
                           const form = new FormData();
                           form.append('_action', 'bulk-delete');
@@ -4279,7 +4279,7 @@ export default function ContactsPage() {
                           setAlertType("error");
                           setTimeout(() => setAlertMessage(''), 3000);
                         } finally {
-                          setIsLoading(false);
+                          setIsSubmitting(false);
                         }
                       }
                     }}
@@ -4946,7 +4946,7 @@ export default function ContactsPage() {
                     variant="primary"
                     size="large"
                     onClick={handleSubmit}
-                    loading={isLoading}
+                    loading={isSubmitting}
                     style={{ width: '100%', fontSize: '16px', fontWeight: '600' }}
                   >
                     {editingContact ? 'Update Contact' : 'Create Contact'}
