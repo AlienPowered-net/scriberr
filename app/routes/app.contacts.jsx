@@ -1039,6 +1039,18 @@ export default function ContactsPage() {
     }
   }, [showBulkMoveModal]);
 
+  // DnD sensors - MUST be before any early returns to maintain hook order
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   // Show loading page while content loads - MUST be after all hooks
   if (isLoading) {
     return <ScriberrFullPageLoader />;
@@ -1120,18 +1132,6 @@ export default function ContactsPage() {
       }
     });
   };
-
-  // DnD sensors
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
 
   // Handle folder selection
   const handleFolderSelect = (folder) => {

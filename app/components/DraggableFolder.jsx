@@ -14,6 +14,8 @@ const DraggableFolder = ({
   isLoading = false,
   ...props 
 }) => {
+  // Use fallback ID if folder is undefined/null to prevent crashes
+  // Hook must be called unconditionally
   const {
     attributes,
     listeners,
@@ -21,7 +23,12 @@ const DraggableFolder = ({
     transform,
     transition,
     isDragging: isCurrentlyDragging,
-  } = useSortable({ id: folder.id });
+  } = useSortable({ id: folder?.id || 'fallback-folder-id' });
+
+  // Return early after hooks if folder is invalid
+  if (!folder || !folder.id) {
+    return null;
+  }
 
   const style = {
     transform: CSS.Transform.toString(transform),
