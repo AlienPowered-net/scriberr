@@ -7926,7 +7926,7 @@ export default function Index() {
           left: "0",
           right: "0",
           backgroundColor: "#f8f9fa",
-          borderTop: "1px solid "#e1e3e5",
+          borderTop: "1px solid #e1e3e5",
           padding: "12px 24px",
           marginTop: "10px",
           fontSize: "14px",
