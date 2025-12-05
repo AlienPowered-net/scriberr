@@ -70,129 +70,170 @@ const NewFolderModal = ({
   };
 
   return (
-    <Modal
-      open={isOpen}
-      onClose={onClose}
-      title="Create New Folder"
-      primaryAction={{
-        content: 'Create Folder',
-        onAction: handleCreate,
-        disabled: !folderName.trim()
-      }}
-      secondaryActions={[
-        {
-          content: 'Cancel',
-          onAction: onClose,
-        },
-      ]}
-    >
-      <Modal.Section>
-        <div style={{ marginBottom: '24px' }}>
-          <TextField
-            label="Folder Name"
-            value={folderName}
-            onChange={(value) => {
-              const cleanValue = removeEmojis(value);
-              if (cleanValue.length <= 30) {
-                setFolderName(cleanValue);
-              }
-            }}
-            placeholder="Enter folder name..."
-            maxLength={30}
-            autoComplete="off"
-            helpText={`${folderName.length}/30 characters`}
-          />
-        </div>
+    <>
+      <style>{`
+        .new-folder-icon-grid {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 6px;
+          margin-bottom: 20px;
+          padding: 8px;
+          border: 1px solid #e1e3e5;
+          border-radius: 8px;
+          background-color: #fafbfb;
+        }
+        
+        .new-folder-color-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 6px;
+          margin-bottom: 20px;
+          padding: 8px;
+          border: 1px solid #e1e3e5;
+          border-radius: 8px;
+          background-color: #fafbfb;
+        }
+        
+        .new-folder-icon-button {
+          width: 45px;
+          height: 45px;
+          font-size: 16px;
+        }
+        
+        .new-folder-color-button {
+          width: 35px;
+          height: 35px;
+        }
+        
+        @media (min-width: 769px) {
+          .new-folder-icon-grid {
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin-bottom: 24px;
+          }
+          
+          .new-folder-color-grid {
+            grid-template-columns: repeat(8, 1fr);
+            gap: 8px;
+            margin-bottom: 0;
+          }
+          
+          .new-folder-icon-button {
+            width: 50px;
+            height: 50px;
+            font-size: 18px;
+          }
+          
+          .new-folder-color-button {
+            width: 40px;
+            height: 40px;
+          }
+        }
+      `}</style>
+      <Modal
+        open={isOpen}
+        onClose={onClose}
+        title="Create New Folder"
+        primaryAction={{
+          content: 'Create Folder',
+          onAction: handleCreate,
+          disabled: !folderName.trim()
+        }}
+        secondaryActions={[
+          {
+            content: 'Cancel',
+            onAction: onClose,
+          },
+        ]}
+      >
+        <Modal.Section>
+          <div style={{ marginBottom: '24px' }}>
+            <TextField
+              label="Folder Name"
+              value={folderName}
+              onChange={(value) => {
+                const cleanValue = removeEmojis(value);
+                if (cleanValue.length <= 30) {
+                  setFolderName(cleanValue);
+                }
+              }}
+              placeholder="Enter folder name..."
+              maxLength={30}
+              autoComplete="off"
+              helpText={`${folderName.length}/30 characters`}
+            />
+          </div>
 
-        <div style={{ marginBottom: '16px' }}>
-          <Text variant="bodyMd" as="p">
-            Preview: <i className={`far fa-${selectedIcon}`} style={{ fontSize: '24px', marginLeft: '8px', color: selectedColor }}></i> {folderName || 'Folder Name'}
+          <div style={{ marginBottom: '16px' }}>
+            <Text variant="bodyMd" as="p">
+              Preview: <i className={`far fa-${selectedIcon}`} style={{ fontSize: '24px', marginLeft: '8px', color: selectedColor }}></i> {folderName || 'Folder Name'}
+            </Text>
+          </div>
+
+          <Text variant="headingSm" as="h3" style={{ marginBottom: '12px' }}>
+            Choose an icon:
           </Text>
-        </div>
+          
+          <div className="new-folder-icon-grid">
+            {folderIcons.map((iconData, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedIcon(iconData.icon)}
+                className="new-folder-icon-button"
+                style={{
+                  border: selectedIcon === iconData.icon ? '2px solid #2e7d32' : '1px solid #e1e3e5',
+                  borderRadius: '6px',
+                  backgroundColor: selectedIcon === iconData.icon ? '#e8f5e8' : 'white',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  padding: '2px'
+                }}
+                title={iconData.name}
+              >
+                <i className={`far fa-${iconData.icon}`} style={{ color: selectedColor }}></i>
+              </button>
+            ))}
+          </div>
 
-        <Text variant="headingSm" as="h3" style={{ marginBottom: '12px' }}>
-          Choose an icon:
-        </Text>
-        
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(6, 1fr)',
-          gap: '8px',
-          marginBottom: '24px',
-          padding: '8px',
-          border: '1px solid #e1e3e5',
-          borderRadius: '8px',
-          backgroundColor: '#fafbfb'
-        }}>
-          {folderIcons.map((iconData, index) => (
-            <button
-              key={index}
-              onClick={() => setSelectedIcon(iconData.icon)}
-              style={{
-                width: '50px',
-                height: '50px',
-                border: selectedIcon === iconData.icon ? '2px solid #2e7d32' : '1px solid #e1e3e5',
-                borderRadius: '8px',
-                backgroundColor: selectedIcon === iconData.icon ? '#e8f5e8' : 'white',
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '18px',
-                transition: 'all 0.2s ease',
-                padding: '4px'
-              }}
-              title={iconData.name}
-            >
-              <i className={`far fa-${iconData.icon}`} style={{ color: selectedColor }}></i>
-            </button>
-          ))}
-        </div>
-
-        <Text variant="headingSm" as="h3" style={{ marginBottom: '12px' }}>
-          Choose a color:
-        </Text>
-        
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(8, 1fr)',
-          gap: '8px',
-          padding: '8px',
-          border: '1px solid #e1e3e5',
-          borderRadius: '8px',
-          backgroundColor: '#fafbfb'
-        }}>
-          {iconColors.map((colorData, index) => (
-            <button
-              key={index}
-              onClick={() => setSelectedColor(colorData.color)}
-              style={{
-                width: '40px',
-                height: '40px',
-                border: selectedColor === colorData.color ? '3px solid #2e7d32' : '2px solid #e1e3e5',
-                borderRadius: '50%',
-                backgroundColor: colorData.color,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.2s ease',
-                boxShadow: colorData.color === 'rgba(227, 227, 227, 1)' ? 'inset 0 0 0 1px #e1e3e5' : 'none'
-              }}
-              title={colorData.name}
-            >
-              {selectedColor === colorData.color && (
-                <i className="fas fa-check" style={{ 
-                  color: colorData.color === 'rgba(227, 227, 227, 1)' || colorData.color === 'rgba(255, 230, 0, 1)' ? 'rgba(48, 48, 48, 1)' : 'white',
-                  fontSize: '14px' 
-                }}></i>
-              )}
-            </button>
-          ))}
-        </div>
-      </Modal.Section>
-    </Modal>
+          <Text variant="headingSm" as="h3" style={{ marginBottom: '12px' }}>
+            Choose a color:
+          </Text>
+          
+          <div className="new-folder-color-grid">
+            {iconColors.map((colorData, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedColor(colorData.color)}
+                className="new-folder-color-button"
+                style={{
+                  border: selectedColor === colorData.color ? '2px solid #2e7d32' : '1px solid #e1e3e5',
+                  borderRadius: '50%',
+                  backgroundColor: colorData.color,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  boxShadow: colorData.color === 'rgba(227, 227, 227, 1)' ? 'inset 0 0 0 1px #e1e3e5' : 'none'
+                }}
+                title={colorData.name}
+              >
+                {selectedColor === colorData.color && (
+                  <i className="fas fa-check" style={{ 
+                    color: colorData.color === 'rgba(227, 227, 227, 1)' || colorData.color === 'rgba(255, 230, 0, 1)' ? 'rgba(48, 48, 48, 1)' : 'white',
+                    fontSize: '12px' 
+                  }}></i>
+                )}
+              </button>
+            ))}
+          </div>
+        </Modal.Section>
+      </Modal>
+    </>
   );
 };
 
