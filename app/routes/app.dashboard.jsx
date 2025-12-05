@@ -1256,11 +1256,6 @@ export default function Index() {
   const [mobileSelectedIcon, setMobileSelectedIcon] = useState('folder');
   const [mobileSelectedColor, setMobileSelectedColor] = useState('rgba(255, 184, 0, 1)');
   
-  // Mobile new folder modal states
-  const [mobileFolderName, setMobileFolderName] = useState('');
-  const [mobileNewFolderIcon, setMobileNewFolderIcon] = useState('folder');
-  const [mobileNewFolderColor, setMobileNewFolderColor] = useState('rgba(255, 184, 0, 1)');
-  
   // Folder selection popover states
   const [showFolderSelector, setShowFolderSelector] = useState(false);
   const [folderSelectorAction, setFolderSelectorAction] = useState(null); // 'duplicate' or 'move'
@@ -1287,15 +1282,6 @@ export default function Index() {
       setMobileSelectedColor(currentFolder?.iconColor || "rgba(255, 184, 0, 1)");
     }
   }, [showIconPicker, isMobile, localFolders]);
-  
-  // Initialize mobile new folder modal state when modal opens
-  useEffect(() => {
-    if (showNewFolderModal && isMobile) {
-      setMobileFolderName('');
-      setMobileNewFolderIcon('folder');
-      setMobileNewFolderColor('rgba(255, 184, 0, 1)');
-    }
-  }, [showNewFolderModal, isMobile]);
   
   
   // Update local folders when loader data changes
@@ -7557,245 +7543,14 @@ export default function Index() {
               })()}
 
               {/* New Folder Modal - Mobile */}
-              {showNewFolderModal && (() => {
-                
-                const folderIcons = [
-                  { icon: "folder", name: "Folder" },
-                  { icon: "folder-open", name: "Folder Open" },
-                  { icon: "image", name: "Image" },
-                  { icon: "house", name: "House" },
-                  { icon: "face-smile", name: "Smile" },
-                  { icon: "star", name: "Star" },
-                  { icon: "heart", name: "Heart" },
-                  { icon: "address-book", name: "Address Book" },
-                  { icon: "bookmark", name: "Bookmark" },
-                  { icon: "pen-to-square", name: "Compose" },
-                  { icon: "user", name: "User" },
-                  { icon: "gem", name: "Gem" },
-                  { icon: "square-check", name: "Check" },
-                  { icon: "trash-can", name: "Trash" },
-                  { icon: "flag", name: "Flag" },
-                  { icon: "calendar", name: "Calendar" },
-                  { icon: "lightbulb", name: "Light Bulb" },
-                  { icon: "bell", name: "Bell" },
-                  { icon: "truck", name: "Truck" },
-                  { icon: "file-code", name: "Code" }
-                ];
-
-                const iconColors = [
-                  { color: "rgba(1, 75, 64, 1)", name: "Green" },
-                  { color: "rgba(199, 10, 36, 1)", name: "Red" },
-                  { color: "rgba(255, 184, 0, 1)", name: "Orange" },
-                  { color: "rgba(255, 230, 0, 1)", name: "Yellow" },
-                  { color: "rgba(227, 227, 227, 1)", name: "White" },
-                  { color: "rgba(48, 48, 48, 1)", name: "Black" },
-                  { color: "rgba(0, 91, 211, 1)", name: "Blue" },
-                  { color: "rgba(128, 81, 255, 1)", name: "Purple" }
-                ];
-
-                const handleCreate = () => {
-                  if (!mobileFolderName.trim()) {
-                    return;
-                  }
-                  
-                  handleCreateFolderFromModal({
-                    name: mobileFolderName.trim(),
-                    icon: mobileNewFolderIcon,
-                    color: mobileNewFolderColor
-                  });
-                  
-                  // Reset form
-                  setMobileFolderName('');
-                  setMobileNewFolderIcon('folder');
-                  setMobileNewFolderColor('rgba(255, 184, 0, 1)');
-                  setShowNewFolderModal(false);
-                };
-
-                return (
-                  <div className="modal-overlay" style={{
-                    position: "fixed",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: "rgba(0,0,0,0.5)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 10002,
-                    padding: "16px"
-                  }}>
-                    <div style={{
-                      backgroundColor: "white",
-                      padding: "16px",
-                      borderRadius: "8px",
-                      maxWidth: "350px",
-                      width: "100%",
-                      maxHeight: "85vh",
-                      overflow: "auto",
-                      boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)"
-                    }}>
-                      <div style={{ marginBottom: '12px' }}>
-                        <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>
-                          Create New Folder
-                        </h2>
-                      </div>
-                      
-                      <div style={{ marginBottom: '12px' }}>
-                        <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', fontWeight: '500' }}>
-                          Folder Name
-                        </label>
-                        <input
-                          type="text"
-                          value={mobileFolderName}
-                          onChange={(e) => {
-                            const cleanValue = e.target.value.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '');
-                            if (cleanValue.length <= 30) {
-                              setMobileFolderName(cleanValue);
-                            }
-                          }}
-                          placeholder="Enter folder name..."
-                          maxLength={30}
-                          style={{
-                            width: '100%',
-                            padding: '8px 12px',
-                            border: '1px solid #e1e3e5',
-                            borderRadius: '4px',
-                            fontSize: '14px',
-                            boxSizing: 'border-box'
-                          }}
-                        />
-                        <div style={{ fontSize: '12px', color: '#6d7175', marginTop: '4px' }}>
-                          {mobileFolderName.length}/30 characters
-                        </div>
-                      </div>
-                      
-                      <div style={{ marginBottom: '12px' }}>
-                        <p style={{ margin: '0 0 6px 0', fontSize: '13px' }}>
-                          Preview: <i className={`far fa-${mobileNewFolderIcon}`} style={{ fontSize: '18px', marginLeft: '6px', color: mobileNewFolderColor }}></i> {mobileFolderName || 'Folder Name'}
-                        </p>
-                      </div>
-
-                      <h3 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600' }}>
-                        Choose an icon:
-                      </h3>
-                      
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(5, 1fr)',
-                        gap: '6px',
-                        marginBottom: '20px',
-                        padding: '8px',
-                        border: '1px solid #e1e3e5',
-                        borderRadius: '8px',
-                        backgroundColor: '#fafbfb'
-                      }}>
-                        {folderIcons.map((iconData, index) => (
-                          <button
-                            key={index}
-                            onClick={() => setMobileNewFolderIcon(iconData.icon)}
-                            style={{
-                              width: '45px',
-                              height: '45px',
-                              border: mobileNewFolderIcon === iconData.icon ? '2px solid #2e7d32' : '1px solid #e1e3e5',
-                              borderRadius: '6px',
-                              backgroundColor: mobileNewFolderIcon === iconData.icon ? '#e8f5e8' : 'white',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '16px',
-                              transition: 'all 0.2s ease',
-                              padding: '2px'
-                            }}
-                            title={iconData.name}
-                          >
-                            <i className={`far fa-${iconData.icon}`} style={{ color: mobileNewFolderColor }}></i>
-                          </button>
-                        ))}
-                      </div>
-
-                      <h3 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600' }}>
-                        Choose a color:
-                      </h3>
-                      
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(4, 1fr)',
-                        gap: '6px',
-                        marginBottom: '20px',
-                        padding: '8px',
-                        border: '1px solid #e1e3e5',
-                        borderRadius: '8px',
-                        backgroundColor: '#fafbfb'
-                      }}>
-                        {iconColors.map((colorData, index) => (
-                          <button
-                            key={index}
-                            onClick={() => setMobileNewFolderColor(colorData.color)}
-                            style={{
-                              width: '35px',
-                              height: '35px',
-                              border: mobileNewFolderColor === colorData.color ? '2px solid #2e7d32' : '1px solid #e1e3e5',
-                              borderRadius: '50%',
-                              backgroundColor: colorData.color,
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              transition: 'all 0.2s ease',
-                              boxShadow: colorData.color === 'rgba(227, 227, 227, 1)' ? 'inset 0 0 0 1px #e1e3e5' : 'none'
-                            }}
-                            title={colorData.name}
-                          >
-                            {mobileNewFolderColor === colorData.color && (
-                              <i className="fas fa-check" style={{ 
-                                color: colorData.color === 'rgba(255, 230, 0, 1)' || colorData.color === 'rgba(227, 227, 227, 1)' ? 'rgba(48, 48, 48, 1)' : 'white',
-                                fontSize: '12px' 
-                              }}></i>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '8px' }}>
-                        <button
-                          onClick={() => setShowNewFolderModal(false)}
-                          style={{
-                            padding: '8px 12px',
-                            border: '1px solid #e1e3e5',
-                            borderRadius: '4px',
-                            backgroundColor: 'white',
-                            cursor: 'pointer',
-                            fontSize: '13px',
-                            minWidth: '60px'
-                          }}
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={handleCreate}
-                          disabled={!mobileFolderName.trim()}
-                          style={{
-                            padding: '8px 12px',
-                            border: 'none',
-                            borderRadius: '4px',
-                            backgroundColor: mobileFolderName.trim() ? '#008060' : '#ccc',
-                            color: 'white',
-                            cursor: mobileFolderName.trim() ? 'pointer' : 'not-allowed',
-                            fontSize: '13px',
-                            fontWeight: '500',
-                            minWidth: '80px'
-                          }}
-                        >
-                          Create Folder
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
+              {showNewFolderModal && (
+                <NewFolderModal
+                  isOpen={showNewFolderModal}
+                  onClose={() => setShowNewFolderModal(false)}
+                  onCreateFolder={handleCreateFolderFromModal}
+                  initialName=""
+                />
+              )}
               
               {/* Mobile Folder Selector Popover */}
               {showFolderSelector && (
