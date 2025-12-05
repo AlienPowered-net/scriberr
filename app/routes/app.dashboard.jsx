@@ -5701,7 +5701,8 @@ export default function Index() {
             right: 0,
             bottom: 0,
             backgroundColor: 'white',
-            zIndex: 10000,
+            // Lower z-index while the Polaris modal is open so it can render above the layout
+            zIndex: showNewFolderModal ? 0 : 10000,
             display: 'flex',
             flexDirection: 'column'
           }}>
