@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Button, Text, TextField } from '@shopify/polaris';
 
 const NewFolderModal = ({ 
@@ -10,6 +10,15 @@ const NewFolderModal = ({
   const [folderName, setFolderName] = useState(initialName);
   const [selectedIcon, setSelectedIcon] = useState('folder');
   const [selectedColor, setSelectedColor] = useState('rgba(255, 184, 0, 1)');
+
+  // Reset form when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setFolderName(initialName);
+      setSelectedIcon('folder');
+      setSelectedColor('rgba(255, 184, 0, 1)');
+    }
+  }, [isOpen, initialName]);
 
   const folderIcons = [
     { icon: "folder", name: "Folder" },
@@ -56,12 +65,8 @@ const NewFolderModal = ({
       color: selectedColor
     };
     
-    // Reset form immediately for better UX
-    setFolderName('');
-    setSelectedIcon('folder');
-    setSelectedColor('rgba(255, 184, 0, 1)');
-    
-    // Call onCreateFolder - it will handle closing the modal after optimistic update
+    // Call onCreateFolder - it will handle closing the modal immediately
+    // Form will reset naturally when modal reopens via useState defaults
     onCreateFolder(folderData);
   };
 

@@ -3311,6 +3311,9 @@ export default function Index() {
       return;
     }
 
+    // Close modal immediately to prevent flicker from form reset
+    setShowNewFolderModal(false);
+
     try {
       const response = await fetch('/api/create-folder', {
         method: 'POST',
@@ -3330,8 +3333,6 @@ export default function Index() {
           // Add new folder to local state immediately
           setLocalFolders(prev => [result.folder, ...prev]);
           setFolderName(''); // Clear the input
-          setShowNewFolderModal(false); // Close modal on success
-          
           
           setAlertMessage('Folder created successfully!');
           setAlertType('success');
