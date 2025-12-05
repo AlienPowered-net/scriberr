@@ -3330,6 +3330,7 @@ export default function Index() {
           // Add new folder to local state immediately
           setLocalFolders(prev => [result.folder, ...prev]);
           setFolderName(''); // Clear the input
+          setShowNewFolderModal(false); // Close modal on success
           
           
           setAlertMessage('Folder created successfully!');
@@ -7918,53 +7919,55 @@ export default function Index() {
       )}
 
       {/* Desktop Footer */}
-      <div style={{
-        position: "relative",
-        bottom: "0",
-        left: "0",
-        right: "0",
-        backgroundColor: "#f8f9fa",
-        borderTop: "1px solid #e1e3e5",
-        padding: "12px 24px",
-        marginTop: "10px",
-        fontSize: "14px",
-        color: "#6d7175",
-        zIndex: 100,
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center"
-      }}>
-        <div>
-          © 2025, Scriberr Powered by{" "}
-          <a 
-            href="https://www.alienpowered.net" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            style={{
-              color: "#008060",
-              textDecoration: "none",
-              fontWeight: "600",
-              transition: "color 0.2s ease"
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.color = "#008000";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.color = "#008060";
-            }}
-          >
-            Aliens
-          </a>
-        </div>
-        <div style={{ 
-          fontStyle: "italic", 
-          fontSize: "12px", 
-          color: "#9ca3af",
-          marginLeft: "24px"
+      {!isMobile && (
+        <div style={{
+          position: "relative",
+          bottom: "0",
+          left: "0",
+          right: "0",
+          backgroundColor: "#f8f9fa",
+          borderTop: "1px solid "#e1e3e5",
+          padding: "12px 24px",
+          marginTop: "10px",
+          fontSize: "14px",
+          color: "#6d7175",
+          zIndex: 100,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
         }}>
-          {version}
+          <div>
+            © 2025, Scriberr Powered by{" "}
+            <a 
+              href="https://www.alienpowered.net" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{
+                color: "#008060",
+                textDecoration: "none",
+                fontWeight: "600",
+                transition: "color 0.2s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.color = "#008000";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.color = "#008060";
+              }}
+            >
+              Aliens
+            </a>
+          </div>
+          <div style={{ 
+            fontStyle: "italic", 
+            fontSize: "12px", 
+            color: "#9ca3af",
+            marginLeft: "24px"
+          }}>
+            {version}
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }
