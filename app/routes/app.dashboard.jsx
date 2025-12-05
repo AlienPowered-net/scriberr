@@ -7541,16 +7541,6 @@ export default function Index() {
                   </div>
                 );
               })()}
-
-              {/* New Folder Modal - Mobile */}
-              {showNewFolderModal && (
-                <NewFolderModal
-                  isOpen={showNewFolderModal}
-                  onClose={() => setShowNewFolderModal(false)}
-                  onCreateFolder={handleCreateFolderFromModal}
-                  initialName=""
-                />
-              )}
               
               {/* Mobile Folder Selector Popover */}
               {showFolderSelector && (
@@ -7916,8 +7906,8 @@ export default function Index() {
         </div>
       )}
 
-      {/* New Folder Modal - Desktop */}
-      {!isMobile && (
+      {/* New Folder Modal - Works for both mobile and desktop */}
+      {showNewFolderModal && (
         <NewFolderModal
           isOpen={showNewFolderModal}
           onClose={() => setShowNewFolderModal(false)}
