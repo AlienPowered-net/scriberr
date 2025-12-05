@@ -580,6 +580,7 @@ export default function ContactsPage() {
       .custom-contact-row.pinned {
         background-color: #f0f8ff !important;
         border: 1px solid #007bff !important;
+        border-radius: 8px !important;
       }
       
       .custom-contact-row.selected {
@@ -713,6 +714,7 @@ export default function ContactsPage() {
         .custom-contact-row.pinned {
           background-color: #f0f8ff !important;
           border-bottom: 1px solid #007bff !important;
+          border-radius: 8px !important;
         }
         
         .custom-contact-row.selected {
