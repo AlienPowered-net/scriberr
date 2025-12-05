@@ -586,6 +586,7 @@ export default function ContactsPage() {
       .custom-contact-row.selected {
         background-color: #fffbf8 !important;
         border: 1px solid #ff8c00 !important;
+        border-radius: 8px !important;
       }
       
       .custom-contact-row:hover {
@@ -720,12 +721,13 @@ export default function ContactsPage() {
         .custom-contact-row.selected {
           background-color: #fffbf8 !important;
           border-bottom: 1px solid #ff8c00 !important;
+          border-radius: 8px !important;
         }
         
         .custom-contact-row:hover {
           background-color: #f1f1f1 !important;
           border-bottom: 1px solid #dedede !important;
-          border-radius: 0 !important;
+          border-radius: 8px !important;
         }
         
         .custom-contact-row.pinned:hover {
