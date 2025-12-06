@@ -15,7 +15,8 @@ for (const cmd of patterns) {
       // Filter out false positives - routes that export loaders/actions are server-only
       const lines = out.split('\n').filter(line => {
         // Skip if it's a route file (has loader/action export) - these are server-only
-        const filePath = line.split(':')[0];
+        const rawPath = line.split(':')[0];
+        const filePath = rawPath.replace(/\\/g, '/'); // normalize Windows paths
         // Routes are server-only, so they can import .server files
         if (filePath.includes('/routes/') || filePath.includes('/entry.server')) {
           return false;

@@ -9,7 +9,7 @@ const mockPrisma = {
   contactFolder: { deleteMany: vi.fn() },
 };
 
-vi.mock("../shopify.server", () => ({
+vi.mock("~/shopify.server", () => ({
   shopify: {
     authenticate: {
       admin: mockAuthenticateAdmin,
@@ -17,11 +17,11 @@ vi.mock("../shopify.server", () => ({
   },
 }));
 
-vi.mock("../utils/db.server", () => ({
+vi.mock("~/utils/db.server", () => ({
   prisma: mockPrisma,
 }));
 
-vi.mock("../utils/tenant.server", () => ({
+vi.mock("~/utils/tenant.server", () => ({
   getOrCreateShopId: mockGetShopId,
 }));
 
@@ -39,7 +39,7 @@ describe("api.delete-all-content action", () => {
   });
 
   it("returns success JSON without redirect when confirmation is valid", async () => {
-    const { action } = await import("./api.delete-all-content.jsx");
+    const { action } = await import("~/routes/api.delete-all-content.jsx");
 
     const formData = new FormData();
     formData.set("confirmation", "DELETE");

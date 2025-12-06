@@ -6,6 +6,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
+    include: [
+      "src/tests/**/*.{test,spec}.{js,jsx,ts,tsx}",
+      "tests/**/*.{test,spec}.{js,jsx,ts,tsx}",
+    ],
     env: {
       SHOPIFY_API_KEY: "test-api-key",
       SHOPIFY_API_SECRET: "test-api-secret",
