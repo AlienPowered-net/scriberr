@@ -22,6 +22,8 @@ vi.mock("~/utils/db.server", () => ({
 import {
   ensureCanCreateNote,
   ensureCanCreateNoteFolder,
+  getEffectiveFreeLimitsForShop,
+  getPlanLimits,
   requireFeature,
   PlanError,
   getVisibleCount,
@@ -93,6 +95,52 @@ describe("plan guards", () => {
     expect(stubDb.folder.count).toHaveBeenCalledWith({
       where: { shopId: "shop-id" },
     });
+  });
+
+  it("respects per-shop extra note allowance on free plan", async () => {
+    const stubDb = {
+      note: {
+        count: vi.fn().mockResolvedValue(27),
+      },
+    };
+
+    await expect(
+      ensureCanCreateNote("shop-id", freePlan, stubDb as any, {
+        shop: { extraFreeNotes: 5 } as any,
+      }),
+    ).resolves.toBeUndefined();
+
+    stubDb.note.count.mockResolvedValue(31);
+    await expect(
+      ensureCanCreateNote("shop-id", freePlan, stubDb as any, {
+        shop: { extraFreeNotes: 5 } as any,
+      }),
+    ).rejects.toMatchObject({
+      code: "LIMIT_NOTES",
+    } satisfies Partial<PlanError>);
+  });
+
+  it("respects per-shop extra folder allowance on free plan", async () => {
+    const stubDb = {
+      folder: {
+        count: vi.fn().mockResolvedValue(4),
+      },
+    };
+
+    await expect(
+      ensureCanCreateNoteFolder("shop-id", freePlan, stubDb as any, {
+        shop: { extraFreeFolders: 2 } as any,
+      }),
+    ).resolves.toBeUndefined();
+
+    stubDb.folder.count.mockResolvedValue(6);
+    await expect(
+      ensureCanCreateNoteFolder("shop-id", freePlan, stubDb as any, {
+        shop: { extraFreeFolders: 2 } as any,
+      }),
+    ).rejects.toMatchObject({
+      code: "LIMIT_FOLDERS",
+    } satisfies Partial<PlanError>);
   });
 
   it("enforces feature gating for contacts and note tags on free plan", async () => {
@@ -389,6 +437,46 @@ describe("plan guards", () => {
 });
 
 describe("version limit helpers", () => {
+  it("computes effective limits with overrides", () => {
+    expect(getEffectiveFreeLimitsForShop()).toEqual({
+      noteLimit: 25,
+      folderLimit: 3,
+      versionLimit: 5,
+    });
+    expect(
+      getEffectiveFreeLimitsForShop({
+        extraFreeNotes: 5,
+        extraFreeFolders: 2,
+        extraFreeVersions: 10,
+        versionLimitPromptedAt: null,
+      } as any),
+    ).toEqual({
+      noteLimit: 30,
+      folderLimit: 5,
+      versionLimit: 15,
+    });
+  });
+
+  it("computes per-plan limits and leaves PRO unlimited", () => {
+    expect(getPlanLimits("PRO")).toEqual({
+      noteLimit: Infinity,
+      folderLimit: Infinity,
+      versionLimit: Infinity,
+    });
+    expect(
+      getPlanLimits("FREE", {
+        extraFreeNotes: 2,
+        extraFreeFolders: 1,
+        extraFreeVersions: 0,
+        versionLimitPromptedAt: null,
+      } as any),
+    ).toEqual({
+      noteLimit: 27,
+      folderLimit: 4,
+      versionLimit: 5,
+    });
+  });
+
   it("computes per-plan version limits with extra allowances", () => {
     expect(getVersionLimit("FREE")).toBe(5);
     expect(

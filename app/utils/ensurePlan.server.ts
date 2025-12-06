@@ -17,13 +17,17 @@ export type PlanErrorCode =
   | "FEATURE_CONTACTS_DISABLED"
   | "FEATURE_NOTE_TAGS_DISABLED";
 
+const BASE_FREE_NOTE_LIMIT = PLAN.FREE.NOTES_MAX;
+const BASE_FREE_FOLDER_LIMIT = PLAN.FREE.NOTE_FOLDERS_MAX;
+const BASE_FREE_VERSION_LIMIT = PLAN.FREE.NOTE_VERSIONS_MAX;
+
 const PLAN_ERROR_MESSAGES: Record<PlanErrorCode, string> = {
   LIMIT_NOTES:
-    "Free plan allows up to 25 notes. Delete a note or upgrade to Pro.",
+    `Free plan allows up to ${BASE_FREE_NOTE_LIMIT} notes. Delete a note or upgrade to Pro.`,
   LIMIT_FOLDERS:
-    "Free plan allows up to 3 folders. Delete a folder or upgrade to Pro.",
+    `Free plan allows up to ${BASE_FREE_FOLDER_LIMIT} folders. Delete a folder or upgrade to Pro.`,
   LIMIT_VERSIONS:
-    "Free plan allows up to 5 versions per note. Delete a manual save or upgrade to Pro for unlimited versions.",
+    `Free plan allows up to ${BASE_FREE_VERSION_LIMIT} versions per note. Delete a manual save or upgrade to Pro for unlimited versions.`,
   FEATURE_CONTACTS_DISABLED:
     "Contacts are unlocked on the Pro plan. Upgrade to manage contacts.",
   FEATURE_NOTE_TAGS_DISABLED:
@@ -64,6 +68,8 @@ export interface PlanContext {
   shopId: string;
   subscriptionStatus: SubscriptionStatus;
   session: Session;
+  noteLimit: number;
+  folderLimit: number;
   versionLimit: number;
   accessUntil: Date | null; // When PRO access ends (for canceled subscriptions in grace period)
 }
@@ -73,6 +79,41 @@ export function getPlan(shopOrContext: Shop | PlanContext): PlanKey {
     return (shopOrContext.shop.plan ?? "FREE") as PlanKey;
   }
   return (shopOrContext.plan ?? "FREE") as PlanKey;
+}
+
+type ShopLimitMeta = Pick<
+  Shop,
+  "extraFreeNotes" | "extraFreeFolders" | "extraFreeVersions" | "versionLimitPromptedAt"
+>;
+type ShopVersionMeta = Pick<ShopLimitMeta, "extraFreeVersions" | "versionLimitPromptedAt">;
+
+const clampExtra = (value?: number | null) => (value && value > 0 ? value : 0);
+
+/**
+ * Returns effective FREE-plan limits for a given shop, including per-shop overrides.
+ */
+export function getEffectiveFreeLimitsForShop(shop?: ShopLimitMeta) {
+  const extraNotes = clampExtra(shop?.extraFreeNotes);
+  const extraFolders = clampExtra(shop?.extraFreeFolders);
+  const extraVersions = clampExtra(shop?.extraFreeVersions);
+
+  return {
+    noteLimit: BASE_FREE_NOTE_LIMIT + extraNotes,
+    folderLimit: BASE_FREE_FOLDER_LIMIT + extraFolders,
+    versionLimit: BASE_FREE_VERSION_LIMIT + extraVersions,
+  };
+}
+
+export function getPlanLimits(plan: PlanKey, shop?: ShopLimitMeta) {
+  if (plan === "PRO") {
+    return {
+      noteLimit: Infinity,
+      folderLimit: Infinity,
+      versionLimit: Infinity,
+    } as const;
+  }
+
+  return getEffectiveFreeLimitsForShop(shop);
 }
 
 export async function getMerchantByShop(sessionOrShop: Session | string) {
@@ -136,11 +177,13 @@ export async function ensureCanCreateNote(
   shopId: string,
   plan: PlanKey,
   db: PrismaTransaction = prisma,
+  opts: { shop?: ShopLimitMeta; noteLimit?: number } = {},
 ) {
   if (plan === "PRO") return;
 
+  const noteLimit = opts.noteLimit ?? getPlanLimits(plan, opts.shop).noteLimit;
   const totalNotes = await db.note.count({ where: { shopId } });
-  if (totalNotes >= PLAN.FREE.NOTES_MAX) {
+  if (Number.isFinite(noteLimit) && totalNotes >= noteLimit) {
     throw new PlanError("LIMIT_NOTES");
   }
 }
@@ -149,11 +192,14 @@ export async function ensureCanCreateNoteFolder(
   shopId: string,
   plan: PlanKey,
   db: PrismaTransaction = prisma,
+  opts: { shop?: ShopLimitMeta; folderLimit?: number } = {},
 ) {
   if (plan === "PRO") return;
 
+  const folderLimit =
+    opts.folderLimit ?? getPlanLimits(plan, opts.shop).folderLimit;
   const totalFolders = await db.folder.count({ where: { shopId } });
-  if (totalFolders >= PLAN.FREE.NOTE_FOLDERS_MAX) {
+  if (Number.isFinite(folderLimit) && totalFolders >= folderLimit) {
     throw new PlanError("LIMIT_FOLDERS");
   }
 }
@@ -170,20 +216,14 @@ export function ensureNoteTagsEnabled(plan: PlanKey) {
   }
 }
 
-const BASE_FREE_VERSION_LIMIT = PLAN.FREE.NOTE_VERSIONS_MAX;
 export const VERSION_PROMPT_COOLDOWN_MS = 48 * 60 * 60 * 1000; // 48 hours
-type ShopVersionMeta = Pick<Shop, "extraFreeVersions" | "versionLimitPromptedAt">;
 
 export function getExtraFreeVersions(shop?: ShopVersionMeta) {
-  const extra = shop?.extraFreeVersions ?? 0;
-  return extra > 0 ? extra : 0;
+  return clampExtra(shop?.extraFreeVersions);
 }
 
 export function getVersionLimit(plan: PlanKey, shop?: ShopVersionMeta) {
-  if (plan === "PRO") {
-    return Infinity;
-  }
-  return BASE_FREE_VERSION_LIMIT + getExtraFreeVersions(shop);
+  return getPlanLimits(plan, shop as ShopLimitMeta | undefined).versionLimit;
 }
 
 export function isWithinVersionPromptCooldown(
@@ -503,10 +543,16 @@ export const requireCapacity =
   async (ctx: PlanContext, db: PrismaTransaction = prisma): Promise<void> => {
     switch (cap) {
       case "note":
-        await ensureCanCreateNote(ctx.shopId, ctx.plan, db);
+        await ensureCanCreateNote(ctx.shopId, ctx.plan, db, {
+          shop: ctx.shop,
+          noteLimit: ctx.noteLimit,
+        });
         break;
       case "noteFolder":
-        await ensureCanCreateNoteFolder(ctx.shopId, ctx.plan, db);
+        await ensureCanCreateNoteFolder(ctx.shopId, ctx.plan, db, {
+          shop: ctx.shop,
+          folderLimit: ctx.folderLimit,
+        });
         break;
       default:
         throw new Error(`Unknown capacity guard: ${cap satisfies never}`);
@@ -556,6 +602,7 @@ export function withPlanContext<T extends { request: Request }>(
     }
 
     const plan = (merchant.plan ?? "FREE") as PlanKey;
+    const limits = getPlanLimits(plan, merchant);
 
     // Get accessUntil from subscription if it exists
     const accessUntil = merchant.subscription?.accessUntil
@@ -568,7 +615,9 @@ export function withPlanContext<T extends { request: Request }>(
       shopId: merchant.id,
       subscriptionStatus: merchant.subscription?.status ?? "NONE",
       session: auth.session,
-      versionLimit: getVersionLimit(plan, merchant),
+      noteLimit: limits.noteLimit,
+      folderLimit: limits.folderLimit,
+      versionLimit: limits.versionLimit,
       accessUntil,
     };
 
@@ -583,10 +632,28 @@ export async function getPlanStatus(request: Request): Promise<PlanStatus> {
   const shop = typedSession.shop;
   const tier = typedSession.plan?.toUpperCase() === "PRO" ? "PRO" : "FREE";
 
+  const shopRecord = typedSession.shopId
+    ? await prisma.shop.findUnique({
+        where: { id: typedSession.shopId },
+        select: {
+          extraFreeNotes: true,
+          extraFreeFolders: true,
+          extraFreeVersions: true,
+          versionLimitPromptedAt: true,
+        },
+      })
+    : null;
+
+  const limits = getPlanLimits(tier as PlanKey, shopRecord ?? undefined);
   const noteCount = typedSession.shopId
     ? await prisma.note.count({ where: { shopId: typedSession.shopId } })
     : 0;
-  return { shop, tier, noteCount, maxNotes: tier === "FREE" ? 25 : undefined };
+  return {
+    shop,
+    tier,
+    noteCount,
+    maxNotes: tier === "FREE" ? limits.noteLimit : undefined,
+  };
 }
 
 // Throw if action would exceed free limits

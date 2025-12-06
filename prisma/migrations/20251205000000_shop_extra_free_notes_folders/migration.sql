@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Shop"
+ADD COLUMN     "extraFreeNotes" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "extraFreeFolders" INTEGER NOT NULL DEFAULT 0;

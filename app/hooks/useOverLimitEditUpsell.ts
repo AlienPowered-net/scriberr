@@ -22,7 +22,16 @@ interface UseOverLimitEditUpsellOptions {
  * Editing is NEVER blocked - this is purely informational.
  */
 export function useOverLimitEditUpsell({ notesUsed, foldersUsed }: UseOverLimitEditUpsellOptions) {
-  const { plan, openUpgradeModal } = usePlanContext();
+  const { plan, openUpgradeModal, flags } = usePlanContext();
+
+  const effectiveNoteLimit =
+    plan === "FREE"
+      ? flags?.noteLimit ?? PLAN.FREE.NOTES_MAX
+      : Infinity;
+  const effectiveFolderLimit =
+    plan === "FREE"
+      ? flags?.folderLimit ?? PLAN.FREE.NOTE_FOLDERS_MAX
+      : Infinity;
   
   // Track if we've shown the modal in this component instance (backup for SSR)
   const shownInSessionRef = useRef<Record<EditType, boolean>>({
@@ -33,11 +42,15 @@ export function useOverLimitEditUpsell({ notesUsed, foldersUsed }: UseOverLimitE
   const isOverLimit = useCallback(() => {
     if (plan !== "FREE") return false;
     
-    const isOverNoteLimit = notesUsed > PLAN.FREE.NOTES_MAX;
-    const isOverFolderLimit = foldersUsed > PLAN.FREE.NOTE_FOLDERS_MAX;
+    const isOverNoteLimit = Number.isFinite(effectiveNoteLimit)
+      ? notesUsed > effectiveNoteLimit
+      : false;
+    const isOverFolderLimit = Number.isFinite(effectiveFolderLimit)
+      ? foldersUsed > effectiveFolderLimit
+      : false;
     
     return isOverNoteLimit || isOverFolderLimit;
-  }, [plan, notesUsed, foldersUsed]);
+  }, [plan, notesUsed, foldersUsed, effectiveNoteLimit, effectiveFolderLimit]);
 
   const hasShownThisSession = useCallback((editType: EditType): boolean => {
     // Check sessionStorage first

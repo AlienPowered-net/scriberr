@@ -18,6 +18,8 @@ export const loader = async ({ request }) => {
         plan: planContext.plan,
         flags: flagsFor(planContext.plan, {
           versionLimit: planContext.versionLimit,
+          noteLimit: planContext.noteLimit,
+          folderLimit: planContext.folderLimit,
         }),
         subscriptionStatus: planContext.subscriptionStatus,
         accessUntil: planContext.accessUntil?.toISOString() ?? null,

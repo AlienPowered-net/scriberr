@@ -35,6 +35,7 @@
       "routes/api.contact-folders": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/api.custom-mentions": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/api.reorder-folders": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/api.billing.cancel": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/api.billing.create": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/api.duplicate-note": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/api.version-health": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
@@ -57,6 +58,7 @@
       "routes/_index": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/app.notion-editor-demo": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/app.debug-mentions": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
+      "routes/app.debug-editor": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/app.additional": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/app.dashboard": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
       "routes/app.contacts": "nodejs-eyJydW50aW1lIjoibm9kZWpzIn0",
@@ -297,6 +299,15 @@
           "runtime": "nodejs"
         }
       },
+      "routes/api.billing.cancel": {
+        "id": "routes/api.billing.cancel",
+        "parentId": "root",
+        "file": "app/routes/api.billing.cancel.ts",
+        "path": "api/billing/cancel",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
       "routes/api.billing.create": {
         "id": "routes/api.billing.create",
         "parentId": "root",
@@ -498,6 +509,15 @@
         "parentId": "routes/app",
         "file": "app/routes/app.debug-mentions.jsx",
         "path": "debug-mentions",
+        "config": {
+          "runtime": "nodejs"
+        }
+      },
+      "routes/app.debug-editor": {
+        "id": "routes/app.debug-editor",
+        "parentId": "routes/app",
+        "file": "app/routes/app.debug-editor.jsx",
+        "path": "debug-editor",
         "config": {
           "runtime": "nodejs"
         }
@@ -736,6 +756,12 @@
         "file": "routes/api.reorder-folders.jsx",
         "path": "api/reorder-folders"
       },
+      "routes/api.billing.cancel": {
+        "id": "routes/api.billing.cancel",
+        "parentId": "root",
+        "file": "routes/api.billing.cancel.ts",
+        "path": "api/billing/cancel"
+      },
       "routes/api.billing.create": {
         "id": "routes/api.billing.create",
         "parentId": "root",
@@ -873,6 +899,12 @@
         "parentId": "routes/app",
         "file": "routes/app.debug-mentions.jsx",
         "path": "debug-mentions"
+      },
+      "routes/app.debug-editor": {
+        "id": "routes/app.debug-editor",
+        "parentId": "routes/app",
+        "file": "routes/app.debug-editor.jsx",
+        "path": "debug-editor"
       },
       "routes/app.additional": {
         "id": "routes/app.additional",

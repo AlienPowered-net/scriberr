@@ -33,6 +33,8 @@ model Shop {
   shopGid        String?
   installedAt    DateTime        @default(now())
   plan           Plan            @default(FREE)
+  extraFreeNotes        Int      @default(0)
+  extraFreeFolders      Int      @default(0)
   extraFreeVersions     Int      @default(0)
   versionLimitPromptedAt DateTime?
   subscription   Subscription?

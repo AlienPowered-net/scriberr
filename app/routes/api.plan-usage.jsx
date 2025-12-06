@@ -4,11 +4,9 @@ export const loader = async ({ request }) => {
   // Dynamic imports for server-only modules
   const [
     { prisma },
-    { PLAN },
     { withPlanContext },
   ] = await Promise.all([
     import("../utils/db.server"),
-    import("../../src/lib/plan"),
     import("../utils/ensurePlan.server"),
   ]);
 
@@ -19,7 +17,7 @@ export const loader = async ({ request }) => {
   // Wrap handler with plan context
   const handler = withPlanContext(async ({ planContext }) => {
     try {
-      const { shopId, plan } = planContext;
+      const { shopId, plan, noteLimit, folderLimit } = planContext;
 
       // Base counts
       const [notesUsed, foldersUsed] = await Promise.all([
@@ -29,9 +27,9 @@ export const loader = async ({ request }) => {
 
       const baseResponse = {
         notesUsed,
-        notesLimit: PLAN[plan].NOTES_MAX,
+        notesLimit: Number.isFinite(noteLimit) ? noteLimit : null,
         foldersUsed,
-        foldersLimit: PLAN[plan].NOTE_FOLDERS_MAX,
+        foldersLimit: Number.isFinite(folderLimit) ? folderLimit : null,
         plan,
       };
 
