@@ -419,7 +419,7 @@ export async function action({ request }) {
 /* ------------------ UI ------------------ */
 export default function Index() {
   const { folders, notes, version, folderId: initialFolderId, noteId: initialNoteId, isMobileParam } = useLoaderData();
-  const { flags, openUpgradeModal } = usePlanContext();
+  const { plan, flags, openUpgradeModal } = usePlanContext();
   const [versionStats, setVersionStats] = useState(null);
   const [localNotes, setLocalNotes] = useState(notes);
   const [title, setTitle] = useState("");
@@ -3307,9 +3307,18 @@ export default function Index() {
     }
   };
 
-  // Handle new folder button click - launches new folder modal
+  // Handle new folder button click - launches new folder modal with limit gating
   const handleNewFolderClick = () => {
-    // Launch new folder modal directly
+    // Check if FREE plan and at/over folder limit
+    if (plan === "FREE" && localFolders.length >= flags.folderLimit) {
+      // Show upgrade modal instead of create folder modal
+      openUpgradeModal({
+        code: "LIMIT_FOLDERS",
+        message: "You've reached the 3-folder limit on the FREE plan. Upgrade to PRO for unlimited folders.",
+      });
+      return;
+    }
+    // Normal flow - open create folder modal
     setShowNewFolderModal(true);
   };
 
@@ -3355,7 +3364,21 @@ export default function Index() {
           setTimeout(() => setAlertMessage(''), 3000);
         }
       } else {
-        setAlertMessage('Failed to create folder');
+        // Check if it's a plan limit error (403 with upgradeHint)
+        try {
+          const errorData = await response.json();
+          if (errorData.upgradeHint) {
+            // Show upgrade modal instead of generic error toast
+            openUpgradeModal({
+              code: errorData.error,
+              message: errorData.message,
+            });
+            return;
+          }
+          setAlertMessage(errorData.error || 'Failed to create folder');
+        } catch {
+          setAlertMessage('Failed to create folder');
+        }
         setAlertType('error');
         setTimeout(() => setAlertMessage(''), 3000);
       }
@@ -4118,7 +4141,7 @@ export default function Index() {
                     <Button
                       variant="primary"
                       fullWidth
-                      onClick={() => setShowNewFolderModal(true)}
+                      onClick={handleNewFolderClick}
                       style={{ backgroundColor: '#008060', borderColor: '#008060' }}
                     >
                       <span style={{ color: 'white' }}>Create New Folder</span>
@@ -4209,7 +4232,7 @@ export default function Index() {
                   heading="Create your first folder"
                   action={{
                     content: 'Create folder',
-                    onAction: () => setShowNewFolderModal(true),
+                    onAction: handleNewFolderClick,
                   }}
                   image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
                 >
@@ -4478,7 +4501,7 @@ export default function Index() {
                   heading={selectedFolder ? "Create your first note" : "Select a folder to create notes"}
                   action={{
                     content: selectedFolder ? 'Create note' : 'Create folder first',
-                    onAction: selectedFolder ? handleNewNote : () => setShowNewFolderModal(true),
+                    onAction: selectedFolder ? handleNewNote : handleNewFolderClick,
                   }}
                   image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
                 >
@@ -5975,7 +5998,7 @@ export default function Index() {
                     <Button
                       variant="primary"
                       fullWidth
-                      onClick={() => setShowNewFolderModal(true)}
+                      onClick={handleNewFolderClick}
                       style={{ backgroundColor: '#008060', borderColor: '#008060' }}
                     >
                       <span style={{ color: 'white' }}>Create New Folder</span>
@@ -6260,7 +6283,7 @@ export default function Index() {
                     <Button
                       variant="primary"
                       fullWidth
-                      onClick={() => setShowNewFolderModal(true)}
+                      onClick={handleNewFolderClick}
                       style={{ backgroundColor: '#008060', borderColor: '#008060' }}
                     >
                       <span style={{ color: 'white' }}>Create New Folder</span>

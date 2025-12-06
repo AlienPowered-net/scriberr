@@ -535,7 +535,7 @@ function ContactForm({
 // Main Contacts Page Component
 export default function ContactsPage() {
   const { folders: initialFolders, contacts: initialContacts, version } = useLoaderData();
-  const { flags, openUpgradeModal } = usePlanContext();
+  const { plan, flags, openUpgradeModal } = usePlanContext();
   const [isLoading, setIsLoading] = useState(true);
   
   // Handle initial loading
@@ -2002,6 +2002,22 @@ export default function ContactsPage() {
   };
 
   // Folder handlers
+  
+  // Handle new folder button click - with limit gating for FREE plan
+  const handleNewFolderClick = () => {
+    // Check if FREE plan and at/over folder limit
+    if (plan === "FREE" && folders.length >= flags.folderLimit) {
+      // Show upgrade modal instead of create folder modal
+      openUpgradeModal({
+        code: "LIMIT_FOLDERS",
+        message: "You've reached the 3-folder limit on the FREE plan. Upgrade to PRO for unlimited folders.",
+      });
+      return;
+    }
+    // Normal flow - open create folder modal
+    setShowNewFolderModal(true);
+  };
+  
   const handleCreateFolder = async (folderData) => {
     console.log('🚀 handleCreateFolder called', folderData);
     
@@ -2077,16 +2093,30 @@ export default function ContactsPage() {
           setTimeout(() => setAlertMessage(''), 3000);
         }
       } else {
-        const error = await response.json();
-        console.error('Error creating folder:', error);
-        // Revert optimistic update
+        // Revert optimistic update first
         setFolders(prev => prev.filter(f => f.id !== tempId));
         setLoadingFolderIds(prev => {
           const next = new Set(prev);
           next.delete(tempId);
           return next;
         });
-        setAlertMessage(error.error || "Failed to create folder");
+        
+        // Check if it's a plan limit error (403 with upgradeHint)
+        try {
+          const errorData = await response.json();
+          console.error('Error creating folder:', errorData);
+          if (errorData.upgradeHint) {
+            // Show upgrade modal instead of generic error toast
+            openUpgradeModal({
+              code: errorData.error,
+              message: errorData.message,
+            });
+            return;
+          }
+          setAlertMessage(errorData.error || "Failed to create folder");
+        } catch {
+          setAlertMessage("Failed to create folder");
+        }
         setAlertType("error");
         setTimeout(() => setAlertMessage(''), 3000);
       }
@@ -2475,7 +2505,7 @@ export default function ContactsPage() {
                               </p>
                               <Button
                                 variant="primary"
-                                onClick={() => setShowNewFolderModal(true)}
+                                onClick={handleNewFolderClick}
                                 size="medium"
                               >
                                 Create your first folder
@@ -2522,7 +2552,7 @@ export default function ContactsPage() {
                         flexShrink: 0
                       }}>
                         <Button
-                          onClick={() => setShowNewFolderModal(true)}
+                          onClick={handleNewFolderClick}
                           variant="primary"
                           size="large"
                           fullWidth
@@ -4189,7 +4219,7 @@ export default function ContactsPage() {
                         </p>
                         <Button
                           variant="primary"
-                          onClick={() => setShowNewFolderModal(true)}
+                          onClick={handleNewFolderClick}
                           size="medium"
                         >
                           Create your first folder
@@ -4219,7 +4249,7 @@ export default function ContactsPage() {
 
               {/* Create New Folder Button */}
               <Button
-                onClick={() => setShowNewFolderModal(true)}
+                onClick={handleNewFolderClick}
                 variant="primary"
                 size="large"
                 fullWidth
