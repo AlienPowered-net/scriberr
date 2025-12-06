@@ -1,6 +1,13 @@
 import { useOutletContext } from "@remix-run/react";
+import type { UpgradeModalContext } from "../../src/components/UpgradeModal";
 
 type SubscriptionStatus = "NONE" | "ACTIVE" | "CANCELED" | "PAST_DUE";
+
+export type UpgradeModalPayload = {
+  code?: string;
+  message?: string;
+  context?: UpgradeModalContext;
+};
 
 type PlanOutletContext = {
   plan: "FREE" | "PRO";
@@ -11,7 +18,7 @@ type PlanOutletContext = {
     folderLimit: number;
     versionCap: number;
   };
-  openUpgradeModal: (payload?: { code?: string; message?: string }) => void;
+  openUpgradeModal: (payload?: UpgradeModalPayload) => void;
   subscriptionStatus: SubscriptionStatus;
   accessUntil: string | null; // ISO date string when PRO access ends (for canceled subscriptions)
 };

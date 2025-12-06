@@ -2,6 +2,8 @@ import { BlockStack, Divider, Modal, Text } from "@shopify/polaris";
 import type { ReactNode } from "react";
 import { SubscriptionPlans } from "./SubscriptionPlans";
 
+export type UpgradeModalContext = "default" | "over_limit_edit";
+
 interface UpgradeModalProps {
   open: boolean;
   onClose: () => void;
@@ -9,6 +11,7 @@ interface UpgradeModalProps {
   isSubmitting?: boolean;
   headline?: ReactNode;
   currentPlan?: "FREE" | "PRO";
+  context?: UpgradeModalContext;
 }
 
 export function UpgradeModal({
@@ -18,16 +21,33 @@ export function UpgradeModal({
   isSubmitting = false,
   headline,
   currentPlan = "FREE",
+  context = "default",
 }: UpgradeModalProps) {
+  const isOverLimitEdit = context === "over_limit_edit";
+
+  // Determine modal title based on context
+  const modalTitle = isOverLimitEdit
+    ? "You're over the FREE plan limit"
+    : "Choose a plan";
+
+  // Determine secondary action text based on context
+  const secondaryActionText = isOverLimitEdit
+    ? "Continue editing"
+    : "Maybe later";
+
+  // Determine default headline based on context
+  const defaultHeadline = isOverLimitEdit
+    ? "You can keep and edit all your existing notes and folders. However, you won't be able to create new ones until you either delete some to get back under the limit, or upgrade to PRO for unlimited access."
+    : "Go beyond the Free plan limits and unlock the complete Scriberr workspace.";
 
   return (
     <Modal
         open={open}
         onClose={onClose}
-        title="Choose a plan"
+        title={modalTitle}
         secondaryActions={[
           {
-            content: "Maybe later",
+            content: secondaryActionText,
             onAction: onClose,
           },
         ]}
@@ -44,7 +64,7 @@ export function UpgradeModal({
               )
             ) : (
               <Text as="p" variant="bodyMd">
-                Go beyond the Free plan limits and unlock the complete Scriberr workspace.
+                {defaultHeadline}
               </Text>
             )}
 

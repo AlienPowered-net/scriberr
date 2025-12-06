@@ -167,11 +167,17 @@ export default function App() {
   }, []);
 
   const modalHeadline = useMemo(() => {
+    // For over_limit_edit context, use the default headline from the modal
+    if (upgradePrompt?.context === "over_limit_edit") {
+      return undefined;
+    }
     if (!upgradePrompt?.message) {
       return "Ready for Scriberr Pro? Unlock all premium features with one click.";
     }
     return upgradePrompt.message;
   }, [upgradePrompt]);
+
+  const modalContext = upgradePrompt?.context ?? "default";
 
   return (
     <AppProvider isEmbeddedApp apiKey={apiKey}>
@@ -193,6 +199,7 @@ export default function App() {
         isSubmitting={upgradeSubmitting}
         headline={modalHeadline}
         currentPlan={plan}
+        context={modalContext}
       />
     </AppProvider>
   );

@@ -7,6 +7,7 @@ import { prisma } from "../utils/db.server";
 import { getOrCreateShopId } from "../utils/tenant.server";
 import packageJson from "../../package.json" with { type: "json" };
 import { usePlanContext } from "../hooks/usePlanContext";
+import { useOverLimitEditUpsell } from "../hooks/useOverLimitEditUpsell";
 
 import {
   Page,
@@ -1221,6 +1222,12 @@ export default function Index() {
   const [newFolderIconColor, setNewFolderIconColor] = useState('rgba(255, 184, 0, 1)');
   const [localFolders, setLocalFolders] = useState(folders);
   
+  // Over-limit edit upsell hook - shows soft upsell when FREE plan users over limits edit notes/folders
+  const { triggerIfOverLimit } = useOverLimitEditUpsell({
+    notesUsed: localNotes.length,
+    foldersUsed: localFolders.length,
+  });
+  
   // Set selected folder from URL parameter - now that localFolders is defined
   useEffect(() => {
     if (initialFolderId && localFolders && localFolders.length > 0) {
@@ -1536,6 +1543,8 @@ export default function Index() {
     portal.querySelectorAll('button').forEach((btn, index) => {
       btn.addEventListener('click', () => {
         if (index === 0) {
+          // Trigger over-limit upsell check when renaming folder (soft upsell, does not block editing)
+          triggerIfOverLimit('folder');
           setShowRenameFolderModal(openFolderMenu);
           setEditingFolderName(folders.find(f => f.id === openFolderMenu)?.name || '');
         } else if (index === 1) {
@@ -1824,6 +1833,9 @@ export default function Index() {
 
   // Handle clicking on a note to edit it
   const handleEditNote = (note) => {
+    // Trigger over-limit upsell check (soft upsell, does not block editing)
+    triggerIfOverLimit('note');
+    
     setEditingNoteId(note.id);
     setTitle(note.title || "");
     setBody(note.content || "");
@@ -6147,6 +6159,8 @@ export default function Index() {
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
+                                      // Trigger over-limit upsell check when renaming folder (soft upsell, does not block editing)
+                                      triggerIfOverLimit('folder');
                                       setShowRenameFolderModal(folder.id);
                                       setEditingFolderName(folder.name);
                                       setMobileOpenFolderMenu(null);
