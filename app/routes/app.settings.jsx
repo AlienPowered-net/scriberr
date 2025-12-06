@@ -14,6 +14,8 @@ import {
   Checkbox,
   Box,
   Select,
+  Frame,
+  Toast,
 } from "@shopify/polaris";
 import { useState, useEffect, useCallback } from "react";
 import { useFetcher } from "@remix-run/react";
@@ -84,6 +86,36 @@ export default function Settings() {
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const version = packageJson.version;
+  const [shopHostParams, setShopHostParams] = useState("");
+  const [toastConfig, setToastConfig] = useState({
+    active: false,
+    message: "",
+    isError: false,
+  });
+  const showToast = useCallback((message, isError = false) => {
+    setToastConfig({
+      active: true,
+      message,
+      isError,
+    });
+  }, []);
+  const dismissToast = useCallback(() => {
+    setToastConfig({
+      active: false,
+      message: "",
+      isError: false,
+    });
+  }, []);
+  const withShopParams = useCallback(
+    (path) => {
+      if (!shopHostParams) {
+        return path;
+      }
+      const separator = path.includes("?") ? "&" : "?";
+      return `${path}${separator}${shopHostParams}`;
+    },
+    [shopHostParams],
+  );
   
   // Handle initial loading
   useEffect(() => {
@@ -128,7 +160,10 @@ export default function Settings() {
       const fetchCancelUsage = async () => {
         setCancelUsage(prev => ({ ...prev, loading: true }));
         try {
-          const response = await fetch("/api/plan-usage?includeAll=true");
+          const response = await fetch(
+            withShopParams("/api/plan-usage?includeAll=true"),
+            { credentials: "include" },
+          );
           if (response.ok) {
             const data = await response.json();
             setCancelUsage({
@@ -146,7 +181,7 @@ export default function Settings() {
       };
       fetchCancelUsage();
     }
-  }, [showCancelModal, plan]);
+  }, [showCancelModal, plan, withShopParams]);
   
   // Format date for display
   const formatAccessUntilDate = (dateString) => {
@@ -166,6 +201,24 @@ export default function Settings() {
   const handleCancelSubscription = useCallback(() => {
     setShowCancelModal(true);
   }, []);
+
+  // Capture shop & host from the current URL so authenticated API routes always receive them
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const searchParams = new URLSearchParams(window.location.search);
+    const shop = searchParams.get("shop");
+    const host = searchParams.get("host");
+    if (shop) {
+      const params = new URLSearchParams();
+      params.set("shop", shop);
+      if (host) {
+        params.set("host", host);
+      }
+      setShopHostParams(params.toString());
+    }
+  }, []);
   
   const confirmCancelSubscription = useCallback(() => {
     const formData = new FormData();
@@ -174,9 +227,9 @@ export default function Settings() {
     }
     cancelFetcher.submit(formData, {
       method: "POST",
-      action: "/api/billing/cancel",
+      action: withShopParams("/api/billing/cancel"),
     });
-  }, [cancelFetcher, cancelReason]);
+  }, [cancelFetcher, cancelReason, withShopParams]);
   
   // Get downgrade messages based on current usage
   const downgradeMessages = buildDowngradeMessages(cancelUsage);
@@ -265,20 +318,21 @@ export default function Settings() {
       const formData = new FormData();
       formData.append("confirmation", confirmationText);
 
-      const response = await fetch(`/api/${endpoint}`, {
+      const apiPath = withShopParams(`/api/${endpoint}`);
+      const response = await fetch(apiPath, {
         method: "POST",
         headers: {
           'Accept': 'application/json',
           'Accept-Charset': 'utf-8'
         },
         body: formData,
+        credentials: "include",
       });
 
       const result = await response.json();
 
       if (result.success) {
-        setAlertMessage(`Success: ${result.message}`);
-        // Close the modal
+        // Close the appropriate modal immediately
         if (endpoint === "delete-all-notes") {
           setShowDeleteNotesModal(false);
         } else if (endpoint === "delete-all-folders") {
@@ -291,16 +345,30 @@ export default function Settings() {
           setShowDeleteContentModal(false);
         }
         setConfirmationText("");
-        // Clear success message after 5 seconds
-        setTimeout(() => {
-          setAlertMessage("");
-        }, 5000);
+        showToast(result.message || `Successfully completed ${actionName}`);
+
+        // Optimistically update plan usage counts for Free plan
+        if (selectedSubscription === "free") {
+          setPlanUsage((prev) => {
+            if (endpoint === "delete-all-notes") {
+              return { ...prev, notesUsed: 0 };
+            }
+            if (endpoint === "delete-all-folders" || endpoint === "delete-all-content") {
+              return { ...prev, notesUsed: 0, foldersUsed: 0 };
+            }
+            return prev;
+          });
+        }
       } else {
-        setAlertMessage(result.error || `Failed to ${actionName}`);
+        const message = result.error || `Failed to ${actionName}`;
+        setAlertMessage(message);
+        showToast(message, true);
       }
     } catch (error) {
       console.error(`Error ${actionName}:`, error);
-      setAlertMessage(`Failed to ${actionName}. Please try again.`);
+      const message = `Failed to ${actionName}. Please try again.`;
+      setAlertMessage(message);
+      showToast(message, true);
     } finally {
       setIsDeleting(false);
     }
@@ -326,7 +394,9 @@ export default function Settings() {
       try {
         setPlanUsage((prev) => ({ ...prev, loading: true, error: null }));
 
-        const usageResponse = await fetch("/api/plan-usage");
+        const usageResponse = await fetch(withShopParams("/api/plan-usage"), {
+          credentials: "include",
+        });
 
         if (!usageResponse.ok) {
           throw new Error(`Request failed with status ${usageResponse.status}`);
@@ -353,14 +423,15 @@ export default function Settings() {
     };
 
     fetchUsage();
-  }, [selectedSubscription]);
+  }, [selectedSubscription, withShopParams]);
 
   const handleUpgrade = useCallback(async () => {
     try {
       setIsUpgrading(true);
-      const response = await fetch("/api/billing/create", {
+      const response = await fetch(withShopParams("/api/billing/create"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -397,15 +468,24 @@ export default function Settings() {
       // Show error to user
       setAlertMessage(error.message || "Failed to initiate upgrade. Please try again.");
     }
-  }, []);
+  }, [withShopParams]);
 
   // Show loading page while content loads
   if (isLoading) {
     return <ScriberrFullPageLoader />;
   }
 
+  const toastMarkup = toastConfig.active ? (
+    <Toast
+      content={toastConfig.message}
+      error={toastConfig.isError}
+      duration={4000}
+      onDismiss={dismissToast}
+    />
+  ) : null;
+
   return (
-    <>
+    <Frame>
     <Page title="Settings">
       <div style={{ paddingBottom: "80px" }}>
         <BlockStack gap="500">
@@ -1026,6 +1106,7 @@ export default function Settings() {
         {version}
       </div>
     </div>
-    </>
+    {toastMarkup}
+    </Frame>
   );
 }
